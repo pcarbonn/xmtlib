@@ -1,0 +1,63 @@
+// Copyright Pierre Carbonnelle, 2025.
+
+
+use std::fs;
+use std::path::PathBuf;
+
+use clap::Parser;
+
+/// A high-level language for interacting with SMT solvers
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
+struct Cli {
+    /// Path to the problem file in XMT-Lib format.
+    file_path: PathBuf,
+}
+
+fn main() {
+    let args = Cli::parse();
+
+    if args.file_path.exists() {
+        let source = fs::read_to_string(args.file_path).unwrap();
+        // let mut solver = Solver::default();
+        // let results = solver.parse_and_execute(&source);
+        // for result in results {
+        //     println!("{}", result);
+        // }
+    } else {
+        eprintln!("Error: File '{:?}' does not exist.", args.file_path);
+        std::process::exit(1);
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use std::{fs::File, str::from_utf8};
+
+    use simplelog::*;
+    // use crate::solver::Solver;
+
+    fn tester(source: &[u8], output: &str) {
+        let source = from_utf8(source).unwrap();
+        // let mut solver = Solver::default();
+        // let results = solver.parse_and_execute(source);
+        // assert_eq!(results.into_iter().collect::<Vec<_>>().join("\n"), output);
+    }
+
+    #[test]
+    fn sandbox() {
+        let config = ConfigBuilder::new()
+            .set_time_level(LevelFilter::Off)
+            .build();
+        let _ = WriteLogger::init(LevelFilter::Trace, config, File::create("xmtlib.log").unwrap());
+
+        tester( b"
+            (declare-const a Int)
+            (assert (> a 10))
+            (check-sat)",
+
+        "sat"
+        );
+    }
+}

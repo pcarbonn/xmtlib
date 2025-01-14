@@ -1,0 +1,21 @@
+[package]
+name = "xmtlib"
+version = "0.1.0"
+authors = ["Pierre Carbonnelle"]
+edition = "2021"
+rust-version = "1.65.0"
+description = "A high-level language for interacting with SMT solvers"
+documentation = "https://docs.rs/xmtlib"
+readme = "README.md"
+repository = "https://github.com/pcarbonn/xmtlib"
+license = "MIT"
+keywords = ["solver", "smt", "satisfiability"]
+categories = ["mathematics", "science"]
+
+[dependencies]
+chic = "1.2.2"
+clap = { version = "4.5.23", features = ["derive"] }
+debug_print = "1.0.0"
+genawaiter = "0.99.1"
+peg = "0.8.4"
+simplelog = "0.12.2"
