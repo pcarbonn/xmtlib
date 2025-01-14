@@ -12,20 +12,33 @@ peg::parser!{
         rule _  = [' ' | '\n']*
         rule __ = [' ' | '\n']+
 
-        pub rule commands() -> Vec<Command>
-            = l:(command() * ) _ { l }
+        pub rule commands(state: &mut ParsingState) -> Vec<Command>
+            = l:(command(state) * ) _ { l }
 
-        rule command() -> Command
+        rule command(state: &mut ParsingState) -> Command
             = _ "(" _
-              command:( check_sat() )
+              command:( check_sat(state) )
               _ ")" { command }
 
-        rule check_sat() -> Command
+        rule check_sat(state: &mut ParsingState) -> Command
             = "check-sat" { CheckSat }
     }
   }
 
 /// Parses the source code in SMT-Lib format into a list of commands.
 pub fn parse(source: &str) -> Result<Vec<Command>, ParseError<LineCol>> {
-    smt_lib::commands(source)
+    let mut state = ParsingState::default();
+    smt_lib::commands(source , &mut state)
+}
+
+/// A ParsingState contains the list of declared symbols,
+/// and the list of variables in the current scope.
+struct ParsingState {
+
+}
+
+impl Default for ParsingState {
+    fn default() -> ParsingState {
+        ParsingState {}
+    }
 }
