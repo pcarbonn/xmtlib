@@ -1,10 +1,17 @@
 // Copyright Pierre Carbonnelle, 2025.
 
+pub mod api;
+pub mod error;
+pub mod grammar;
+pub mod solver;
+mod private;
 
 use std::fs;
 use std::path::PathBuf;
 
 use clap::Parser;
+
+use crate::solver::Solver;
 
 /// A high-level language for interacting with SMT solvers
 #[derive(Parser)]
@@ -19,11 +26,11 @@ fn main() {
 
     if args.file_path.exists() {
         let source = fs::read_to_string(args.file_path).unwrap();
-        // let mut solver = Solver::default();
-        // let results = solver.parse_and_execute(&source);
-        // for result in results {
-        //     println!("{}", result);
-        // }
+        let mut solver = Solver::default();
+        let results = solver.parse_and_execute(&source);
+        for result in results {
+            println!("{}", result);
+        }
     } else {
         eprintln!("Error: File '{:?}' does not exist.", args.file_path);
         std::process::exit(1);
@@ -36,13 +43,13 @@ mod tests {
     use std::{fs::File, str::from_utf8};
 
     use simplelog::*;
-    // use crate::solver::Solver;
+    use crate::solver::Solver;
 
     fn tester(source: &[u8], output: &str) {
         let source = from_utf8(source).unwrap();
-        // let mut solver = Solver::default();
-        // let results = solver.parse_and_execute(source);
-        // assert_eq!(results.into_iter().collect::<Vec<_>>().join("\n"), output);
+        let mut solver = Solver::default();
+        let results = solver.parse_and_execute(source);
+        assert_eq!(results.into_iter().collect::<Vec<_>>().join("\n"), output);
     }
 
     #[test]
@@ -53,8 +60,6 @@ mod tests {
         let _ = WriteLogger::init(LevelFilter::Trace, config, File::create("xmtlib.log").unwrap());
 
         tester( b"
-            (declare-const a Int)
-            (assert (> a 10))
             (check-sat)",
 
         "sat"
