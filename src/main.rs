@@ -40,13 +40,12 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use std::{fs::File, str::from_utf8};
+    use std::fs::File;
 
     use simplelog::*;
     use crate::solver::Solver;
 
-    fn tester(source: &[u8], output: &str) {
-        let source = from_utf8(source).unwrap();
+    fn tester(source: &str, output: &str) {
         let mut solver = Solver::default();
         let results = solver.parse_and_execute(source);
         assert_eq!(results.into_iter().collect::<Vec<_>>().join("\n"), output);
@@ -59,7 +58,7 @@ mod tests {
             .build();
         let _ = WriteLogger::init(LevelFilter::Trace, config, File::create("xmtlib.log").unwrap());
 
-        tester( b"
+        tester( "
             (check-sat)",
 
         "sat"

@@ -9,6 +9,7 @@ use crate::error::Offset;
 #[derive(PartialEq, Eq, Debug)]
 pub enum Command {
     CheckSat,
+    Verbatim(String),
 }
 
 

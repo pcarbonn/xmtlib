@@ -69,6 +69,10 @@ impl Solver {
                 Command::CheckSat => {
                     yield_!(Ok("sat".to_string()));
                 },
+
+                Command::Verbatim(s) => {
+                    yield_!(Ok(s));
+                },
             }
         })
     }
