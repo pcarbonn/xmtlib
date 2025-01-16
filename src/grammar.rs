@@ -112,7 +112,7 @@ peg::parser!{
                       v:( symbol(state) ++ __ )
                       _ ")" _ "("
                       c:( constructor_dec(state) ++ __ )
-                      _ ")"
+                      _ ")" _ "("
               _ ")"
             { DatatypeDec::Par(v, c) }
             / _ "("
