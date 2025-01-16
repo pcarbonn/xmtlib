@@ -161,6 +161,7 @@ impl std::fmt::Display for DatatypeDec {
 pub enum Command {
     CheckSat,
     DeclareDatatype(Symbol, DatatypeDec),
+    XDebug(String),
     Verbatim(String),
 }
 impl std::fmt::Display for Command {
@@ -216,6 +217,7 @@ impl std::fmt::Display for Command {
             // Self::SetOption(m0) => write!(f, "(set-option {})", m0),
             // Self::Simplify(m0) => write!(f, "(simplify {})", m0),
 
+            Self::XDebug(s) => write!(f, "(x-debug {})", s),
             Self::Verbatim(s) => write!(f, "{}", s),
         }
     }

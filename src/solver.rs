@@ -6,7 +6,7 @@ use genawaiter::{sync::Gen, sync::gen, yield_};
 use indexmap::IndexMap;
 
 use crate::api::*;
-use crate::error::{format_error, SolverError};
+use crate::error::{format_error, SolverError, check_condition};
 use crate::grammar::{parse, ParsingState};
 
 pub enum Backend {
@@ -16,17 +16,19 @@ pub enum Backend {
 pub struct Solver {
     pub(crate) backend: Backend,
 
-    // Map from sort to their datatype declaration.
-    // For a parametric datatype, the key is only the name;
-    // For an instantiation of a parametric datatype, the key is the instantiated sort.
-    pub(crate) sorts: IndexMap<Sort, DatatypeDec>
+    // contains only parametric data type declarations
+    pub(crate) parametric_datatypes: IndexMap<Symbol, DatatypeDec>,
+
+    // contains nullary data types and the used instantiations of parametric data types
+    pub(crate) sorts: IndexMap<Sort, DatatypeDec>,
 }
 
 impl Default for Solver {
     fn default() -> Solver {
         Solver {
             backend: Backend::NoDriver,
-            sorts: IndexMap::new()
+            parametric_datatypes: IndexMap::new(),
+            sorts: IndexMap::new(),
         }
     }
 }
@@ -81,6 +83,29 @@ impl Solver {
 
                 Command::CheckSat => {
                     yield_!(Ok("sat".to_string()));  // TODO
+                },
+
+                Command::XDebug(s) => {
+                    match s.as_str() {
+                        "sorts" => {
+                            yield_!(Ok("Sorts:".to_string()));
+                            for (sort, decl) in &self.sorts {
+                                yield_!(Ok(format!(" - {}: {}", sort, decl)));
+                            }
+                        },
+                        "parametric_datatypes" => {
+                            yield_!(Ok("Parametric datatypes:".to_string()));
+                            for (sort, decl) in &self.parametric_datatypes {
+                                yield_!(Ok(format!(" - {}: {}", sort, decl)));
+                            }
+                        },
+                        _ => {
+                            if let Err(e) = check_condition(false,
+                                       "Unknown x-debug parameter", None) {
+                                yield_!(Err(e))
+                            }
+                        }
+                    }
                 },
 
                 _ => {

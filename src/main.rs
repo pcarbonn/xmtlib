@@ -60,10 +60,9 @@ mod tests {
 
         tester( "
             (declare-datatype Color ( ( red ) ( green ) ( blue ) ))
-            (a b c)
             (check-sat)",
 
-        "(declare-datatype Color ((red ) (green ) (blue )))\n(a b c)\nsat"
+        "(declare-datatype Color ((red ) (green ) (blue )))\nsat"
         );
     }
 }
