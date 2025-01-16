@@ -7,19 +7,22 @@ use genawaiter::{sync::Gen, sync::gen, yield_};
 use crate::api::Command;
 use crate::error::{check_condition, format_error, SolverError};
 use crate::grammar::parse;
+use crate::backend::{Backend, NoSolver};
 
 
-pub struct Solver {
+pub struct Solver<B> {
+    backend: B
 }
 
-impl Default for Solver {
-    fn default() -> Solver {
+impl Default for Solver<NoSolver> {
+    fn default() -> Solver<NoSolver> {
         Solver {
+            backend: NoSolver{}
         }
     }
 }
 
-impl Solver {
+impl<B: Backend> Solver<B> {
 
     /// Execute the XMT-Lib commands in a string, and returns a generator of strings containing the results.
     pub fn parse_and_execute<'a> (
@@ -71,7 +74,12 @@ impl Solver {
                 },
 
                 Command::Verbatim(s) => {
-                    yield_!(Ok(s));
+                    match self.backend.exec(&s) {
+                        Ok(res) => yield_!(Ok(res)),
+                        Err(err) => {
+                            yield_!(Err(err));
+                        }
+                    };
                 },
             }
         })
