@@ -8,8 +8,6 @@
 
 use itertools::Itertools;
 
-use crate::{error::Offset, grammar::ParsingState};
-
 // //////////////////////////// Other tokens ////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

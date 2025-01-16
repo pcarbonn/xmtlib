@@ -6,8 +6,10 @@
 use peg::{error::ParseError, str::LineCol};
 
 use crate::api::{*, Command::*};
-use crate::error::Offset;
 use crate::solver::Solver;
+
+// TODO store offset in API
+
 
 peg::parser!{
     pub grammar smt_lib() for str {
@@ -83,7 +85,10 @@ peg::parser!{
               s:identifier(state)
               i:( sort(state) ++ __ )
               _ ")"
-            { Sort::Parametric(s, i) }
+            {   // TODO check that the sort is in the state;
+                // instantiate it if it is parametric
+                Sort::Parametric(s, i)
+            }
 
         // //////////////////////////// Attributes   ////////////////////////////
         // //////////////////////////// Terms        ////////////////////////////
@@ -137,7 +142,16 @@ peg::parser!{
             = _ "declare-datatype"
               s:symbol(state)
               d:datatype_dec(state)
-            { DeclareDatatype(s, d) }
+            {?
+                // check that the symbol is not yet declared as a sort
+                let sort = Sort::Sort(Identifier::Simple(s.clone()));
+                let (_, old) = state.solver.sorts.insert_full(sort, d.clone());
+                if old.is_some() {
+                    Err("Datatype is already declared")
+                } else {
+                    Ok(DeclareDatatype(s, d))
+                }
+            }
 
         rule verbatim(state: &mut ParsingState) -> Command
             = s:(s_expr(state) ** __)

@@ -3,9 +3,10 @@
 use std::future::Future;
 
 use genawaiter::{sync::Gen, sync::gen, yield_};
+use indexmap::IndexMap;
 
-use crate::api::Command;
-use crate::error::{check_condition, format_error, SolverError};
+use crate::api::*;
+use crate::error::{format_error, SolverError};
 use crate::grammar::{parse, ParsingState};
 
 pub enum Backend {
@@ -13,13 +14,19 @@ pub enum Backend {
 }
 
 pub struct Solver {
-    backend: Backend
+    pub(crate) backend: Backend,
+
+    // Map from sort to their datatype declaration.
+    // For a parametric datatype, the key is only the name;
+    // For an instantiation of a parametric datatype, the key is the instantiated sort.
+    pub(crate) sorts: IndexMap<Sort, DatatypeDec>
 }
 
 impl Default for Solver {
     fn default() -> Solver {
         Solver {
-            backend: Backend::NoDriver
+            backend: Backend::NoDriver,
+            sorts: IndexMap::new()
         }
     }
 }
