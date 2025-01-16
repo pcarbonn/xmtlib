@@ -8,7 +8,7 @@
 
 use itertools::Itertools;
 
-use crate::error::Offset;
+use crate::{error::Offset, grammar::ParsingState};
 
 // //////////////////////////// Other tokens ////////////////////////////
 
@@ -230,7 +230,12 @@ impl std::fmt::Display for Command {
 #[test]
 fn parse_test() {
     use crate::api::Command::*;
-    use crate::grammar::parse;
-    assert_eq!(parse("(check-sat) "),
+    use crate::grammar::{parse, ParsingState};
+    use crate::solver::Solver;
+
+    let mut solver = Solver::default();
+    let mut state = ParsingState::new(&mut solver);
+
+    assert_eq!(parse("(check-sat) ", &mut state),
                Ok(vec![CheckSat]));
 }

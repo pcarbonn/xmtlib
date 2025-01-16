@@ -7,6 +7,7 @@ use peg::{error::ParseError, str::LineCol};
 
 use crate::api::{*, Command::*};
 use crate::error::Offset;
+use crate::solver::Solver;
 
 peg::parser!{
     pub grammar smt_lib() for str {
@@ -151,19 +152,21 @@ peg::parser!{
   }
 
 /// Parses the source code in SMT-Lib format into a list of commands.
-pub fn parse(source: &str) -> Result<Vec<Command>, ParseError<LineCol>> {
-    let mut state = ParsingState::default();
-    smt_lib::script(source , &mut state)
+pub(crate) fn parse(
+    source: &str,
+    state: &mut ParsingState
+) -> Result<Vec<Command>, ParseError<LineCol>> {
+    smt_lib::script(source , state)
 }
 
 /// A ParsingState contains the list of declared symbols,
 /// and the list of variables in the current scope.
-struct ParsingState {
-
+pub(crate) struct ParsingState<'a> {
+    solver: &'a mut Solver
 }
 
-impl Default for ParsingState {
-    fn default() -> ParsingState {
-        ParsingState {}
+impl<'a> ParsingState<'a> {
+    pub(crate) fn new(solver: &'a mut Solver) -> ParsingState {
+        ParsingState {solver}
     }
 }

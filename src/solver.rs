@@ -6,7 +6,7 @@ use genawaiter::{sync::Gen, sync::gen, yield_};
 
 use crate::api::Command;
 use crate::error::{check_condition, format_error, SolverError};
-use crate::grammar::parse;
+use crate::grammar::{parse, ParsingState};
 
 pub enum Backend {
     NoDriver
@@ -32,7 +32,8 @@ impl Solver {
         source: &'a str
     ) -> Gen<String, (), impl Future<Output = ()> + 'a> {
         gen!({
-            match parse(&source) {
+            let mut state = ParsingState::new(self);
+            match parse(&source, &mut state) {
                 Ok(commands) => {
                     for result in self.execute(commands) {
                         match result {
