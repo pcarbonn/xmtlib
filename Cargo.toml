@@ -18,6 +18,7 @@ clap = { version = "4.5.23", features = ["derive"] }
 debug_print = "1.0.0"
 genawaiter = "0.99.1"
 indexmap = "2.7.0"
+itertools = "0.14.0"
 peg = "0.8.4"
 simplelog = "0.12.2"
 thiserror = "2.0.11"

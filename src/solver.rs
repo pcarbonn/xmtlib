@@ -70,11 +70,11 @@ impl<B: Backend> Solver<B> {
             match c {
 
                 Command::CheckSat => {
-                    yield_!(Ok("sat".to_string()));
+                    yield_!(Ok("sat".to_string()));  // TODO
                 },
 
-                Command::Verbatim(s) => {
-                    match self.backend.exec(&s) {
+                _ => {
+                    match self.backend.exec(&format!("{}", c)) {
                         Ok(res) => yield_!(Ok(res)),
                         Err(err) => {
                             yield_!(Err(err));
