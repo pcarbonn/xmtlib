@@ -91,7 +91,7 @@ peg::parser!{
                 if let Identifier::Simple(ref s) = s {
                     if ! state.solver.sorts.contains_key(&Sort::Sort(Identifier::Simple(s.clone()))) {
                         if ! state.variables.contains(s) {
-                            return Err("unknown sort")
+                            return Err("known sort")  // Expected: known sort
                         }
                     }
                 }

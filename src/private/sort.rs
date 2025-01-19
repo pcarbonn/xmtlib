@@ -28,13 +28,13 @@ pub(crate) fn create_sort(
             let _ = parameters.iter()
                 .map(|s| { solver.sorts.get(s) })
                 .collect::<Option<Vec<_>>>()
-                .ok_or("unknown sort")?;
+                .ok_or("known sort")?; // Expected: known sort
 
             // instantiate its declaration with the parameters
             if let Identifier::Simple(name) = name {
                 let symbol = Symbol(name.0.clone());
                 let param_decl = solver.parametric_datatypes.get(&symbol)
-                    .ok_or("unknown parametric sort")?;
+                    .ok_or("known parametric sort")?;
 
                 match param_decl.clone() {
                     DatatypeDec::Par(variables, constructors) => {
@@ -59,10 +59,10 @@ pub(crate) fn create_sort(
 
                             return Ok(sort.clone())
                         } else {
-                            return Err("wrong number of parameters")
+                            return Err("correct number of parameters")
                         }
                     },
-                    _ => return Err("not a parametric datatype")
+                    _ => return Err("a parametric datatype")
                 }
             } else {
                 return Err("TODO: not a simple symbol")
@@ -70,7 +70,7 @@ pub(crate) fn create_sort(
         },
 
         Sort::Sort(_) => {
-            return Err("unknown sort")
+            return Err("known sort")
         },
     }
 }
