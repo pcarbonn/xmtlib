@@ -4,6 +4,7 @@
 //! They are listed in the order given in Appendix B of the SMT-Lib standard.
 
 
+use indexmap::IndexSet;
 use peg::{error::ParseError, str::LineCol};
 
 use crate::api::{*, Command::*};
@@ -83,19 +84,27 @@ peg::parser!{
 
         // //////////////////////////// Sorts        ////////////////////////////
 
-        rule sort(
-            state: &mut ParsingState,
-            is_parametric: bool
-        ) -> Sort
+        rule sort(state: &mut ParsingState) -> Sort
             = s:identifier(state)
-            { Sort::Sort(s) }
+            {?
+                // check that the sort is known or a variable
+                if let Identifier::Simple(ref s) = s {
+                    if ! state.solver.sorts.contains_key(&Sort::Sort(Identifier::Simple(s.clone()))) {
+                        if ! state.variables.contains(s) {
+                            return Err("unknown sort")
+                        }
+                    }
+                }
+                Ok(Sort::Sort(s))
+            }
 
             / _ "("
               s:identifier(state)
-              i:( sort(state, is_parametric) ++ __ )
+              i:( sort(state) ++ __ )
               _ ")"
-            {?  let sort = Sort::Parametric(s, i);
-                if ! is_parametric {
+            {?
+                let sort = Sort::Parametric(s, i);
+                if state.variables.len() == 0 {  // => the sort does not contain variables
                     create_sort(&sort, state.solver)
                 } else {
                     Ok(sort)
@@ -110,40 +119,45 @@ peg::parser!{
         // //////////////////////////// Command Options /////////////////////////
         // //////////////////////////// Commands     ////////////////////////////
 
-        rule selector_dec(
-            state: &mut ParsingState,
-            is_parametric: bool
-        ) -> SelectorDec
+        rule selector_dec(state: &mut ParsingState) -> SelectorDec
             = _ "("
               s:symbol(state)
-              ss:sort(state, is_parametric)
+              ss:sort(state)
               _ ")"
             { SelectorDec(s, ss) }
 
-        rule constructor_dec(
-            state: &mut ParsingState,
-            is_parametric: bool
-        ) -> ConstructorDec
+        rule constructor_dec(state: &mut ParsingState) -> ConstructorDec
             = _ "("
               s:symbol(state)
-              ss:( selector_dec(state, is_parametric) ** __ )
+              ss:( selector_dec(state) ** __ )
               _ ")"
             { ConstructorDec(s, ss) }
 
         rule datatype_dec(state: &mut ParsingState) -> DatatypeDec
             = _ "(" _ "par"
                       _ "("
-                      v:( symbol(state) ++ __ )
+                      v:( sort_variable(state) ++ __ )
                       _ ")" _ "("
-                      c:( constructor_dec(state, true) ++ __ )
+                      c:( constructor_dec(state) ++ __ )
                       _ ")"
               _ ")"
-            { DatatypeDec::Par(v, c) }
+            {
+                state.variables = IndexSet::new();
+                DatatypeDec::Par(v, c)
+            }
 
             / _ "("
-              c:( constructor_dec(state, false) ++ __ )
+              c:( constructor_dec(state) ++ __ )
               _ ")"
             { DatatypeDec::DatatypeDec(c) }
+
+            // a variation of symbol() that updates the list of variables
+            rule sort_variable(state: &mut ParsingState) -> Symbol
+                = s:symbol(state)
+                {
+                    state.variables.insert(s.clone());
+                    s
+                }
 
         rule command(state: &mut ParsingState) -> Command
             = _ "("
@@ -231,10 +245,11 @@ pub(crate) fn parse(
 /// and the list of variables in the current scope.
 pub(crate) struct ParsingState<'a> {
     solver: &'a mut Solver,
+    variables: IndexSet<Symbol>,
 }
 
 impl<'a> ParsingState<'a> {
     pub(crate) fn new(solver: &'a mut Solver) -> ParsingState {
-        ParsingState {solver}
+        ParsingState { solver, variables: IndexSet::new(), }
     }
 }
