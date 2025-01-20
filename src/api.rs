@@ -8,7 +8,9 @@
 
 use itertools::Itertools;
 
+
 // //////////////////////////// Other tokens ////////////////////////////
+
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Numeral(pub String);
@@ -22,6 +24,7 @@ impl std::fmt::Display for Numeral {
     }
 }
 
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Symbol(pub String);
 impl std::fmt::Display for Symbol {
@@ -30,7 +33,9 @@ impl std::fmt::Display for Symbol {
     }
 }
 
+
 // //////////////////////////// S-expressions ///////////////////////////
+
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum SExpr {
@@ -56,6 +61,8 @@ impl std::fmt::Display for SExpr {
         }
     }
 }
+
+
 // //////////////////////////// Identifiers  ////////////////////////////
 
 
@@ -92,7 +99,9 @@ impl std::fmt::Display for Identifier {
     }
 }
 
+
 // //////////////////////////// Sorts        ////////////////////////////
+
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Sort {
@@ -119,6 +128,7 @@ impl std::fmt::Display for Sort {
 // //////////////////////////// Command Options /////////////////////////
 // //////////////////////////// Commands     ////////////////////////////
 
+
 /// `(<symbol> <sort>)`
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SelectorDec(pub Symbol, pub Sort);
@@ -128,6 +138,7 @@ impl std::fmt::Display for SelectorDec {
     }
 }
 
+
 /// `(<symbol> <selector_dec>*)`
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ConstructorDec(pub Symbol, pub Vec<SelectorDec>);
@@ -136,6 +147,7 @@ impl std::fmt::Display for ConstructorDec {
         write!(f, "({} {})", self.0, self.1.iter().format(" "))
     }
 }
+
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum DatatypeDec {
@@ -156,6 +168,7 @@ impl std::fmt::Display for DatatypeDec {
         }
     }
 }
+
 
 #[derive(PartialEq, Eq, Debug)]
 pub enum Command {

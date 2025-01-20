@@ -2,10 +2,11 @@
 
 use indexmap::{IndexMap, IndexSet};
 
-use crate::{api::{ConstructorDec, DatatypeDec, Identifier, SelectorDec, Sort, Symbol}, error::SolverError, solver::Solver};
+use crate::api::{ConstructorDec, DatatypeDec, Identifier, SelectorDec, Sort, Symbol};
+use crate::{error::SolverError, solver::Solver};
 
 #[allow(unused_imports)]
-use debug_print::{debug_println as dprintln};
+use debug_print::debug_println as dprintln;
 
 
 /// Adds the declaration to the solver, if correct.
@@ -35,6 +36,7 @@ pub(crate) fn annotate_sort_decl(
     };
     Ok(())
 }
+
 
 /// Annotates each sort occurring in the constructor declaration.
 /// This function is not recursive
@@ -122,6 +124,7 @@ pub(crate) fn annotate_parametered_sort(
     Ok(())
 }
 
+
 fn substitute_in_constructor(
     constructor: ConstructorDec,
     subs: &IndexMap<Sort, Sort>,
@@ -182,6 +185,7 @@ fn substitute_in_sort(
         }
     }
 }
+
 
 /// Make the sort known to the solver, and create its table
 fn insert_sort(

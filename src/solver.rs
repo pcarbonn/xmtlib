@@ -8,7 +8,8 @@ use indexmap::{IndexMap, IndexSet};
 use crate::api::*;
 use crate::error::{format_error, SolverError, check_condition};
 use crate::grammar::parse;
-use crate::private::sort::annotate_sort_decl;
+use crate::private::a_sort::annotate_sort_decl;
+
 
 pub enum Backend {
     NoDriver
@@ -24,6 +25,7 @@ pub struct Solver {
     pub(crate) sorts: IndexMap<Sort, Option<DatatypeDec>>,  // None for pre-defined infinite sorts
     pub(crate) sort_tables: Vec<Option<String>>, // None for pre-defined infinite sorts
 }
+
 
 impl Default for Solver {
     fn default() -> Solver {
@@ -52,6 +54,7 @@ impl Default for Solver {
         }
     }
 }
+
 
 impl Solver {
 

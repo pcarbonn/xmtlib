@@ -9,7 +9,7 @@ use peg::{error::ParseError, str::LineCol};
 use crate::api::{*, Command::*};
 
 #[allow(unused_imports)]
-use debug_print::{debug_println as dprintln};
+use debug_print::debug_println as dprintln;
 
 // TODO store offset in API
 
@@ -23,6 +23,7 @@ peg::parser!{
         rule _  = ( [ ' ' | '\n' | '\t' | '\r']
                   / (";" [^ '\n' | '\r']* ['\n' | '\r'])
                   )*
+
         // mandatory whitespace
         rule __ = ( [ ' ' | '\n' | '\t' | '\r']
                   / (";" [^ '\t' | '\r']* ['\t' | '\r'])
@@ -57,6 +58,7 @@ peg::parser!{
         rule s_expr() -> SExpr
             = s: symbol()
             { SExpr::Symbol(s) }
+
             / _ "(" _
               s:( s_expr() ** __ )
               _ ")"
@@ -73,6 +75,7 @@ peg::parser!{
         rule identifier() -> Identifier
             = s:symbol()
             { Identifier::Simple(s) }
+
             / _ "(" _ "_"
               s:symbol()
               i:( index() ++ __ )
@@ -190,6 +193,7 @@ peg::parser!{
         // //////////////////////////// Command responses ///////////////////////
     }
   }
+
 
 /// Parses the source code in SMT-Lib format into a list of commands.
 pub(crate) fn parse(
