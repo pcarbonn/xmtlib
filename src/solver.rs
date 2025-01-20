@@ -21,15 +21,28 @@ pub struct Solver {
     pub(crate) parametric_datatypes: IndexMap<Symbol, DatatypeDec>,
 
     // contains nullary data types and the used instantiations of parametric data types
-    pub(crate) sorts: IndexMap<Sort, DatatypeDec>,
+    pub(crate) sorts: IndexMap<Sort, Option<DatatypeDec>>,  // None for pre-defined infinite sorts
 }
 
 impl Default for Solver {
     fn default() -> Solver {
+        let sort = |s: &str| Sort::Sort(Identifier::Simple(Symbol(s.to_string())));
+        let bool_sort = sort("Bool");
+        let bool_decl = DatatypeDec::DatatypeDec(
+            vec![
+                ConstructorDec (Symbol("true" .to_string()),vec![]),
+                ConstructorDec (Symbol("false".to_string()),vec![]),
+            ],
+        );
+
         Solver {
             backend: Backend::NoDriver,
             parametric_datatypes: IndexMap::new(),
-            sorts: IndexMap::new(),
+            sorts: IndexMap::from([
+                (bool_sort, Some(bool_decl)),
+                (sort("Int" ), None),
+                (sort("Real"), None),
+                ]),
         }
     }
 }
@@ -104,7 +117,11 @@ impl Solver {
                         "sorts" => {
                             yield_!(Ok("Sorts:".to_string()));
                             for (sort, decl) in &self.sorts {
-                                yield_!(Ok(format!(" - {}: {}", sort, decl)));
+                                if let Some(decl) = decl {
+                                    yield_!(Ok(format!(" - {}: {}", sort, decl)));
+                                } else {
+                                    yield_!(Ok(format!(" - {}: infinite", sort)));
+                                }
                             }
                         },
                         "parametric_datatypes" => {

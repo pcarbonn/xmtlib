@@ -23,7 +23,7 @@ pub(crate) fn annotate_sort_decl(
             annotate_constructor_decls(&constructor_decls, &vars, solver)?;
 
             let key = Sort::Sort(Identifier::Simple(symb.clone()));
-            solver.sorts.insert(key, decl.clone());
+            solver.sorts.insert(key, Some(decl.clone()));
         },
         DatatypeDec::Par(vars, constructor_decls) => {
             let vars = vars.iter().cloned().collect();
@@ -103,7 +103,7 @@ pub(crate) fn annotate_parametered_sort(
 
                                 // add the declaration to the solver
                                 let new_decl = DatatypeDec::DatatypeDec(new_constructors);
-                                solver.sorts.insert(parametered_sort.clone(), new_decl);
+                                solver.sorts.insert(parametered_sort.clone(), Some(new_decl));
 
                                 return Ok(())
                             } else {
@@ -134,6 +134,7 @@ fn substitute_in_constructor(
     Ok(ConstructorDec(constructor.0.clone(), new_selector_decs))
 }
 
+
 fn substitute_in_selector(
     selector: &SelectorDec,
     subs: &IndexMap<Sort, Sort>,
@@ -145,6 +146,7 @@ fn substitute_in_selector(
     return Ok(SelectorDec(selector.0.clone(), new_sort))
 
 }
+
 
 fn substitute_in_sort(
     sort: &Sort,
