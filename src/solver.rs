@@ -3,7 +3,7 @@
 use std::future::Future;
 
 use genawaiter::{sync::Gen, sync::gen, yield_};
-use indexmap::IndexMap;
+use indexmap::{IndexMap, IndexSet};
 
 use crate::api::*;
 use crate::error::{format_error, SolverError, check_condition};
@@ -106,7 +106,8 @@ impl Solver {
                 },
 
                 Command::DeclareDatatype(symb, decl) => {
-                    if let Err(err) = annotate_sort_decl(&symb, &decl, self) {
+                    let declaring = IndexSet::from([symb.clone()]);
+                    if let Err(err) = annotate_sort_decl(&symb, &decl, &declaring, self) {
                         yield_!(Err(err))
                     };
 

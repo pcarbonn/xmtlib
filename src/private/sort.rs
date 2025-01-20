@@ -14,20 +14,21 @@ use debug_print::{debug_println as dprintln};
 pub(crate) fn annotate_sort_decl(
     symb: &Symbol,
     decl: &DatatypeDec,
+    declaring: &IndexSet<Symbol>,  // to detect recursive datatypes
     solver: &mut Solver
 ) -> Result<(), SolverError> {
 
     match decl {
         DatatypeDec::DatatypeDec(constructor_decls) => {
             let vars = IndexSet::new();
-            annotate_constructor_decls(&constructor_decls, &vars, solver)?;
+            annotate_constructor_decls(&constructor_decls, &vars, declaring, solver)?;
 
             let key = Sort::Sort(Identifier::Simple(symb.clone()));
-            insert_sort(key, Some(decl.clone()), solver)?;
+            insert_sort(key, Some(decl.clone()), declaring, solver)?;
         },
         DatatypeDec::Par(vars, constructor_decls) => {
             let vars = vars.iter().cloned().collect();
-            annotate_constructor_decls(&constructor_decls, &vars, solver)?;
+            annotate_constructor_decls(&constructor_decls, &vars, declaring, solver)?;
 
             solver.parametric_datatypes.insert(symb.clone(), decl.clone());
         }
@@ -40,12 +41,13 @@ pub(crate) fn annotate_sort_decl(
 fn annotate_constructor_decls(
     constructor_decls: &Vec<ConstructorDec>,
     vars: &IndexSet<Symbol>,
+    declaring: &IndexSet<Symbol>,
     solver: &mut Solver
 ) -> Result<(), SolverError> {
     for constructor_decl in constructor_decls {
         let ConstructorDec(_, selectors) = constructor_decl;
         for SelectorDec(_, sort) in selectors {
-            annotate_parametered_sort(&sort, &vars, solver)?;
+            annotate_parametered_sort(&sort, &vars, declaring, solver)?;
         }
     }
     Ok(())
@@ -58,6 +60,7 @@ fn annotate_constructor_decls(
 pub(crate) fn annotate_parametered_sort(
     parametered_sort: &Sort,
     vars: &IndexSet<Symbol>,
+    declaring: &IndexSet<Symbol>,
     solver: &mut Solver,
 ) -> Result<(), SolverError> {
 
@@ -65,7 +68,7 @@ pub(crate) fn annotate_parametered_sort(
         Sort::Sort(ref id) => {
             if ! solver.sorts.contains_key(parametered_sort) {
                 if let Identifier::Simple(symb) = id {
-                    if ! vars.contains(symb) {
+                    if ! vars.contains(symb) && ! declaring.contains(symb) {
                         return Err(SolverError::ExprError("Unknown sort".to_string(), None))
                     }
                 } else {
@@ -75,7 +78,7 @@ pub(crate) fn annotate_parametered_sort(
         },
         Sort::Parametric(id, parameters) => {
             for sort in parameters {  // check the non-parametric sorts
-                annotate_parametered_sort(&sort, &vars, solver)?;  // recursive
+                annotate_parametered_sort(&sort, &vars, declaring, solver)?;  // recursive
             }
 
             if vars.len() == 0 {
@@ -98,12 +101,12 @@ pub(crate) fn annotate_parametered_sort(
 
                                 // instantiate constructors
                                 let new_constructors = constructors.into_iter()
-                                    .map(|c| substitute_in_constructor(c, &subs, vars, solver))
+                                    .map(|c| substitute_in_constructor(c, &subs, vars, declaring, solver))
                                     .collect::<Result<Vec<_>, _>>()?;
 
                                 // add the declaration to the solver
                                 let new_decl = DatatypeDec::DatatypeDec(new_constructors);
-                                insert_sort(parametered_sort.clone(), Some(new_decl), solver)?;
+                                insert_sort(parametered_sort.clone(), Some(new_decl), declaring, solver)?;
 
                                 return Ok(())
                             } else {
@@ -123,12 +126,13 @@ fn substitute_in_constructor(
     constructor: ConstructorDec,
     subs: &IndexMap<Sort, Sort>,
     vars: &IndexSet<Symbol>,
+    declaring: &IndexSet<Symbol>,
     solver: &mut Solver,
 ) -> Result<ConstructorDec, SolverError> {
 
     // instantiate the selector declarations
     let new_selector_decs = constructor.1.iter()
-        .map(|s| { substitute_in_selector(s, subs, vars, solver) })
+        .map(|s| { substitute_in_selector(s, subs, vars, declaring, solver) })
         .collect::<Result<Vec<_>,_>>()?;
 
     Ok(ConstructorDec(constructor.0.clone(), new_selector_decs))
@@ -139,10 +143,11 @@ fn substitute_in_selector(
     selector: &SelectorDec,
     subs: &IndexMap<Sort, Sort>,
     vars: &IndexSet<Symbol>,
+    declaring: &IndexSet<Symbol>,
     solver: &mut Solver,
 ) -> Result<SelectorDec, SolverError> {
 
-    let new_sort = substitute_in_sort(&selector.1, subs, vars, solver)?;
+    let new_sort = substitute_in_sort(&selector.1, subs, vars, declaring, solver)?;
     return Ok(SelectorDec(selector.0.clone(), new_sort))
 
 }
@@ -152,6 +157,7 @@ fn substitute_in_sort(
     sort: &Sort,
     subs: &IndexMap<Sort, Sort>,
     vars: &IndexSet<Symbol>,
+    declaring: &IndexSet<Symbol>,
     solver: &mut Solver,
 ) -> Result<Sort, SolverError> {
 
@@ -168,10 +174,10 @@ fn substitute_in_sort(
 
         Sort::Parametric(name, sorts) => {
             let new_sorts = sorts.iter()
-                .map(|s| { substitute_in_sort(s, subs, vars, solver) })
+                .map(|s| { substitute_in_sort(s, subs, vars, declaring, solver) })
                 .collect::<Result<Vec<_>, _>>()?;
             let new_sort = Sort::Parametric(name.clone(), new_sorts);
-            annotate_parametered_sort(&new_sort, vars, solver)?;
+            annotate_parametered_sort(&new_sort, vars, declaring, solver)?;
             Ok(new_sort)
         }
     }
@@ -181,6 +187,7 @@ fn substitute_in_sort(
 fn insert_sort(
     sort: Sort,
     decl: Option<DatatypeDec>,
+    declaring: &IndexSet<Symbol>,
     solver: &mut Solver,
 ) -> Result<(), SolverError> {
 
@@ -192,7 +199,7 @@ fn insert_sort(
         match decl {
             None => solver.sort_tables.push(None),
             Some(ref decl) => {
-                let selectors = collect_selectors(decl, solver);
+                let selectors = collect_selectors(decl, declaring, solver);
                 if let Some(_selectors) = selectors {
                     solver.sort_tables.push(Some(format!("Sort_{}", i)));
                 } else {
@@ -208,10 +215,12 @@ fn insert_sort(
 }
 
 
-/// collects all the selectors in the (non-parametric) datatype declaration
-/// returns None if a selector is for a sort without a table (or if an error occurs)
+/// Collects all the selectors in the (non-parametric) datatype declaration.
+/// Returns None if a selector has a sort without a table,
+/// or if a sort is being declared recursively  (or if an error occurs)
 fn collect_selectors(
     decl: &DatatypeDec,
+    declaring: &IndexSet<Symbol>,
     solver: &Solver,
 ) -> Option<IndexSet<String>> {
     match decl {
@@ -220,6 +229,17 @@ fn collect_selectors(
             for constructor_decl in constructor_decls {
                 let ConstructorDec(_, selectors) = constructor_decl;
                 for SelectorDec(selector, sort) in selectors {
+                    // get the symbol of the sort
+                    let symbol =
+                        match sort {
+                            Sort::Sort(Identifier::Simple(symbol)) => symbol,
+                            Sort::Parametric(Identifier::Simple(symbol), _) => symbol,
+                            _ => return None
+                        };
+                    // check if the sort is being declared recursively
+                    if declaring.contains(symbol) {
+                        return None
+                    }
                     // check if the sort has a table
                     let i = solver.sorts.get_index_of(sort)?;
                     let table = solver.sort_tables.get(i).unwrap();
