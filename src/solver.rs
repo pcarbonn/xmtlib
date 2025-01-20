@@ -8,6 +8,7 @@ use indexmap::IndexMap;
 use crate::api::*;
 use crate::error::{format_error, SolverError, check_condition};
 use crate::grammar::{parse, ParsingState};
+use crate::private::sort::annotate_sort_decl;
 
 pub enum Backend {
     NoDriver
@@ -79,11 +80,25 @@ impl Solver {
         c: Command
     ) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {
         gen!({
+            let command = format!("{}", c);
             match c {
 
                 Command::CheckSat => {
                     yield_!(Ok("sat".to_string()));  // TODO
                 },
+
+                Command::DeclareDatatype(symb, decl) => {
+                    if let Err(err) = annotate_sort_decl(&symb, &decl, self) {
+                        yield_!(Err(err))
+                    };
+
+                    match self.exec(&command) {
+                        Ok(res) => yield_!(Ok(res)),
+                        Err(err) => {
+                            yield_!(Err(err));
+                        }
+                    };
+                }
 
                 Command::XDebug(s) => {
                     match s.as_str() {
@@ -109,7 +124,7 @@ impl Solver {
                 },
 
                 _ => {
-                    match self.exec(&format!("{}", c)) {
+                    match self.exec(&command) {
                         Ok(res) => yield_!(Ok(res)),
                         Err(err) => {
                             yield_!(Err(err));

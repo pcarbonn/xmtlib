@@ -9,7 +9,6 @@ use peg::{error::ParseError, str::LineCol};
 
 use crate::api::{*, Command::*};
 use crate::solver::Solver;
-use crate::private::sort::{create_parametered_sort, sort_from_identifier};
 
 #[allow(unused_imports)]
 use debug_print::{debug_println as dprintln};
@@ -86,17 +85,13 @@ peg::parser!{
 
         rule sort(state: &mut ParsingState) -> Sort
             = id:identifier(state)
-            {?
-                sort_from_identifier(id, state)
-            }
+            { Sort::Sort(id) }
 
             / _ "("
               id:identifier(state)
               sorts:( sort(state) ++ __ )
               _ ")"
-            {?
-                create_parametered_sort(id, sorts, state)
-            }
+            { Sort::Parametric(id, sorts) }
 
         // //////////////////////////// Attributes   ////////////////////////////
         // //////////////////////////// Terms        ////////////////////////////
@@ -163,18 +158,7 @@ peg::parser!{
             = _ "declare-datatype"
               s:symbol(state)
               decl:datatype_dec(state)
-            {
-                match decl {
-                    DatatypeDec::DatatypeDec(_) => {
-                        let sort = Sort::Sort(Identifier::Simple(s.clone()));
-                        state.solver.sorts.insert(sort, decl.clone());
-                    },
-                    DatatypeDec::Par(_, _) => {
-                        state.solver.parametric_datatypes.insert(s.clone(), decl.clone());
-                    }
-                }
-                DeclareDatatype(s, decl)
-            }
+            { DeclareDatatype(s, decl) }
 
         rule debug() -> Command
             = _ "x-debug" __ object:simple_symbol()

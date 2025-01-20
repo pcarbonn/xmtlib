@@ -1,7 +1,7 @@
 (declare-datatype Color ( ( red ) ( green ) ( blue ) ))
 (declare-datatype Pair (par (X Y) ((pair (first X) (second Y)))))
-(declare-datatype Triplet (par (X) ((triplet (first (Pair X (Pair X X)))))))
 (declare-datatype P ( (p (x (Pair Color Color)))))
+(declare-datatype Triplet (par (X) ((triplet (first (Pair X (Pair X X)))))))
 (declare-datatype Q ( (q (x (Triplet Color)))))
 (x-debug parametric_datatypes)
 (x-debug sorts)
@@ -9,8 +9,8 @@
 -------------------------
 (declare-datatype Color ((red ) (green ) (blue )))
 (declare-datatype Pair (par (X Y) ((pair (first X) (second Y)))))
-(declare-datatype Triplet (par (X) ((triplet (first (Pair X (Pair X X)))))))
 (declare-datatype P ((p (x (Pair Color Color)))))
+(declare-datatype Triplet (par (X) ((triplet (first (Pair X (Pair X X)))))))
 (declare-datatype Q ((q (x (Triplet Color)))))
 Parametric datatypes:
  - Pair: (par (X Y) ((pair (first X) (second Y))))

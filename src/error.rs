@@ -45,7 +45,7 @@ pub fn format_error(input: &str, e: SolverError) -> String {
                         pretty_print(input, location, msg)
                 }
             } else {
-                format!("{}", msg)
+                format!("****** Error: {}", msg)
             }
     }
 }
