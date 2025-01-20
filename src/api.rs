@@ -230,12 +230,8 @@ impl std::fmt::Display for Command {
 #[test]
 fn parse_test() {
     use crate::api::Command::*;
-    use crate::grammar::{parse, ParsingState};
-    use crate::solver::Solver;
+    use crate::grammar::parse;
 
-    let mut solver = Solver::default();
-    let mut state = ParsingState::new(&mut solver);
-
-    assert_eq!(parse("(check-sat) ", &mut state),
+    assert_eq!(parse("(check-sat) "),
                Ok(vec![CheckSat]));
 }

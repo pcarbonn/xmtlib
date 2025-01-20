@@ -4,11 +4,9 @@
 //! They are listed in the order given in Appendix B of the SMT-Lib standard.
 
 
-use indexmap::IndexSet;
 use peg::{error::ParseError, str::LineCol};
 
 use crate::api::{*, Command::*};
-use crate::solver::Solver;
 
 #[allow(unused_imports)]
 use debug_print::{debug_println as dprintln};
@@ -36,7 +34,7 @@ peg::parser!{
                 / expected!("numeral"))
             { Numeral(s.to_string()) }
 
-        rule symbol(state: &mut ParsingState) -> Symbol
+        rule symbol() -> Symbol
             = s:( simple_symbol()
                 / complex_symbol()
                 )
@@ -56,40 +54,40 @@ peg::parser!{
 
         // //////////////////////////// S-expressions ///////////////////////////
 
-        rule s_expr(state: &mut ParsingState) -> SExpr
-            = s: symbol(state)
+        rule s_expr() -> SExpr
+            = s: symbol()
             { SExpr::Symbol(s) }
             / _ "(" _
-              s:( s_expr(state) ** __ )
+              s:( s_expr() ** __ )
               _ ")"
             { SExpr::Paren(s) }
 
         // //////////////////////////// Identifiers  ////////////////////////////
 
-        rule index(state: &mut ParsingState) -> Index
+        rule index() -> Index
             = n:numeral()
             { Index::Numeral(n) }
-            / s:symbol(state)
+            / s:symbol()
             { Index::Symbol(s) }
 
-        rule identifier(state: &mut ParsingState) -> Identifier
-            = s:symbol(state)
+        rule identifier() -> Identifier
+            = s:symbol()
             { Identifier::Simple(s) }
             / _ "(" _ "_"
-              s:symbol(state)
-              i:( index(state) ++ __ )
+              s:symbol()
+              i:( index() ++ __ )
               _ ")"
             { Identifier::Indexed(s, i) }
 
         // //////////////////////////// Sorts        ////////////////////////////
 
-        rule sort(state: &mut ParsingState) -> Sort
-            = id:identifier(state)
+        rule sort() -> Sort
+            = id:identifier()
             { Sort::Sort(id) }
 
             / _ "("
-              id:identifier(state)
-              sorts:( sort(state) ++ __ )
+              id:identifier()
+              sorts:( sort() ++ __ )
               _ ")"
             { Sort::Parametric(id, sorts) }
 
@@ -101,70 +99,64 @@ peg::parser!{
         // //////////////////////////// Command Options /////////////////////////
         // //////////////////////////// Commands     ////////////////////////////
 
-        rule selector_dec(state: &mut ParsingState) -> SelectorDec
+        rule selector_dec() -> SelectorDec
             = _ "("
-              s:symbol(state)
-              ss:sort(state)
+              s:symbol()
+              ss:sort()
               _ ")"
             { SelectorDec(s, ss) }
 
-        rule constructor_dec(state: &mut ParsingState) -> ConstructorDec
+        rule constructor_dec() -> ConstructorDec
             = _ "("
-              s:symbol(state)
-              ss:( selector_dec(state) ** __ )
+              s:symbol()
+              ss:( selector_dec() ** __ )
               _ ")"
             { ConstructorDec(s, ss) }
 
-        rule datatype_dec(state: &mut ParsingState) -> DatatypeDec
+        rule datatype_dec() -> DatatypeDec
             = _ "(" _ "par"
                       _ "("
-                      v:( sort_variable(state) ++ __ )
+                      v:( sort_variable() ++ __ )
                       _ ")" _ "("
-                      c:( constructor_dec(state) ++ __ )
+                      c:( constructor_dec() ++ __ )
                       _ ")"
               _ ")"
-            {
-                state.variables = IndexSet::new();
-                DatatypeDec::Par(v, c)
-            }
+            { DatatypeDec::Par(v, c) }
 
             / _ "("
-              c:( constructor_dec(state) ++ __ )
+              c:( constructor_dec() ++ __ )
               _ ")"
             { DatatypeDec::DatatypeDec(c) }
 
             // a variation of symbol() that updates the list of variables
-            rule sort_variable(state: &mut ParsingState) -> Symbol
-                = s:symbol(state)
-                {
-                    state.variables.insert(s.clone());
-                    s
-                }
+            rule sort_variable() -> Symbol
+                = s:symbol()
+                { s }
 
-        rule command(state: &mut ParsingState) -> Command
+        rule command() -> Command
             = _ "("
-              command:( check_sat(state)
-                      / declare_datatype(state)
+              command:( check_sat()
+                      / declare_datatype()
                       / debug()
-                      / verbatim(state))
+                      / verbatim())
               _ ")"
             { command }
 
-        rule check_sat(state: &mut ParsingState) -> Command
+        rule check_sat() -> Command
             = _ "check-sat"
             { CheckSat }
 
-        rule declare_datatype(state: &mut ParsingState) -> Command
+        rule declare_datatype() -> Command
             = _ "declare-datatype"
-              s:symbol(state)
-              decl:datatype_dec(state)
+              s:symbol()
+              decl:datatype_dec()
             { DeclareDatatype(s, decl) }
 
         rule debug() -> Command
             = _ "x-debug" __ object:simple_symbol()
             { XDebug (object) }
 
-        rule verbatim(state: &mut ParsingState) -> Command
+        rule verbatim() -> Command
             = _ command: ( "assert"
                          / "check-sat-assuming"
                          / "declare-const"
@@ -193,11 +185,11 @@ peg::parser!{
                          / "set-option"
                          / "simplify"
                          )
-              s: (s_expr(state) ** __)
+              s: (s_expr() ** __)
             { Verbatim(format!("{}", SExpr::Paren(s))) }
 
-        pub rule script(state: &mut ParsingState) -> Vec<Command>
-            = l:(command(state)* ) _
+        pub rule script() -> Vec<Command>
+            = l:(command()* ) _
             { l }
 
         // //////////////////////////// Command responses ///////////////////////
@@ -207,20 +199,7 @@ peg::parser!{
 /// Parses the source code in SMT-Lib format into a list of commands.
 pub(crate) fn parse(
     source: &str,
-    state: &mut ParsingState
+
 ) -> Result<Vec<Command>, ParseError<LineCol>> {
-    smt_lib::script(source , state)
-}
-
-/// A ParsingState contains the list of declared symbols,
-/// and the list of variables in the current scope.
-pub(crate) struct ParsingState<'a> {
-    pub solver: &'a mut Solver,
-    pub variables: IndexSet<Symbol>,
-}
-
-impl<'a> ParsingState<'a> {
-    pub(crate) fn new(solver: &'a mut Solver) -> ParsingState {
-        ParsingState { solver, variables: IndexSet::new(), }
-    }
+    smt_lib::script(source)
 }

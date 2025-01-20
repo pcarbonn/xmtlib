@@ -7,7 +7,7 @@ use indexmap::IndexMap;
 
 use crate::api::*;
 use crate::error::{format_error, SolverError, check_condition};
-use crate::grammar::{parse, ParsingState};
+use crate::grammar::parse;
 use crate::private::sort::annotate_sort_decl;
 
 pub enum Backend {
@@ -42,8 +42,7 @@ impl Solver {
         source: &'a str
     ) -> Gen<String, (), impl Future<Output = ()> + 'a> {
         gen!({
-            let mut state = ParsingState::new(self);
-            match parse(&source, &mut state) {
+            match parse(&source) {
                 Ok(commands) => {
                     for result in self.execute(commands) {
                         match result {
