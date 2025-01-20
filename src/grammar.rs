@@ -9,7 +9,7 @@ use peg::{error::ParseError, str::LineCol};
 
 use crate::api::{*, Command::*};
 use crate::solver::Solver;
-use crate::private::sort::create_sort;
+use crate::private::sort::{create_parametered_sort, sort_from_identifier};
 
 #[allow(unused_imports)]
 use debug_print::{debug_println as dprintln};
@@ -85,30 +85,17 @@ peg::parser!{
         // //////////////////////////// Sorts        ////////////////////////////
 
         rule sort(state: &mut ParsingState) -> Sort
-            = s:identifier(state)
+            = id:identifier(state)
             {?
-                // check that the sort is known or a variable
-                if let Identifier::Simple(ref s) = s {
-                    if ! state.solver.sorts.contains_key(&Sort::Sort(Identifier::Simple(s.clone()))) {
-                        if ! state.variables.contains(s) {
-                            return Err("known sort")  // Expected: known sort
-                        }
-                    }
-                }
-                Ok(Sort::Sort(s))
+                sort_from_identifier(id, state)
             }
 
             / _ "("
-              s:identifier(state)
-              i:( sort(state) ++ __ )
+              id:identifier(state)
+              sorts:( sort(state) ++ __ )
               _ ")"
             {?
-                let sort = Sort::Parametric(s, i);
-                if state.variables.len() == 0 {  // => the sort does not contain variables
-                    create_sort(&sort, state.solver)
-                } else {
-                    Ok(sort)
-                }
+                create_parametered_sort(id, sorts, state)
             }
 
         // //////////////////////////// Attributes   ////////////////////////////
@@ -244,8 +231,8 @@ pub(crate) fn parse(
 /// A ParsingState contains the list of declared symbols,
 /// and the list of variables in the current scope.
 pub(crate) struct ParsingState<'a> {
-    solver: &'a mut Solver,
-    variables: IndexSet<Symbol>,
+    pub solver: &'a mut Solver,
+    pub variables: IndexSet<Symbol>,
 }
 
 impl<'a> ParsingState<'a> {
