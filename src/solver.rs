@@ -22,6 +22,7 @@ pub struct Solver {
 
     // contains nullary data types and the used instantiations of parametric data types
     pub(crate) sorts: IndexMap<Sort, Option<DatatypeDec>>,  // None for pre-defined infinite sorts
+    pub(crate) sort_tables: Vec<Option<String>>, // None for pre-defined infinite sorts
 }
 
 impl Default for Solver {
@@ -43,6 +44,11 @@ impl Default for Solver {
                 (sort("Int" ), None),
                 (sort("Real"), None),
                 ]),
+            sort_tables: vec![
+                Some("Bool".to_string()),
+                None,
+                None,
+            ]
         }
     }
 }
@@ -116,11 +122,20 @@ impl Solver {
                     match s.as_str() {
                         "sorts" => {
                             yield_!(Ok("Sorts:".to_string()));
-                            for (sort, decl) in &self.sorts {
+                            for i in 0..self.sorts.len() {
+                                let (sort, decl) = self.sorts.get_index(i).unwrap();
                                 if let Some(decl) = decl {
-                                    yield_!(Ok(format!(" - {}: {}", sort, decl)));
+                                    if let Some(Some(table)) = self.sort_tables.get(i) {
+                                        yield_!(Ok(format!(" - {}: {} ({})", sort, decl, table)));
+                                    } else {
+                                        yield_!(Ok(format!(" - {}: {} (infinite)", sort, decl)));
+                                    }
                                 } else {
-                                    yield_!(Ok(format!(" - {}: infinite", sort)));
+                                    if let Some(Some(table)) = self.sort_tables.get(i) {
+                                        yield_!(Ok(format!(" - {}: infinite ({})", sort, table)));
+                                    } else {
+                                        yield_!(Ok(format!(" - {}: infinite", sort)));
+                                    }
                                 }
                             }
                         },

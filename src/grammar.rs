@@ -116,7 +116,7 @@ peg::parser!{
         rule datatype_dec() -> DatatypeDec
             = _ "(" _ "par"
                       _ "("
-                      v:( sort_variable() ++ __ )
+                      v:( symbol() ++ __ )
                       _ ")" _ "("
                       c:( constructor_dec() ++ __ )
                       _ ")"
@@ -127,11 +127,6 @@ peg::parser!{
               c:( constructor_dec() ++ __ )
               _ ")"
             { DatatypeDec::DatatypeDec(c) }
-
-            // a variation of symbol() that updates the list of variables
-            rule sort_variable() -> Symbol
-                = s:symbol()
-                { s }
 
         rule command() -> Command
             = _ "("

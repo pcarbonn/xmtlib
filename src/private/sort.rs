@@ -23,7 +23,7 @@ pub(crate) fn annotate_sort_decl(
             annotate_constructor_decls(&constructor_decls, &vars, solver)?;
 
             let key = Sort::Sort(Identifier::Simple(symb.clone()));
-            solver.sorts.insert(key, Some(decl.clone()));
+            insert_sort(key, Some(decl.clone()), solver)?;
         },
         DatatypeDec::Par(vars, constructor_decls) => {
             let vars = vars.iter().cloned().collect();
@@ -103,7 +103,7 @@ pub(crate) fn annotate_parametered_sort(
 
                                 // add the declaration to the solver
                                 let new_decl = DatatypeDec::DatatypeDec(new_constructors);
-                                solver.sorts.insert(parametered_sort.clone(), Some(new_decl));
+                                insert_sort(parametered_sort.clone(), Some(new_decl), solver)?;
 
                                 return Ok(())
                             } else {
@@ -174,5 +174,64 @@ fn substitute_in_sort(
             annotate_parametered_sort(&new_sort, vars, solver)?;
             Ok(new_sort)
         }
+    }
+}
+
+/// Make the sort known to the solver, and create its table
+fn insert_sort(
+    sort: Sort,
+    decl: Option<DatatypeDec>,
+    solver: &mut Solver,
+) -> Result<(), SolverError> {
+
+    // update solver.sort_tables
+    if ! solver.sorts.contains_key(&sort) { // a new sort
+        // update solver.sorts
+        let i = solver.sorts.len();
+
+        match decl {
+            None => solver.sort_tables.push(None),
+            Some(ref decl) => {
+                let selectors = collect_selectors(decl, solver);
+                if let Some(_selectors) = selectors {
+                    solver.sort_tables.push(Some(format!("Sort_{}", i)));
+                } else {
+                    solver.sort_tables.push(None);
+                };
+
+            },
+        }
+        solver.sorts.insert_full(sort, decl);
+    }
+
+    Ok(())
+}
+
+
+/// collects all the selectors in the (non-parametric) datatype declaration
+/// returns None if a selector is for a sort without a table (or if an error occurs)
+fn collect_selectors(
+    decl: &DatatypeDec,
+    solver: &Solver,
+) -> Option<IndexSet<String>> {
+    match decl {
+        DatatypeDec::DatatypeDec(constructor_decls) => {
+            let mut result = IndexSet::new();
+            for constructor_decl in constructor_decls {
+                let ConstructorDec(_, selectors) = constructor_decl;
+                for SelectorDec(selector, sort) in selectors {
+                    // check if the sort has a table
+                    let i = solver.sorts.get_index_of(sort)?;
+                    let table = solver.sort_tables.get(i).unwrap();
+                    if table.is_none() {
+                        return None
+                    } else {
+                        result.insert(selector.0.clone());
+                    }
+                }
+            }
+            Some(result)
+        },
+        DatatypeDec::Par(_, _) => panic!("dead code")
     }
 }
