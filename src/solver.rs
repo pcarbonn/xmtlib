@@ -8,12 +8,13 @@ use indexmap::{IndexMap, IndexSet};
 use crate::api::*;
 use crate::error::{format_error, SolverError, check_condition};
 use crate::grammar::parse;
-use crate::private::a_sort::annotate_sort_decl;
+use crate::private::a_sort::{SortTable, annotate_sort_decl};
 
 
 pub enum Backend {
     NoDriver
 }
+
 
 pub struct Solver {
     pub(crate) backend: Backend,
@@ -23,7 +24,7 @@ pub struct Solver {
 
     // contains nullary data types and the used instantiations of parametric data types
     pub(crate) sorts: IndexMap<Sort, Option<DatatypeDec>>,  // None for pre-defined infinite sorts
-    pub(crate) sort_tables: Vec<Option<String>>, // None for pre-defined infinite sorts
+    pub(crate) sort_tables: Vec<SortTable>,
 }
 
 
@@ -47,9 +48,9 @@ impl Default for Solver {
                 (sort("Real"), None),
                 ]),
             sort_tables: vec![
-                Some("Bool".to_string()),
-                None,
-                None,
+                SortTable::Table("Bool".to_string()),
+                SortTable::Infinite,
+                SortTable::Infinite,
             ]
         }
     }
@@ -127,19 +128,19 @@ impl Solver {
                         "sorts" => {
                             yield_!(Ok("Sorts:".to_string()));
                             for i in 0..self.sorts.len() {
+                                let type_table =
+                                match self.sort_tables.get(i) {
+                                    Some(SortTable::Table(table)) => table.as_str(),
+                                    Some(SortTable::Infinite) => "infinite",
+                                    Some(SortTable::Recursive) => "recursive",
+                                    Some(SortTable::Unknown) => "unknown",
+                                    None => "PANIC !! krpv;eĥ*",
+                                };
                                 let (sort, decl) = self.sorts.get_index(i).unwrap();
                                 if let Some(decl) = decl {
-                                    if let Some(Some(table)) = self.sort_tables.get(i) {
-                                        yield_!(Ok(format!(" - {}: {} ({})", sort, decl, table)));
-                                    } else {
-                                        yield_!(Ok(format!(" - {}: {} (infinite)", sort, decl)));
-                                    }
+                                    yield_!(Ok(format!(" - ({}) {}: {}", type_table, sort, decl)));
                                 } else {
-                                    if let Some(Some(table)) = self.sort_tables.get(i) {
-                                        yield_!(Ok(format!(" - {}: infinite ({})", sort, table)));
-                                    } else {
-                                        yield_!(Ok(format!(" - {}: infinite", sort)));
-                                    }
+                                    yield_!(Ok(format!(" - ({}) {}", type_table, sort)));
                                 }
                             }
                         },

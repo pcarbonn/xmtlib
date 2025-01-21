@@ -1,5 +1,6 @@
 // Copyright Pierre Carbonnelle, 2025.
 
+use either::Either::{self, Left, Right};
 use indexmap::{IndexMap, IndexSet};
 
 use crate::api::{ConstructorDec, DatatypeDec, Identifier, SelectorDec, Sort, Symbol};
@@ -7,6 +8,15 @@ use crate::{error::SolverError, solver::Solver};
 
 #[allow(unused_imports)]
 use debug_print::debug_println as dprintln;
+
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub(crate) enum SortTable {
+    Table(String),
+    Infinite,
+    Recursive,
+    Unknown
+}
 
 
 /// Resolve variables and identifiers, and adds the declaration to the solver, if correct.
@@ -123,8 +133,11 @@ pub(crate) fn annotate_parametered_sort(
                                 return Err(SolverError::ExprError("Incorrect number of parameters".to_string(), None))
                             }
                         },
-                        _ => return Err(SolverError::ExprError("Not a parametric type".to_string(), None))
+                        DatatypeDec::DatatypeDec(_) =>
+                            return Err(SolverError::ExprError("Not a parametric type".to_string(), None))
                     }
+                } else {  // indexed identifier
+                    panic!("dead code oe;cpzk")
                 }
             }
         }
@@ -209,14 +222,20 @@ fn insert_sort(
         let i = solver.sorts.len();
 
         match decl {
-            None => solver.sort_tables.push(None),
+            None => {
+                todo!();  // for declare-sort ?
+                //solver.sort_tables.push(SortTable::Unknwon)
+            },
             Some(ref decl) => {
                 let selectors = collect_selectors(decl, declaring, solver);
-                if let Some(_selectors) = selectors {
-                    solver.sort_tables.push(Some(format!("Sort_{}", i)));
-                } else {
-                    solver.sort_tables.push(None);
-                };
+                match selectors {
+                    Left(_selectors) => {
+                        solver.sort_tables.push(SortTable::Table(format!("Sort_{}", i)));
+                    },
+                    Right(table) => {
+                        solver.sort_tables.push(table);
+                    }
+                }
 
             },
         }
@@ -234,7 +253,7 @@ fn collect_selectors(
     decl: &DatatypeDec,
     declaring: &IndexSet<Symbol>,
     solver: &Solver,
-) -> Option<IndexSet<String>> {
+) -> Either<IndexSet<String>, SortTable> {
     match decl {
         DatatypeDec::DatatypeDec(constructor_decls) => {
             let mut result = IndexSet::new();
@@ -246,23 +265,30 @@ fn collect_selectors(
                         match sort {
                             Sort::Sort(Identifier::Simple(symbol)) => symbol,
                             Sort::Parametric(Identifier::Simple(symbol), _) => symbol,
-                            _ => return None
+                            Sort::Sort(Identifier::Indexed(_, _ ))
+                            | Sort::Parametric(Identifier::Indexed(_, _ ), _) => {
+                                return Right(SortTable::Unknown)
+                            }
                         };
                     // check if the sort is being declared recursively
                     if declaring.contains(symbol) {
-                        return None
+                        return Right(SortTable::Recursive)
                     }
                     // check if the sort has a table
-                    let i = solver.sorts.get_index_of(sort)?;
-                    let table = solver.sort_tables.get(i).unwrap();
-                    if table.is_none() {
-                        return None
+                    if let Some(i) = solver.sorts.get_index_of(sort) {
+                        let sort_table = solver.sort_tables.get(i).unwrap();
+                        match sort_table {
+                            SortTable::Table(_) => {result.insert(selector.0.clone());},
+                            SortTable::Infinite
+                            | SortTable::Recursive
+                            | SortTable::Unknown => return Right(sort_table.clone()),
+                        }
                     } else {
-                        result.insert(selector.0.clone());
+                        panic!("dead code pcyevpg")  // indexed sort
                     }
                 }
             }
-            Some(result)
+            Left(result)
         },
         DatatypeDec::Par(_, _) => panic!("dead code ddjoghx")
     }

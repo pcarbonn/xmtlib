@@ -20,15 +20,15 @@ Parametric datatypes:
  - Pair: (par (X Y) ((pair (first X) (second Y))))
  - Triplet: (par (X) ((triplet (first (Pair X (Pair X X))))))
 Sorts:
- - Bool: ((true ) (false )) (Bool)
- - Int: infinite
- - Real: infinite
- - Color: ((red ) (green ) (blue )) (Sort_3)
- - (Pair Color Color): ((pair (first Color) (second Color))) (Sort_4)
- - P: ((p (x (Pair Color Color)))) (Sort_5)
- - (Pair Color (Pair Color Color)): ((pair (first Color) (second (Pair Color Color)))) (Sort_6)
- - (Triplet Color): ((triplet (first (Pair Color (Pair Color Color))))) (Sort_7)
- - Q: ((q (x (Triplet Color)))) (Sort_8)
- - R: ((r (x Int))) (infinite)
- - ColorList: ((nil ) (cons (head Color) (tail ColorList))) (infinite)
+ - (Bool) Bool: ((true ) (false ))
+ - (infinite) Int
+ - (infinite) Real
+ - (Sort_3) Color: ((red ) (green ) (blue ))
+ - (Sort_4) (Pair Color Color): ((pair (first Color) (second Color)))
+ - (Sort_5) P: ((p (x (Pair Color Color))))
+ - (Sort_6) (Pair Color (Pair Color Color)): ((pair (first Color) (second (Pair Color Color))))
+ - (Sort_7) (Triplet Color): ((triplet (first (Pair Color (Pair Color Color)))))
+ - (Sort_8) Q: ((q (x (Triplet Color))))
+ - (infinite) R: ((r (x Int)))
+ - (recursive) ColorList: ((nil ) (cons (head Color) (tail ColorList)))
 sat

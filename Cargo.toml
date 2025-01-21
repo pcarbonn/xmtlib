@@ -14,10 +14,11 @@ categories = ["mathematics", "science"]
 
 [dependencies]
 chic = "1.2.2"
-clap = { version = "4.5.23", features = ["derive"] }
+clap = { version = "4.5.27", features = ["derive"] }
 debug_print = "1.0.0"
+either = "1.8.0"
 genawaiter = "0.99.1"
-indexmap = "2.7.0"
+indexmap = "2.7.1"
 itertools = "0.14.0"
 peg = "0.8.4"
 simplelog = "0.12.2"
