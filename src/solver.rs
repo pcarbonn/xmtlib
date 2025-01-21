@@ -3,12 +3,12 @@
 use std::future::Future;
 
 use genawaiter::{sync::Gen, sync::gen, yield_};
-use indexmap::{IndexMap, IndexSet};
+use indexmap::IndexMap;
 
 use crate::api::*;
 use crate::error::{format_error, SolverError, check_condition};
 use crate::grammar::parse;
-use crate::private::a_sort::{SortTable, annotate_sort_decl};
+use crate::private::a_sort::{SortTable, declare_datatype};
 
 
 pub enum Backend {
@@ -110,17 +110,7 @@ impl Solver {
                 },
 
                 Command::DeclareDatatype(symb, decl) => {
-                    let declaring = IndexSet::from([symb.clone()]);
-                    if let Err(err) = annotate_sort_decl(&symb, &decl, &declaring, self) {
-                        yield_!(Err(err))
-                    };
-
-                    match self.exec(&command) {
-                        Ok(res) => yield_!(Ok(res)),
-                        Err(err) => {
-                            yield_!(Err(err));
-                        }
-                    };
+                    yield_!(declare_datatype(symb, decl, command, self))
                 }
 
                 Command::XDebug(s) => {
@@ -172,7 +162,7 @@ impl Solver {
     }
 
     // execute a command string
-    fn exec(&mut self, cmd: &str) -> Result<String, SolverError> {
+    pub(crate) fn exec(&mut self, cmd: &str) -> Result<String, SolverError> {
         match self.backend {
             Backend::NoDriver => {
                 return Ok(cmd.to_string())

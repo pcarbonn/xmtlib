@@ -19,13 +19,27 @@ pub(crate) enum SortTable {
 }
 
 
+pub(crate) fn declare_datatype(
+    symb: Symbol,
+    decl: DatatypeDec,
+    command: String,
+    solver: &mut Solver
+) -> Result<String, SolverError> {
+
+    let declaring = IndexSet::from([symb.clone()]);
+    annotate_sort_decl(&symb, &decl, &declaring, solver)?;
+
+    solver.exec(&command)
+}
+
+
 /// Resolve variables and identifiers, and adds the declaration to the solver, if correct.
 /// Also adds any required instantiation of a parametric sort.
 /// This function is not recursive.
 pub(crate) fn annotate_sort_decl(
     symb: &Symbol,
     decl: &DatatypeDec,
-    declaring: &IndexSet<Symbol>,  // to detect recursive datatypes
+    declaring: &IndexSet<Symbol>,  // to detect mutually-recursive datatypes
     solver: &mut Solver
 ) -> Result<(), SolverError> {
 
@@ -137,7 +151,7 @@ pub(crate) fn annotate_parametered_sort(
                             return Err(SolverError::ExprError("Not a parametric type".to_string(), None))
                     }
                 } else {  // indexed identifier
-                    panic!("dead code oe;cpzk")
+                    panic!("Unexpected behavior oe;cpzk")
                 }
             }
         }
@@ -284,12 +298,12 @@ fn collect_selectors(
                             | SortTable::Unknown => return Right(sort_table.clone()),
                         }
                     } else {
-                        panic!("dead code pcyevpg")  // indexed sort
+                        panic!("Unexpected behavior pcyevpg")  // indexed sort
                     }
                 }
             }
             Left(result)
         },
-        DatatypeDec::Par(_, _) => panic!("dead code ddjoghx")
+        DatatypeDec::Par(_, _) => panic!("Unexpected behavior ddjoghx")
     }
 }
