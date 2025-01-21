@@ -9,7 +9,7 @@ use crate::{error::SolverError, solver::Solver};
 use debug_print::debug_println as dprintln;
 
 
-/// Adds the declaration to the solver, if correct.
+/// Resolve variables and identifiers, and adds the declaration to the solver, if correct.
 /// Also adds any required instantiation of a parametric sort.
 /// This function is not recursive.
 pub(crate) fn annotate_sort_decl(
@@ -25,13 +25,21 @@ pub(crate) fn annotate_sort_decl(
             annotate_constructor_decls(&constructor_decls, &vars, declaring, solver)?;
 
             let key = Sort::Sort(Identifier::Simple(symb.clone()));
-            insert_sort(key, Some(decl.clone()), declaring, solver)?;
+            if ! solver.sorts.contains_key(&key) {
+                insert_sort(key, Some(decl.clone()), declaring, solver)?;
+            } else {
+                return Err(SolverError::ExprError("duplicate sort".to_string(), None))
+            }
         },
         DatatypeDec::Par(vars, constructor_decls) => {
             let vars = vars.iter().cloned().collect();
             annotate_constructor_decls(&constructor_decls, &vars, declaring, solver)?;
 
-            solver.parametric_datatypes.insert(symb.clone(), decl.clone());
+            if ! solver.parametric_datatypes.contains_key(symb) {
+                solver.parametric_datatypes.insert(symb.clone(), decl.clone());
+            } else {
+                return Err(SolverError::ExprError("duplicate parametric sort".to_string(), None))
+            }
         }
     };
     Ok(())
@@ -256,6 +264,6 @@ fn collect_selectors(
             }
             Some(result)
         },
-        DatatypeDec::Par(_, _) => panic!("dead code")
+        DatatypeDec::Par(_, _) => panic!("dead code ddjoghx")
     }
 }
