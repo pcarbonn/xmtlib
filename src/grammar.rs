@@ -33,7 +33,7 @@ peg::parser!{
         rule numeral() -> Numeral
             = _ s:(quiet!{$(['0'..='9'] ['0'..='9']* )}
                 / expected!("numeral"))
-            { Numeral(s.to_string()) }
+            { Numeral(s.to_string().parse().unwrap()) }
 
         rule symbol() -> Symbol
             = s:( simple_symbol()
@@ -102,6 +102,13 @@ peg::parser!{
         // //////////////////////////// Command Options /////////////////////////
         // //////////////////////////// Commands     ////////////////////////////
 
+        rule sort_dec() -> SortDec
+            = _ "("
+              s:symbol()
+              n:numeral()
+              _ ")"
+            { SortDec(s, n) }
+
         rule selector_dec() -> SelectorDec
             = _ "("
               s:symbol()
@@ -135,6 +142,7 @@ peg::parser!{
             = _ "("
               command:( check_sat()
                       / declare_datatype()
+                      / declare_datatypes()
                       / debug()
                       / verbatim())
               _ ")"
@@ -150,6 +158,14 @@ peg::parser!{
               decl:datatype_dec()
             { DeclareDatatype(s, decl) }
 
+        rule declare_datatypes() -> Command
+            = _ "declare-datatypes" _ "("
+              s:(sort_dec() ++ __)
+              _ ")" _ "("
+              decl:(datatype_dec() ++ __)
+              _ ")"
+            { DeclareDatatypes(s, decl) }
+
         rule debug() -> Command
             = _ "x-debug" __ object:simple_symbol()
             { XDebug (object) }
@@ -158,7 +174,6 @@ peg::parser!{
             = _ command: ( "assert"
                          / "check-sat-assuming"
                          / "declare-const"
-                         / "declare-datatypes"
                          / "declare-fun"
                          / "declare-sort"
                          / "define-fun"

@@ -13,11 +13,11 @@ use itertools::Itertools;
 
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Numeral(pub String);
+pub struct Numeral(pub i32);
 impl std::fmt::Display for Numeral {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if let Some(rest) = self.0.strip_prefix('-') {
-            write!(f, "(- {rest})")
+        if self.0 < 0 {
+            write!(f, "(- {})", -self.0)
         } else {
             write!(f, "{}", self.0)
         }
@@ -128,6 +128,13 @@ impl std::fmt::Display for Sort {
 // //////////////////////////// Command Options /////////////////////////
 // //////////////////////////// Commands     ////////////////////////////
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct SortDec(pub Symbol, pub Numeral);
+impl std::fmt::Display for SortDec {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "({} {})", self.0, self.1)
+    }
+}
 
 /// `(<symbol> <sort>)`
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -174,6 +181,7 @@ impl std::fmt::Display for DatatypeDec {
 pub enum Command {
     CheckSat,
     DeclareDatatype(Symbol, DatatypeDec),
+    DeclareDatatypes(Vec<SortDec>, Vec<DatatypeDec>),
     XDebug(String),
     Verbatim(String),
 }
@@ -189,12 +197,12 @@ impl std::fmt::Display for Command {
             Self::DeclareDatatype(m0, m1) => {
                 write!(f, "(declare-datatype {} {})", m0, m1)
             }
-            // Self::DeclareDatatypes(m0, m1) => {
-            //     write!(
-            //         f, "(declare-datatypes ({}) ({}))", m0.iter().format(" "), m1.iter()
-            //         .format(" ")
-            //     )
-            // }
+            Self::DeclareDatatypes(m0, m1) => {
+                write!(
+                    f, "(declare-datatypes ({}) ({}))", m0.iter().format(" "), m1.iter()
+                    .format(" ")
+                )
+            }
             // Self::DeclareFun(m0, m1, m2) => {
             //     write!(f, "(declare-fun {} ({}) {})", m0, m1.iter().format(" "), m2)
             // }

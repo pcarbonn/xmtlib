@@ -10,28 +10,32 @@ use xmtlib::solver::Solver;
 #[test]
 fn test_all_smt2_files() {
     let test_dir = Path::new("tests");
+    all_smt2(test_dir)
+}
+
+/// recursively test all .smt2 files in the test directory and its subdirectories
+fn all_smt2(test_dir: &Path) {
     for entry in fs::read_dir(test_dir).expect("read_dir call failed") {
         if let Ok(entry) = entry {
             let path = entry.path();
             if path.is_file() {
                 if let Some(extension) = path.extension() {
                     if extension == "smt2" {
-                        if let Some(file_name) = path.file_name().and_then(|n| n.to_str()) {
-                            test_file(file_name);
-                        }
+                        test_file(&path)
                     }
                 }
+            } else if path.is_dir() {
+                all_smt2(&path)
             }
         }
     }
 }
 
 
-fn test_file(file_name: &str) {
+fn test_file(path: &Path) {
 
     // read file
-    let input_path = Path::new("tests").join(file_name);
-    let expected = fs::read_to_string(input_path.clone())
+    let expected = fs::read_to_string(path)
         .expect("Should have been able to read the input file");
     let input = expected.split("\n-------------------------\n").collect::<Vec<&str>>()[0];
 
@@ -43,7 +47,7 @@ fn test_file(file_name: &str) {
     // compare to expected
     let actual = input.to_owned() + "\n-------------------------\n"+ &result;
     if actual != expected {  // write to file
-        let mut expected_file = File::create(input_path).expect("creation failed");
+        let mut expected_file = File::create(path).expect("creation failed");
         expected_file.write(actual.as_bytes(),).expect("write failed");
     }
     assert_eq!(actual, expected);

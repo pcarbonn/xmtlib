@@ -8,7 +8,7 @@ use indexmap::IndexMap;
 use crate::api::*;
 use crate::error::{format_error, SolverError, check_condition};
 use crate::grammar::parse;
-use crate::private::a_sort::{SortTable, declare_datatype};
+use crate::private::a_sort::{ParametricDTObject, SortObject, declare_datatype, declare_datatypes};
 
 
 pub enum Backend {
@@ -20,11 +20,10 @@ pub struct Solver {
     pub(crate) backend: Backend,
 
     // contains only parametric data type declarations
-    pub(crate) parametric_datatypes: IndexMap<Symbol, DatatypeDec>,
+    pub(crate) parametric_datatypes: IndexMap<Symbol, ParametricDTObject>,
 
     // contains nullary data types and the used instantiations of parametric data types
-    pub(crate) sorts: IndexMap<Sort, Option<DatatypeDec>>,  // None for pre-defined infinite sorts
-    pub(crate) sort_tables: Vec<SortTable>,
+    pub(crate) sorts: IndexMap<Sort, SortObject>,
 }
 
 
@@ -32,26 +31,21 @@ impl Default for Solver {
     fn default() -> Solver {
         let sort = |s: &str| Sort::Sort(Identifier::Simple(Symbol(s.to_string())));
         let bool_sort = sort("Bool");
-        let bool_decl = DatatypeDec::DatatypeDec(
+        let bool_decl = SortObject::Normal(DatatypeDec::DatatypeDec(
             vec![
                 ConstructorDec (Symbol("true" .to_string()),vec![]),
                 ConstructorDec (Symbol("false".to_string()),vec![]),
             ],
-        );
+        ), "Bool".to_string());
 
         Solver {
             backend: Backend::NoDriver,
             parametric_datatypes: IndexMap::new(),
             sorts: IndexMap::from([
-                (bool_sort, Some(bool_decl)),
-                (sort("Int" ), None),
-                (sort("Real"), None),
-                ]),
-            sort_tables: vec![
-                SortTable::Table("Bool".to_string()),
-                SortTable::Infinite,
-                SortTable::Infinite,
-            ]
+                (bool_sort, bool_decl),
+                (sort("Int" ), SortObject::Infinite),
+                (sort("Real"), SortObject::Infinite),
+                ])
         }
     }
 }
@@ -113,31 +107,38 @@ impl Solver {
                     yield_!(declare_datatype(symb, decl, command, self))
                 }
 
+                Command::DeclareDatatypes(sort_decls, decls) => {
+                    yield_!(declare_datatypes(sort_decls, decls, command, self))
+                }
+
                 Command::XDebug(s) => {
                     match s.as_str() {
                         "sorts" => {
                             yield_!(Ok("Sorts:".to_string()));
-                            for i in 0..self.sorts.len() {
-                                let type_table =
-                                match self.sort_tables.get(i) {
-                                    Some(SortTable::Table(table)) => table.as_str(),
-                                    Some(SortTable::Infinite) => "infinite",
-                                    Some(SortTable::Recursive) => "recursive",
-                                    Some(SortTable::Unknown) => "unknown",
-                                    None => "PANIC !! krpv;eĥ*",
-                                };
-                                let (sort, decl) = self.sorts.get_index(i).unwrap();
-                                if let Some(decl) = decl {
-                                    yield_!(Ok(format!(" - ({}) {}: {}", type_table, sort, decl)));
-                                } else {
-                                    yield_!(Ok(format!(" - ({}) {}", type_table, sort)));
+                            for (sort, decl) in &self.sorts {
+                                match decl {
+                                    SortObject::Normal(decl, table) =>
+                                        yield_!(Ok(format!(" - ({}) {}: {}", table, sort, decl))),
+                                    SortObject::Recursive =>
+                                        yield_!(Ok(format!(" - (recursive) {}", sort))),
+                                    SortObject::Infinite =>
+                                        yield_!(Ok(format!(" - (infinite) {}", sort))),
+                                    SortObject::Unknown =>
+                                        yield_!(Ok(format!(" - (unknown) {}", sort))),
                                 }
                             }
                         },
                         "parametric_datatypes" => {
                             yield_!(Ok("Parametric datatypes:".to_string()));
                             for (sort, decl) in &self.parametric_datatypes {
-                                yield_!(Ok(format!(" - {}: {}", sort, decl)));
+                                match decl {
+                                    ParametricDTObject::Normal(decl) =>
+                                        yield_!(Ok(format!(" - {}: {}", sort, decl))),
+                                    ParametricDTObject::Recursive =>
+                                        yield_!(Ok(format!(" - (recursive): {}", sort))),
+                                    ParametricDTObject::Unknown =>
+                                        yield_!(Ok(format!(" - (unknown): {}", sort))),
+                                }
                             }
                         },
                         _ => {

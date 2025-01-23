@@ -1,309 +1,375 @@
 // Copyright Pierre Carbonnelle, 2025.
 
-use either::Either::{self, Left, Right};
+use std::cmp::max;
+
 use indexmap::{IndexMap, IndexSet};
 
-use crate::api::{ConstructorDec, DatatypeDec, Identifier, SelectorDec, Sort, Symbol};
+use crate::api::{ConstructorDec, DatatypeDec, Identifier, Numeral, SelectorDec, Sort, SortDec, Symbol};
 use crate::{error::SolverError, solver::Solver};
 
 #[allow(unused_imports)]
 use debug_print::debug_println as dprintln;
 
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub(crate) enum SortTable {
-    Table(String),
-    Infinite,
+pub(crate) enum ParametricDTObject {
+    Normal(DatatypeDec),
     Recursive,
     Unknown
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub(crate) enum SortObject{
+    Normal(DatatypeDec, String),  // table name
+    Recursive,
+    Infinite,  // Int, Real, and derived
+    Unknown
+}
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub(crate) enum Grounding{
+    Normal,  // lowest
+    Unknown,
+    Infinite,
+    Recursive  // highest
+}
+
+/////////////////////  Commands ///////////////////////////////////////////////
+
 
 pub(crate) fn declare_datatype(
     symb: Symbol,
-    decl: DatatypeDec,
+    dec: DatatypeDec,
     command: String,
     solver: &mut Solver
 ) -> Result<String, SolverError> {
 
-    let declaring = IndexSet::from([symb.clone()]);
-    annotate_sort_decl(&symb, &decl, &declaring, solver)?;
-
-    solver.exec(&command)
+    declare_datatypes(
+        vec![SortDec(symb, Numeral(0))],  // don't care for the numeral
+        vec![dec],
+        command,
+        solver
+    )
 }
 
 
-/// Resolve variables and identifiers, and adds the declaration to the solver, if correct.
-/// Also adds any required instantiation of a parametric sort.
-/// This function is not recursive.
-pub(crate) fn annotate_sort_decl(
+pub(crate) fn declare_datatypes(
+    sort_decs: Vec<SortDec>,
+    decs: Vec<DatatypeDec>,
+    command: String,
+    solver: &mut Solver
+) -> Result<String, SolverError> {
+
+    let out = solver.exec(&command)?;  // this also validates the declaration
+
+    // collect the declared symbols, for recursivity detection
+    let declaring = sort_decs.iter().map(|sd| {
+            let SortDec(symb, _) = sd;
+            symb.clone()
+        })
+        .collect();
+
+    for (SortDec(symb, _), dec) in sort_decs.into_iter().zip(decs.into_iter()) {
+        match dec {
+            DatatypeDec::Par(_, ref constructor_decs) =>
+                create_parametric_sort(&symb, &dec, &constructor_decs, &declaring, solver)?,
+            DatatypeDec::DatatypeDec(_) =>
+                create_sort(&symb, &dec, &declaring, solver)?,
+        };
+    }
+
+    Ok(out)
+}
+
+
+///////////////////////  create_parametric_sort  //////////////////////////////
+
+
+/// adds a parametric declaration to the solver.
+pub(crate) fn create_parametric_sort(
+    symb: &Symbol,
+    dec: &DatatypeDec,
+    constructor_decs: &Vec<ConstructorDec>,  // this redundant argument is for convenience
+    declaring: &IndexSet<Symbol>,  // to detect mutually-recursive datatypes
+    solver: &mut Solver
+) -> Result<(), SolverError> {
+
+    // Helper function that returns true if the sort is recursive.
+    // This function is recursive.
+    fn recursive_sort(
+        sort: &Sort,
+        declaring: &IndexSet<Symbol>
+    ) -> bool {
+        match sort {
+            Sort::Sort(Identifier::Simple(symb)) => {
+                if declaring.contains(symb) { return true }
+            },
+            Sort::Parametric(Identifier::Simple(symb), sorts) => {
+                if declaring.contains(symb) { return true }
+
+                for sort in sorts {
+                    if recursive_sort(sort, declaring) { return true }
+                }
+            },
+            _ => ()  // indexed sort
+        }
+        return false
+    }
+
+    let mut recursive = false;
+    for constructor_dec in constructor_decs {
+        for SelectorDec(_, sort) in &constructor_dec.1 {
+            if recursive_sort(sort, declaring) {
+                recursive = true;
+                break
+            }
+        }
+    }
+
+    if recursive {
+        solver.parametric_datatypes.insert(symb.clone(), ParametricDTObject::Recursive);
+    } else {
+        let value = ParametricDTObject::Normal(dec.clone());
+        solver.parametric_datatypes.insert(symb.clone(), value);
+    }
+    Ok(())
+}
+
+
+///////////////////////  create non-parametric sort  //////////////////////////
+
+
+/// Adds a non-parametric declaration to the solver.
+/// Also adds any required instantiation of parent sorts.
+pub(crate) fn create_sort(
     symb: &Symbol,
     decl: &DatatypeDec,
     declaring: &IndexSet<Symbol>,  // to detect mutually-recursive datatypes
     solver: &mut Solver
 ) -> Result<(), SolverError> {
 
-    match decl {
-        DatatypeDec::DatatypeDec(constructor_decls) => {
-            let vars = IndexSet::new();
-            annotate_constructor_decls(&constructor_decls, &vars, declaring, solver)?;
+    if let DatatypeDec::DatatypeDec(constructor_decls) = decl {
 
-            let key = Sort::Sort(Identifier::Simple(symb.clone()));
-            if ! solver.sorts.contains_key(&key) {
-                insert_sort(key, Some(decl.clone()), declaring, solver)?;
-            } else {
-                return Err(SolverError::ExprError("duplicate sort".to_string(), None))
-            }
-        },
-        DatatypeDec::Par(vars, constructor_decls) => {
-            let vars = vars.iter().cloned().collect();
-            annotate_constructor_decls(&constructor_decls, &vars, declaring, solver)?;
-
-            if ! solver.parametric_datatypes.contains_key(symb) {
-                solver.parametric_datatypes.insert(symb.clone(), decl.clone());
-            } else {
-                return Err(SolverError::ExprError("duplicate parametric sort".to_string(), None))
+        let mut grounding = Grounding::Normal;
+        // instantiate parent sorts first
+        for constructor_decl in constructor_decls {
+            let ConstructorDec(_, selectors) = constructor_decl;
+            for SelectorDec(_, sort) in selectors {
+                let g = instantiate_parent_sort(&sort, declaring, solver)?;
+                grounding = max(grounding, g);
             }
         }
-    };
-    Ok(())
-}
 
+        //
+        let key = Sort::Sort(Identifier::Simple(symb.clone()));
+        insert_sort(key, Some(decl.clone()), grounding, solver)?;
+        Ok(())
 
-/// Annotates each sort occurring in the constructor declaration.
-/// This function is not recursive
-fn annotate_constructor_decls(
-    constructor_decls: &Vec<ConstructorDec>,
-    vars: &IndexSet<Symbol>,
-    declaring: &IndexSet<Symbol>,
-    solver: &mut Solver
-) -> Result<(), SolverError> {
-    for constructor_decl in constructor_decls {
-        let ConstructorDec(_, selectors) = constructor_decl;
-        for SelectorDec(_, sort) in selectors {
-            annotate_parametered_sort(&sort, &vars, declaring, solver)?;
-        }
+    } else {
+        Err(SolverError::InternalError(5428868))  // unexpected parametric type
     }
-    Ok(())
 }
 
-/// Annotate a parametered sort in a sort declaration.
-/// The non-parametric sorts occurring in this sort declaration must be either variables listed in vars, or known by the solver.
-/// When vars is empty, the parametric sorts occurring in this sort declaration are instantiated and added to the solver.
+/// Create the sort and its parents in the solver, if not present.
+/// Returns the type of grounding of the sort.
 /// This function is recursive.
-pub(crate) fn annotate_parametered_sort(
-    parametered_sort: &Sort,
-    vars: &IndexSet<Symbol>,
+fn instantiate_parent_sort(
+    parent_sort: &Sort,
     declaring: &IndexSet<Symbol>,
     solver: &mut Solver,
-) -> Result<(), SolverError> {
+) -> Result<Grounding, SolverError> {
 
-    match parametered_sort {
-        Sort::Sort(ref id) => {
-            if ! solver.sorts.contains_key(parametered_sort) {
+    if let Some(sort_object) = solver.sorts.get(parent_sort) {
+        match sort_object {
+            SortObject::Normal(_, _) => Ok(Grounding::Normal),
+            SortObject::Unknown      => Ok(Grounding::Unknown),
+            SortObject::Infinite     => Ok(Grounding::Infinite),
+            SortObject::Recursive    => Ok(Grounding::Recursive),
+        }
+    } else {
+        match parent_sort {
+            Sort::Sort(id) =>   // check if recursive
                 if let Identifier::Simple(symb) = id {
-                    if ! vars.contains(symb) && ! declaring.contains(symb) {
-                        return Err(SolverError::ExprError("Unknown sort".to_string(), None))
+                    if declaring.contains(symb) {
+                        return insert_sort(parent_sort.clone(), None, Grounding::Recursive, solver)
+                    } else {
+                        Err(SolverError::InternalError(741265)) // it should be in the solver already
                     }
                 } else {
-                    return Err(SolverError::ExprError("Unexpected indexed identifier".to_string(), None))
-                }
-            }
-        },
-        Sort::Parametric(id, parameters) => {
-            for sort in parameters {  // check the non-parametric sorts
-                annotate_parametered_sort(&sort, &vars, declaring, solver)?;  // recursive
-            }
+                    Err(SolverError::InternalError(821652)) // unexpected indexed identifier
+                },
 
-            if vars.len() == 0 {
-                // instantiate the parametric sort
-                if let Identifier::Simple(name) = id {
-                    let parametric_decl = solver.parametric_datatypes.get(name)
-                        .ok_or(SolverError::ExprError("Unknown parametric sort".to_string(), None))?;
+            Sort::Parametric(id, parameters) => {
+                if let Identifier::Simple(symb) = id {
 
-                    match parametric_decl.clone() {
-                        DatatypeDec::Par(variables, constructors) => {
-                            if variables.len() == parameters.len() {
-
-                                // build substitution map : Sort -> Sort
-                                let old_variables: Vec<Sort> = variables.iter()
-                                    .map(|s| { Sort::Sort(Identifier::Simple(s.clone()))})
-                                    .collect();
-                                let subs: IndexMap<Sort, Sort> = old_variables.into_iter()
-                                    .zip(parameters.iter().cloned())
-                                    .collect();
-
-                                // instantiate constructors
-                                let new_constructors = constructors.into_iter()
-                                    .map(|c| substitute_in_constructor(c, &subs, vars, declaring, solver))
-                                    .collect::<Result<Vec<_>, _>>()?;
-
-                                // add the declaration to the solver
-                                let new_decl = DatatypeDec::DatatypeDec(new_constructors);
-                                insert_sort(parametered_sort.clone(), Some(new_decl), declaring, solver)?;
-
-                                return Ok(())
-                            } else {
-                                return Err(SolverError::ExprError("Incorrect number of parameters".to_string(), None))
-                            }
-                        },
-                        DatatypeDec::DatatypeDec(_) =>
-                            return Err(SolverError::ExprError("Not a parametric type".to_string(), None))
+                    if declaring.contains(symb) {
+                        return insert_sort(parent_sort.clone(), None, Grounding::Recursive, solver)
                     }
-                } else {  // indexed identifier
-                    panic!("Unexpected behavior oe;cpzk")
+
+                    let parent_decl = solver.parametric_datatypes.get(symb)
+                        .ok_or(SolverError::InternalError(2785648))?;  // the parametric type should be in the solver
+
+                    match parent_decl.clone() {
+                        ParametricDTObject::Normal(DatatypeDec::Par(variables, constructors)) => {
+                            // we assume variables.len() = parameters.len()
+
+                            // build substitution map : Sort -> Sort
+                            let old_variables: Vec<Sort> = variables.iter()
+                                .map(|s| { Sort::Sort(Identifier::Simple(s.clone()))})
+                                .collect();
+                            let subs: IndexMap<Sort, Sort> = old_variables.into_iter()
+                                .zip(parameters.iter().cloned())
+                                .collect();
+
+                            // instantiate constructors
+                            let mut grounding = Grounding::Normal;
+                            let mut new_constructors = vec![];
+                            for c in constructors {
+                                let mut new_selectors = vec![];
+                                for s in c.1 {
+                                    let (new_g, new_sort) = substitute_in_sort(&s.1, &subs, declaring, solver)?;
+                                    grounding = max(grounding, new_g);
+                                    let new_selector = SelectorDec(s.0, new_sort);
+                                    new_selectors.push(new_selector)
+                                }
+                                let new_c = ConstructorDec(c.0.clone(), new_selectors);
+                                new_constructors.push(new_c);
+                            }
+
+                            // add the declaration to the solver
+                            let new_decl = DatatypeDec::DatatypeDec(new_constructors);
+                            insert_sort(parent_sort.clone(), Some(new_decl), grounding, solver)
+                        },
+                        ParametricDTObject::Normal(DatatypeDec::DatatypeDec(_)) => {
+                            Err(SolverError::InternalError(1786496))  // Unexpected non-parametric type
+                        },
+                        ParametricDTObject::Recursive => {
+                            insert_sort(parent_sort.clone(), None, Grounding::Recursive, solver)
+                        },
+                        ParametricDTObject::Unknown => {
+                            insert_sort(parent_sort.clone(), None, Grounding::Unknown, solver)
+                        }
+                    }
+                } else {
+                    return Err(SolverError::InternalError(71845846))  // unexpected indexed identifier
                 }
-            }
-        }
-    }
-    Ok(())
-}
-
-
-fn substitute_in_constructor(
-    constructor: ConstructorDec,
-    subs: &IndexMap<Sort, Sort>,
-    vars: &IndexSet<Symbol>,
-    declaring: &IndexSet<Symbol>,
-    solver: &mut Solver,
-) -> Result<ConstructorDec, SolverError> {
-
-    // instantiate the selector declarations
-    let new_selector_decs = constructor.1.iter()
-        .map(|s| { substitute_in_selector(s, subs, vars, declaring, solver) })
-        .collect::<Result<Vec<_>,_>>()?;
-
-    Ok(ConstructorDec(constructor.0.clone(), new_selector_decs))
-}
-
-
-fn substitute_in_selector(
-    selector: &SelectorDec,
-    subs: &IndexMap<Sort, Sort>,
-    vars: &IndexSet<Symbol>,
-    declaring: &IndexSet<Symbol>,
-    solver: &mut Solver,
-) -> Result<SelectorDec, SolverError> {
-
-    let new_sort = substitute_in_sort(&selector.1, subs, vars, declaring, solver)?;
-    return Ok(SelectorDec(selector.0.clone(), new_sort))
-
+            },
+        }}
 }
 
 
 fn substitute_in_sort(
     sort: &Sort,
     subs: &IndexMap<Sort, Sort>,
-    vars: &IndexSet<Symbol>,
     declaring: &IndexSet<Symbol>,
     solver: &mut Solver,
-) -> Result<Sort, SolverError> {
+) -> Result<(Grounding, Sort), SolverError> {
 
     match sort {
 
         Sort::Sort(_) => {
-            // substitute if in the map
-            if let Some(new_sort) = subs.get(sort) {
-                return Ok(new_sort.clone())
-            } else {
-                return Ok(sort.clone())
-            }
+            // substitute if in the substitution map
+            let new_sort = subs.get(sort).unwrap_or(sort).clone();
+            let new_g = instantiate_parent_sort(&new_sort, declaring, solver)?;
+            Ok((new_g, new_sort))
         },
 
-        Sort::Parametric(name, sorts) => {
-            let new_sorts = sorts.iter()
-                .map(|s| { substitute_in_sort(s, subs, vars, declaring, solver) })
-                .collect::<Result<Vec<_>, _>>()?;
-            let new_sort = Sort::Parametric(name.clone(), new_sorts);
-            annotate_parametered_sort(&new_sort, vars, declaring, solver)?;
-            Ok(new_sort)
+        Sort::Parametric(id, sorts) => {
+            let mut grounding = Grounding::Normal;
+            let mut new_sorts = vec![];
+            for s in sorts {
+                let (new_g, new_s) = substitute_in_sort(s, subs, declaring, solver)?;
+                grounding = max(grounding, new_g);
+                new_sorts.push(new_s);
+            }
+            let new_sort = Sort::Parametric(id.clone(), new_sorts);
+            let new_g = instantiate_parent_sort(&new_sort, declaring, solver)?;
+            Ok((new_g, new_sort))
         }
     }
 }
 
 
-/// Make the sort known to the solver, and create its table
+///////////////////////  insert sort  /////////////////////////////////////////
+
+
+/// Make the non-parametric sort known to the solver, and create its table
 fn insert_sort(
     sort: Sort,
     decl: Option<DatatypeDec>,
-    declaring: &IndexSet<Symbol>,
+    grounding: Grounding,
     solver: &mut Solver,
-) -> Result<(), SolverError> {
+) -> Result<Grounding, SolverError> {
 
-    // update solver.sort_tables
+    // update solver.sort
     if ! solver.sorts.contains_key(&sort) { // a new sort
-        // update solver.sorts
+
         let i = solver.sorts.len();
-
-        match decl {
-            None => {
-                todo!();  // for declare-sort ?
-                //solver.sort_tables.push(SortTable::Unknwon)
-            },
-            Some(ref decl) => {
-                let selectors = collect_selectors(decl, declaring, solver);
-                match selectors {
-                    Left(_selectors) => {
-                        solver.sort_tables.push(SortTable::Table(format!("Sort_{}", i)));
-                    },
-                    Right(table) => {
-                        solver.sort_tables.push(table);
-                    }
-                }
-
-            },
-        }
-        solver.sorts.insert_full(sort, decl);
-    }
-
-    Ok(())
-}
-
-
-/// Collects all the selectors in the (non-parametric) datatype declaration.
-/// Returns None if a selector has a sort without a table,
-/// or if a sort is being declared recursively  (or if an error occurs)
-fn collect_selectors(
-    decl: &DatatypeDec,
-    declaring: &IndexSet<Symbol>,
-    solver: &Solver,
-) -> Either<IndexSet<String>, SortTable> {
-    match decl {
-        DatatypeDec::DatatypeDec(constructor_decls) => {
-            let mut result = IndexSet::new();
-            for constructor_decl in constructor_decls {
-                let ConstructorDec(_, selectors) = constructor_decl;
-                for SelectorDec(selector, sort) in selectors {
-                    // get the symbol of the sort
-                    let symbol =
-                        match sort {
-                            Sort::Sort(Identifier::Simple(symbol)) => symbol,
-                            Sort::Parametric(Identifier::Simple(symbol), _) => symbol,
-                            Sort::Sort(Identifier::Indexed(_, _ ))
-                            | Sort::Parametric(Identifier::Indexed(_, _ ), _) => {
-                                return Right(SortTable::Unknown)
-                            }
-                        };
-                    // check if the sort is being declared recursively
-                    if declaring.contains(symbol) {
-                        return Right(SortTable::Recursive)
-                    }
-                    // check if the sort has a table
-                    if let Some(i) = solver.sorts.get_index_of(sort) {
-                        let sort_table = solver.sort_tables.get(i).unwrap();
-                        match sort_table {
-                            SortTable::Table(_) => {result.insert(selector.0.clone());},
-                            SortTable::Infinite
-                            | SortTable::Recursive
-                            | SortTable::Unknown => return Right(sort_table.clone()),
-                        }
+        let sort_object =
+            match grounding {
+                Grounding::Normal => {
+                    if let Some(decl) = decl {
+                        SortObject::Normal(decl, format!("Sort_{}", i))
                     } else {
-                        panic!("Unexpected behavior pcyevpg")  // indexed sort
+                        SortObject::Unknown
                     }
-                }
-            }
-            Left(result)
-        },
-        DatatypeDec::Par(_, _) => panic!("Unexpected behavior ddjoghx")
+                },
+                Grounding::Unknown => SortObject::Unknown,
+                Grounding::Infinite => SortObject::Infinite,
+                Grounding::Recursive => SortObject::Recursive,
+            };
+
+        // update solver.sorts
+        solver.sorts.insert_full(sort, sort_object);
     }
+
+    Ok(grounding)
 }
+
+
+// /// Collects all the selectors in the (non-parametric) datatype declaration.
+// /// Returns None if a selector has a sort without a table,
+// /// or if a sort is being declared recursively  (or if an error occurs)
+// fn collect_selectors(
+//     decl: &DatatypeDec,
+//     declaring: &IndexSet<Symbol>,
+//     solver: &Solver,
+// ) -> Either<IndexSet<String>, SortTable> {
+//     match decl {
+//         DatatypeDec::DatatypeDec(constructor_decls) => {
+//             let mut result = IndexSet::new();
+//             for constructor_decl in constructor_decls {
+//                 let ConstructorDec(_, selectors) = constructor_decl;
+//                 for SelectorDec(selector, sort) in selectors {
+//                     // get the symbol of the sort
+//                     let symbol =
+//                         match sort {
+//                             Sort::Sort(Identifier::Simple(symbol)) => symbol,
+//                             Sort::Parametric(Identifier::Simple(symbol), _) => symbol,
+//                             Sort::Sort(Identifier::Indexed(_, _ ))
+//                             | Sort::Parametric(Identifier::Indexed(_, _ ), _) => {
+//                                 return Right(SortTable::Unknown)
+//                             }
+//                         };
+//                     // check if the sort is being declared recursively
+//                     if declaring.contains(symbol) {
+//                         return Right(SortTable::Recursive)
+//                     }
+//                     // check if the sort has a table
+//                     if let Some(i) = solver.sorts.get_index_of(sort) {
+//                         let sort_table = solver.sort_tables.get(i).unwrap();
+//                         match sort_table {
+//                             SortTable::Table(_) => {result.insert(selector.0.clone());},
+//                             SortTable::Infinite
+//                             | SortTable::Recursive
+//                             | SortTable::Unknown => return Right(sort_table.clone()),
+//                         }
+//                     } else {
+//                         return Right(SortTable::Infinite)  // indexed sort
+//                     }
+//                 }
+//             }
+//             Left(result)
+//         },
+//         DatatypeDec::Par(_, _) => panic!("Unexpected behavior ddjoghx")
+//     }
+// }

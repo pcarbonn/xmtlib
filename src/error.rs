@@ -17,6 +17,9 @@ pub enum SolverError {
 
     #[error("{0}")]
     ExprError(String, Option<Offset>),
+
+    #[error("{0}")]
+    InternalError(usize),  // can't be fixed by the user
 }
 
 use crate::error::SolverError::*;
@@ -46,7 +49,9 @@ pub fn format_error(input: &str, e: SolverError) -> String {
                 }
             } else {
                 format!("****** Error: {}", msg)
-            }
+            },
+
+        InternalError(n) => format!("****** Internal Error: {}", n)
     }
 }
 
