@@ -90,7 +90,7 @@ pub(crate) fn declare_sort(
 
     if numeral.0 == 0 {
         let sort = Sort::Sort(Identifier::Simple(symb));
-        insert_sort(sort, None, Grounding::Unknown, solver)?;
+        insert_sort(sort, None, Grounding::Unknown, None, solver)?;
     } else {
         let dt_object = ParametricDTObject::Unknown;
         solver.parametric_datatypes.insert(symb, dt_object);
@@ -98,6 +98,50 @@ pub(crate) fn declare_sort(
 
     Ok(out)
 }
+
+pub(crate) fn define_sort(
+    symb: Symbol,
+    variables: Vec<Symbol>,
+    definiendum: Sort,
+    command: String,
+    solver: &mut Solver
+) -> Result<String, SolverError> {
+    let out = solver.exec(&command)?;
+
+    if variables.len() == 0 {  // non-parametric
+        let declaring = IndexSet::new();
+        let g = instantiate_parent_sort(&definiendum, &declaring, solver)?;
+
+        let new_decl = solver.sorts.get(&definiendum)
+            .ok_or(SolverError::InternalError(482664))?;
+        let (new_decl, table_name) =
+            match new_decl.clone()
+             {
+                SortObject::Normal(datatype_dec, table_name) => {
+                    (Some(datatype_dec.clone()), Some(table_name))
+                },
+                SortObject::Recursive
+                | SortObject::Infinite
+                | SortObject::Unknown => (None, None),
+            };
+        let new_sort = Sort::Sort(Identifier::Simple(symb));
+        insert_sort(new_sort, new_decl, g, table_name, solver)?;
+
+    } else {  // sort must be parametric
+        if let Sort::Parametric(Identifier::Simple(symb), sorts) = definiendum {
+            // substitute the variables in sort
+            // create new decl (variables, new_sort)
+            // store in solver.parametric_datatypes
+            todo!()
+        } else {
+            return Err(SolverError::InternalError(71989562))
+        }
+
+    }
+
+    Ok(out)
+}
+
 
 ///////////////////////  create_parametric_sort  //////////////////////////////
 
@@ -179,7 +223,7 @@ pub(crate) fn create_sort(
 
         //
         let key = Sort::Sort(Identifier::Simple(symb.clone()));
-        insert_sort(key, Some(decl.clone()), grounding, solver)?;
+        insert_sort(key, Some(decl.clone()), grounding, None, solver)?;
         Ok(())
 
     } else {
@@ -208,7 +252,7 @@ fn instantiate_parent_sort(
             Sort::Sort(id) =>   // check if recursive
                 if let Identifier::Simple(symb) = id {
                     if declaring.contains(symb) {
-                        insert_sort(parent_sort.clone(), None, Grounding::Recursive, solver)
+                        insert_sort(parent_sort.clone(), None, Grounding::Recursive, None, solver)
                     } else {
                         Err(SolverError::InternalError(741265)) // it should be in the solver already
                     }
@@ -221,7 +265,7 @@ fn instantiate_parent_sort(
 
                     // check if recursive
                     if declaring.contains(symb) {
-                        return insert_sort(parent_sort.clone(), None, Grounding::Recursive, solver)
+                        return insert_sort(parent_sort.clone(), None, Grounding::Recursive, None, solver)
                     }
 
                     let parent_decl = solver.parametric_datatypes.get(symb)
@@ -256,16 +300,16 @@ fn instantiate_parent_sort(
 
                             // add the declaration to the solver
                             let new_decl = DatatypeDec::DatatypeDec(new_constructors);
-                            insert_sort(parent_sort.clone(), Some(new_decl), grounding, solver)
+                            insert_sort(parent_sort.clone(), Some(new_decl), grounding, None, solver)
                         },
                         ParametricDTObject::Normal(DatatypeDec::DatatypeDec(_)) => {
                             Err(SolverError::InternalError(1786496))  // Unexpected non-parametric type
                         },
                         ParametricDTObject::Recursive => {
-                            insert_sort(parent_sort.clone(), None, Grounding::Recursive, solver)
+                            insert_sort(parent_sort.clone(), None, Grounding::Recursive, None, solver)
                         },
                         ParametricDTObject::Unknown => {
-                            insert_sort(parent_sort.clone(), None, Grounding::Unknown, solver)
+                            insert_sort(parent_sort.clone(), None, Grounding::Unknown, None, solver)
                         }
                     }
                 } else {
@@ -316,6 +360,7 @@ fn insert_sort(
     sort: Sort,
     decl: Option<DatatypeDec>,
     grounding: Grounding,
+    table_name: Option<String>,
     solver: &mut Solver,
 ) -> Result<Grounding, SolverError> {
 
@@ -327,7 +372,21 @@ fn insert_sort(
             match grounding {
                 Grounding::Normal => {
                     if let Some(decl) = decl {
-                        SortObject::Normal(decl, format!("Sort_{}", i))
+                        match decl {
+                            DatatypeDec::DatatypeDec(_) => {
+                                if let Some(name) = table_name {
+                                    SortObject::Normal(decl, name.to_string())
+                                } else if let Sort::Sort(Identifier::Simple(Symbol(ref name))) = sort {
+                                    SortObject::Normal(decl, name.to_string())
+                                } else {
+                                    SortObject::Normal(decl, format!("Sort_{}", i))
+                                }
+                            },
+                            DatatypeDec::Par(_, _) => {
+                                SortObject::Normal(decl, format!("Sort_{}", i))
+                            },
+                        }
+
                     } else {
                         SortObject::Unknown
                     }

@@ -115,6 +115,10 @@ impl Solver {
                     yield_!(declare_sort(symb, numeral, command, self))
                 }
 
+                Command::DefineSort(symb, variables, sort) => {
+                    yield_!(define_sort(symb, variables, sort, command, self))
+                }
+
                 Command::XDebug(s) => {
                     match s.as_str() {
                         "sorts" => {

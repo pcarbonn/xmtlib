@@ -183,6 +183,7 @@ pub enum Command {
     DeclareDatatype(Symbol, DatatypeDec),
     DeclareDatatypes(Vec<SortDec>, Vec<DatatypeDec>),
     DeclareSort(Symbol, Numeral),
+    DefineSort(Symbol, Vec<Symbol>, Sort),
     XDebug(String),
     Verbatim(String),
 }
@@ -216,9 +217,9 @@ impl std::fmt::Display for Command {
             //         .format(" ")
             //     )
             // }
-            // Self::DefineSort(m0, m1, m2) => {
-            //     write!(f, "(define-sort {} ({}) {})", m0, m1.iter().format(" "), m2)
-            // }
+            Self::DefineSort(m0, m1, m2) => {
+                write!(f, "(define-sort {} ({}) {})", m0, m1.iter().format(" "), m2)
+            }
             // Self::Echo(m0) => write!(f, "(echo {})", m0),
             // Self::Exit => write!(f, "(exit)"),
             // Self::GetAssertions => write!(f, "(get-assertions)"),

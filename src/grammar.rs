@@ -144,6 +144,7 @@ peg::parser!{
                       / declare_datatype()
                       / declare_datatypes()
                       / declare_sort()
+                      / define_sort()
                       / debug()
                       / verbatim())
               _ ")"
@@ -170,6 +171,18 @@ peg::parser!{
         rule declare_sort() -> Command
             = _ "declare-sort" symbol:symbol() numeral:numeral()
             { DeclareSort(symbol, numeral) }
+
+        rule define_sort() -> Command
+            = _ "define-sort"
+              symbol:symbol()
+              _ "("
+              variables:(symbol() ** _)
+              _ ")"
+              sort:sort()
+            { DefineSort(symbol, variables, sort)}
+
+
+        // //////////////////////////// S-Commands     ////////////////////////////
 
         rule debug() -> Command
             = _ "x-debug" __ object:simple_symbol()

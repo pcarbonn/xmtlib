@@ -11,6 +11,7 @@
 (declare-sort Pair 2)
 (declare-sort A 0)
 (declare-sort B 0)
+(define-sort MyPair () (Pair A B))
 (x-debug parametric_datatypes)
 (x-debug sorts)
 (check-sat)
@@ -20,6 +21,7 @@
 (declare-sort Pair 2)
 (declare-sort A 0)
 (declare-sort B 0)
+(define-sort MyPair () (Pair A B))
 Parametric datatypes:
  - (recursive): Tree
  - (recursive): TreeList
@@ -32,4 +34,6 @@ Sorts:
  - (recursive) TreeInt
  - (unknown) A
  - (unknown) B
+ - (unknown) (Pair A B)
+ - (unknown) MyPair
 sat
