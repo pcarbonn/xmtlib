@@ -143,6 +143,7 @@ peg::parser!{
               command:( check_sat()
                       / declare_datatype()
                       / declare_datatypes()
+                      / declare_sort()
                       / debug()
                       / verbatim())
               _ ")"
@@ -166,6 +167,10 @@ peg::parser!{
               _ ")"
             { DeclareDatatypes(s, decl) }
 
+        rule declare_sort() -> Command
+            = _ "declare-sort" symbol:symbol() numeral:numeral()
+            { DeclareSort(symbol, numeral) }
+
         rule debug() -> Command
             = _ "x-debug" __ object:simple_symbol()
             { XDebug (object) }
@@ -175,7 +180,6 @@ peg::parser!{
                          / "check-sat-assuming"
                          / "declare-const"
                          / "declare-fun"
-                         / "declare-sort"
                          / "define-fun"
                          / "define-fun-rec"
                          / "define-funs-rec"

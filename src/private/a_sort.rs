@@ -80,6 +80,24 @@ pub(crate) fn declare_datatypes(
     Ok(out)
 }
 
+pub(crate) fn declare_sort(
+    symb: Symbol,
+    numeral: Numeral,
+    command: String,
+    solver: &mut Solver
+) -> Result<String, SolverError> {
+    let out = solver.exec(&command)?;
+
+    if numeral.0 == 0 {
+        let sort = Sort::Sort(Identifier::Simple(symb));
+        insert_sort(sort, None, Grounding::Unknown, solver)?;
+    } else {
+        let dt_object = ParametricDTObject::Unknown;
+        solver.parametric_datatypes.insert(symb, dt_object);
+    }
+
+    Ok(out)
+}
 
 ///////////////////////  create_parametric_sort  //////////////////////////////
 
@@ -165,7 +183,7 @@ pub(crate) fn create_sort(
         Ok(())
 
     } else {
-        Err(SolverError::InternalError(5428868))  // unexpected parametric type
+        Err(SolverError::InternalError(5428868))  // unexpected parametric datatype
     }
 }
 
@@ -190,7 +208,7 @@ fn instantiate_parent_sort(
             Sort::Sort(id) =>   // check if recursive
                 if let Identifier::Simple(symb) = id {
                     if declaring.contains(symb) {
-                        return insert_sort(parent_sort.clone(), None, Grounding::Recursive, solver)
+                        insert_sort(parent_sort.clone(), None, Grounding::Recursive, solver)
                     } else {
                         Err(SolverError::InternalError(741265)) // it should be in the solver already
                     }
@@ -201,6 +219,7 @@ fn instantiate_parent_sort(
             Sort::Parametric(id, parameters) => {
                 if let Identifier::Simple(symb) = id {
 
+                    // check if recursive
                     if declaring.contains(symb) {
                         return insert_sort(parent_sort.clone(), None, Grounding::Recursive, solver)
                     }
@@ -250,7 +269,7 @@ fn instantiate_parent_sort(
                         }
                     }
                 } else {
-                    return Err(SolverError::InternalError(71845846))  // unexpected indexed identifier
+                    Err(SolverError::InternalError(71845846))  // unexpected indexed identifier
                 }
             },
         }}
@@ -319,7 +338,7 @@ fn insert_sort(
             };
 
         // update solver.sorts
-        solver.sorts.insert_full(sort, sort_object);
+        solver.sorts.insert(sort, sort_object);
     }
 
     Ok(grounding)

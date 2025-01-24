@@ -8,7 +8,7 @@ use indexmap::IndexMap;
 use crate::api::*;
 use crate::error::{format_error, SolverError, check_condition};
 use crate::grammar::parse;
-use crate::private::a_sort::{ParametricDTObject, SortObject, declare_datatype, declare_datatypes};
+use crate::private::a_sort::*;
 
 
 pub enum Backend {
@@ -109,6 +109,10 @@ impl Solver {
 
                 Command::DeclareDatatypes(sort_decls, decls) => {
                     yield_!(declare_datatypes(sort_decls, decls, command, self))
+                }
+
+                Command::DeclareSort(symb, numeral) => {
+                    yield_!(declare_sort(symb, numeral, command, self))
                 }
 
                 Command::XDebug(s) => {

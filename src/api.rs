@@ -182,6 +182,7 @@ pub enum Command {
     CheckSat,
     DeclareDatatype(Symbol, DatatypeDec),
     DeclareDatatypes(Vec<SortDec>, Vec<DatatypeDec>),
+    DeclareSort(Symbol, Numeral),
     XDebug(String),
     Verbatim(String),
 }
@@ -206,7 +207,7 @@ impl std::fmt::Display for Command {
             // Self::DeclareFun(m0, m1, m2) => {
             //     write!(f, "(declare-fun {} ({}) {})", m0, m1.iter().format(" "), m2)
             // }
-            // Self::DeclareSort(m0, m1) => write!(f, "(declare-sort {} {})", m0, m1),
+            Self::DeclareSort(m0, m1) => write!(f, "(declare-sort {} {})", m0, m1),
             // Self::DefineFun(m0) => write!(f, "(define-fun {})", m0),
             // Self::DefineFunRec(m0) => write!(f, "(define-fun-rec {})", m0),
             // Self::DefineFunsRec(m0, m1) => {
