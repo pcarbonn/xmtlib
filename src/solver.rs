@@ -142,6 +142,10 @@ impl Solver {
                                 match decl {
                                     ParametricObject::Datatype(decl) =>
                                         yield_!(Ok(format!(" - {}: {}", sort, decl))),
+                                    ParametricObject::Definition(vars, parent_sort) => {
+                                        let vars = vars.iter().map(|v| v.0.clone()).collect::<Vec<String>>().join(",");
+                                        yield_!(Ok(format!(" - {}: ({}) -> {}", sort, vars, parent_sort)))
+                                    },
                                     ParametricObject::Recursive =>
                                         yield_!(Ok(format!(" - (recursive): {}", sort))),
                                     ParametricObject::Unknown =>

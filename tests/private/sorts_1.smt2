@@ -6,8 +6,9 @@
 (declare-datatype Q ( (q (x (Triplet Color)))))
 (declare-datatype R ( (r (x Int))))
 (declare-datatype ColorList ( (nil) (cons (head Color) (tail (Triplet ColorList)))))
-;(define-sort MyPair (T) (Pair T T))
-(define-sort MyPairColor () (Pair Color Color))
+(define-sort MyPair (T) (Pair T T))
+(define-sort PairColor () (Pair Color Color))
+(define-sort MyPairColor () (MyPair Color Color))
 (x-debug parametric_sorts)
 (x-debug sorts)
 (check-sat)
@@ -19,10 +20,13 @@
 (declare-datatype Q ((q (x (Triplet Color)))))
 (declare-datatype R ((r (x Int))))
 (declare-datatype ColorList ((nil ) (cons (head Color) (tail (Triplet ColorList)))))
-(define-sort MyPairColor () (Pair Color Color))
+(define-sort MyPair (T) (Pair T T))
+(define-sort PairColor () (Pair Color Color))
+(define-sort MyPairColor () (MyPair Color Color))
 Parametric datatypes:
  - Pair: (par (X Y) ((pair (first X) (second Y))))
  - Triplet: (par (X) ((triplet (first (Pair X (Pair X X))))))
+ - MyPair: (T) -> (Pair T T)
 Sorts:
  - (Bool) Bool: ((true ) (false ))
  - (infinite) Int
@@ -38,5 +42,7 @@ Sorts:
  - (recursive) (Pair ColorList ColorList)
  - (recursive) (Pair ColorList (Pair ColorList ColorList))
  - (recursive) (Triplet ColorList)
- - (Sort_4) MyPairColor: ((pair (first Color) (second Color)))
+ - ( Sort_4) PairColor: ((pair (first Color) (second Color)))
+ - (unknown) (MyPair Color Color)
+ - (unknown) MyPairColor
 sat

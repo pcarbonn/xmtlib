@@ -13,6 +13,7 @@ use debug_print::debug_println as dprintln;
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum ParametricObject {
     Datatype(DatatypeDec),
+    Definition(Vec<Symbol>, Sort),
     Recursive,
     Unknown
 }
@@ -118,7 +119,7 @@ pub(crate) fn define_sort(
             match new_decl.clone()
              {
                 SortObject::Normal(datatype_dec, table_name) => {
-                    (Some(datatype_dec.clone()), Some(table_name))
+                    (Some(datatype_dec.clone()), Some(format!(" {table_name}")))  // front space to say that the table exists already
                 },
                 SortObject::Recursive
                 | SortObject::Infinite
@@ -128,15 +129,7 @@ pub(crate) fn define_sort(
         insert_sort(new_sort, new_decl, g, table_name, solver)?;
 
     } else {  // sort must be parametric
-        if let Sort::Parametric(Identifier::Simple(symb), sorts) = definiendum {
-            // substitute the variables in sort
-            // create new decl (variables, new_sort)
-            // store in solver.parametric_sorts
-            todo!()
-        } else {
-            return Err(SolverError::InternalError(71989562))
-        }
-
+        solver.parametric_sorts.insert(symb, ParametricObject::Definition(variables, definiendum));
     }
 
     Ok(out)
@@ -240,6 +233,19 @@ fn instantiate_parent_sort(
     solver: &mut Solver,
 ) -> Result<Grounding, SolverError> {
 
+    // Helper function
+    fn mapping(
+        variables: Vec<Symbol>,
+        values: &Vec<Sort>
+    ) -> IndexMap<Sort, Sort> {
+        let old_variables: Vec<Sort> = variables.iter()
+            .map(|s| { Sort::Sort(Identifier::Simple(s.clone()))})
+            .collect();
+        old_variables.into_iter()
+            .zip(values.iter().cloned())
+            .collect()
+    }
+
     if let Some(sort_object) = solver.sorts.get(parent_sort) {
         match sort_object {
             SortObject::Normal(_, _) => Ok(Grounding::Normal),
@@ -276,12 +282,7 @@ fn instantiate_parent_sort(
                             // we assume variables.len() = parameters.len()
 
                             // build substitution map : Sort -> Sort
-                            let old_variables: Vec<Sort> = variables.iter()
-                                .map(|s| { Sort::Sort(Identifier::Simple(s.clone()))})
-                                .collect();
-                            let subs: IndexMap<Sort, Sort> = old_variables.into_iter()
-                                .zip(parameters.iter().cloned())
-                                .collect();
+                            let subs = mapping(variables, parameters);
 
                             // instantiate constructors
                             let mut grounding = Grounding::Normal;
@@ -302,6 +303,28 @@ fn instantiate_parent_sort(
                             let new_decl = DatatypeDec::DatatypeDec(new_constructors);
                             insert_sort(parent_sort.clone(), Some(new_decl), grounding, None, solver)
                         },
+                        ParametricObject::Definition(variables, definiendum, ) => {
+                            // substitute to get new sort
+                            let subs = mapping(variables, parameters);
+                            let (new_g, new_sort) = substitute_in_sort(&definiendum, &subs, declaring, solver)?;
+
+                            // get the name of the table
+                            let sort_object = solver.sorts.get(&new_sort)
+                                .ok_or(SolverError::InternalError(7842966))?;
+
+                            // create sort object
+                            match sort_object {
+                                SortObject::Normal(_, table) => {
+                                    insert_sort(parent_sort.clone(), None, new_g, Some(table.to_string()), solver)
+                                },
+                                SortObject::Infinite
+                                | SortObject::Recursive
+                                | SortObject::Unknown => {
+                                    insert_sort(parent_sort.clone(), None, new_g, None, solver)
+                                }
+                            }
+
+                        }
                         ParametricObject::Datatype(DatatypeDec::DatatypeDec(_)) => {
                             Err(SolverError::InternalError(1786496))  // Unexpected non-parametric type
                         },
