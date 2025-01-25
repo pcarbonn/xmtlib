@@ -8,7 +8,7 @@
 (declare-datatype ColorList ( (nil) (cons (head Color) (tail (Triplet ColorList)))))
 ;(define-sort MyPair (T) (Pair T T))
 (define-sort MyPairColor () (Pair Color Color))
-(x-debug parametric_datatypes)
+(x-debug parametric_sorts)
 (x-debug sorts)
 (check-sat)
 -------------------------

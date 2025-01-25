@@ -20,7 +20,7 @@ pub struct Solver {
     pub(crate) backend: Backend,
 
     // contains only parametric data type declarations
-    pub(crate) parametric_datatypes: IndexMap<Symbol, ParametricDTObject>,
+    pub(crate) parametric_sorts: IndexMap<Symbol, ParametricObject>,
 
     // contains nullary data types and the used instantiations of parametric data types
     pub(crate) sorts: IndexMap<Sort, SortObject>,
@@ -40,7 +40,7 @@ impl Default for Solver {
 
         Solver {
             backend: Backend::NoDriver,
-            parametric_datatypes: IndexMap::new(),
+            parametric_sorts: IndexMap::new(),
             sorts: IndexMap::from([
                 (bool_sort, bool_decl),
                 (sort("Int" ), SortObject::Infinite),
@@ -136,15 +136,15 @@ impl Solver {
                                 }
                             }
                         },
-                        "parametric_datatypes" => {
+                        "parametric_sorts" => {
                             yield_!(Ok("Parametric datatypes:".to_string()));
-                            for (sort, decl) in &self.parametric_datatypes {
+                            for (sort, decl) in &self.parametric_sorts {
                                 match decl {
-                                    ParametricDTObject::Normal(decl) =>
+                                    ParametricObject::Datatype(decl) =>
                                         yield_!(Ok(format!(" - {}: {}", sort, decl))),
-                                    ParametricDTObject::Recursive =>
+                                    ParametricObject::Recursive =>
                                         yield_!(Ok(format!(" - (recursive): {}", sort))),
-                                    ParametricDTObject::Unknown =>
+                                    ParametricObject::Unknown =>
                                         yield_!(Ok(format!(" - (unknown): {}", sort))),
                                 }
                             }

@@ -12,7 +12,7 @@
 (declare-sort A 0)
 (declare-sort B 0)
 (define-sort MyPair () (Pair A B))
-(x-debug parametric_datatypes)
+(x-debug parametric_sorts)
 (x-debug sorts)
 (check-sat)
 -------------------------
