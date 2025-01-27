@@ -1,6 +1,7 @@
 // Copyright Pierre Carbonnelle, 2025.
 
 use peg::{error::ParseError, str::LineCol};
+use rusqlite::Error as SqlError;
 use thiserror::Error;
 
 /// The number of characters since the begin of a source file.
@@ -9,7 +10,7 @@ use thiserror::Error;
 #[derive(Clone, Copy, Debug, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct Offset(pub usize);
 
-#[derive(Error, Debug, PartialEq, Eq)]
+#[derive(Error, Debug, PartialEq)]
 pub enum SolverError {
 
     #[error("{0}")]
@@ -18,20 +19,15 @@ pub enum SolverError {
     #[error("{0}")]
     ExprError(String, Option<Offset>),
 
+    #[error("Database error: {0}")]
+    DatabaseError(#[from] SqlError),
+
     #[error("{0}")]
     InternalError(usize),  // can't be fixed by the user
 }
 
 use crate::error::SolverError::*;
 
-/// If `condition`` is false, raises an error with `msg` at `offset`.
-pub(crate) fn check_condition(condition: bool, msg: &str, offset: Option<Offset>) -> Result<(), SolverError> {
-    if condition {
-        Ok(())
-    } else {
-        Err(ExprError(msg.to_string(), offset))
-    }
-}
 
 /// Show the error in the context of the relevant source code.
 pub fn format_error(input: &str, e: SolverError) -> String {
@@ -39,6 +35,8 @@ pub fn format_error(input: &str, e: SolverError) -> String {
 
         ParseError(e) =>
             pretty_print(input, e.location, format!("Expected: {}", e.expected)),
+
+        DatabaseError(e) => format!("****** Database Error: {}", e),
 
         ExprError(msg, offset) =>
             if let Some(offset_) = offset {

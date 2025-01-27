@@ -3,6 +3,7 @@
 use std::cmp::max;
 
 use indexmap::{IndexMap, IndexSet};
+use rusqlite::Connection;
 
 use crate::api::{ConstructorDec, DatatypeDec, Identifier, Numeral, SelectorDec, Sort, SortDec, Symbol};
 use crate::{error::SolverError, solver::Solver};
@@ -317,7 +318,8 @@ fn instantiate_parent_sort(
                             // create sort object
                             match sort_object {
                                 SortObject::Normal(_, table) => {
-                                    insert_sort(parent_sort.clone(), None, new_g, Some(table.to_string()), solver)
+                                    let table_name = Some(format!(" {table}"));
+                                    insert_sort(parent_sort.clone(), None, new_g, table_name, solver)  // front space to say that the table exists already
                                 },
                                 SortObject::Infinite
                                 | SortObject::Recursive
@@ -422,57 +424,63 @@ fn insert_sort(
             };
 
         // update solver.sorts
+        create_table(sort_object.clone(), solver)?;
         solver.sorts.insert(sort, sort_object);
     }
 
     Ok(grounding)
 }
 
+fn create_table(
+    sort_object: SortObject,
+    solver: &mut Solver
+) -> Result<(), SolverError> {
+    if let SortObject::Normal(datatype_dec, table_name) = sort_object {
+        if ! table_name.starts_with(' ') {
+            if let DatatypeDec::DatatypeDec(constructor_decls) = datatype_dec {
 
-// /// Collects all the selectors in the (non-parametric) datatype declaration.
-// /// Returns None if a selector has a sort without a table,
-// /// or if a sort is being declared recursively  (or if an error occurs)
-// fn collect_selectors(
-//     decl: &DatatypeDec,
-//     declaring: &IndexSet<Symbol>,
-//     solver: &Solver,
-// ) -> Either<IndexSet<String>, SortTable> {
-//     match decl {
-//         DatatypeDec::DatatypeDec(constructor_decls) => {
-//             let mut result = IndexSet::new();
-//             for constructor_decl in constructor_decls {
-//                 let ConstructorDec(_, selectors) = constructor_decl;
-//                 for SelectorDec(selector, sort) in selectors {
-//                     // get the symbol of the sort
-//                     let symbol =
-//                         match sort {
-//                             Sort::Sort(Identifier::Simple(symbol)) => symbol,
-//                             Sort::Parametric(Identifier::Simple(symbol), _) => symbol,
-//                             Sort::Sort(Identifier::Indexed(_, _ ))
-//                             | Sort::Parametric(Identifier::Indexed(_, _ ), _) => {
-//                                 return Right(SortTable::Unknown)
-//                             }
-//                         };
-//                     // check if the sort is being declared recursively
-//                     if declaring.contains(symbol) {
-//                         return Right(SortTable::Recursive)
-//                     }
-//                     // check if the sort has a table
-//                     if let Some(i) = solver.sorts.get_index_of(sort) {
-//                         let sort_table = solver.sort_tables.get(i).unwrap();
-//                         match sort_table {
-//                             SortTable::Table(_) => {result.insert(selector.0.clone());},
-//                             SortTable::Infinite
-//                             | SortTable::Recursive
-//                             | SortTable::Unknown => return Right(sort_table.clone()),
-//                         }
-//                     } else {
-//                         return Right(SortTable::Infinite)  // indexed sort
-//                     }
-//                 }
-//             }
-//             Left(result)
-//         },
-//         DatatypeDec::Par(_, _) => panic!("Unexpected behavior ddjoghx")
-//     }
-// }
+                // 1st pass: collect nullary constructors and selectors
+                let mut nullary: Vec<String> = vec![];
+                let mut columns: IndexSet<String> = IndexSet::new();
+                for constructor_decl in constructor_decls {
+                    let ConstructorDec(constructor, selectors) = constructor_decl;
+                    if selectors.len() == 0 {
+                        nullary.push(constructor.0)
+                    } else {
+                        for SelectorDec(selector, _) in selectors {
+                            columns.insert(selector.0.clone());
+                        }
+                    }
+                }
+
+                // helper function
+                fn core_table(
+                    table_name: String,
+                    values: Vec<String>,
+                    conn: &mut Connection
+                ) -> Result<(), SolverError> {
+                    conn.execute(format!("CREATE TABLE {table_name} (G TEXT)").as_str(), ())?;
+                    for value in values {
+                        conn.execute(format!("INSERT INTO {table_name} (G) VALUES (?1)").as_str(), [value])?;
+                    }
+                    Ok(())
+                }
+
+                if columns.len() == 0 {  // nullary constructors only
+                    core_table(table_name, nullary, &mut solver.conn)?;
+                } else {
+                    core_table(format!("{table_name}_core"), nullary, &mut solver.conn)?;
+                    // if selectors: create table as (Select...)
+                    //     fill it with the nullary constructors
+                    //     fill it with the other constructors
+                }
+
+            } else {
+                return Err(SolverError::InternalError(84585455));
+            }
+        }
+    }
+    Ok(())
+}
+
+

@@ -1,5 +1,5 @@
 ; declare-datatype
-(declare-datatype Color ( ( red ) ( green ) ( blue ) ))
+(declare-datatype Color ( ( red ) ( green ) ))
 (declare-datatype Pair (par (X Y) ((pair (first X) (second Y)))))
 (declare-datatype P ( (p (x (Pair Color Color)))))
 (declare-datatype Triplet (par (X) ((triplet (first (Pair X (Pair X X)))))))
@@ -11,10 +11,10 @@
 (define-sort MyPairColor () (MyPair Color Color))
 (x-debug solver parametric_sorts)
 (x-debug solver sorts)
-(x-debug db Bool)
+(x-debug db Color)
 (check-sat)
 -------------------------
-(declare-datatype Color ((red ) (green ) (blue )))
+(declare-datatype Color ((red ) (green )))
 (declare-datatype Pair (par (X Y) ((pair (first X) (second Y)))))
 (declare-datatype P ((p (x (Pair Color Color)))))
 (declare-datatype Triplet (par (X) ((triplet (first (Pair X (Pair X X)))))))
@@ -32,7 +32,7 @@ Sorts:
  - (Bool) Bool: ((true ) (false ))
  - (infinite) Int
  - (infinite) Real
- - (Color) Color: ((red ) (green ) (blue ))
+ - (Color) Color: ((red ) (green ))
  - (Sort_4) (Pair Color Color): ((pair (first Color) (second Color)))
  - (P) P: ((p (x (Pair Color Color))))
  - (Sort_6) (Pair Color (Pair Color Color)): ((pair (first Color) (second (Pair Color Color))))
@@ -46,12 +46,12 @@ Sorts:
  - ( Sort_4) PairColor: ((pair (first Color) (second Color)))
  - (unknown) (MyPair Color Color)
  - (unknown) MyPairColor
- TABLE: Bool
+ TABLE: Color
 ┌─────────┐
 │ G       │
 ├─────────┤
-│ "true"  │
+│ "red"   │
 ├─────────┤
-│ "false" │
+│ "green" │
 └─────────┘
 sat

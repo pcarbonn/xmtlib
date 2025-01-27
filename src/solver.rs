@@ -7,7 +7,7 @@ use indexmap::IndexMap;
 use rusqlite::{Connection, Result};
 
 use crate::api::*;
-use crate::error::{format_error, SolverError, check_condition};
+use crate::error::{format_error, SolverError};
 use crate::grammar::parse;
 use crate::private::a_sort::*;
 
