@@ -29,21 +29,21 @@ Parametric datatypes:
  - Triplet: (par (X) ((triplet (first (Pair X (Pair X X))))))
  - MyPair: (T) -> (Pair T T)
 Sorts:
- - (Bool) Bool: ((true ) (false ))
+ - (Bool: 2) Bool: ((true ) (false ))
  - (infinite) Int
  - (infinite) Real
- - (Color) Color: ((red ) (green ))
- - (Sort_4) (Pair Color Color): ((white ) (pair (first Color) (second Color)))
- - (P) P: ((p (x (Pair Color Color))))
- - (Sort_6) (Pair Color (Pair Color Color)): ((white ) (pair (first Color) (second (Pair Color Color))))
- - (Sort_7) (Triplet Color): ((triplet (first (Pair Color (Pair Color Color)))))
- - (Q) Q: ((q (x (Triplet Color))))
+ - (Color: 2) Color: ((red ) (green ))
+ - (Sort_4: 5) (Pair Color Color): ((white ) (pair (first Color) (second Color)))
+ - (P: 5) P: ((p (x (Pair Color Color))))
+ - (Sort_6: 11) (Pair Color (Pair Color Color)): ((white ) (pair (first Color) (second (Pair Color Color))))
+ - (Sort_7: 11) (Triplet Color): ((triplet (first (Pair Color (Pair Color Color)))))
+ - (Q: 11) Q: ((q (x (Triplet Color))))
  - (infinite) R
  - (recursive) ColorList
  - (recursive) (Pair ColorList ColorList)
  - (recursive) (Pair ColorList (Pair ColorList ColorList))
  - (recursive) (Triplet ColorList)
- - ( Sort_4) PairColor: ((white ) (pair (first Color) (second Color)))
+ - ( Sort_4: 5) PairColor: ((white ) (pair (first Color) (second Color)))
  - (unknown) (MyPair Color)
  - (unknown) MyPairColor
  TABLE: Q

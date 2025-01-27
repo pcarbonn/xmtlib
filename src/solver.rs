@@ -39,7 +39,7 @@ impl Default for Solver {
                 ConstructorDec (Symbol("true" .to_string()),vec![]),
                 ConstructorDec (Symbol("false".to_string()),vec![]),
             ],
-        ), "Bool".to_string());
+            ), "Bool".to_string(), 2);
 
         // create Bool table
         let mut conn = Connection::open_in_memory().unwrap();
@@ -144,8 +144,8 @@ impl Solver {
                                     yield_!(Ok("Sorts:".to_string()));
                                     for (sort, decl) in &self.sorts {
                                         match decl {
-                                            SortObject::Normal(decl, table) =>
-                                                yield_!(Ok(format!(" - ({}) {}: {}", table, sort, decl))),
+                                            SortObject::Normal(decl, table, count) =>
+                                                yield_!(Ok(format!(" - ({}: {}) {}: {}", table, count, sort, decl))),
                                             SortObject::Recursive =>
                                                 yield_!(Ok(format!(" - (recursive) {}", sort))),
                                             SortObject::Infinite =>

@@ -27,7 +27,7 @@ Parametric datatypes:
  - (recursive): TreeList
  - (unknown): Pair
 Sorts:
- - (Bool) Bool: ((true ) (false ))
+ - (Bool: 2) Bool: ((true ) (false ))
  - (infinite) Int
  - (infinite) Real
  - (recursive) (Tree Int)
