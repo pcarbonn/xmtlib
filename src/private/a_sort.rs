@@ -4,10 +4,10 @@ use std::cmp::max;
 
 use indexmap::{IndexMap, IndexSet};
 use itertools::Itertools;
-use rusqlite::Connection;
+use rusqlite::{params, Connection};
 
 use crate::api::{ConstructorDec, DatatypeDec, Identifier, Numeral, SelectorDec, Sort, SortDec, Symbol};
-use crate::{error::SolverError, solver::Solver};
+use crate::{error::SolverError::{self, InternalError}, solver::Solver};
 
 #[allow(unused_imports)]
 use debug_print::debug_println as dprintln;
@@ -118,7 +118,7 @@ pub(crate) fn define_sort(
         let g = instantiate_parent_sort(&definiendum, &declaring, solver)?;
 
         let new_decl = solver.sorts.get(&definiendum)
-            .ok_or(SolverError::InternalError(482664))?;
+            .ok_or(InternalError(482664))?;
         let (new_decl, table_name) =
             match new_decl.clone()
              {
@@ -224,7 +224,7 @@ pub(crate) fn create_sort(
         Ok(())
 
     } else {
-        Err(SolverError::InternalError(5428868))  // unexpected parametric datatype
+        Err(InternalError(5428868))  // unexpected parametric datatype
     }
 }
 
@@ -248,9 +248,10 @@ fn instantiate_parent_sort(
         old_variables.into_iter()
             .zip(values.iter().cloned())
             .collect()
-    }
+    } // end helper function
 
     if let Some(sort_object) = solver.sorts.get(parent_sort) {
+        // already instantiated
         match sort_object {
             SortObject::Normal(_, _) => Ok(Grounding::Normal),
             SortObject::Unknown      => Ok(Grounding::Unknown),
@@ -264,13 +265,14 @@ fn instantiate_parent_sort(
                     if declaring.contains(symb) {
                         insert_sort(parent_sort.clone(), None, Grounding::Recursive, None, solver)
                     } else {
-                        Err(SolverError::InternalError(741265)) // it should be in the solver already
+                        Err(InternalError(741265)) // it should be in the solver already
                     }
                 } else {
-                    Err(SolverError::InternalError(821652)) // unexpected indexed identifier
+                    Err(InternalError(821652)) // unexpected indexed identifier
                 },
 
             Sort::Parametric(id, parameters) => {
+                // running example: Pair Color Color
                 if let Identifier::Simple(symb) = id {
 
                     // check if recursive
@@ -278,21 +280,25 @@ fn instantiate_parent_sort(
                         return insert_sort(parent_sort.clone(), None, Grounding::Recursive, None, solver)
                     }
 
+                    // (declare-datatype Pair (par (X Y) ( ( white ) (pair (first X) (second Y)))))
                     let parent_decl = solver.parametric_sorts.get(symb)
-                        .ok_or(SolverError::InternalError(2785648))?;  // the parametric type should be in the solver
+                        .ok_or(InternalError(2785648))?;  // the parametric type should be in the solver
 
                     match parent_decl.clone() {
                         ParametricObject::Datatype(DatatypeDec::Par(variables, constructors)) => {
+                            // variables: (X Y)
+                            // constructors: ( ( white ) (pair (first X) (second Y))))
                             // we assume variables.len() = parameters.len()
 
                             // build substitution map : Sort -> Sort
+                            // X->Color, Y->Color
                             let subs = mapping(variables, parameters);
 
                             // instantiate constructors
                             let mut grounding = Grounding::Normal;
-                            let mut new_constructors = vec![];
+                            let mut new_constructors = vec![]; // ( ( white ) (pair (first Color) (second Color))))
                             for c in constructors {
-                                let mut new_selectors = vec![];
+                                let mut new_selectors = vec![]; // first Color, second Color
                                 for s in c.1 {
                                     let (new_g, new_sort) = substitute_in_sort(&s.1, &subs, declaring, solver)?;
                                     grounding = max(grounding, new_g);
@@ -308,13 +314,16 @@ fn instantiate_parent_sort(
                             insert_sort(parent_sort.clone(), Some(new_decl), grounding, None, solver)
                         },
                         ParametricObject::Definition(variables, definiendum, ) => {
+                            // running example: parent_sort is (MyPair Color Color)
+                            // parent_decl: (define-sort MyPair (T) (Pair T T))
+
                             // substitute to get new sort
-                            let subs = mapping(variables, parameters);
-                            let (new_g, new_sort) = substitute_in_sort(&definiendum, &subs, declaring, solver)?;
+                            let subs = mapping(variables, parameters); // T->Color
+                            let (new_g, new_sort) = substitute_in_sort(&definiendum, &subs, declaring, solver)?; // (Pair Color Color)
 
                             // get the name of the table
                             let sort_object = solver.sorts.get(&new_sort)
-                                .ok_or(SolverError::InternalError(7842966))?;
+                                .ok_or(InternalError(7842966))?;
 
                             // create sort object
                             match sort_object {
@@ -331,7 +340,7 @@ fn instantiate_parent_sort(
 
                         }
                         ParametricObject::Datatype(DatatypeDec::DatatypeDec(_)) => {
-                            Err(SolverError::InternalError(1786496))  // Unexpected non-parametric type
+                            Err(InternalError(1786496))  // Unexpected non-parametric type
                         },
                         ParametricObject::Recursive => {
                             insert_sort(parent_sort.clone(), None, Grounding::Recursive, None, solver)
@@ -341,7 +350,7 @@ fn instantiate_parent_sort(
                         }
                     }
                 } else {
-                    Err(SolverError::InternalError(71845846))  // unexpected indexed identifier
+                    Err(InternalError(71845846))  // unexpected indexed identifier
                 }
             },
         }}
@@ -392,7 +401,6 @@ fn insert_sort(
     solver: &mut Solver,
 ) -> Result<Grounding, SolverError> {
 
-    // update solver.sort
     if ! solver.sorts.contains_key(&sort) { // a new sort
 
         let i = solver.sorts.len();
@@ -401,20 +409,23 @@ fn insert_sort(
                 Grounding::Normal => {
                     if let Some(decl) = decl {
                         match decl {
-                            DatatypeDec::DatatypeDec(_) => {
+                            DatatypeDec::DatatypeDec(ref constructor_decls) => {
                                 if let Some(name) = table_name {
                                     SortObject::Normal(decl, name.to_string())
-                                } else if let Sort::Sort(Identifier::Simple(Symbol(ref name))) = sort {
-                                    SortObject::Normal(decl, name.to_string())
                                 } else {
-                                    SortObject::Normal(decl, format!("Sort_{}", i))
+                                    let table_name = if let Sort::Sort(Identifier::Simple(Symbol(ref name))) = sort {
+                                        name.to_string()
+                                    } else {
+                                        format!("Sort_{}", i)
+                                    };
+                                    create_table(&table_name, &constructor_decls, solver)?;
+                                    SortObject::Normal(decl, table_name)
                                 }
                             },
                             DatatypeDec::Par(_, _) => {
                                 SortObject::Normal(decl, format!("Sort_{}", i))
                             },
                         }
-
                     } else {
                         SortObject::Unknown
                     }
@@ -425,7 +436,6 @@ fn insert_sort(
             };
 
         // update solver.sorts
-        create_table(sort_object.clone(), solver)?;
         solver.sorts.insert(sort, sort_object);
     }
 
@@ -434,105 +444,103 @@ fn insert_sort(
 
 
 fn create_table(
-    sort_object: SortObject,
+    table_name: &str,
+    constructor_decls: &Vec<ConstructorDec>,
     solver: &mut Solver
 ) -> Result<(), SolverError> {
 
     // running example: (declare-datatype P ((white ) (pair (first Color) (second Color))))
-    if let SortObject::Normal(datatype_dec, table_name) = sort_object {
-        if ! table_name.starts_with(' ') {  // the sort is an alias for another sort (see define-sort)
-            if let DatatypeDec::DatatypeDec(constructor_decls) = datatype_dec {
 
-                // 1st pass: collect nullary constructors and selectors
-                // in ((white ) (pair (first Color) (second Color)))
-                let mut nullary: Vec<String> = vec![]; // white
-                let mut column_names: IndexSet<String> = IndexSet::new();  // first, second
-                for constructor_decl in &constructor_decls {
-                    let ConstructorDec(constructor, selectors) = constructor_decl;
-                    if selectors.len() == 0 {
-                        nullary.push(constructor.0.clone())
-                    } else {
-                        for SelectorDec(selector, _) in selectors {
-                            column_names.insert(selector.0.clone());
-                        }
-                    }
-                }
-
-                // helper function
-                fn create_core_table(
-                    table_name: String,  // contains the nullary constructors
-                    values: Vec<String>,
-                    conn: &mut Connection
-                ) -> Result<(), SolverError> {
-                    conn.execute(format!("CREATE TABLE {table_name} (G TEXT)").as_str(), ())?;
-                    for value in values {
-                        conn.execute(format!("INSERT INTO {table_name} (G) VALUES (?1)").as_str(), [value])?;
-                    }
-                    Ok(())
-                }
-                // end helper function
-
-                if column_names.len() == 0 {  // nullary constructors only
-                    create_core_table(table_name, nullary, &mut solver.conn)?;
-
-                } else {  // with constructors
-                    let core = format!("{table_name}_core");
-
-                    create_core_table(core.clone(), nullary, &mut solver.conn)?;
-
-                    let mut selects: Vec<String> = vec![];
-                    // the first select is select NULL as constructor, NULL as first, NULL as second, Color_core.G as G from Color_core
-                    selects.push(format!("SELECT NULL as constructor, {}, {}.G AS G from {}",
-                        column_names.iter().map(|n| format!("NULL AS {n}")).collect::<Vec<_>>().join(", "),
-                        core,
-                        core));
-
-                    // add "select "pair" as constructor, _T_1.G as first, _T_2.G as second, apply("pair", T_1_.G, T_2_.G) as G
-                    //      from Color as _T_1 join Color as _T_2"
-                    for constructor_decl in &constructor_decls { // e.g. (pair (first Color) (second Color))
-                        let ConstructorDec(constructor, selectors) = constructor_decl;
-                        if selectors.len() != 0 {  // otherwise, already in core table
-
-                            // compute the list of tables and column mapping
-                            let mut tables = Vec::with_capacity(selectors.len()); // [Color, Color]
-                            let mut columns = IndexMap::with_capacity(column_names.len());  // {first->_T_1.G, second->_T_2.G}; the value can be NULL
-                            for column_name in &column_names {
-                                columns.insert(column_name, "NULL".to_string());
-                            }
-                            for (i, SelectorDec(selector, sort)) in selectors.iter().enumerate() {
-                                let sort_object = solver.sorts.get(&sort.clone())
-                                    .ok_or(SolverError::InternalError(7459455))?;
-                                if let SortObject::Normal(_, table) = sort_object {
-                                    tables.push(table.clone());
-                                    columns.insert(&selector.0, format!("_T_{i}.G"));
-                                } else {
-                                    return Err(SolverError::InternalError(7529545))
-                                }
-                            }
-
-                            // _T_1.G AS first, _T_2.G as second
-                            let select_columns = columns.iter()
-                                .map(|(k, v)| format!("{v} AS {k}")) // v can also be NULL
-                                .collect::<Vec<String>>().join(", ");
-
-                            // _T_1.G, _T_2.G
-                            let parameters = (0..selectors.len()).map(|i| format!("_T_{i}.G")).collect::<Vec<_>>().join(", ");
-
-                            selects.push(format!("SELECT \"{}\" AS constructor, {}, {} FROM {}",
-                                constructor.0,
-                                select_columns,
-                                format!("construct(\"{}\", {}) AS G", constructor.0, parameters),
-                                tables.iter().enumerate().map(|(i, t)| format!("{t} as _T_{i}")).join(" JOIN ")))
-                        }
-                    }
-                    let create = format!("CREATE TABLE {table_name} AS {}", selects.join( " UNION "));
-                    solver.conn.execute(create.as_str(), ())?;
-                }
-
-            } else {
-                return Err(SolverError::InternalError(84585455));
+    // 1st pass: collect nullary constructors and selectors
+    // in ((white ) (pair (first Color) (second Color)))
+    let mut nullary: Vec<String> = vec![]; // white
+    let mut column_names: IndexSet<String> = IndexSet::new();  // first, second
+    for constructor_decl in constructor_decls {
+        let ConstructorDec(constructor, selectors) = constructor_decl;
+        if selectors.len() == 0 {
+            nullary.push(constructor.0.clone())
+        } else {
+            for SelectorDec(selector, _) in selectors {
+                column_names.insert(selector.0.clone());
             }
         }
+    }
+
+    // helper function
+    fn create_core_table(
+        table_name: &str,  // contains the nullary constructors
+        values: Vec<String>,
+        conn: &mut Connection
+    ) -> Result<(), SolverError> {
+
+        conn.execute(format!("CREATE TABLE {table_name} (G TEXT)").as_str(), ())?;
+
+        let mut stmt = conn.prepare(format!("INSERT INTO {table_name} (G) VALUES (?)").as_str())?;
+        for value in values {
+            stmt.execute(params![value])?;
+        }
+        Ok(())
+    } // end helper function
+
+    if column_names.len() == 0 {  // nullary constructors only
+
+        create_core_table(table_name, nullary, &mut solver.conn)?;
+
+    } else {  // with constructors
+
+        let mut selects: Vec<String> = vec![];
+
+        if 0 < nullary.len() {
+            let core = format!("{table_name}_core");
+            create_core_table(&core, nullary, &mut solver.conn)?;
+
+            // the first select is select NULL as constructor, NULL as first, NULL as second, Color_core.G as G from Color_core
+            selects.push(format!("SELECT NULL as constructor, {}, {}.G AS G from {}",
+                column_names.iter().map(|n| format!("NULL AS {n}")).collect::<Vec<_>>().join(", "),
+                core,
+                core));
+        }
+
+        // add "select "pair" as constructor, _T_1.G as first, _T_2.G as second, apply("pair", T_1_.G, T_2_.G) as G
+        //      from Color as _T_1 join Color as _T_2"
+        for constructor_decl in constructor_decls { // e.g. (pair (first Color) (second Color))
+            let ConstructorDec(constructor, selectors) = constructor_decl;
+            if selectors.len() != 0 {  // otherwise, already in core table
+
+                // compute the list of tables and column mapping
+                let mut tables = Vec::with_capacity(selectors.len()); // [Color, Color]
+                let mut columns = IndexMap::with_capacity(column_names.len());  // {first->_T_1.G, second->_T_2.G}; the value can be NULL
+                for column_name in &column_names {
+                    columns.insert(column_name, "NULL".to_string());
+                }
+                for (i, SelectorDec(selector, sort)) in selectors.iter().enumerate() {
+                    let sort_object = solver.sorts.get(&sort.clone())
+                        .ok_or(InternalError(7459455))?;
+                    if let SortObject::Normal(_, table) = sort_object {
+                        tables.push(table.clone());
+                        columns.insert(&selector.0, format!("_T_{i}.G"));
+                    } else {
+                        return Err(InternalError(7529545))
+                    }
+                }
+
+                // _T_1.G AS first, _T_2.G as second
+                let select_columns = columns.iter()
+                    .map(|(k, v)| format!("{v} AS {k}")) // v can also be NULL
+                    .collect::<Vec<String>>().join(", ");
+
+                // _T_1.G, _T_2.G
+                let parameters = (0..selectors.len()).map(|i| format!("_T_{i}.G")).collect::<Vec<_>>().join(", ");
+
+                selects.push(format!("SELECT \"{}\" AS constructor, {}, {} FROM {}",
+                    constructor.0,
+                    select_columns,
+                    format!("construct(\"{}\", {}) AS G", constructor.0, parameters),
+                    tables.iter().enumerate().map(|(i, t)| format!("{t} as _T_{i}")).join(" JOIN ")))
+            }
+        }
+        let create = format!("CREATE TABLE {table_name} AS {}", selects.join( " UNION "));
+        solver.conn.execute(create.as_str(), ())?;
     }
     Ok(())
 }

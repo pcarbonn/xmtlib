@@ -8,7 +8,7 @@
 (declare-datatype ColorList ( (nil) (cons (head Color) (tail (Triplet ColorList)))))
 (define-sort MyPair (T) (Pair T T))
 (define-sort PairColor () (Pair Color Color))
-(define-sort MyPairColor () (MyPair Color Color))
+(define-sort MyPairColor () (MyPair Color))
 (x-debug solver parametric_sorts)
 (x-debug solver sorts)
 (x-debug db Q)
@@ -23,7 +23,7 @@
 (declare-datatype ColorList ((nil ) (cons (head Color) (tail (Triplet ColorList)))))
 (define-sort MyPair (T) (Pair T T))
 (define-sort PairColor () (Pair Color Color))
-(define-sort MyPairColor () (MyPair Color Color))
+(define-sort MyPairColor () (MyPair Color))
 Parametric datatypes:
  - Pair: (par (X Y) ((white ) (pair (first X) (second Y))))
  - Triplet: (par (X) ((triplet (first (Pair X (Pair X X))))))
@@ -44,11 +44,13 @@ Sorts:
  - (recursive) (Pair ColorList (Pair ColorList ColorList))
  - (recursive) (Triplet ColorList)
  - ( Sort_4) PairColor: ((white ) (pair (first Color) (second Color)))
- - (unknown) (MyPair Color Color)
+ - (unknown) (MyPair Color)
  - (unknown) MyPairColor
  TABLE: Q
 ┌─────────────┬────────────────────────────────────────────────┬─────────────────────────────────────────────────────┐
 │ constructor │ x                                              │ G                                                   │
+├─────────────┼────────────────────────────────────────────────┼─────────────────────────────────────────────────────┤
+│ "q"         │ " (triplet white)"                             │ " (q  (triplet white))"                             │
 ├─────────────┼────────────────────────────────────────────────┼─────────────────────────────────────────────────────┤
 │ "q"         │ " (triplet  (pair green  (pair green green)))" │ " (q  (triplet  (pair green  (pair green green))))" │
 ├─────────────┼────────────────────────────────────────────────┼─────────────────────────────────────────────────────┤
@@ -69,7 +71,5 @@ Sorts:
 │ "q"         │ " (triplet  (pair red  (pair red red)))"       │ " (q  (triplet  (pair red  (pair red red))))"       │
 ├─────────────┼────────────────────────────────────────────────┼─────────────────────────────────────────────────────┤
 │ "q"         │ " (triplet  (pair red white))"                 │ " (q  (triplet  (pair red white)))"                 │
-├─────────────┼────────────────────────────────────────────────┼─────────────────────────────────────────────────────┤
-│ "q"         │ " (triplet white)"                             │ " (q  (triplet white))"                             │
 └─────────────┴────────────────────────────────────────────────┴─────────────────────────────────────────────────────┘
 sat
