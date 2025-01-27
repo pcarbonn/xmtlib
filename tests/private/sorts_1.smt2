@@ -1,6 +1,6 @@
 ; declare-datatype
 (declare-datatype Color ( ( red ) ( green ) ))
-(declare-datatype Pair (par (X Y) ((pair (first X) (second Y)))))
+(declare-datatype Pair (par (X Y) ( ( white ) (pair (first X) (second Y)))))
 (declare-datatype P ( (p (x (Pair Color Color)))))
 (declare-datatype Triplet (par (X) ((triplet (first (Pair X (Pair X X)))))))
 (declare-datatype Q ( (q (x (Triplet Color)))))
@@ -11,11 +11,11 @@
 (define-sort MyPairColor () (MyPair Color Color))
 (x-debug solver parametric_sorts)
 (x-debug solver sorts)
-(x-debug db Color)
+(x-debug db Q)
 (check-sat)
 -------------------------
 (declare-datatype Color ((red ) (green )))
-(declare-datatype Pair (par (X Y) ((pair (first X) (second Y)))))
+(declare-datatype Pair (par (X Y) ((white ) (pair (first X) (second Y)))))
 (declare-datatype P ((p (x (Pair Color Color)))))
 (declare-datatype Triplet (par (X) ((triplet (first (Pair X (Pair X X)))))))
 (declare-datatype Q ((q (x (Triplet Color)))))
@@ -25,7 +25,7 @@
 (define-sort PairColor () (Pair Color Color))
 (define-sort MyPairColor () (MyPair Color Color))
 Parametric datatypes:
- - Pair: (par (X Y) ((pair (first X) (second Y))))
+ - Pair: (par (X Y) ((white ) (pair (first X) (second Y))))
  - Triplet: (par (X) ((triplet (first (Pair X (Pair X X))))))
  - MyPair: (T) -> (Pair T T)
 Sorts:
@@ -33,9 +33,9 @@ Sorts:
  - (infinite) Int
  - (infinite) Real
  - (Color) Color: ((red ) (green ))
- - (Sort_4) (Pair Color Color): ((pair (first Color) (second Color)))
+ - (Sort_4) (Pair Color Color): ((white ) (pair (first Color) (second Color)))
  - (P) P: ((p (x (Pair Color Color))))
- - (Sort_6) (Pair Color (Pair Color Color)): ((pair (first Color) (second (Pair Color Color))))
+ - (Sort_6) (Pair Color (Pair Color Color)): ((white ) (pair (first Color) (second (Pair Color Color))))
  - (Sort_7) (Triplet Color): ((triplet (first (Pair Color (Pair Color Color)))))
  - (Q) Q: ((q (x (Triplet Color))))
  - (infinite) R
@@ -43,15 +43,33 @@ Sorts:
  - (recursive) (Pair ColorList ColorList)
  - (recursive) (Pair ColorList (Pair ColorList ColorList))
  - (recursive) (Triplet ColorList)
- - ( Sort_4) PairColor: ((pair (first Color) (second Color)))
+ - ( Sort_4) PairColor: ((white ) (pair (first Color) (second Color)))
  - (unknown) (MyPair Color Color)
  - (unknown) MyPairColor
- TABLE: Color
-┌─────────┐
-│ G       │
-├─────────┤
-│ "red"   │
-├─────────┤
-│ "green" │
-└─────────┘
+ TABLE: Q
+┌─────────────┬────────────────────────────────────────────────┬─────────────────────────────────────────────────────┐
+│ constructor │ x                                              │ G                                                   │
+├─────────────┼────────────────────────────────────────────────┼─────────────────────────────────────────────────────┤
+│ "q"         │ " (triplet  (pair green  (pair green green)))" │ " (q  (triplet  (pair green  (pair green green))))" │
+├─────────────┼────────────────────────────────────────────────┼─────────────────────────────────────────────────────┤
+│ "q"         │ " (triplet  (pair green  (pair green red)))"   │ " (q  (triplet  (pair green  (pair green red))))"   │
+├─────────────┼────────────────────────────────────────────────┼─────────────────────────────────────────────────────┤
+│ "q"         │ " (triplet  (pair green  (pair red green)))"   │ " (q  (triplet  (pair green  (pair red green))))"   │
+├─────────────┼────────────────────────────────────────────────┼─────────────────────────────────────────────────────┤
+│ "q"         │ " (triplet  (pair green  (pair red red)))"     │ " (q  (triplet  (pair green  (pair red red))))"     │
+├─────────────┼────────────────────────────────────────────────┼─────────────────────────────────────────────────────┤
+│ "q"         │ " (triplet  (pair green white))"               │ " (q  (triplet  (pair green white)))"               │
+├─────────────┼────────────────────────────────────────────────┼─────────────────────────────────────────────────────┤
+│ "q"         │ " (triplet  (pair red  (pair green green)))"   │ " (q  (triplet  (pair red  (pair green green))))"   │
+├─────────────┼────────────────────────────────────────────────┼─────────────────────────────────────────────────────┤
+│ "q"         │ " (triplet  (pair red  (pair green red)))"     │ " (q  (triplet  (pair red  (pair green red))))"     │
+├─────────────┼────────────────────────────────────────────────┼─────────────────────────────────────────────────────┤
+│ "q"         │ " (triplet  (pair red  (pair red green)))"     │ " (q  (triplet  (pair red  (pair red green))))"     │
+├─────────────┼────────────────────────────────────────────────┼─────────────────────────────────────────────────────┤
+│ "q"         │ " (triplet  (pair red  (pair red red)))"       │ " (q  (triplet  (pair red  (pair red red))))"       │
+├─────────────┼────────────────────────────────────────────────┼─────────────────────────────────────────────────────┤
+│ "q"         │ " (triplet  (pair red white))"                 │ " (q  (triplet  (pair red white)))"                 │
+├─────────────┼────────────────────────────────────────────────┼─────────────────────────────────────────────────────┤
+│ "q"         │ " (triplet white)"                             │ " (q  (triplet white))"                             │
+└─────────────┴────────────────────────────────────────────────┴─────────────────────────────────────────────────────┘
 sat

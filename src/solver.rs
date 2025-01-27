@@ -10,6 +10,7 @@ use crate::api::*;
 use crate::error::{format_error, SolverError};
 use crate::grammar::parse;
 use crate::private::a_sort::*;
+use crate::private::y_db::init_db;
 
 
 pub enum Backend {
@@ -41,7 +42,7 @@ impl Default for Solver {
         ), "Bool".to_string());
 
         // create Bool table
-        let conn = Connection::open_in_memory().unwrap();
+        let mut conn = Connection::open_in_memory().unwrap();
         conn.execute(
             "CREATE TABLE Bool (
                     G    TEXT
@@ -50,6 +51,8 @@ impl Default for Solver {
         ).unwrap();
         conn.execute("INSERT INTO Bool (G) VALUES (\"true\")" , ()).unwrap();
         conn.execute("INSERT INTO Bool (G) VALUES (\"false\")", ()).unwrap();
+
+        init_db(&mut conn).unwrap();
 
         Solver {
             backend: Backend::NoDriver,

@@ -3,6 +3,7 @@
 use std::cmp::max;
 
 use indexmap::{IndexMap, IndexSet};
+use itertools::Itertools;
 use rusqlite::Connection;
 
 use crate::api::{ConstructorDec, DatatypeDec, Identifier, Numeral, SelectorDec, Sort, SortDec, Symbol};
@@ -431,31 +432,35 @@ fn insert_sort(
     Ok(grounding)
 }
 
+
 fn create_table(
     sort_object: SortObject,
     solver: &mut Solver
 ) -> Result<(), SolverError> {
+
+    // running example: (declare-datatype P ((white ) (pair (first Color) (second Color))))
     if let SortObject::Normal(datatype_dec, table_name) = sort_object {
-        if ! table_name.starts_with(' ') {
+        if ! table_name.starts_with(' ') {  // the sort is an alias for another sort (see define-sort)
             if let DatatypeDec::DatatypeDec(constructor_decls) = datatype_dec {
 
                 // 1st pass: collect nullary constructors and selectors
-                let mut nullary: Vec<String> = vec![];
-                let mut columns: IndexSet<String> = IndexSet::new();
-                for constructor_decl in constructor_decls {
+                // in ((white ) (pair (first Color) (second Color)))
+                let mut nullary: Vec<String> = vec![]; // white
+                let mut column_names: IndexSet<String> = IndexSet::new();  // first, second
+                for constructor_decl in &constructor_decls {
                     let ConstructorDec(constructor, selectors) = constructor_decl;
                     if selectors.len() == 0 {
-                        nullary.push(constructor.0)
+                        nullary.push(constructor.0.clone())
                     } else {
                         for SelectorDec(selector, _) in selectors {
-                            columns.insert(selector.0.clone());
+                            column_names.insert(selector.0.clone());
                         }
                     }
                 }
 
                 // helper function
-                fn core_table(
-                    table_name: String,
+                fn create_core_table(
+                    table_name: String,  // contains the nullary constructors
                     values: Vec<String>,
                     conn: &mut Connection
                 ) -> Result<(), SolverError> {
@@ -465,14 +470,63 @@ fn create_table(
                     }
                     Ok(())
                 }
+                // end helper function
 
-                if columns.len() == 0 {  // nullary constructors only
-                    core_table(table_name, nullary, &mut solver.conn)?;
-                } else {
-                    core_table(format!("{table_name}_core"), nullary, &mut solver.conn)?;
-                    // if selectors: create table as (Select...)
-                    //     fill it with the nullary constructors
-                    //     fill it with the other constructors
+                if column_names.len() == 0 {  // nullary constructors only
+                    create_core_table(table_name, nullary, &mut solver.conn)?;
+
+                } else {  // with constructors
+                    let core = format!("{table_name}_core");
+
+                    create_core_table(core.clone(), nullary, &mut solver.conn)?;
+
+                    let mut selects: Vec<String> = vec![];
+                    // the first select is select NULL as constructor, NULL as first, NULL as second, Color_core.G as G from Color_core
+                    selects.push(format!("SELECT NULL as constructor, {}, {}.G AS G from {}",
+                        column_names.iter().map(|n| format!("NULL AS {n}")).collect::<Vec<_>>().join(", "),
+                        core,
+                        core));
+
+                    // add "select "pair" as constructor, _T_1.G as first, _T_2.G as second, apply("pair", T_1_.G, T_2_.G) as G
+                    //      from Color as _T_1 join Color as _T_2"
+                    for constructor_decl in &constructor_decls { // e.g. (pair (first Color) (second Color))
+                        let ConstructorDec(constructor, selectors) = constructor_decl;
+                        if selectors.len() != 0 {  // otherwise, already in core table
+
+                            // compute the list of tables and column mapping
+                            let mut tables = Vec::with_capacity(selectors.len()); // [Color, Color]
+                            let mut columns = IndexMap::with_capacity(column_names.len());  // {first->_T_1.G, second->_T_2.G}; the value can be NULL
+                            for column_name in &column_names {
+                                columns.insert(column_name, "NULL".to_string());
+                            }
+                            for (i, SelectorDec(selector, sort)) in selectors.iter().enumerate() {
+                                let sort_object = solver.sorts.get(&sort.clone())
+                                    .ok_or(SolverError::InternalError(7459455))?;
+                                if let SortObject::Normal(_, table) = sort_object {
+                                    tables.push(table.clone());
+                                    columns.insert(&selector.0, format!("_T_{i}.G"));
+                                } else {
+                                    return Err(SolverError::InternalError(7529545))
+                                }
+                            }
+
+                            // _T_1.G AS first, _T_2.G as second
+                            let select_columns = columns.iter()
+                                .map(|(k, v)| format!("{v} AS {k}")) // v can also be NULL
+                                .collect::<Vec<String>>().join(", ");
+
+                            // _T_1.G, _T_2.G
+                            let parameters = (0..selectors.len()).map(|i| format!("_T_{i}.G")).collect::<Vec<_>>().join(", ");
+
+                            selects.push(format!("SELECT \"{}\" AS constructor, {}, {} FROM {}",
+                                constructor.0,
+                                select_columns,
+                                format!("construct(\"{}\", {}) AS G", constructor.0, parameters),
+                                tables.iter().enumerate().map(|(i, t)| format!("{t} as _T_{i}")).join(" JOIN ")))
+                        }
+                    }
+                    let create = format!("CREATE TABLE {table_name} AS {}", selects.join( " UNION "));
+                    solver.conn.execute(create.as_str(), ())?;
                 }
 
             } else {
