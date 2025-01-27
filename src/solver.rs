@@ -34,12 +34,15 @@ impl Default for Solver {
     fn default() -> Solver {
         let sort = |s: &str| Sort::Sort(Identifier::Simple(Symbol(s.to_string())));
         let bool_sort = sort("Bool");
-        let bool_decl = SortObject::Normal(DatatypeDec::DatatypeDec(
-            vec![
-                ConstructorDec (Symbol("true" .to_string()),vec![]),
-                ConstructorDec (Symbol("false".to_string()),vec![]),
-            ],
-            ), "Bool".to_string(), 2);
+        let bool_decl = SortObject::Normal{
+            datatype_dec: DatatypeDec::DatatypeDec(
+                vec![
+                    ConstructorDec (Symbol("true" .to_string()),vec![]),
+                    ConstructorDec (Symbol("false".to_string()),vec![]),
+                ],
+                ),
+            table_name: "Bool".to_string(),
+            count: 2};
 
         // create Bool table
         let mut conn = Connection::open_in_memory().unwrap();
@@ -144,8 +147,9 @@ impl Solver {
                                     yield_!(Ok("Sorts:".to_string()));
                                     for (sort, decl) in &self.sorts {
                                         match decl {
-                                            SortObject::Normal(decl, table, count) =>
-                                                yield_!(Ok(format!(" - ({}: {}) {}: {}", table, count, sort, decl))),
+                                            SortObject::Normal{datatype_dec, table_name, count} =>
+                                                yield_!(Ok(format!(" - ({}: {}) {}: {}",
+                                                    table_name, count, sort, datatype_dec))),
                                             SortObject::Recursive =>
                                                 yield_!(Ok(format!(" - (recursive) {}", sort))),
                                             SortObject::Infinite =>
@@ -161,9 +165,11 @@ impl Solver {
                                         match decl {
                                             ParametricObject::Datatype(decl) =>
                                                 yield_!(Ok(format!(" - {}: {}", sort, decl))),
-                                            ParametricObject::Definition(vars, parent_sort) => {
-                                                let vars = vars.iter().map(|v| v.0.clone()).collect::<Vec<String>>().join(",");
-                                                yield_!(Ok(format!(" - {}: ({}) -> {}", sort, vars, parent_sort)))
+                                            ParametricObject::Definition{variables, definiendum} => {
+                                                let vars = variables.iter()
+                                                    .map(|v| v.0.clone())
+                                                    .collect::<Vec<String>>().join(",");
+                                                yield_!(Ok(format!(" - {}: ({}) -> {}", sort, vars, definiendum)))
                                             },
                                             ParametricObject::Recursive =>
                                                 yield_!(Ok(format!(" - (recursive): {}", sort))),

@@ -15,14 +15,14 @@ use debug_print::debug_println as dprintln;
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum ParametricObject {
     Datatype(DatatypeDec),
-    Definition(Vec<Symbol>, Sort),
+    Definition{ variables: Vec<Symbol>, definiendum: Sort },
     Recursive,
     Unknown
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum SortObject{
-    Normal(DatatypeDec, String, usize),  // table name, number of rows
+    Normal{datatype_dec: DatatypeDec, table_name: String, count: usize},  // table name, number of rows
     Recursive,
     Infinite,  // Int, Real, and derived
     Unknown
@@ -122,7 +122,7 @@ pub(crate) fn define_sort(
         let (new_decl, table_name) =
             match new_decl.clone()
              {
-                SortObject::Normal(datatype_dec, table_name, count) => {
+                SortObject::Normal{datatype_dec, table_name, count} => {
                     (Some(datatype_dec.clone()), Some((format!(" {table_name}"), count)))  // front space to say that the table exists already
                 },
                 SortObject::Recursive
@@ -133,7 +133,7 @@ pub(crate) fn define_sort(
         insert_sort(new_sort, new_decl, g, table_name, solver)?;
 
     } else {  // sort must be parametric
-        solver.parametric_sorts.insert(symb, ParametricObject::Definition(variables, definiendum));
+        solver.parametric_sorts.insert(symb, ParametricObject::Definition{variables, definiendum});
     }
 
     Ok(out)
@@ -253,10 +253,10 @@ fn instantiate_parent_sort(
     if let Some(sort_object) = solver.sorts.get(parent_sort) {
         // already instantiated
         match sort_object {
-            SortObject::Normal(_, _, _) => Ok(Grounding::Normal),
-            SortObject::Unknown         => Ok(Grounding::Unknown),
-            SortObject::Infinite        => Ok(Grounding::Infinite),
-            SortObject::Recursive       => Ok(Grounding::Recursive),
+            SortObject::Normal{..} => Ok(Grounding::Normal),
+            SortObject::Unknown    => Ok(Grounding::Unknown),
+            SortObject::Infinite   => Ok(Grounding::Infinite),
+            SortObject::Recursive  => Ok(Grounding::Recursive),
         }
     } else {
         match parent_sort {
@@ -313,7 +313,7 @@ fn instantiate_parent_sort(
                             let new_decl = DatatypeDec::DatatypeDec(new_constructors);
                             insert_sort(parent_sort.clone(), Some(new_decl), grounding, None, solver)
                         },
-                        ParametricObject::Definition(variables, definiendum, ) => {
+                        ParametricObject::Definition{variables, definiendum, } => {
                             // running example: parent_sort is (MyPair Color Color)
                             // parent_decl: (define-sort MyPair (T) (Pair T T))
 
@@ -327,8 +327,8 @@ fn instantiate_parent_sort(
 
                             // create sort object
                             match sort_object {
-                                SortObject::Normal(_, table, count) => {
-                                    let table_name = Some((format!(" {table}"), count.clone()));
+                                SortObject::Normal{table_name, count, ..} => {
+                                    let table_name = Some((format!(" {table_name}"), count.clone()));
                                     insert_sort(parent_sort.clone(), None, new_g, table_name, solver)  // front space to say that the table exists already
                                 },
                                 SortObject::Infinite
@@ -407,11 +407,11 @@ fn insert_sort(
         let sort_object =
             match grounding {
                 Grounding::Normal => {
-                    if let Some(decl) = decl {
-                        match decl {
+                    if let Some(datatype_dec) = decl {
+                        match datatype_dec {
                             DatatypeDec::DatatypeDec(ref constructor_decls) => {
-                                if let Some((name, count)) = alias {
-                                    SortObject::Normal(decl, name, count)
+                                if let Some((table_name, count)) = alias {
+                                    SortObject::Normal{datatype_dec, table_name, count}
                                 } else {
                                     let table_name = if let Sort::Sort(Identifier::Simple(Symbol(ref name))) = sort {
                                         name.to_string()
@@ -419,7 +419,7 @@ fn insert_sort(
                                         format!("Sort_{}", i)
                                     };
                                     let count = create_table(&table_name, &constructor_decls, solver)?;
-                                    SortObject::Normal(decl, table_name, count)
+                                    SortObject::Normal{datatype_dec, table_name, count}
                                 }
                             },
                             DatatypeDec::Par(_, _) => {
@@ -519,10 +519,10 @@ fn create_table(
                 for (i, SelectorDec(selector, sort)) in selectors.iter().enumerate() {
                     let sort_object = solver.sorts.get(&sort.clone())
                         .ok_or(InternalError(7459455))?;
-                    if let SortObject::Normal(_, table, rows_i) = sort_object {
-                        tables.push(table.clone());
+                    if let SortObject::Normal{table_name, count: count_, ..} = sort_object {
+                        tables.push(table_name.clone());
                         columns.insert(&selector.0, format!("_T_{i}.G"));
-                        row_product *= rows_i;
+                        row_product *= count_;
                     } else {
                         return Err(InternalError(7529545))
                     }
