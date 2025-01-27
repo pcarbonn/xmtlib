@@ -87,6 +87,7 @@ pub(crate) fn declare_sort(
     command: String,
     solver: &mut Solver
 ) -> Result<String, SolverError> {
+
     let out = solver.exec(&command)?;
 
     if numeral.0 == 0 {
@@ -107,6 +108,7 @@ pub(crate) fn define_sort(
     command: String,
     solver: &mut Solver
 ) -> Result<String, SolverError> {
+
     let out = solver.exec(&command)?;
 
     if variables.len() == 0 {  // non-parametric

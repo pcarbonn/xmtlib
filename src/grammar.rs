@@ -185,8 +185,10 @@ peg::parser!{
         // //////////////////////////// S-Commands     ////////////////////////////
 
         rule debug() -> Command
-            = _ "x-debug" __ object:simple_symbol()
-            { XDebug (object) }
+            = _ "x-debug"
+            __ typ:simple_symbol()
+            __ object:simple_symbol()
+            { XDebug (typ, object) }
 
         rule verbatim() -> Command
             = _ command: ( "assert"

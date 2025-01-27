@@ -4,6 +4,7 @@ use std::future::Future;
 
 use genawaiter::{sync::Gen, sync::gen, yield_};
 use indexmap::IndexMap;
+use rusqlite::{Connection, Result};
 
 use crate::api::*;
 use crate::error::{format_error, SolverError, check_condition};
@@ -18,6 +19,7 @@ pub enum Backend {
 
 pub struct Solver {
     pub(crate) backend: Backend,
+    pub(crate) conn: Connection,
 
     // contains only parametric data type declarations
     pub(crate) parametric_sorts: IndexMap<Symbol, ParametricObject>,
@@ -38,8 +40,20 @@ impl Default for Solver {
             ],
         ), "Bool".to_string());
 
+        // create Bool table
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute(
+            "CREATE TABLE Bool (
+                    G    TEXT
+            )",
+            (), // empty list of parameters.
+        ).unwrap();
+        conn.execute("INSERT INTO Bool (G) VALUES (\"true\")" , ()).unwrap();
+        conn.execute("INSERT INTO Bool (G) VALUES (\"false\")", ()).unwrap();
+
         Solver {
             backend: Backend::NoDriver,
+            conn: conn,
             parametric_sorts: IndexMap::new(),
             sorts: IndexMap::from([
                 (bool_sort, bool_decl),
@@ -119,46 +133,55 @@ impl Solver {
                     yield_!(define_sort(symb, variables, sort, command, self))
                 }
 
-                Command::XDebug(s) => {
-                    match s.as_str() {
-                        "sorts" => {
-                            yield_!(Ok("Sorts:".to_string()));
-                            for (sort, decl) in &self.sorts {
-                                match decl {
-                                    SortObject::Normal(decl, table) =>
-                                        yield_!(Ok(format!(" - ({}) {}: {}", table, sort, decl))),
-                                    SortObject::Recursive =>
-                                        yield_!(Ok(format!(" - (recursive) {}", sort))),
-                                    SortObject::Infinite =>
-                                        yield_!(Ok(format!(" - (infinite) {}", sort))),
-                                    SortObject::Unknown =>
-                                        yield_!(Ok(format!(" - (unknown) {}", sort))),
+                Command::XDebug(typ, obj) => {
+                    match typ.as_str() {
+                        "solver" => {
+                            match obj.as_str() {
+                                "sorts" => {
+                                    yield_!(Ok("Sorts:".to_string()));
+                                    for (sort, decl) in &self.sorts {
+                                        match decl {
+                                            SortObject::Normal(decl, table) =>
+                                                yield_!(Ok(format!(" - ({}) {}: {}", table, sort, decl))),
+                                            SortObject::Recursive =>
+                                                yield_!(Ok(format!(" - (recursive) {}", sort))),
+                                            SortObject::Infinite =>
+                                                yield_!(Ok(format!(" - (infinite) {}", sort))),
+                                            SortObject::Unknown =>
+                                                yield_!(Ok(format!(" - (unknown) {}", sort))),
+                                        }
+                                    }
+                                },
+                                "parametric_sorts" => {
+                                    yield_!(Ok("Parametric datatypes:".to_string()));
+                                    for (sort, decl) in &self.parametric_sorts {
+                                        match decl {
+                                            ParametricObject::Datatype(decl) =>
+                                                yield_!(Ok(format!(" - {}: {}", sort, decl))),
+                                            ParametricObject::Definition(vars, parent_sort) => {
+                                                let vars = vars.iter().map(|v| v.0.clone()).collect::<Vec<String>>().join(",");
+                                                yield_!(Ok(format!(" - {}: ({}) -> {}", sort, vars, parent_sort)))
+                                            },
+                                            ParametricObject::Recursive =>
+                                                yield_!(Ok(format!(" - (recursive): {}", sort))),
+                                            ParametricObject::Unknown =>
+                                                yield_!(Ok(format!(" - (unknown): {}", sort))),
+                                        }
+                                    }
+                                },
+                                _ => {
+                                    yield_!(Err(SolverError::ExprError("Unknown 'x-debug solver' parameter".to_string(), None)))
                                 }
                             }
                         },
-                        "parametric_sorts" => {
-                            yield_!(Ok("Parametric datatypes:".to_string()));
-                            for (sort, decl) in &self.parametric_sorts {
-                                match decl {
-                                    ParametricObject::Datatype(decl) =>
-                                        yield_!(Ok(format!(" - {}: {}", sort, decl))),
-                                    ParametricObject::Definition(vars, parent_sort) => {
-                                        let vars = vars.iter().map(|v| v.0.clone()).collect::<Vec<String>>().join(",");
-                                        yield_!(Ok(format!(" - {}: ({}) -> {}", sort, vars, parent_sort)))
-                                    },
-                                    ParametricObject::Recursive =>
-                                        yield_!(Ok(format!(" - (recursive): {}", sort))),
-                                    ParametricObject::Unknown =>
-                                        yield_!(Ok(format!(" - (unknown): {}", sort))),
-                                }
+                        "db" => {
+                            if let Ok(content) = pretty_sqlite::pretty_table(&self.conn, obj.as_str()) {
+                                yield_!(Ok(content))
+                            } else {
+                                yield_!(Err(SolverError::ExprError("Unknown table".to_string(), None)))
                             }
                         },
-                        _ => {
-                            if let Err(e) = check_condition(false,
-                                       "Unknown x-debug parameter", None) {
-                                yield_!(Err(e))
-                            }
-                        }
+                        _ => yield_!(Err(SolverError::ExprError("Unknown 'x-debug' parameter".to_string(), None)))
                     }
                 },
 

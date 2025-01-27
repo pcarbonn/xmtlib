@@ -184,7 +184,7 @@ pub enum Command {
     DeclareDatatypes(Vec<SortDec>, Vec<DatatypeDec>),
     DeclareSort(Symbol, Numeral),
     DefineSort(Symbol, Vec<Symbol>, Sort),
-    XDebug(String),
+    XDebug(String, String),
     Verbatim(String),
 }
 impl std::fmt::Display for Command {
@@ -240,7 +240,7 @@ impl std::fmt::Display for Command {
             // Self::SetOption(m0) => write!(f, "(set-option {})", m0),
             // Self::Simplify(m0) => write!(f, "(simplify {})", m0),
 
-            Self::XDebug(s) => write!(f, "(x-debug {})", s),
+            Self::XDebug(s1, s2) => write!(f, "(x-debug {} {})", s1, s2),
             Self::Verbatim(s) => write!(f, "{}", s),
         }
     }

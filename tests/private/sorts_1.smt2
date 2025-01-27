@@ -9,8 +9,9 @@
 (define-sort MyPair (T) (Pair T T))
 (define-sort PairColor () (Pair Color Color))
 (define-sort MyPairColor () (MyPair Color Color))
-(x-debug parametric_sorts)
-(x-debug sorts)
+(x-debug solver parametric_sorts)
+(x-debug solver sorts)
+(x-debug db Bool)
 (check-sat)
 -------------------------
 (declare-datatype Color ((red ) (green ) (blue )))
@@ -45,4 +46,12 @@ Sorts:
  - ( Sort_4) PairColor: ((pair (first Color) (second Color)))
  - (unknown) (MyPair Color Color)
  - (unknown) MyPairColor
+ TABLE: Bool
+┌─────────┐
+│ G       │
+├─────────┤
+│ "true"  │
+├─────────┤
+│ "false" │
+└─────────┘
 sat

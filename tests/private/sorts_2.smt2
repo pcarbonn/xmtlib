@@ -12,8 +12,8 @@
 (declare-sort A 0)
 (declare-sort B 0)
 (define-sort MyPair () (Pair A B))
-(x-debug parametric_sorts)
-(x-debug sorts)
+(x-debug solver parametric_sorts)
+(x-debug solver sorts)
 (check-sat)
 -------------------------
 (declare-datatypes ((Tree 1) (TreeList 1)) ((par (X) ((node (value X) (children (TreeList X))))) (par (Y) ((empty ) (insert (head (Tree Y)) (tail (TreeList Y)))))))
