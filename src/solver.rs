@@ -10,7 +10,7 @@ use crate::api::*;
 use crate::error::{format_error, SolverError};
 use crate::grammar::parse;
 use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, ParametricObject, SortObject};
-use crate::private::b_fun::declare_fun;
+use crate::private::b_fun::{declare_fun, FunctionObject};
 use crate::private::y_db::init_db;
 
 
@@ -28,6 +28,10 @@ pub struct Solver {
 
     // contains nullary data types and the used instantiations of parametric data types
     pub(crate) sorts: IndexMap<Sort, SortObject>,
+
+    // predicate and function symbols
+    pub(crate) functions: IndexMap<Identifier, FunctionObject>,
+    // pub(crate) qualified_functions: IndexMap<QualIdentifier, FunctionObject>,
 }
 
 
@@ -82,7 +86,9 @@ impl Default for Solver {
             backend: Backend::NoDriver,
             conn: conn,
             parametric_sorts: parametric_sorts,
-            sorts: sorts
+            sorts: sorts,
+            functions: IndexMap::new(),
+            // qualified_functions: IndexMap::new(),
         }
     }
 }
@@ -173,14 +179,13 @@ impl Solver {
                                     for (sort, decl) in &self.sorts {
                                         match decl {
                                             SortObject::Normal{datatype_dec, table_name, count} =>
-                                                yield_!(Ok(format!(" - ({}: {}) {}: {}",
-                                                    table_name, count, sort, datatype_dec))),
+                                                yield_!(Ok(format!(" - ({table_name}: {count}) {sort}: {datatype_dec}"))),
                                             SortObject::Recursive =>
-                                                yield_!(Ok(format!(" - (recursive) {}", sort))),
+                                                yield_!(Ok(format!(" - (recursive) {sort}"))),
                                             SortObject::Infinite =>
-                                                yield_!(Ok(format!(" - (infinite) {}", sort))),
+                                                yield_!(Ok(format!(" - (infinite) {sort}"))),
                                             SortObject::Unknown =>
-                                                yield_!(Ok(format!(" - (unknown) {}", sort))),
+                                                yield_!(Ok(format!(" - (unknown) {sort}"))),
                                         }
                                     }
                                 },
@@ -189,23 +194,31 @@ impl Solver {
                                     for (sort, decl) in &self.parametric_sorts {
                                         match decl {
                                             ParametricObject::Datatype(decl) =>
-                                                yield_!(Ok(format!(" - {}: {}", sort, decl))),
+                                                yield_!(Ok(format!(" - {sort}: {decl}"))),
                                             ParametricObject::Definition{variables, definiendum} => {
                                                 let vars = variables.iter()
                                                     .map(|v| v.0.clone())
                                                     .collect::<Vec<String>>().join(",");
-                                                yield_!(Ok(format!(" - {}: ({}) -> {}", sort, vars, definiendum)))
+                                                yield_!(Ok(format!(" - {sort}: ({vars}) -> {definiendum}")))
                                             },
                                             ParametricObject::Recursive =>
-                                                yield_!(Ok(format!(" - (recursive): {}", sort))),
+                                                yield_!(Ok(format!(" - (recursive): {sort}"))),
                                             ParametricObject::Unknown =>
-                                                yield_!(Ok(format!(" - (unknown): {}", sort))),
+                                                yield_!(Ok(format!(" - (unknown): {sort}"))),
                                         }
                                     }
                                 },
-                                _ => {
-                                    yield_!(Err(SolverError::ExprError("Unknown 'x-debug solver' parameter".to_string(), None)))
-                                }
+                                "functions" => {
+                                    yield_!(Ok("Functions:".to_string()));
+                                    for (symbol, func) in &self.functions {
+                                        let FunctionObject{domain, co_domain, typ} = func;
+                                        let domain = domain.iter()
+                                            .map(|s| format!("{s}"))
+                                            .collect::<Vec<_>>().join(" * ");
+                                        yield_!(Ok(format!(" - {symbol}: {domain} -> {co_domain} ({typ})")))
+                                    }
+                                },
+                                _ => yield_!(Err(SolverError::ExprError("Unknown 'x-debug solver' parameter".to_string(), None)))
                             }
                         },
                         "db" => {

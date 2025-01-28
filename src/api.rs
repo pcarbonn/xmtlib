@@ -6,6 +6,8 @@
 
 // It also implements Display.
 
+use std::fmt::Display;
+
 use itertools::Itertools;
 
 
@@ -14,7 +16,7 @@ use itertools::Itertools;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Numeral(pub i32);
-impl std::fmt::Display for Numeral {
+impl Display for Numeral {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.0 < 0 {
             write!(f, "(- {})", -self.0)
@@ -27,7 +29,7 @@ impl std::fmt::Display for Numeral {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Symbol(pub String);
-impl std::fmt::Display for Symbol {
+impl Display for Symbol {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
@@ -50,7 +52,7 @@ pub enum SExpr {
     /// `(<s_expr>*)`
     Paren(Vec<SExpr>),
 }
-impl std::fmt::Display for SExpr {
+impl Display for SExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             // Self::SpecConstant(m0) => write!(f, "{}", m0),
@@ -73,7 +75,7 @@ pub enum Index {
     /// `<symbol>`
     Symbol(Symbol),
 }
-impl std::fmt::Display for Index {
+impl Display for Index {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::Numeral(m0) => write!(f, "{}", m0),
@@ -90,7 +92,7 @@ pub enum Identifier {
     /// `(_ <symbol> <index>+)`
     Indexed(Symbol, Vec<Index>),
 }
-impl std::fmt::Display for Identifier {
+impl Display for Identifier {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::Simple(m0) => write!(f, "{}", m0),
@@ -110,7 +112,7 @@ pub enum Sort {
     /// `(<identifier> <sort>+)`
     Parametric(Identifier, Vec<Sort>),
 }
-impl std::fmt::Display for Sort {
+impl Display for Sort {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::Sort(m0) => write!(f, "{}", m0),
@@ -130,7 +132,7 @@ impl std::fmt::Display for Sort {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SortDec(pub Symbol, pub Numeral);
-impl std::fmt::Display for SortDec {
+impl Display for SortDec {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "({} {})", self.0, self.1)
     }
@@ -139,7 +141,7 @@ impl std::fmt::Display for SortDec {
 /// `(<symbol> <sort>)`
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SelectorDec(pub Symbol, pub Sort);
-impl std::fmt::Display for SelectorDec {
+impl Display for SelectorDec {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "({} {})", self.0, self.1)
     }
@@ -149,7 +151,7 @@ impl std::fmt::Display for SelectorDec {
 /// `(<symbol> <selector_dec>*)`
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ConstructorDec(pub Symbol, pub Vec<SelectorDec>);
-impl std::fmt::Display for ConstructorDec {
+impl Display for ConstructorDec {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "({} {})", self.0, self.1.iter().format(" "))
     }
@@ -163,7 +165,7 @@ pub enum DatatypeDec {
     /// `(par (<symbol>+) (<constructor_dec>+))`
     Par(Vec<Symbol>, Vec<ConstructorDec>),
 }
-impl std::fmt::Display for DatatypeDec {
+impl Display for DatatypeDec {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::DatatypeDec(m0) => write!(f, "({})", m0.iter().format(" ")),
@@ -189,7 +191,7 @@ pub enum Command {
     XDebug(String, String),
     Verbatim(String),
 }
-impl std::fmt::Display for Command {
+impl Display for Command {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             // Self::Assert(m0) => write!(f, "(assert {})", m0),

@@ -416,7 +416,7 @@ fn insert_sort(
                                     SortObject::Normal{datatype_dec, table_name, count}
                                 } else {
                                     let table_name = if let Sort::Sort(Identifier::Simple(Symbol(ref name))) = sort {
-                                        name.to_string()
+                                        name.to_string()  // todo: sanitize name (several places)
                                     } else {
                                         format!("Sort_{}", i)
                                     };
@@ -424,7 +424,7 @@ fn insert_sort(
                                     SortObject::Normal{datatype_dec, table_name, count}
                                 }
                             },
-                            DatatypeDec::Par(_, _) => {
+                            DatatypeDec::Par(..) => {
                                 return Err(InternalError(8458555))
                             },
                         }
