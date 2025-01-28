@@ -169,7 +169,8 @@ pub(crate) fn create_parametric_sort(
                     if recursive_sort(sort, declaring) { return true }
                 }
             },
-            _ => ()  // indexed sort
+            Sort::Sort(Identifier::Indexed(..))
+            | Sort::Parametric(Identifier::Indexed(..), _) => ()
         }
         return false
     }
@@ -197,7 +198,8 @@ pub(crate) fn create_parametric_sort(
 ///////////////////////  create non-parametric sort  //////////////////////////
 
 
-/// Adds a non-parametric declaration to the solver.
+/// Adds a non-parametric declaration to the solver,
+/// and create database table of its extension.
 /// Also adds any required instantiation of parent sorts.
 pub(crate) fn create_sort(
     symb: &Symbol,
@@ -267,8 +269,8 @@ fn instantiate_parent_sort(
                     } else {
                         Err(InternalError(741265)) // it should be in the solver already
                     }
-                } else {
-                    Err(InternalError(821652)) // unexpected indexed identifier
+                } else {  // indexed identifier
+                    insert_sort(parent_sort.clone(), None, Grounding::Unknown, None, solver)
                 },
 
             Sort::Parametric(id, parameters) => {
@@ -349,8 +351,8 @@ fn instantiate_parent_sort(
                             insert_sort(parent_sort.clone(), None, Grounding::Unknown, None, solver)
                         }
                     }
-                } else {
-                    Err(InternalError(71845846))  // unexpected indexed identifier
+                } else {  // unexpected indexed identifier
+                    insert_sort(parent_sort.clone(), None, Grounding::Unknown, None, solver)
                 }
             },
         }}
@@ -496,22 +498,22 @@ fn create_table(
             let core = format!("{table_name}_core");
             create_core_table(&core, nullary, &mut solver.conn)?;
 
-            // the first select is select NULL as constructor, NULL as first, NULL as second, Color_core.G as G from Color_core
-            selects.push(format!("SELECT NULL as constructor, {}, {}.G AS G from {}",
-                column_names.iter().map(|n| format!("NULL AS {n}")).collect::<Vec<_>>().join(", "),
-                core,
-                core));
+            //  "NULL as first, NULL as second"
+            let projection = column_names.iter().map(|n| format!("NULL AS {n}")).collect::<Vec<_>>().join(", ");
+
+            // the first select is "SELECT NULL as constructor, NULL as first, NULL as second, Color_core.G as G from Color_core"
+            selects.push(format!("SELECT NULL as constructor, {projection}, {core}.G AS G from {core}"));
         }
 
-        // add "select "pair" as constructor, _T_1.G as first, _T_2.G as second, apply("pair", T_1_.G, T_2_.G) as G
-        //      from Color as _T_1 join Color as _T_2"
+        // add "select "pair" as constructor, T1.G as first, T2.G as second, construct("pair", T1.G, T2.G) as G
+        //      from Color as T1 join Color as T2"
         for constructor_decl in constructor_decls { // e.g. (pair (first Color) (second Color))
             let ConstructorDec(constructor, selectors) = constructor_decl;
             if selectors.len() != 0 {  // otherwise, already in core table
 
                 // compute the list of tables and column mapping
                 let mut tables = Vec::with_capacity(selectors.len()); // [Color, Color]
-                let mut columns = IndexMap::with_capacity(column_names.len());  // {first->_T_1.G, second->_T_2.G}; the value can be NULL
+                let mut columns = IndexMap::with_capacity(column_names.len());  // {first->T1.G, second->T2.G}; the value can be NULL
                 for column_name in &column_names {
                     columns.insert(column_name, "NULL".to_string());
                 }
@@ -521,7 +523,7 @@ fn create_table(
                         .ok_or(InternalError(7459455))?;
                     if let SortObject::Normal{table_name, count: count_, ..} = sort_object {
                         tables.push(table_name.clone());
-                        columns.insert(&selector.0, format!("_T_{i}.G"));
+                        columns.insert(&selector.0, format!("T{i}.G"));
                         row_product *= count_;
                     } else {
                         return Err(InternalError(7529545))
@@ -529,19 +531,23 @@ fn create_table(
                 }
                 count += row_product;
 
-                // _T_1.G AS first, _T_2.G as second
-                let select_columns = columns.iter()
+                // "pair"
+                let constructor = &constructor.0;
+
+                // "T1.G AS first, T2.G as second"
+                let projection = columns.iter()
                     .map(|(k, v)| format!("{v} AS {k}")) // v can also be NULL
                     .collect::<Vec<String>>().join(", ");
 
-                // _T_1.G, _T_2.G
-                let parameters = (0..selectors.len()).map(|i| format!("_T_{i}.G")).collect::<Vec<_>>().join(", ");
+                // "T1.G, T2.G"
+                let parameters = (0..selectors.len()).map(|i| format!("T{i}.G")).collect::<Vec<_>>().join(", ");
+                // construct("pair", T1.G, T2.G) AS G
+                let g = format!("construct(\"{}\", {}) AS G", constructor, parameters);
 
-                selects.push(format!("SELECT \"{}\" AS constructor, {}, {} FROM {}",
-                    constructor.0,
-                    select_columns,
-                    format!("construct(\"{}\", {}) AS G", constructor.0, parameters),
-                    tables.iter().enumerate().map(|(i, t)| format!("{t} as _T_{i}")).join(" JOIN ")))
+                // "Color as T1 join Color as T2"
+                let joins = tables.iter().enumerate().map(|(i, t)| format!("{t} as T{i}")).join(" JOIN ");
+
+                selects.push(format!("SELECT \"{constructor}\" AS constructor, {projection}, {g} FROM {joins}"))
             }
         }
         let create = format!("CREATE TABLE {table_name} AS {}", selects.join( " UNION "));

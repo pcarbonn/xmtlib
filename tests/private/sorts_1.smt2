@@ -9,6 +9,7 @@
 (define-sort MyPair (T) (Pair T T))
 (define-sort PairColor () (Pair Color Color))
 (define-sort MyPairColor () (MyPair Color))
+(define-sort MyBitVec () (MyPair (_ BitVec 2)))
 (x-debug solver parametric_sorts)
 (x-debug solver sorts)
 (x-debug db Q)
@@ -24,6 +25,7 @@
 (define-sort MyPair (T) (Pair T T))
 (define-sort PairColor () (Pair Color Color))
 (define-sort MyPairColor () (MyPair Color))
+(define-sort MyBitVec () (MyPair (_ BitVec 2)))
 Parametric datatypes:
  - Pair: (par (X Y) ((white ) (pair (first X) (second Y))))
  - Triplet: (par (X) ((triplet (first (Pair X (Pair X X))))))
@@ -46,6 +48,10 @@ Sorts:
  - ( Sort_4: 5) PairColor: ((white ) (pair (first Color) (second Color)))
  - (unknown) (MyPair Color)
  - (unknown) MyPairColor
+ - (unknown) (_ BitVec 2)
+ - (unknown) (Pair (_ BitVec 2) (_ BitVec 2))
+ - (unknown) (MyPair (_ BitVec 2))
+ - (unknown) MyBitVec
  TABLE: Q
 ┌─────────────┬────────────────────────────────────────────────┬─────────────────────────────────────────────────────┐
 │ constructor │ x                                              │ G                                                   │
