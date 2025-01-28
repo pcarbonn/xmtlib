@@ -23,6 +23,7 @@
 (declare-sort B 0)
 (define-sort MyPair () (Pair A B))
 Parametric datatypes:
+ - (unknown): Array
  - (recursive): Tree
  - (recursive): TreeList
  - (unknown): Pair
@@ -30,6 +31,9 @@ Sorts:
  - (Bool: 2) Bool: ((true ) (false ))
  - (infinite) Int
  - (infinite) Real
+ - (infinite) RoundingMode
+ - (infinite) String
+ - (infinite) RegLan
  - (recursive) (Tree Int)
  - (recursive) TreeInt
  - (unknown) A

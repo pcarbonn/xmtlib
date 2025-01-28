@@ -33,17 +33,6 @@ pub struct Solver {
 
 impl Default for Solver {
     fn default() -> Solver {
-        let sort = |s: &str| Sort::Sort(Identifier::Simple(Symbol(s.to_string())));
-        let bool_sort = sort("Bool");
-        let bool_decl = SortObject::Normal{
-            datatype_dec: DatatypeDec::DatatypeDec(
-                vec![
-                    ConstructorDec (Symbol("true" .to_string()),vec![]),
-                    ConstructorDec (Symbol("false".to_string()),vec![]),
-                ],
-                ),
-            table_name: "Bool".to_string(),
-            count: 2};
 
         // create Bool table
         let mut conn = Connection::open_in_memory().unwrap();
@@ -58,15 +47,42 @@ impl Default for Solver {
 
         init_db(&mut conn).unwrap();
 
+        // Note: indexed sorts are created as Unknown when occurring: (_ BitVec n), (_ FloatingPoint eb sb)
+
+        // create pre-defined parametric sorts: (Array ..), (Seq ..), (Tuple..)
+        let mut parametric_sorts = IndexMap::new();
+        parametric_sorts.insert(Symbol("Array".to_string()), ParametricObject::Unknown);
+
+        // not in the SMT-Lib standard:
+        // parametric_sorts.insert(Symbol("Seq".to_string()), ParametricObject::Unknown);
+        // parametric_sorts.insert(Symbol("Tuple".to_string()), ParametricObject::Unknown);
+
+        // create pre-defined sorts: Bool, Int, Real
+        let mut sorts = IndexMap::new();
+        let sort = |s: &str| Sort::Sort(Identifier::Simple(Symbol(s.to_string())));
+
+        let bool_decl = SortObject::Normal{
+            datatype_dec: DatatypeDec::DatatypeDec(
+                vec![
+                    ConstructorDec (Symbol("true" .to_string()),vec![]),
+                    ConstructorDec (Symbol("false".to_string()),vec![]),
+                ],
+                ),
+            table_name: "Bool".to_string(),
+            count: 2};
+        sorts.insert(sort("Bool"), bool_decl);
+        sorts.insert(sort("Int" ), SortObject::Infinite);
+        sorts.insert(sort("Real" ), SortObject::Infinite);
+        sorts.insert(sort("RoundingMode" ), SortObject::Infinite);  // in FloatingPoint theory
+        sorts.insert(sort("String" ), SortObject::Infinite);  // in String theory
+        sorts.insert(sort("RegLan" ), SortObject::Infinite);  // in String theory
+
+
         Solver {
             backend: Backend::NoDriver,
             conn: conn,
-            parametric_sorts: IndexMap::new(),
-            sorts: IndexMap::from([
-                (bool_sort, bool_decl),
-                (sort("Int" ), SortObject::Infinite),
-                (sort("Real"), SortObject::Infinite),
-                ])
+            parametric_sorts: parametric_sorts,
+            sorts: sorts
         }
     }
 }
