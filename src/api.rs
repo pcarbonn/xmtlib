@@ -180,8 +180,10 @@ impl std::fmt::Display for DatatypeDec {
 #[derive(PartialEq, Eq, Debug)]
 pub enum Command {
     CheckSat,
+    DeclareConst(Symbol, Sort),
     DeclareDatatype(Symbol, DatatypeDec),
     DeclareDatatypes(Vec<SortDec>, Vec<DatatypeDec>),
+    DeclareFun(Symbol, Vec<Sort>, Sort),
     DeclareSort(Symbol, Numeral),
     DefineSort(Symbol, Vec<Symbol>, Sort),
     XDebug(String, String),
@@ -195,7 +197,7 @@ impl std::fmt::Display for Command {
             // Self::CheckSatAssuming(m0) => {
             //     write!(f, "(check-sat-assuming ({}))", m0.iter().format(" "))
             // }
-            // Self::DeclareConst(m0, m1) => write!(f, "(declare-const {} {})", m0, m1),
+            Self::DeclareConst(m0, m1) => write!(f, "(declare-const {} {})", m0, m1),
             Self::DeclareDatatype(m0, m1) => {
                 write!(f, "(declare-datatype {} {})", m0, m1)
             }
@@ -205,9 +207,9 @@ impl std::fmt::Display for Command {
                     .format(" ")
                 )
             }
-            // Self::DeclareFun(m0, m1, m2) => {
-            //     write!(f, "(declare-fun {} ({}) {})", m0, m1.iter().format(" "), m2)
-            // }
+            Self::DeclareFun(m0, m1, m2) => {
+                write!(f, "(declare-fun {} ({}) {})", m0, m1.iter().format(" "), m2)
+            }
             Self::DeclareSort(m0, m1) => write!(f, "(declare-sort {} {})", m0, m1),
             // Self::DefineFun(m0) => write!(f, "(define-fun {})", m0),
             // Self::DefineFunRec(m0) => write!(f, "(define-fun-rec {})", m0),

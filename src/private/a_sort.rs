@@ -233,7 +233,7 @@ pub(crate) fn create_sort(
 /// Create the sort and its parents in the solver, if not present.
 /// Returns the type of grounding of the sort.
 /// This function is recursive.
-fn instantiate_parent_sort(
+pub(crate) fn instantiate_parent_sort(
     parent_sort: &Sort,
     declaring: &IndexSet<Symbol>,
     solver: &mut Solver,
@@ -351,7 +351,7 @@ fn instantiate_parent_sort(
                             insert_sort(parent_sort.clone(), None, Grounding::Unknown, None, solver)
                         }
                     }
-                } else {  // unexpected indexed identifier
+                } else {  // indexed identifier
                     insert_sort(parent_sort.clone(), None, Grounding::Unknown, None, solver)
                 }
             },

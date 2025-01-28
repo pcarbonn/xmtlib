@@ -9,7 +9,8 @@ use rusqlite::{Connection, Result};
 use crate::api::*;
 use crate::error::{format_error, SolverError};
 use crate::grammar::parse;
-use crate::private::a_sort::*;
+use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, ParametricObject, SortObject};
+use crate::private::b_fun::declare_fun;
 use crate::private::y_db::init_db;
 
 
@@ -123,6 +124,10 @@ impl Solver {
                     yield_!(Ok("sat".to_string()));  // TODO
                 },
 
+                Command::DeclareConst(symb, sort) => {
+                    yield_!(declare_fun(symb, vec![], sort, command, self))
+                },
+
                 Command::DeclareDatatype(symb, decl) => {
                     yield_!(declare_datatype(symb, decl, command, self))
                 }
@@ -130,6 +135,10 @@ impl Solver {
                 Command::DeclareDatatypes(sort_decls, decls) => {
                     yield_!(declare_datatypes(sort_decls, decls, command, self))
                 }
+
+                Command::DeclareFun(symb, domain, co_domain) => {
+                    yield_!(declare_fun(symb, domain, co_domain, command, self))
+                },
 
                 Command::DeclareSort(symb, numeral) => {
                     yield_!(declare_sort(symb, numeral, command, self))
@@ -194,7 +203,7 @@ impl Solver {
                     }
                 },
 
-                _ => {
+                Command::Verbatim(_) => {
                     match self.exec(&command) {
                         Ok(res) => yield_!(Ok(res)),
                         Err(err) => {

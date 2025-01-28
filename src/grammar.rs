@@ -141,8 +141,10 @@ peg::parser!{
         rule command() -> Command
             = _ "("
               command:( check_sat()
+                      / declare_const()
                       / declare_datatype()
                       / declare_datatypes()
+                      / declare_fun()
                       / declare_sort()
                       / define_sort()
                       / debug()
@@ -153,6 +155,10 @@ peg::parser!{
         rule check_sat() -> Command
             = _ "check-sat"
             { CheckSat }
+
+        rule declare_const() -> Command
+            = _ "declare-const" symbol:symbol() sort:sort()
+            { DeclareConst(symbol, sort) }
 
         rule declare_datatype() -> Command
             = _ "declare-datatype"
@@ -167,6 +173,13 @@ peg::parser!{
               decl:(datatype_dec() ++ __)
               _ ")"
             { DeclareDatatypes(s, decl) }
+
+        rule declare_fun() -> Command
+            = _ "declare-fun"
+              symbol:symbol()
+              _ "(" domain:(sort() ** __) _ ")"
+              co_domain:sort()
+            { DeclareFun(symbol, domain, co_domain) }
 
         rule declare_sort() -> Command
             = _ "declare-sort" symbol:symbol() numeral:numeral()
@@ -193,8 +206,6 @@ peg::parser!{
         rule verbatim() -> Command
             = _ command: ( "assert"
                          / "check-sat-assuming"
-                         / "declare-const"
-                         / "declare-fun"
                          / "define-fun"
                          / "define-fun-rec"
                          / "define-funs-rec"
