@@ -1,7 +1,7 @@
 // Copyright Pierre Carbonnelle, 2025.
 
 //! This module defines the grammar of XMT-Lib.
-//! They are listed in the order given in Appendix B of the SMT-Lib standard.
+//! The nodes of the syntax tree are listed in the order given in Appendix B of the SMT-Lib standard.
 
 
 use peg::{error::ParseError, str::LineCol};
@@ -31,29 +31,73 @@ peg::parser!{
         // //////////////////////////// Other tokens ////////////////////////////
 
         rule numeral() -> Numeral
-            = _ s:(quiet!{$(['0'..='9'] ['0'..='9']* )}
-                / expected!("numeral"))
-            { Numeral(s.to_string().parse().unwrap()) }
+            = _ "0" { Numeral(0) }
+
+            /  _ s:(quiet!{$(['1'..='9'] ['0'..='9']* )}
+               / expected!("numeral"))
+              { Numeral(s.to_string().parse().unwrap()) }
+
+        rule decimal() -> Decimal
+            = numerator:numeral() "." denominator:(quiet!{$(['0'..='9']+)} / expected!("numeral"))
+             { Decimal(format!("{numerator}.{denominator}")) }
+
+        rule hexadecimal() -> Hexadecimal
+            = _ "#x" s:(quiet!{$( ['0'..='9' | 'A'..='F' | 'a'..='f']+ )}
+            / expected!("hexadecimal"))
+           { Hexadecimal(s.to_string()) }
+
+        rule binary() -> Binary
+            = _ "#b" s:(quiet!{$(['0' | '1']+ )}
+            / expected!("binary"))
+            { Binary(s.to_string()) }
+
+        rule string() -> String_
+            = _ "\""
+              string: string_char()*
+              _ "\""
+              { String_(string.join("")) }
+
+              rule string_char() -> String
+                  = chars: [^'"']+ { chars.iter().collect() }
+                  / "\"\"" { "\"\"".to_string() }
+
+
+        rule simple_symbol() -> String
+            = _ s:(quiet!{$([           'a'..='z'|'A'..='Z'|'_'|'+'|'-'|'/'|'*'|'='|'%'|'?'|'!'|'.'|'$'|'_'|'&'|'^'|'<'|'>'|'@']
+                            [ '0'..='9'|'a'..='z'|'A'..='Z'|'_'|'+'|'-'|'/'|'*'|'='|'%'|'?'|'!'|'.'|'$'|'_'|'&'|'^'|'<'|'>'|'@']*
+                            )}
+                / expected!("identifier"))
+            { s.to_string() }
 
         rule symbol() -> Symbol
-            = s:( simple_symbol()
-                / complex_symbol()
-                )
-            { Symbol(s) }
+            = s:simple_symbol()
+              { Symbol(s) }
 
-            rule simple_symbol() -> String
-                = _ s:(quiet!{$([           'a'..='z'|'A'..='Z'|'_'|'+'|'-'|'/'|'*'|'='|'%'|'?'|'!'|'.'|'$'|'_'|'&'|'^'|'<'|'>'|'@']
-                                [ '0'..='9'|'a'..='z'|'A'..='Z'|'_'|'+'|'-'|'/'|'*'|'='|'%'|'?'|'!'|'.'|'$'|'_'|'&'|'^'|'<'|'>'|'@']*
-                                )}
-                    / expected!("identifier"))
-                { s.to_string() }
+            / _ s:(quiet!{$(['|'] [^ '|' | '\\' ]* ['|'])}
+                   / expected!("identifier"))
+              { Symbol(s.to_string()) }
 
-            rule complex_symbol() -> String
-                = _ s:(quiet!{$(['|'] [^ '|' | '\\' ]* ['|'])}
-                    / expected!("identifier"))
-                { s.to_string() }
+        rule keyword() -> Keyword
+            = _ ":" symbol:simple_symbol()
+              { Keyword(format!(":{symbol}")) }
 
         // //////////////////////////// S-expressions ///////////////////////////
+
+        rule spec_constant() -> SpecConstant
+            = numeral:numeral()
+              { SpecConstant::Numeral(numeral) }
+
+            / decimal: decimal()
+              { SpecConstant::Decimal(decimal) }
+
+            / hexadecimal:hexadecimal()
+              { SpecConstant::Hexadecimal(hexadecimal) }
+
+            / binary:binary()
+              { SpecConstant::Binary(binary) }
+
+            / string:string()
+              { SpecConstant::String(string) }
 
         rule s_expr() -> SExpr
             = s: symbol()
@@ -95,7 +139,89 @@ peg::parser!{
             { Sort::Parametric(id, sorts) }
 
         // //////////////////////////// Attributes   ////////////////////////////
+
+        rule attribute_value() -> AttributeValue
+            = spec_constant:spec_constant()
+              { AttributeValue::SpecConstant(spec_constant) }
+
+            / symbol:symbol()
+              { AttributeValue::Symbol(symbol) }
+
+            / _ "(" s_expr:s_expr() _ ")"
+              { AttributeValue::Expr(s_expr) }
+
+        rule attribute() -> Attribute
+            = keyword:keyword()
+              { Attribute::Keyword(keyword) }
+
+            / keyword:keyword() attribute_value:attribute_value()
+              { Attribute::WithValue(keyword, attribute_value)}
+
         // //////////////////////////// Terms        ////////////////////////////
+
+        rule qual_identifier() -> QualIdentifier
+            = identifier:identifier()
+              { QualIdentifier::Identifier(identifier) }
+
+            / _ "(" _ "as" identifier:identifier() sort:sort() _ ")"
+              { QualIdentifier::Sorted(identifier, sort)}
+
+        rule var_binding() -> VarBinding
+            = _ "(" symbol:symbol() term:term() _ ")"
+              { VarBinding(symbol, term) }
+
+        rule sorted_var() -> SortedVar
+            = _ "(" symbol:symbol() sort:sort() _ ")"
+              { SortedVar(symbol, sort) }
+
+        rule pattern() -> Pattern
+            = symbol:symbol()
+              { Pattern::Symbol(symbol) }
+
+            / _ "(" symbol:symbol() symbols:(symbol() ++ __) _ ")"
+              { Pattern::Application(symbol, symbols) }
+
+        rule match_case() -> MatchCase
+            = _ "(" pattern:pattern() term:term() _ ")"
+            { MatchCase(pattern, term) }
+
+        rule term() -> Term
+            = spec_constant:spec_constant()
+              { Term::SpecConstant(spec_constant) }
+
+            / qual_identifier:qual_identifier()
+              { Term::Identifier(qual_identifier) }
+
+            / _ "("
+              qual_identifier:qual_identifier()
+              terms:( term() ++ __ )
+              _ ")"
+              { Term::Application(qual_identifier, terms) }
+
+            / _ "(" _ "let" _ "("
+              var_bindings:(var_binding() ++ __)
+              _ ")" term:term() _ ")"
+              { Term::Let(var_bindings, Box::new(term)) }
+
+            / _ "(" _ "forall" _ "("
+              sorted_vars:(sorted_var() ++ __)
+              _ ")" term:term() _ ")"
+              { Term::Forall(sorted_vars, Box::new(term)) }
+
+            / _ "(" _ "exists" _ "("
+              sorted_vars:(sorted_var() ++ __)
+              _ ")" term:term() _ ")"
+              { Term::Exists(sorted_vars, Box::new(term)) }
+
+            / _ "(" _ "match" term:term()
+              _ "(" match_cases:(match_case() ++ __) _ ")" _ ")"
+              { Term::Match(Box::new(term), match_cases)}
+
+            / _ "(" _ "!" term:term() attributes:(attribute() ++ __) _ ")"
+              { Term::Annotation(Box::new(term), attributes)}
+
+
+
         // //////////////////////////// Theories     ////////////////////////////
         // //////////////////////////// Logics       ////////////////////////////
         // //////////////////////////// Info flags   ////////////////////////////
@@ -140,7 +266,8 @@ peg::parser!{
 
         rule command() -> Command
             = _ "("
-              command:( check_sat()
+              command:( assert()
+                      / check_sat()
                       / declare_const()
                       / declare_datatype()
                       / declare_datatypes()
@@ -151,6 +278,10 @@ peg::parser!{
                       / verbatim())
               _ ")"
             { command }
+
+        rule assert() -> Command
+            = _ "assert" term:term()
+            { Assert(term) }
 
         rule check_sat() -> Command
             = _ "check-sat"
@@ -204,8 +335,7 @@ peg::parser!{
             { XDebug (typ, object) }
 
         rule verbatim() -> Command
-            = _ command: ( "assert"
-                         / "check-sat-assuming"
+            = _ command: ( "check-sat-assuming"
                          / "define-fun"
                          / "define-fun-rec"
                          / "define-funs-rec"

@@ -11,6 +11,7 @@ use crate::error::{format_error, SolverError};
 use crate::grammar::parse;
 use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, ParametricObject, SortObject};
 use crate::private::b_fun::{declare_fun, FunctionObject};
+use crate::private::c_term::assert;
 use crate::private::y_db::init_db;
 
 
@@ -141,6 +142,10 @@ impl Solver {
         gen!({
             let command = format!("{}", c);
             match c {
+
+                Command::Assert(term) => {
+                    yield_!(assert(term, command, self))
+                },
 
                 Command::CheckSat => {
                     yield_!(Ok("sat".to_string()));  // TODO

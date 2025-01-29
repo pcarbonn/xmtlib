@@ -26,6 +26,37 @@ impl Display for Numeral {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Decimal(pub String);
+impl std::fmt::Display for Decimal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Hexadecimal(pub String);
+impl std::fmt::Display for Hexadecimal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Binary(pub String);
+impl std::fmt::Display for Binary {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct String_(pub String);
+impl std::fmt::Display for String_ {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "\"{}\"", self.0)
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Symbol(pub String);
@@ -35,9 +66,42 @@ impl Display for Symbol {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Keyword(pub String);  // with `:` prefix
+impl std::fmt::Display for Keyword {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 
 // //////////////////////////// S-expressions ///////////////////////////
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+
+pub enum SpecConstant {
+    /// `<numeral>`
+    Numeral(Numeral),
+    /// `<decimal>`
+    Decimal(Decimal),
+    /// `<hexadecimal>`
+    Hexadecimal(Hexadecimal),
+    /// `<binary>`
+    Binary(Binary),
+    /// `<string>`
+    String(String_),  // with duplicate `"`
+}
+impl std::fmt::Display for SpecConstant {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Numeral(m0) => write!(f, "{}", m0),
+            Self::Decimal(m0) => write!(f, "{}", m0),
+            Self::Hexadecimal(m0) => write!(f, "{}", m0),
+            Self::Binary(m0) => write!(f, "{}", m0),
+            Self::String(m0) => write!(f, "{}", m0),
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum SExpr {
@@ -123,7 +187,145 @@ impl Display for Sort {
 
 
 // //////////////////////////// Attributes   ////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum AttributeValue {
+    /// `<spec_constant>`
+    SpecConstant(SpecConstant),
+    /// `<symbol>`
+    Symbol(Symbol),
+    /// `(<s_expr>)`
+    Expr(SExpr),
+}
+impl std::fmt::Display for AttributeValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::SpecConstant(m0) => write!(f, "{}", m0),
+            Self::Symbol(m0) => write!(f, "{}", m0),
+            Self::Expr(m0) => write!(f, "({})", m0),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Attribute {
+    /// `<keyword>`
+    Keyword(Keyword),
+    /// `<keyword> <attribute_value>`
+    WithValue(Keyword, AttributeValue),
+}
+impl std::fmt::Display for Attribute {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Keyword(m0) => write!(f, "{}", m0),
+            Self::WithValue(m0, m1) => write!(f, "{} {}", m0, m1),
+        }
+    }
+}
+
 // //////////////////////////// Terms        ////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum QualIdentifier {
+    /// `<identifier>`
+    Identifier(Identifier),
+    /// `(as <identifier> <sort>)`
+    Sorted(Identifier, Sort),
+}
+impl Display for QualIdentifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Identifier(m0) => write!(f, "{}", m0),
+            Self::Sorted(m0, m1) => write!(f, "(as {} {})", m0, m1),
+        }
+    }
+}
+
+/// `(<symbol> <term>)`
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct VarBinding(pub Symbol, pub Term);
+impl std::fmt::Display for VarBinding {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "({} {})", self.0, self.1)
+    }
+}
+
+/// `(<symbol> <sort>)`
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct SortedVar(pub Symbol, pub Sort);
+impl std::fmt::Display for SortedVar {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "({} {})", self.0, self.1)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Pattern {
+    /// `<symbol>`
+    Symbol(Symbol),
+    /// `(<symbol> <symbol>+)`
+    Application(Symbol, Vec<Symbol>),
+}
+impl std::fmt::Display for Pattern {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Symbol(m0) => write!(f, "{}", m0),
+            Self::Application(m0, m1) => write!(f, "({} {})", m0, m1.iter().format(" ")),
+        }
+    }
+}
+
+
+/// `(<pattern> <term>)`
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct MatchCase(pub Pattern, pub Term);
+impl std::fmt::Display for MatchCase {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "({} {})", self.0, self.1)
+    }
+}
+
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Term {
+    /// `<spec_constant>`
+    SpecConstant(SpecConstant),
+    /// `<qual_identifier>`
+    Identifier(QualIdentifier),
+    /// `(<qual_identifier> <term>+)`
+    Application(QualIdentifier, Vec<Term>),
+    /// `(let (<var_binding>+) <term>)`
+    Let(Vec<VarBinding>, Box<Term>),
+    /// `(forall (<sorted_var>+) <term>)`
+    Forall(Vec<SortedVar>, Box<Term>),
+    /// `(exists (<sorted_var>+) <term>)`
+    Exists(Vec<SortedVar>, Box<Term>),
+    /// `(match <term> (<match_case>+))`
+    Match(Box<Term>, Vec<MatchCase>),
+    /// `(! <term> <attribute>+)`
+    Annotation(Box<Term>, Vec<Attribute>),
+}
+impl std::fmt::Display for Term {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::SpecConstant(m0) => write!(f, "{}", m0),
+            Self::Identifier(m0) => write!(f, "{}", m0),
+            Self::Application(m0, m1) => write!(f, "({} {})", m0, m1.iter().format(" ")),
+            Self::Let(m0, m1) => write!(f, "(let ({}) {})", m0.iter().format(" "), m1),
+            Self::Forall(m0, m1) => {
+                write!(f, "(forall ({}) {})", m0.iter().format(" "), m1)
+            }
+            Self::Exists(m0, m1) => {
+                write!(f, "(exists ({}) {})", m0.iter().format(" "), m1)
+            }
+            Self::Match(m0, m1) => {
+                write!(f, "(match {} ({}))", m0, m1.iter().format(" "))
+            }
+            Self::Annotation(m0, m1) => write!(f, "(! {} {})", m0, m1.iter().format(" ")),
+        }
+    }
+}
+
 // //////////////////////////// Theories     ////////////////////////////
 // //////////////////////////// Logics       ////////////////////////////
 // //////////////////////////// Info flags   ////////////////////////////
@@ -181,6 +383,7 @@ impl Display for DatatypeDec {
 
 #[derive(PartialEq, Eq, Debug)]
 pub enum Command {
+    Assert(Term),
     CheckSat,
     DeclareConst(Symbol, Sort),
     DeclareDatatype(Symbol, DatatypeDec),
@@ -194,7 +397,7 @@ pub enum Command {
 impl Display for Command {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            // Self::Assert(m0) => write!(f, "(assert {})", m0),
+            Self::Assert(m0) => write!(f, "(assert {})", m0),
             Self::CheckSat => write!(f, "(check-sat)"),
             // Self::CheckSatAssuming(m0) => {
             //     write!(f, "(check-sat-assuming ({}))", m0.iter().format(" "))
