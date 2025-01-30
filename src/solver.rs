@@ -11,7 +11,7 @@ use crate::error::{format_error, SolverError};
 use crate::grammar::parse;
 use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, ParametricObject, SortObject};
 use crate::private::b_fun::{declare_fun, FunctionObject};
-use crate::private::c_ground::ground;
+use crate::private::c_ground::{ground, Grounding};
 use crate::private::y_db::init_db;
 
 
@@ -34,7 +34,10 @@ pub struct Solver {
     pub(crate) functions: IndexMap<Identifier, FunctionObject>,
     // pub(crate) qualified_functions: IndexMap<QualIdentifier, FunctionObject>,
 
+    // to support differed grounding of terms
     pub(crate) terms_to_ground: Vec<(Term, String)>,
+    // a mapping from a term to a composable representation of its grounding
+    pub(crate) groundings: IndexMap<Term, Grounding>,
 }
 
 
@@ -93,6 +96,7 @@ impl Default for Solver {
             functions: IndexMap::new(),
             // qualified_functions: IndexMap::new(),
             terms_to_ground: vec![],
+            groundings: IndexMap::new(),
         }
     }
 }
@@ -224,6 +228,12 @@ impl Solver {
                                             .map(|s| format!("{s}"))
                                             .collect::<Vec<_>>().join(" * ");
                                         yield_!(Ok(format!(" - {symbol}: {domain} -> {co_domain} ({typ})")))
+                                    }
+                                },
+                                "groundings" => {
+                                    yield_!(Ok("Groundings:".to_string()));
+                                    for (term, grounding) in &self.groundings {
+                                        yield_!(Ok(format!(" - {term}: {grounding}")))
                                     }
                                 },
                                 _ => yield_!(Err(SolverError::ExprError("Unknown 'x-debug solver' parameter".to_string(), None)))

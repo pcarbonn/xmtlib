@@ -4,7 +4,7 @@
 //!
 //! The nodes are listed in the order given in Appendix B of the SMT-Lib standard.
 
-// It also implements Display.
+// It also implements Display to generate a string in XMT-Lib format.
 
 use std::fmt::Display;
 
@@ -304,6 +304,7 @@ pub enum Term {
     Match(Box<Term>, Vec<MatchCase>),
     /// `(! <term> <attribute>+)`
     Annotation(Box<Term>, Vec<Attribute>),
+    XSortedVar(Symbol, Sort),
 }
 impl std::fmt::Display for Term {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -322,6 +323,7 @@ impl std::fmt::Display for Term {
                 write!(f, "(match {} ({}))", m0, m1.iter().format(" "))
             }
             Self::Annotation(m0, m1) => write!(f, "(! {} {})", m0, m1.iter().format(" ")),
+            Self::XSortedVar(symbol, _) => write!(f, "{symbol}", )
         }
     }
 }

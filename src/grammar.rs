@@ -44,12 +44,12 @@ peg::parser!{
         rule hexadecimal() -> Hexadecimal
             = _ "#x" s:(quiet!{$( ['0'..='9' | 'A'..='F' | 'a'..='f']+ )}
             / expected!("hexadecimal"))
-           { Hexadecimal(s.to_string()) }
+           { Hexadecimal(format!("#x{s}")) }
 
         rule binary() -> Binary
             = _ "#b" s:(quiet!{$(['0' | '1']+ )}
             / expected!("binary"))
-            { Binary(s.to_string()) }
+            { Binary(format!("#b{s}")) }
 
         rule string() -> String_
             = _ "\""
@@ -84,11 +84,11 @@ peg::parser!{
         // //////////////////////////// S-expressions ///////////////////////////
 
         rule spec_constant() -> SpecConstant
-            = numeral:numeral()
-              { SpecConstant::Numeral(numeral) }
-
-            / decimal: decimal()
+            = decimal: decimal()
               { SpecConstant::Decimal(decimal) }
+
+            / numeral:numeral()
+              { SpecConstant::Numeral(numeral) }
 
             / hexadecimal:hexadecimal()
               { SpecConstant::Hexadecimal(hexadecimal) }
