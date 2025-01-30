@@ -11,7 +11,7 @@ use crate::error::{format_error, SolverError};
 use crate::grammar::parse;
 use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, ParametricObject, SortObject};
 use crate::private::b_fun::{declare_fun, FunctionObject};
-use crate::private::c_term::assert;
+use crate::private::c_ground::ground;
 use crate::private::y_db::init_db;
 
 
@@ -33,6 +33,8 @@ pub struct Solver {
     // predicate and function symbols
     pub(crate) functions: IndexMap<Identifier, FunctionObject>,
     // pub(crate) qualified_functions: IndexMap<QualIdentifier, FunctionObject>,
+
+    pub(crate) terms_to_ground: Vec<(Term, String)>,
 }
 
 
@@ -90,6 +92,7 @@ impl Default for Solver {
             sorts: sorts,
             functions: IndexMap::new(),
             // qualified_functions: IndexMap::new(),
+            terms_to_ground: vec![],
         }
     }
 }
@@ -144,7 +147,7 @@ impl Solver {
             match c {
 
                 Command::Assert(term) => {
-                    yield_!(assert(term, command, self))
+                    self.terms_to_ground.push((term, command))
                 },
 
                 Command::CheckSat => {
@@ -236,6 +239,12 @@ impl Solver {
                         _ => yield_!(Err(SolverError::ExprError("Unknown 'x-debug' parameter".to_string(), None)))
                     }
                 },
+
+                Command::XGround => {
+                    for res in ground(self) {
+                        yield_!(res)
+                    }
+                }
 
                 Command::Verbatim(_) => {
                     match self.exec(&command) {

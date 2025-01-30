@@ -274,7 +274,8 @@ peg::parser!{
                       / declare_fun()
                       / declare_sort()
                       / define_sort()
-                      / debug()
+                      / xdebug()
+                      / xground()
                       / verbatim())
               _ ")"
             { command }
@@ -326,13 +327,17 @@ peg::parser!{
             { DefineSort(symbol, variables, sort)}
 
 
-        // //////////////////////////// S-Commands     ////////////////////////////
+        // //////////////////////////// X-Commands     ////////////////////////////
 
-        rule debug() -> Command
+        rule xdebug() -> Command
             = _ "x-debug"
             __ typ:simple_symbol()
             __ object:simple_symbol()
             { XDebug (typ, object) }
+
+        rule xground() -> Command
+            = _ "x-ground"
+            { XGround }
 
         rule verbatim() -> Command
             = _ command: ( "check-sat-assuming"

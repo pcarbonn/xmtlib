@@ -392,30 +392,32 @@ pub enum Command {
     DeclareSort(Symbol, Numeral),
     DefineSort(Symbol, Vec<Symbol>, Sort),
     XDebug(String, String),
+    XGround,
     Verbatim(String),
 }
 impl Display for Command {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Self::Assert(m0) => write!(f, "(assert {})", m0),
+            Self::Assert(m0) => write!(f, "(assert {m0})"),
             Self::CheckSat => write!(f, "(check-sat)"),
             // Self::CheckSatAssuming(m0) => {
             //     write!(f, "(check-sat-assuming ({}))", m0.iter().format(" "))
             // }
-            Self::DeclareConst(m0, m1) => write!(f, "(declare-const {} {})", m0, m1),
+            Self::DeclareConst(m0, m1) => write!(f, "(declare-const {m0} {m1})"),
             Self::DeclareDatatype(m0, m1) => {
-                write!(f, "(declare-datatype {} {})", m0, m1)
+                write!(f, "(declare-datatype {m0} {m1})")
             }
             Self::DeclareDatatypes(m0, m1) => {
-                write!(
-                    f, "(declare-datatypes ({}) ({}))", m0.iter().format(" "), m1.iter()
-                    .format(" ")
-                )
+                let sorts = m0.iter().format(" ");
+                let dec = m1.iter()
+                .format(" ");
+                write!(f, "(declare-datatypes ({sorts}) ({dec}))")
             }
             Self::DeclareFun(m0, m1, m2) => {
-                write!(f, "(declare-fun {} ({}) {})", m0, m1.iter().format(" "), m2)
+                let sorts = m1.iter().format(" ");
+                write!(f, "(declare-fun {m0} ({sorts}) {m2})")
             }
-            Self::DeclareSort(m0, m1) => write!(f, "(declare-sort {} {})", m0, m1),
+            Self::DeclareSort(m0, m1) => write!(f, "(declare-sort {m0} {m1})"),
             // Self::DefineFun(m0) => write!(f, "(define-fun {})", m0),
             // Self::DefineFunRec(m0) => write!(f, "(define-fun-rec {})", m0),
             // Self::DefineFunsRec(m0, m1) => {
@@ -425,7 +427,8 @@ impl Display for Command {
             //     )
             // }
             Self::DefineSort(m0, m1, m2) => {
-                write!(f, "(define-sort {} ({}) {})", m0, m1.iter().format(" "), m2)
+                let variables = m1.iter().format(" ");
+                write!(f, "(define-sort {m0} ({variables}) {m2})")
             }
             // Self::Echo(m0) => write!(f, "(echo {})", m0),
             // Self::Exit => write!(f, "(exit)"),
@@ -447,8 +450,9 @@ impl Display for Command {
             // Self::SetOption(m0) => write!(f, "(set-option {})", m0),
             // Self::Simplify(m0) => write!(f, "(simplify {})", m0),
 
-            Self::XDebug(s1, s2) => write!(f, "(x-debug {} {})", s1, s2),
-            Self::Verbatim(s) => write!(f, "{}", s),
+            Self::XDebug(s1, s2) => write!(f, "(x-debug {s1} {s2})"),
+            Self::XGround => write!(f, "(x-ground)"),
+            Self::Verbatim(s) => write!(f, "{s}"),
         }
     }
 }
