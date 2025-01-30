@@ -90,13 +90,29 @@ impl Default for Solver {
         // create pre-defined functions
         let mut functions = IndexMap::new();
         let function = |s: &str| Identifier::Simple(Symbol(s.to_string()));
-        functions.insert(function("true"), FunctionObject{domain: vec![], co_domain: sort("Bool"), typ: Calculated});
-        functions.insert(function("false"), FunctionObject{domain: vec![], co_domain: sort("Bool"), typ: Calculated});
-        functions.insert(function("not"), FunctionObject{domain: vec![sort("Bool")], co_domain: sort("Bool"), typ: Calculated});
-        functions.insert(function("=>"), FunctionObject{domain: vec![sort("Bool"), sort("Bool")], co_domain: sort("Bool"), typ: Calculated});
-        functions.insert(function("and"), FunctionObject{domain: vec![sort("Bool"), sort("Bool")], co_domain: sort("Bool"), typ: Calculated});
-        functions.insert(function("or"), FunctionObject{domain: vec![sort("Bool"), sort("Bool")], co_domain: sort("Bool"), typ: Calculated});
-        functions.insert(function("xor"), FunctionObject{domain: vec![sort("Bool"), sort("Bool")], co_domain: sort("Bool"), typ: Calculated});
+
+        // boolean pre-defined functions
+        for s in ["true", "false",
+                        "not",
+                        "=>", "and", "or", "xor",
+                        "=", "distinct",
+                        "<=", "<", ">=", ">"
+                        ] {
+            functions.insert(function(s),
+                FunctionObject{signature: None, boolean: Some(true), typ: Calculated});
+        }
+
+        // ite
+        functions.insert(function("ite"),
+            FunctionObject{signature: None, boolean: None, typ: Calculated});
+
+        // non-boolean pre-defined functions
+        for s in ["+", "-", "*", "div",
+                        "mod", "abs",
+                        ] {
+            functions.insert(function(s),
+                FunctionObject{signature: None, boolean: Some(false), typ: Calculated});
+        }
 
         Solver {
             backend: Backend::NoDriver,
@@ -233,17 +249,29 @@ impl Solver {
                                 "functions" => {
                                     yield_!(Ok("Functions:".to_string()));
                                     for (symbol, func) in &self.functions {
-                                        let FunctionObject{domain, co_domain, typ} = func;
-                                        let domain = domain.iter()
-                                            .map(|s| format!("{s}"))
-                                            .collect::<Vec<_>>().join(" * ");
-                                        yield_!(Ok(format!(" - {symbol}: {domain} -> {co_domain} ({typ})")))
+                                        let FunctionObject{signature, boolean, typ} = func;
+                                        let signature = match signature {
+                                            Some((domain, co_domain)) => {
+                                                let domain = domain.iter()
+                                                    .map(|s| format!("{s}"))
+                                                    .collect::<Vec<_>>().join(" * ");
+                                                format!("{domain} -> {co_domain}")
+                                            },
+                                            None => {
+                                                match boolean {
+                                                    Some(true) => "(boolean)",
+                                                    Some(false) => "(non-boolean)",
+                                                    None => "(boolean ?)"
+                                                }.to_string()
+                                            }
+                                        };
+                                        yield_!(Ok(format!(" - {symbol}: {signature} ({typ})")))
                                     }
                                 },
                                 "groundings" => {
                                     yield_!(Ok("Groundings:".to_string()));
                                     for (term, grounding) in &self.groundings {
-                                        yield_!(Ok(format!(" - {term}: {grounding}")))
+                                        yield_!(Ok(format!(" - {term}:{grounding}")))
                                     }
                                 },
                                 _ => yield_!(Err(SolverError::ExprError("Unknown 'x-debug solver' parameter".to_string(), None)))

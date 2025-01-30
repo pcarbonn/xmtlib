@@ -11,14 +11,14 @@ use crate::{error::SolverError, solver::Solver};
 
 
 pub(crate) struct FunctionObject {
-    pub(crate) domain: Vec<Sort>,  // todo: is it needed ?
-    pub(crate) co_domain: Sort,  // todo: is it needed ?
+    pub(crate) signature: Option<(Vec<Sort>, Sort)>,  // to check interpretations.  None for pre-defined functions
+    pub(crate) boolean: Option<bool>,  // None for `ite` --> need special code
     pub(crate) typ: InterpretationType
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum InterpretationType {
-    Calculated,  // custom function without interpretation; no table in DB
+    Calculated,  // function without interpretation table
     // Constructed, // constructor; no table in DB
 
     // db_name is the sanitized function name (without any suffix)
@@ -59,7 +59,11 @@ pub(crate) fn declare_fun(
 
     let identifier = Identifier::Simple(symbol);
     let typ = InterpretationType::Calculated;
-    let object = FunctionObject{domain, co_domain, typ};
+    let boolean = match co_domain {
+        Sort::Sort(Identifier::Simple(Symbol(ref s))) => s=="Bool",
+        _ => false
+    };
+    let object = FunctionObject{signature: Some((domain, co_domain)), boolean: Some(boolean), typ};
     solver.functions.insert(identifier, object);
 
     Ok(out)

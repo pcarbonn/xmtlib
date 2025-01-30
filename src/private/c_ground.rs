@@ -5,7 +5,7 @@ use std::future::Future;
 use genawaiter::{sync::Gen, sync::gen, yield_};
 use indexmap::IndexMap;
 
-use crate::api::{Identifier, QualIdentifier, Sort, SortedVar, Symbol, Term};
+use crate::api::{Identifier, QualIdentifier, SortedVar, Symbol, Term};
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, InterpretationType};
 use crate::solver::Solver;
@@ -97,7 +97,7 @@ impl std::fmt::Display for View {
             .collect::<Vec<_>>()
             .join(" JOIN ");
         let tables = if tables != "" {
-                format!("FROM {tables}")
+                format!(" FROM {tables}")
             } else { "".to_string() };
         let where_ = if self.where_ == "" { "".to_string() } else {
             format!(" WHERE {0}", self.where_)
@@ -105,7 +105,7 @@ impl std::fmt::Display for View {
         let group_by = if self.group_by == "" { "".to_string() } else {
             format!(" GROUP BY {0}", self.group_by)
         };
-        write!(f, "SELECT {variables}{condition}{grounding} AS G {tables}{where_}{group_by}")
+        write!(f, "SELECT {variables}{condition}{grounding} AS G{tables}{where_}{group_by}")
     }
 }
 
@@ -118,7 +118,7 @@ pub(crate) enum Grounding {
 impl std::fmt::Display for Grounding {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Grounding::Function(view) => write!(f, "{view}"),
+            Grounding::Function(view) => write!(f, " {view}"),
             Grounding::Boolean{tu, uf, g, ..} => {
                 writeln!(f, "")?;
                 writeln!(f, "    TU: {tu}")?;
@@ -305,7 +305,7 @@ fn ground_application(
     };
 
     match function_object {
-        Some(FunctionObject{typ, co_domain, ..}) => {
+        Some(FunctionObject{typ, boolean, ..}) => {
             match typ {
                 InterpretationType::Calculated => {
                     if arguments.len() == 0 {
@@ -321,14 +321,10 @@ fn ground_application(
                             _ids: Ids::None,
                         };
                         let grounding =
-                            if let Sort::Sort(Identifier::Simple(co_domain)) = co_domain {
-                                if co_domain.0 == "Bool" {
-                                    Grounding::Boolean{tu: g.clone(), uf: g.clone(), g:g}
-                                } else {
-                                    Grounding::Function(g)
-                                }
-                            } else {
-                                Grounding::Function(g)
+                            match boolean {
+                                Some(true) => Grounding::Boolean{tu: g.clone(), uf: g.clone(), g:g},
+                                Some(false) => Grounding::Function(g),
+                                None => todo!(),
                             };
                         Ok((term.clone(), grounding))
 

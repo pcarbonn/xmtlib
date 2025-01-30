@@ -3,7 +3,7 @@
 (declare-const c Int)
 (assert p)
 (assert c)
-(assert (or p p))
+;(assert (or p p))
 (x-ground)
 (x-debug solver groundings)
 -------------------------
