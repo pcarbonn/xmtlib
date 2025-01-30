@@ -5,13 +5,16 @@ use std::future::Future;
 use genawaiter::{sync::Gen, sync::gen, yield_};
 use indexmap::IndexMap;
 
-use crate::api::Identifier;
-use crate::api::QualIdentifier;
-use crate::api::SortedVar;
-use crate::api::Symbol;
+use crate::api::{Identifier, QualIdentifier, Sort, SortedVar, Symbol, Term};
+use crate::private::a_sort::SortObject;
+use crate::private::b_fun::{FunctionObject, InterpretationType};
+use crate::solver::Solver;
+use crate::error::SolverError::{self, *};
+
 
 /// Contains what is needed to construct the grounding view of a term, in a composable way.
-pub(crate) struct Grounding {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct View {
     // for variable x in Color --> select color.G as x, color.G as G from Color
     //      variables:  `x -> Color.G`, i.e., variable name to column name
     //      condition:  ""
@@ -19,7 +22,7 @@ pub(crate) struct Grounding {
     //      joins:      Color
     //      where:      ""
     //      group_by:   ""
-    //      all_ids:    true
+    //      _ids:    true
 
     // For a calculated term p
     // e.g., p(x, f(a)) --> select color.G as x, apply("p", Color.G, apply("f", "a")) as G from Color
@@ -29,7 +32,7 @@ pub(crate) struct Grounding {
     //      joins:      Color
     //      where:      ""
     //      group_by:   ""
-    //      all_ids:    false
+    //      _ids:    false
 
     // for a tabled term: 2 options (create a view or not)
     // e.g., p(x, a) -->
@@ -54,11 +57,14 @@ pub(crate) struct Grounding {
     where_: String,
     group_by: String,
 
-    _all_ids: bool,
+    _ids: Ids,
 }
 
 
-impl std::fmt::Display for Grounding {
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum Ids { All, _Some, None }
+
+impl std::fmt::Display for View {
 
     // select {variables.0} as {variables.1},
     //        {condition} as cond,  -- if condition
@@ -104,11 +110,27 @@ impl std::fmt::Display for Grounding {
 }
 
 
-/////////////////////  Command ///////////////////////////////////////////////
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum Grounding {
+    Function(View),
+    Boolean{tu: View, uf: View, g: View}
+}
+impl std::fmt::Display for Grounding {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Grounding::Function(view) => write!(f, "{view}"),
+            Grounding::Boolean{tu, uf, g, ..} => {
+                writeln!(f, "")?;
+                writeln!(f, "    TU: {tu}")?;
+                writeln!(f, "    UF: {uf}")?;
+                write!  (f, "    G : {g}")
+            },
+        }
+    }
+}
 
-use crate::api::Term;
-use crate::solver::Solver;
-use crate::error::SolverError::{self, *};
+
+/////////////////////  Command ///////////////////////////////////////////////
 
 
 /// execute the x-ground command
@@ -116,27 +138,31 @@ pub(crate) fn ground(
     solver: &mut Solver
 ) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {
 
-    let commands = solver.terms_to_ground.iter()
-        .map(|(_,command)| command.clone()).collect::<Vec<_>>();
-    let terms = solver.terms_to_ground.iter()
-        .map(|(term, _)| term.clone()).collect::<Vec<_>>();
-
     gen!({
         // validate the commands
+        let commands = solver.terms_to_ground.iter()
+            .map(|(_,command)| command.clone())
+            .collect::<Vec<_>>();
         for command in commands {
             // todo: push and pop, to avoid polluting the SMT state
             yield_!(solver.exec(&command))
         }
 
         // ground the terms
+        let terms = solver.terms_to_ground.iter()
+            .map(|(term, _)| term.clone())
+            .collect::<Vec<_>>();
+
         let mut variables = IndexMap::new();
+        let mut assertions = vec![];
         for term in terms {
             if let Ok(i) = ground_term(&term, &mut variables, true, solver) {
-                // todo: run the query and execute the grounding
+                assertions.push(i)
             } else {
                 yield_!(Err(InternalError(8423458569)))
             }
         }
+        // todo: run the query for all assertions, and solver.exec the resulting grounding
 
         // reset terms to ground
         solver.terms_to_ground = vec![];
@@ -144,13 +170,17 @@ pub(crate) fn ground(
 }
 
 
-/// Adds the grounding of a term to the solver.
+/// Adds the grounding of a term to the solver, if necessary.
 /// This function is recursive.
+///
+/// # Arguments
+///
+/// * variables: the variables in the current scope
+/// * top_level: indicates if it is an assertion (to avoid building a conjunction)
+///
 fn ground_term(
     term: &Term,
-    // the variables in the current scope
     variables: &mut IndexMap<Symbol, SortedVar>,
-    // indicates if it is an assertion (to avoid building a conjunction)
     top_level: bool,
     solver: &mut Solver
 ) -> Result<usize, SolverError> {
@@ -164,56 +194,81 @@ fn ground_term(
     }
 }
 
-/// Helper function to ground a term.
+/// Helper function to ground a new term.
 /// An identifier term representing a variable is replaced by a XSortedVar term.
+///
+/// # Arguments:
+///
+/// * variables: the variables in the current scope
+/// * top_level: indicates if it is an assertion (to avoid building a conjunction)
+///
 fn ground_term_(
     term: &Term,
-    // the variables in the current scope
     variables: &mut IndexMap<Symbol, SortedVar>,
-    // indicates if it is an assertion (to avoid building a conjunction)
-    top_level: bool,
-    _solver: &mut Solver
+    _top_level: bool,
+    solver: &mut Solver
 ) -> Result<(Term, Grounding), SolverError> {
 
     match term {
         Term::SpecConstant(spec_constant) => {
-            let grounding = Grounding {
+
+            // a number or string
+            let grounding = View {
                 variables: IndexMap::new(),
                 condition: "".to_string(),
                 grounding: format!("\"{spec_constant}\""),
                 joins: IndexMap::new(),
                 where_: "".to_string(),
                 group_by: "".to_string(),
-                _all_ids: true,
+                _ids: Ids::All,
             };
-            Ok((term.clone(), grounding))
+            Ok((term.clone(), Grounding::Function(grounding)))
         },
         Term::XSortedVar(..) => Err(InternalError(85126645)),  // sorted var should be handled by the quantification
         Term::Identifier(qual_identifier) => {
             match qual_identifier {
-                QualIdentifier::Identifier(Identifier::Simple(symbol)) => {
-                    match variables.get(symbol) {
-                        Some(_) => {
-                            // let grounding = Grounding {
-                            //     variables: IndexMap::from([(symbol.clone(), format!("{sort}.G as {symbol}"))]),
-                            //     condition: "".to_string(),
-                            //     grounding: format!("{sort}.G"),
-                            //     joins: IndexMap::from([(format!("{sort}"), "".to_string())]),
-                            //     where_: "".to_string(),
-                            //     group_by: "".to_string(),
-                            //     all_ids: true,
-                            // };
-                            // Ok(format!("{grounding}"))
-                            todo!()
+                QualIdentifier::Identifier(identifier) => {
+                    match identifier {
+                        Identifier::Simple(symbol) => {
+                            match variables.get(symbol) {
+                                None => {
+
+                                    // a predicate or constant
+                                    ground_application(term, qual_identifier, &vec![], variables, solver)
+
+                                },
+                                Some(SortedVar(_, sort)) => {
+
+                                    // a variable
+                                    match solver.sorts.get(sort) {
+                                        Some(SortObject::Normal {table_name, ..}) => {
+                                            // variable `symbol`` in `table_name`
+                                            let view = View {
+                                                variables: IndexMap::from([(symbol.clone(), table_name.clone())]),
+                                                condition: "".to_string(),
+                                                grounding: format!("{table_name}.G"),
+                                                joins: IndexMap::from([(table_name.clone(), "".to_string())]),
+                                                where_: "".to_string(),
+                                                group_by: "".to_string(),
+                                                _ids: Ids::All,
+                                            };
+                                            Ok((term.clone(), Grounding::Function(view)))
+                                        },
+                                        Some(SortObject::Infinite)
+                                        | Some(SortObject::Recursive)
+                                        | Some(SortObject::Unknown) => {
+                                            // `symbol` as computed
+                                            todo!()
+                                        },
+                                        None => { todo!() }
+                                    }
+                                },
+                            }
                         },
-                        None => {
-                            // todo
-                            todo!()
-                        }
+                        Identifier::Indexed(..) => todo!()
                     }
                 },
                 QualIdentifier::Sorted(..) => todo!(),
-                _ => todo!()
             }
         },
         Term::Application(..) => todo!(),
@@ -222,5 +277,68 @@ fn ground_term_(
         Term::Exists(..) => todo!(),
         Term::Match(..) => todo!(),
         Term::Annotation(..) => todo!(),
+    }
+}
+
+/// # Arguments
+///
+/// * term: the full term
+/// * qual_identifier: the applied function
+/// * variables: the variables in the current scope
+///
+fn ground_application(
+    term: &Term,
+    qual_identifier: &QualIdentifier,
+    arguments: &Vec<Term>,
+    _variables: &mut IndexMap<Symbol, SortedVar>,
+    solver: &mut Solver
+) -> Result<(Term, Grounding), SolverError> {
+
+    let function_object = match qual_identifier {
+        QualIdentifier::Identifier(identifier) => {
+            // todo detect operators
+            solver.functions.get(identifier)
+        },
+        QualIdentifier::Sorted(..) =>
+            todo!()
+    };
+
+    match function_object {
+        Some(FunctionObject{typ, co_domain, ..}) => {
+            match typ {
+                InterpretationType::Calculated => {
+                    if arguments.len() == 0 {
+
+                        // a constant
+                        let g = View {
+                            variables: IndexMap::new(),
+                            condition: "".to_string(),
+                            grounding: format!("\"{qual_identifier}\""),
+                            joins: IndexMap::new(),
+                            where_: "".to_string(),
+                            group_by: "".to_string(),
+                            _ids: Ids::None,
+                        };
+                        let grounding =
+                            if let Sort::Sort(Identifier::Simple(co_domain)) = co_domain {
+                                if co_domain.0 == "Bool" {
+                                    Grounding::Boolean{tu: g.clone(), uf: g.clone(), g:g}
+                                } else {
+                                    Grounding::Function(g)
+                                }
+                            } else {
+                                Grounding::Function(g)
+                            };
+                        Ok((term.clone(), grounding))
+
+                    } else {
+
+                        // a true function application
+                        todo!()
+                    }
+                }
+            }
+        },
+        None => todo!(),
     }
 }
