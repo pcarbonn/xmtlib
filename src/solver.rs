@@ -10,7 +10,7 @@ use crate::api::*;
 use crate::error::{format_error, SolverError};
 use crate::grammar::parse;
 use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, ParametricObject, SortObject};
-use crate::private::b_fun::{declare_fun, FunctionObject};
+use crate::private::b_fun::{declare_fun, FunctionObject, InterpretationType::*};
 use crate::private::c_ground::{ground, Grounding};
 use crate::private::y_db::init_db;
 
@@ -87,13 +87,23 @@ impl Default for Solver {
         sorts.insert(sort("String" ), SortObject::Infinite);  // in String theory
         sorts.insert(sort("RegLan" ), SortObject::Infinite);  // in String theory
 
+        // create pre-defined functions
+        let mut functions = IndexMap::new();
+        let function = |s: &str| Identifier::Simple(Symbol(s.to_string()));
+        functions.insert(function("true"), FunctionObject{domain: vec![], co_domain: sort("Bool"), typ: Calculated});
+        functions.insert(function("false"), FunctionObject{domain: vec![], co_domain: sort("Bool"), typ: Calculated});
+        functions.insert(function("not"), FunctionObject{domain: vec![sort("Bool")], co_domain: sort("Bool"), typ: Calculated});
+        functions.insert(function("=>"), FunctionObject{domain: vec![sort("Bool"), sort("Bool")], co_domain: sort("Bool"), typ: Calculated});
+        functions.insert(function("and"), FunctionObject{domain: vec![sort("Bool"), sort("Bool")], co_domain: sort("Bool"), typ: Calculated});
+        functions.insert(function("or"), FunctionObject{domain: vec![sort("Bool"), sort("Bool")], co_domain: sort("Bool"), typ: Calculated});
+        functions.insert(function("xor"), FunctionObject{domain: vec![sort("Bool"), sort("Bool")], co_domain: sort("Bool"), typ: Calculated});
 
         Solver {
             backend: Backend::NoDriver,
             conn: conn,
             parametric_sorts: parametric_sorts,
             sorts: sorts,
-            functions: IndexMap::new(),
+            functions: functions,
             // qualified_functions: IndexMap::new(),
             terms_to_ground: vec![],
             groundings: IndexMap::new(),

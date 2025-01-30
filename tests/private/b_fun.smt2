@@ -23,6 +23,13 @@ Sorts:
  - (Color: 2) Color: ((red ) (green ))
  - (Sort_7: 4) (Pair Color): ((pair (first Color) (second Color)))
 Functions:
+ - true:  -> Bool (calculated)
+ - false:  -> Bool (calculated)
+ - not: Bool -> Bool (calculated)
+ - =>: Bool * Bool -> Bool (calculated)
+ - and: Bool * Bool -> Bool (calculated)
+ - or: Bool * Bool -> Bool (calculated)
+ - xor: Bool * Bool -> Bool (calculated)
  - bright: Color -> Bool (calculated)
  - invert: Color -> Color (calculated)
  - brightest: (Pair Color) -> Color (calculated)

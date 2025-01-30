@@ -296,10 +296,11 @@ fn ground_application(
 
     let function_object = match qual_identifier {
         QualIdentifier::Identifier(identifier) => {
-            // todo detect operators
+            // todo detect operators, true, false
             solver.functions.get(identifier)
         },
         QualIdentifier::Sorted(..) =>
+        // lookup solver.qualified_functions
             todo!()
     };
 
