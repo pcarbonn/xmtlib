@@ -304,7 +304,7 @@ pub enum Term {
     Match(Box<Term>, Vec<MatchCase>),
     /// `(! <term> <attribute>+)`
     Annotation(Box<Term>, Vec<Attribute>),
-    XSortedVar(Symbol, Sort),
+    XSortedVar(Symbol, Option<Sort>),  // sort is None if the variable has no interpretation
 }
 impl std::fmt::Display for Term {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {

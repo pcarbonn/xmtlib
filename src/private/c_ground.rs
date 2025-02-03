@@ -5,109 +5,12 @@ use std::future::Future;
 use genawaiter::{sync::Gen, sync::gen, yield_};
 use indexmap::IndexMap;
 
-use crate::api::{Identifier, QualIdentifier, SortedVar, Symbol, Term};
+use crate::api::{Identifier, QualIdentifier, SortedVar, Symbol, Term, VarBinding};
+use crate::error::SolverError::{self, *};
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, InterpretationType};
+use crate::private::x_view::{View, Ids};
 use crate::solver::Solver;
-use crate::error::SolverError::{self, *};
-
-
-/// Contains what is needed to construct the grounding view of a term, in a composable way.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct View {
-    // for variable x in Color --> select color.G as x, color.G as G from Color
-    //      variables:  `x -> Color.G`, i.e., variable name to column name
-    //      condition:  ""
-    //      grounding:  "Color.G"
-    //      joins:      Color
-    //      where:      ""
-    //      group_by:   ""
-    //      _ids:    true
-
-    // For a calculated term p
-    // e.g., p(x, f(a)) --> select color.G as x, apply("p", Color.G, apply("f", "a")) as G from Color
-    //      variables:  `x -> Color.G`, i.e., variable name to column name
-    //      condition:  ""
-    //      grounding:  apply("p", Color.G, apply("f", "a"))
-    //      joins:      Color
-    //      where:      ""
-    //      group_by:   ""
-    //      _ids:    false
-
-    // for a tabled term: 2 options (create a view or not)
-    // e.g., p(x, a) -->
-    //      create view term_2 as
-    //          select p.a1 as x,
-    //                 .. as cond,
-    //                 p.G as G
-    //            from p
-    //           where p.a2 = "a"
-    //
-    //      variables: `x -> p.a1`, i.e., variable name to column name
-    //      condition: ""
-    //      grounding: "p.G"
-    //      joins: "p"
-    //      where: "p.a2 = "a""
-    //      view:
-
-    variables: IndexMap<Symbol, String>,
-    condition: String,
-    grounding: String,
-    joins: IndexMap<String, String>,
-    where_: String,
-    group_by: String,
-
-    _ids: Ids,
-}
-
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-enum Ids { All, _Some, None }
-
-impl std::fmt::Display for View {
-
-    // select {variables.0} as {variables.1},
-    //        {condition} as cond,  -- if condition
-    //        {grounding} as G,
-    //   from {joins[0].key}
-    //   join {joins[i].key} on {joins[i].value}
-    //  where {condition}
-    // group by {variables.0}, {grounding}  -- if condition
-
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let variables = self.variables.iter()
-            .map(|(k, v)| format!("{v} AS {k}"))
-            .collect::<Vec<_>>()
-            .join(", ");
-        let condition = if &self.condition == "" { "".to_string()
-            } else if variables != "" {
-                format!(", {0} as cond", &self.condition)
-            } else {
-                format!("{0} as cond", &self.condition)
-            };
-        let grounding = if variables != "" || condition != "" {
-                format!(", {}", &self.grounding)
-            } else {
-                self.grounding.to_string()
-            };
-        let tables = self.joins.iter()
-            .map(|(table, on)| if on == "" { table.to_string() } else {
-                format!("{table} ON {on}")
-            })
-            .collect::<Vec<_>>()
-            .join(" JOIN ");
-        let tables = if tables != "" {
-                format!(" FROM {tables}")
-            } else { "".to_string() };
-        let where_ = if self.where_ == "" { "".to_string() } else {
-            format!(" WHERE {0}", self.where_)
-        };
-        let group_by = if self.group_by == "" { "".to_string() } else {
-            format!(" GROUP BY {0}", self.group_by)
-        };
-        write!(f, "SELECT {variables}{condition}{grounding} AS G{tables}{where_}{group_by}")
-    }
-}
 
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -130,42 +33,152 @@ impl std::fmt::Display for Grounding {
 }
 
 
-/////////////////////  Command ///////////////////////////////////////////////
+/////////////////////  Command (assert ////////////////////////////////////////
+
+pub(crate) fn assert_(
+    term: &Term,
+    command: String,
+    solver: &mut Solver
+) -> Result<String, SolverError> {
+
+    let mut variables = IndexMap::new();
+    let new_term = transform_term(term, &mut variables, solver)?;
+    solver.assertions_to_ground.push((new_term, command));
+    Ok("".to_string())
+}
 
 
-/// execute the x-ground command
+/// Removes ambiguity in identifiers by replacing each occurrence of a variable by a Term::XSortedVar
+pub(crate) fn transform_term(
+    term: &Term,
+    variables: &mut IndexMap<Symbol, Option<SortedVar>>,  // can't use XSortedVar here because it's a term variant
+    solver: &Solver
+) -> Result<Term, SolverError> {
+
+        // Helper function to avoid code duplication
+        fn process_quantification (
+            sorted_vars: &Vec<SortedVar>,
+            term: &Box<Term>,
+            variables: &mut IndexMap<Symbol, Option<SortedVar>>,
+            solver: &Solver
+        ) -> Result<(Vec<SortedVar>, Term), SolverError> {
+            let mut new_variables = variables.clone();
+            let mut new_sorted_vars = vec![];  // keeps the variables with infinite domain
+            for SortedVar(symbol, sort, ) in sorted_vars {
+                match solver.sorts.get(sort) {
+                    Some(SortObject::Normal{..}) => {
+                        new_variables.insert(symbol.clone(), Some(SortedVar(symbol.clone(), sort.clone())));
+                    },
+                    Some(SortObject::Infinite)
+                    | Some(SortObject::Recursive)
+                    | Some(SortObject::Unknown) => {
+                        new_variables.insert(symbol.clone(), None);  // shadow pre-existing variables
+                        new_sorted_vars.push(SortedVar(symbol.clone(), sort.clone()));  // keep quantification over infinite variables
+                    },
+                    None => return Err(InternalError(2486645)),
+                }
+            };
+            let new_term = transform_term(term, &mut new_variables, solver)?;
+            Ok((new_sorted_vars, new_term))
+        }  // end helper function
+
+    match term {
+        Term::SpecConstant(_) => Ok(term.clone()),
+
+        Term::Identifier(ref qual_identifier) => {
+            match qual_identifier {
+                QualIdentifier::Identifier(Identifier::Simple(ref symbol)) => {
+                    match variables.get(symbol) {
+                        Some(Some(SortedVar(_, ref sort))) => // an interpreted variable
+                            Ok(Term::XSortedVar(symbol.clone(), Some(sort.clone()))),
+                        Some(None) =>
+                            Ok(Term::XSortedVar(symbol.clone(), None)),  // an uninterpreted variable
+                        None =>
+                            Ok(term.clone())  // a regular identifier
+                    }
+                },
+                _ => Ok(term.clone()),
+            }
+        },
+
+        Term::Application(qual_identifier, terms) => {
+            let new_terms = terms.iter()
+                .map(|t| transform_term(t, variables, solver))
+                .collect::<Result<Vec<_>, _>>()?;
+            Ok(Term::Application(qual_identifier.clone(), new_terms))
+        },
+
+        Term::Let(var_bindings, term) => {
+            // transform the t_i in var_bindings using variables, and term using new_variables for propoer shadowing
+            let mut new_variables = variables.clone();
+            let mut new_var_bindings = vec![];
+            for VarBinding(symbol, binding) in var_bindings {
+                let binding = transform_term(&binding, variables, solver)?;
+                new_variables.insert(symbol.clone(), None);  // don't try to interpret the variable during grounding of term
+                new_var_bindings.push(VarBinding(symbol.clone(), binding))
+            };
+            let new_term = transform_term(term, &mut new_variables, solver)?;
+            Ok(Term::Let(new_var_bindings, Box::new(new_term)))
+        },
+
+        Term::Forall(sorted_vars, term) => {
+            let (new_sorted_vars, new_term) = process_quantification(sorted_vars, term, variables, solver)?;
+            Ok(Term::Forall(new_sorted_vars, Box::new(new_term)))
+        },
+
+        Term::Exists(sorted_vars, term) => {
+            let (new_sorted_vars, new_term) = process_quantification(sorted_vars, term, variables, solver)?;
+            Ok(Term::Exists(new_sorted_vars, Box::new(new_term)))
+        },
+
+        Term::Match(_, _) => {
+            // let term = transform_term(term, variables, solver)?;
+            // let mut new_match_cases = vec![];
+            // for MatchCase(pattern, result) in match_cases {
+            //     let new_result = transform_term(result, variables, solver)?;
+            //     new_match_cases.push(MatchCase(pattern.clone(), new_result));
+            // }
+            // Ok(Term::Match(Box::new(term), new_match_cases))
+            todo!("need to decide how to ground match term")
+        },
+
+        Term::Annotation(term, attributes) => {
+            let new_term = transform_term(&term, variables, solver)?;
+            Ok(Term::Annotation(Box::new(new_term), attributes.clone()))
+        },
+
+        Term::XSortedVar(_, _) =>
+            Err(InternalError(812685563)),
+    }
+}
+
+
+/////////////////////  Command (x-ground ////////////////////////////////////////
+
 pub(crate) fn ground(
     solver: &mut Solver
 ) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {
 
     gen!({
-        // validate the commands
-        let commands = solver.terms_to_ground.iter()
-            .map(|(_,command)| command.clone())
-            .collect::<Vec<_>>();
-        for command in commands {
-            // todo: push and pop, to avoid polluting the SMT state
-            yield_!(solver.exec(&command))
-        }
-
-        // ground the terms
-        let terms = solver.terms_to_ground.iter()
-            .map(|(term, _)| term.clone())
-            .collect::<Vec<_>>();
+        // extract terms and commands
+        let (terms, commands) = solver.assertions_to_ground.iter()
+            .map(|(term,command)| (term.clone(), command.clone()))
+            .collect::<(Vec<_>, Vec<_>)>();
 
         let mut variables = IndexMap::new();
-        let mut assertions = vec![];
-        for term in terms {
+        for (term, command) in terms.iter().zip(commands) {
+            // todo: push and pop, to avoid polluting the SMT state
+            yield_!(solver.exec(&command));
+
             if let Ok(i) = ground_term(&term, &mut variables, true, solver) {
-                assertions.push(i)
+                // todo: run the query, and solver.exec the resulting grounding
             } else {
                 yield_!(Err(InternalError(8423458569)))
             }
         }
-        // todo: run the query for all assertions, and solver.exec the resulting grounding
 
         // reset terms to ground
-        solver.terms_to_ground = vec![];
+        solver.assertions_to_ground = vec![];
     })
 }
 
@@ -186,7 +199,7 @@ fn ground_term(
 ) -> Result<usize, SolverError> {
 
     if let Some(i) = solver.groundings.get_index_of(term) {
-        return Ok(i)
+        Ok(i)
     } else {
         let (new_term, grounding) = ground_term_(term, variables, top_level, solver)?;
         let (i, _) = solver.groundings.insert_full(new_term, grounding);

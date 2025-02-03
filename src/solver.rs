@@ -11,7 +11,7 @@ use crate::error::{format_error, SolverError};
 use crate::grammar::parse;
 use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, ParametricObject, SortObject};
 use crate::private::b_fun::{declare_fun, FunctionObject, InterpretationType::*};
-use crate::private::c_ground::{ground, Grounding};
+use crate::private::c_ground::{assert_, ground, Grounding};
 use crate::private::y_db::init_db;
 
 
@@ -35,7 +35,7 @@ pub struct Solver {
     // pub(crate) qualified_functions: IndexMap<QualIdentifier, FunctionObject>,
 
     // to support differed grounding of terms
-    pub(crate) terms_to_ground: Vec<(Term, String)>,
+    pub(crate) assertions_to_ground: Vec<(Term, String)>,
     // a mapping from a term to a composable representation of its grounding
     pub(crate) groundings: IndexMap<Term, Grounding>,
 }
@@ -121,7 +121,7 @@ impl Default for Solver {
             sorts: sorts,
             functions: functions,
             // qualified_functions: IndexMap::new(),
-            terms_to_ground: vec![],
+            assertions_to_ground: vec![],
             groundings: IndexMap::new(),
         }
     }
@@ -177,7 +177,7 @@ impl Solver {
             match c {
 
                 Command::Assert(term) => {
-                    self.terms_to_ground.push((term, command))
+                    yield_!(assert_(&term, command, self));
                 },
 
                 Command::CheckSat => {
