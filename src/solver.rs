@@ -19,6 +19,8 @@ pub enum Backend {
     NoDriver
 }
 
+pub(crate) type TermId = usize;
+
 
 pub struct Solver {
     pub(crate) backend: Backend,

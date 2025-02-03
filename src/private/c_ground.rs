@@ -9,14 +9,14 @@ use crate::api::{Identifier, QualIdentifier, SortedVar, Symbol, Term, VarBinding
 use crate::error::SolverError::{self, *};
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, InterpretationType};
-use crate::private::x_view::{View, Ids};
+use crate::private::x_view::{SQLExpr, GroundingView, Ids};
 use crate::solver::Solver;
 
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum Grounding {
-    Function(View),
-    Boolean{tu: View, uf: View, g: View}
+    Function(GroundingView),
+    Boolean{tu: GroundingView, uf: GroundingView, g: GroundingView}
 }
 impl std::fmt::Display for Grounding {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -165,13 +165,12 @@ pub(crate) fn ground(
             .map(|(term,command)| (term.clone(), command.clone()))
             .collect::<(Vec<_>, Vec<_>)>();
 
-        let mut variables = IndexMap::new();
         for (term, command) in terms.iter().zip(commands) {
             // todo: push and pop, to avoid polluting the SMT state
             yield_!(solver.exec(&command));
 
-            if let Ok(i) = ground_term(&term, &mut variables, true, solver) {
-                // todo: run the query, and solver.exec the resulting grounding
+            if let Ok(i) = ground_term(&term, true, solver) {
+                // todo: run the query, and solver.exec(the resulting grounding)
             } else {
                 yield_!(Err(InternalError(8423458569)))
             }
@@ -188,12 +187,10 @@ pub(crate) fn ground(
 ///
 /// # Arguments
 ///
-/// * variables: the variables in the current scope
 /// * top_level: indicates if it is an assertion (to avoid building a conjunction)
 ///
 fn ground_term(
     term: &Term,
-    variables: &mut IndexMap<Symbol, SortedVar>,
     top_level: bool,
     solver: &mut Solver
 ) -> Result<usize, SolverError> {
@@ -201,7 +198,7 @@ fn ground_term(
     if let Some(i) = solver.groundings.get_index_of(term) {
         Ok(i)
     } else {
-        let (new_term, grounding) = ground_term_(term, variables, top_level, solver)?;
+        let (new_term, grounding) = ground_term_(term, top_level, solver)?;
         let (i, _) = solver.groundings.insert_full(new_term, grounding);
         Ok(i)
     }
@@ -212,12 +209,10 @@ fn ground_term(
 ///
 /// # Arguments:
 ///
-/// * variables: the variables in the current scope
 /// * top_level: indicates if it is an assertion (to avoid building a conjunction)
 ///
 fn ground_term_(
     term: &Term,
-    variables: &mut IndexMap<Symbol, SortedVar>,
     _top_level: bool,
     solver: &mut Solver
 ) -> Result<(Term, Grounding), SolverError> {
@@ -226,57 +221,59 @@ fn ground_term_(
         Term::SpecConstant(spec_constant) => {
 
             // a number or string
-            let grounding = View {
+            let grounding = GroundingView {
                 variables: IndexMap::new(),
-                condition: "".to_string(),
-                grounding: format!("\"{spec_constant}\""),
-                joins: IndexMap::new(),
-                where_: "".to_string(),
-                group_by: "".to_string(),
+                conditions: vec![],
+                grounding: SQLExpr::Constant(spec_constant.clone()),
+                natural_joins: IndexMap::new(),
+                theta_joins: vec![],
+                outer: false,
                 _ids: Ids::All,
             };
             Ok((term.clone(), Grounding::Function(grounding)))
         },
-        Term::XSortedVar(..) => Err(InternalError(85126645)),  // sorted var should be handled by the quantification
+        Term::XSortedVar(..) => todo!(),  // sorted var should be handled by the quantification
         Term::Identifier(qual_identifier) => {
             match qual_identifier {
                 QualIdentifier::Identifier(identifier) => {
                     match identifier {
                         Identifier::Simple(symbol) => {
-                            match variables.get(symbol) {
-                                None => {
+                            // match variables.get(symbol) {
+                            //     None => {
 
-                                    // a predicate or constant
-                                    ground_application(term, qual_identifier, &vec![], variables, solver)
+                            //         // a predicate or constant
+                            //         ground_application(term, qual_identifier, &vec![], variables, solver)
 
-                                },
-                                Some(SortedVar(_, sort)) => {
+                            //     },
+                            //     Some(SortedVar(_, sort)) => {
 
-                                    // a variable
-                                    match solver.sorts.get(sort) {
-                                        Some(SortObject::Normal {table_name, ..}) => {
-                                            // variable `symbol`` in `table_name`
-                                            let view = View {
-                                                variables: IndexMap::from([(symbol.clone(), table_name.clone())]),
-                                                condition: "".to_string(),
-                                                grounding: format!("{table_name}.G"),
-                                                joins: IndexMap::from([(table_name.clone(), "".to_string())]),
-                                                where_: "".to_string(),
-                                                group_by: "".to_string(),
-                                                _ids: Ids::All,
-                                            };
-                                            Ok((term.clone(), Grounding::Function(view)))
-                                        },
-                                        Some(SortObject::Infinite)
-                                        | Some(SortObject::Recursive)
-                                        | Some(SortObject::Unknown) => {
-                                            // `symbol` as computed
-                                            todo!()
-                                        },
-                                        None => { todo!() }
-                                    }
-                                },
-                            }
+                            //         // a variable
+                            //         match solver.sorts.get(sort) {
+                            //             Some(SortObject::Normal {table_name, ..}) => {
+                            //                 // variable `symbol`` in `table_name`
+                            //                 // let view = View {
+                            //                 //     variables: IndexMap::from([(symbol.clone(), table_name.clone())]),
+                            //                 //     condition: "".to_string(),
+                            //                 //     grounding: format!("{table_name}.G"),
+                            //                 //     joins: IndexMap::from([(table_name.clone(), "".to_string())]),
+                            //                 //     where_: "".to_string(),
+                            //                 //     group_by: "".to_string(),
+                            //                 //     _ids: Ids::All,
+                            //                 // };
+                            //                 // Ok((term.clone(), Grounding::Function(view)))
+                            //                 todo!()
+                            //             },
+                            //             Some(SortObject::Infinite)
+                            //             | Some(SortObject::Recursive)
+                            //             | Some(SortObject::Unknown) => {
+                            //                 // `symbol` as computed
+                            //                 todo!()
+                            //             },
+                            //             None => { todo!() }
+                            //         }
+                            //     },
+                            // }
+                            todo!()
                         },
                         Identifier::Indexed(..) => todo!()
                     }
@@ -324,22 +321,23 @@ fn ground_application(
                     if arguments.len() == 0 {
 
                         // a constant
-                        let g = View {
-                            variables: IndexMap::new(),
-                            condition: "".to_string(),
-                            grounding: format!("\"{qual_identifier}\""),
-                            joins: IndexMap::new(),
-                            where_: "".to_string(),
-                            group_by: "".to_string(),
-                            _ids: Ids::None,
-                        };
-                        let grounding =
-                            match boolean {
-                                Some(true) => Grounding::Boolean{tu: g.clone(), uf: g.clone(), g:g},
-                                Some(false) => Grounding::Function(g),
-                                None => todo!(),
-                            };
-                        Ok((term.clone(), grounding))
+                        // let g = View {
+                        //     variables: IndexMap::new(),
+                        //     condition: "".to_string(),
+                        //     grounding: format!("\"{qual_identifier}\""),
+                        //     joins: IndexMap::new(),
+                        //     where_: "".to_string(),
+                        //     group_by: "".to_string(),
+                        //     _ids: Ids::None,
+                        // };
+                        // let grounding =
+                        //     match boolean {
+                        //         Some(true) => Grounding::Boolean{tu: g.clone(), uf: g.clone(), g:g},
+                        //         Some(false) => Grounding::Function(g),
+                        //         None => todo!(),
+                        //     };
+                        // Ok((term.clone(), grounding))
+                        todo!()
 
                     } else {
 
