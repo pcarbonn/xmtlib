@@ -18,7 +18,7 @@ pub(crate) fn init_db(
             let args: Vec<String> = (1..ctx.len())
                 .map(|i| ctx.get::<String>(i)) // Retrieve each argument as a String
                 .collect::<Result<_, _>>()?;     // Collect results or propagate errors
-            Ok(format!("({} {})", symbol, args.join(" "))) // Reverse the string
+            Ok(format!("({} {})", symbol, args.join(" ")))
         },
     )?;
 
@@ -34,7 +34,29 @@ pub(crate) fn init_db(
             let args: Vec<String> = (1..ctx.len())
                 .map(|i| ctx.get::<String>(i)) // Retrieve each argument as a String
                 .collect::<Result<_, _>>()?;     // Collect results or propagate errors
-            Ok(format!(" ({} {})", symbol, args.join(" "))) // Reverse the string
+            Ok(format!(" ({} {})", symbol, args.join(" ")))
+        },
+    )?;
+
+    // create convenience function "construct"
+    // similar to "construct", but adds a space in front of the result,
+    // only when each argument is an id
+    conn.create_scalar_function(
+        "construct2",
+        -1,                     // Number of arguments the function takes
+        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,                  // Deterministic (same input gives same output)
+        |ctx| {                // The function logic
+            let symbol: String = ctx.get(0)?; // Get the string
+
+            let args: Vec<String> = (1..ctx.len())
+                .map(|i| ctx.get::<String>(i)) // Retrieve each argument as a String
+                .collect::<Result<_, _>>()?;     // Collect results or propagate errors
+            let all_ids = args.iter().all( |arg| ! arg.starts_with("(") );
+            if all_ids {  // leading space
+                Ok(format!(" ({} {})", symbol, args.join(" ")))
+            } else {
+                Ok(format!("({} {})", symbol, args.join(" ")))
+            }
         },
     )?;
 

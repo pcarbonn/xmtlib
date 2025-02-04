@@ -37,7 +37,7 @@ impl std::fmt::Display for Column {
 pub(crate) enum SQLExpr {
     Constant(SpecConstant),
     Variable(Symbol),
-    Construct(Symbol, Box<Vec<SQLExpr>>),  // constructor
+    Construct(QualIdentifier, Box<Vec<SQLExpr>>),  // constructor
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
     // Only in GroundingQuery.groundings
     Value(Column),  // in an interpretation table.
@@ -46,7 +46,32 @@ pub(crate) enum SQLExpr {
 }
 
 impl SQLExpr {
-    fn show(&self, variables: &IndexMap<Symbol, Column>) -> String {
+    fn show(
+        &self,
+        variables: &IndexMap<Symbol, Column>
+    ) -> String {
+
+            /// Helper: use either "apply" or "construct2", according to the first argument.
+            /// See description of these functions in y_db module.
+            ///
+            /// Arguments:
+            /// * function: either "apply" or "construct2"
+            fn sql_for(
+                function: &str,
+                qual_identifier: &QualIdentifier,
+                exprs: &Box<Vec<SQLExpr>>,
+                variables: &IndexMap<Symbol, Column>
+            ) -> String {
+                if exprs.len() == 0 {
+                    format!("\"{qual_identifier}\"")
+                } else {
+                    let terms = exprs.iter()
+                        .map(|e| e.show(variables))
+                        .collect::<Vec<_>>().join(", ");
+                    format!("{function}(\"{qual_identifier}\", {})", terms)
+                }
+            }  // end helper
+
         match self {
             SQLExpr::Constant(spec_constant) => {
                 match spec_constant {
@@ -58,16 +83,11 @@ impl SQLExpr {
                 }
             },
             SQLExpr::Variable(symbol) => todo!(),
-            SQLExpr::Construct(symbol, exprs) => todo!(),
+            SQLExpr::Construct(qual_identifier, exprs) => {
+                sql_for("construct2", qual_identifier, exprs, variables)
+            },
             SQLExpr::Apply(qual_identifier, exprs) => {
-                if exprs.len() == 0 {
-                    format!("\"{qual_identifier}\"")
-                } else {
-                    let terms = exprs.iter()
-                        .map(|e| e.show(variables))
-                        .collect::<Vec<_>>().join(", ");
-                    format!("apply(\"{qual_identifier}\", {})", terms)
-                }
+                sql_for("apply", qual_identifier, exprs, variables)
             },
             SQLExpr::Value(column) => todo!(),
             SQLExpr::Equality(_, expr, column) => todo!(),
@@ -95,7 +115,7 @@ pub(crate) struct GroundingQuery {
     pub(crate) theta_joins: Vec<(TableName, Vec<(bool, SQLExpr, Column)>)>, // indexed table name + mapping of (gated) expressions to value column
     // pub(crate) where_: Vec<SQLExpr>,  // filters on the query, e.g. to select TU values
 
-    pub(crate) outer: bool,  // true if outer natural join
+    pub(crate) default: String,  // "" for inner natural join; "true" (resp. "false") for "and" (resp. "or")
     pub(crate) ids: Ids,  // if the groundings are all Ids
 }
 
@@ -114,8 +134,16 @@ impl std::fmt::Display for GroundingQuery {
             .collect::<Vec<_>>()
             .join(", ");
 
+        // condition
         let condition = self.conditions.iter()
-            .map( |e| format!("({})", e.show(&self.variables)) )
+            .map( |e| {
+                if self.default == ""
+                || self.natural_joins.len() <= 1 {  // can't have nulls
+                    format!("({})", e.show(&self.variables))
+                } else {
+                    format!("IFNULL({}, \"{}\")", e.show(&self.variables), self.default)
+                }
+            })
             .collect::<Vec<_>>().join(" AND ");
         let condition =
             if condition == "" {
@@ -126,13 +154,22 @@ impl std::fmt::Display for GroundingQuery {
                 format!("{condition} AS cond")
             };
 
+        // grounding
+        let grounding =
+            if self.default == ""
+            || self.natural_joins.len() <= 1 {  // can't have nulls
+                self.grounding.show(&self.variables)
+            } else {
+                format!("IFNULL({}, \"{}\")", self.grounding.show(&self.variables), self.default)
+            };
         let grounding =
             if condition == "" {
-                format!("{} AS G", self.grounding.show(&self.variables))
+                format!("{} AS G", grounding)
             } else {
-                format!(", {} AS G", self.grounding.show(&self.variables))
+                format!(", {} AS G", grounding)
             };
 
+        // natural joins
         let naturals = self.natural_joins.iter()
             .map(|(table_name, on)|
                 if on.len() == 0 {
@@ -147,12 +184,13 @@ impl std::fmt::Display for GroundingQuery {
                 })
             .collect::<Vec<_>>();
         let naturals =
-            if self.outer && 0 < naturals.len() {
+            if self.default !="" && 0 < naturals.len() {
                 vec![naturals.join(" OUTER JOIN ")]
             } else {
                 naturals  // will be joined next
             };
 
+        // theta joins
         let thetas = self.theta_joins.iter()
             .map( | (table_name, mapping) | {
                 let on = mapping.iter()
@@ -167,6 +205,7 @@ impl std::fmt::Display for GroundingQuery {
                 format!("{} AS {table_name} ON {on}", table_name.base_table)
             }).collect::<Vec<_>>();
 
+        // naturals + thetas
         let tables = [naturals, thetas].concat();
         let tables = if 0 < tables.len() {
                 format!(" FROM {}", tables.join(" JOIN "))
@@ -209,16 +248,19 @@ pub(crate) fn query_spec_constant(
         natural_joins: IndexMap::new(),
         theta_joins: vec![],
         // where_: vec![],
-        outer: false,
+        default: "".to_string(),
         ids: Ids::All,
     }
 }
 
-/// creates a query for a compound term, according to `variant`
+/// creates a query for a compound term, according to `variant`.
 ///
 /// Arguments:
-/// * variant: either an interpretation or a default value for outer natural joins ("" for inner natural joins)
-pub(crate) fn query_compound(
+/// * variant: either an interpretation or a function name.  The function name can be:
+///     * "apply" (implies inner natural joins)
+///     * "construct" (implies inner natural joins)
+///     * "and" or "or" (implies outer natural joins)
+pub(crate) fn query_for_compound(
     qual_identifier: &QualIdentifier,
     sub_queries: &mut Vec<GroundingQuery>,
     variant: Either<TableName, String>
@@ -256,12 +298,29 @@ pub(crate) fn query_compound(
     }
 
     // todo: use interpretation table of qual_identifier
-    let (grounding, outer) =
+    let (grounding, default) =
         match variant {
             Either::Left(table_name) => todo!(),
-            Either::Right(default) => {  // no interpretation
-                ( SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings)),
-                  default != "".to_string())
+            Either::Right(function) => {  // no interpretation
+                match function.as_str() {
+                    "apply" =>
+                        ( SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings)),
+                          "".to_string()
+                        ),
+                    "construct" =>
+                        ( SQLExpr::Construct(qual_identifier.clone(), Box::new(groundings)),
+                          "".to_string()
+                        ),
+                    "and" =>
+                        ( SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings)),
+                          "true".to_string()
+                        ),
+                    "or" =>
+                        ( SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings)),
+                            "false".to_string()
+                        ),
+                    _ => todo!("{}", function)
+                }
             },
         };
 
@@ -272,9 +331,10 @@ pub(crate) fn query_compound(
         natural_joins,
         theta_joins,
         // where_,
-        outer,
+        default,
         ids,
     })
 }
+
 
 

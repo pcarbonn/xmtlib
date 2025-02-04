@@ -10,7 +10,7 @@ use crate::api::{Identifier, QualIdentifier, SortedVar, Symbol, Term, VarBinding
 use crate::error::SolverError::{self, *};
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, InterpretationType};
-use crate::private::x_query::{GroundingQuery, query_compound, query_spec_constant};
+use crate::private::x_query::{GroundingQuery, query_for_compound, query_spec_constant};
 use crate::solver::Solver;
 
 
@@ -323,90 +323,90 @@ fn ground_compound(
             })
         .collect::<Vec<_>>();
 
-    let grounding =
-        match solver.functions.get(qual_identifier) {
-            Some(FunctionObject { boolean: None, ..}) => { // ite
-                todo!("ite not yet supported")
-            },
-            Some(FunctionObject { boolean: Some(boolean), typ, ..}) => { // custom function
-                if *boolean {
-                    match qual_identifier {
-                        QualIdentifier::Identifier(Identifier::Simple(s)) => {
-                            match s.0.as_str() {
-                                "and" => {
+    match solver.functions.get(qual_identifier) {
+        Some(FunctionObject { boolean: None, ..}) => { // ite
+            // need to determine if boolean result or not
+            todo!("ite not yet supported")
+        },
+        Some(FunctionObject { boolean: Some(boolean), typ, ..}) => { // custom function
+            if *boolean {
+                match qual_identifier {
+                    QualIdentifier::Identifier(Identifier::Simple(s)) => {
+                        match s.0.as_str() {
+                            "and" => {
 
-                                    // and
-                                    let (mut tus, mut ufs) = collect_tu_uf(groundings);
+                                // and
+                                let (mut tus, mut ufs) = collect_tu_uf(groundings);
 
-                                    let variant = Right("".to_string());
-                                    let grounding_query = query_compound(qual_identifier, &mut gqs, variant)?;
+                                let variant = Right("apply".to_string());
+                                let grounding_query = query_for_compound(qual_identifier, &mut gqs, variant)?;
 
-                                    let variant = Right("".to_string());
-                                    let tu = query_compound(qual_identifier, &mut tus, variant)?;
+                                let variant = Right("apply".to_string());
+                                let tu = query_for_compound(qual_identifier, &mut tus, variant)?;
 
-                                    let variant = Right("true".to_string());
-                                    let uf = query_compound(qual_identifier, &mut ufs, variant)?;
+                                let variant = Right("and".to_string());
+                                let uf = query_for_compound(qual_identifier, &mut ufs, variant)?;
 
-                                    Grounding::Boolean{tu, uf, g: grounding_query}
-                                },
-                                "or" => {
+                                Ok(Grounding::Boolean{tu, uf, g: grounding_query})
+                            },
+                            "or" => {
 
-                                    // or
-                                    let (mut tus, mut ufs) = collect_tu_uf(groundings);
+                                // or
+                                let (mut tus, mut ufs) = collect_tu_uf(groundings);
 
-                                    let variant = Right("".to_string());
-                                    let grounding_query = query_compound(qual_identifier, &mut gqs, variant)?;
+                                let variant = Right("apply".to_string());
+                                let grounding_query = query_for_compound(qual_identifier, &mut gqs, variant)?;
 
-                                    let variant = Right("false".to_string());
-                                    let tu = query_compound(qual_identifier, &mut tus, variant)?;
+                                let variant = Right("or".to_string());
+                                let tu = query_for_compound(qual_identifier, &mut tus, variant)?;
 
-                                    let variant = Right("".to_string());
-                                    let uf = query_compound(qual_identifier, &mut ufs, variant)?;
+                                let variant = Right("apply".to_string());
+                                let uf = query_for_compound(qual_identifier, &mut ufs, variant)?;
 
-                                    Grounding::Boolean{tu, uf, g: grounding_query}
-                                },
-                                  "=>"
-                                | "="
-                                | "<="
-                                | "<"
-                                | ">="
-                                | ">" => todo!(),
+                                Ok(Grounding::Boolean{tu, uf, g: grounding_query})
+                            },
+                              "not"
+                            | "=>"
+                            | "="
+                            | "<="
+                            | "<"
+                            | ">="
+                            | ">" => todo!(),
 
-                                _ => {
+                            _ => {
 
-                                    // custom boolean function with simple name
-                                    ground_boolean_compound(qual_identifier, &mut gqs, &typ)?
-                                }
+                                // custom boolean function with simple name
+                                ground_boolean_compound(qual_identifier, &mut gqs, &typ)
                             }
-                        },
-                        QualIdentifier::Identifier(Identifier::Indexed(_,_))
-                        | QualIdentifier::Sorted(_, _) => {
+                        }
+                    },
+                    QualIdentifier::Identifier(Identifier::Indexed(_,_))
+                    | QualIdentifier::Sorted(_, _) => {
 
-                            // custom boolean function with complex identifier
-                            ground_boolean_compound(qual_identifier, &mut gqs, &typ)?
-                        },
-                    }
-
-                } else {
-
-                    // custom non-boolean function
-                    let variant =
-                        match typ {
-                            InterpretationType::Calculated => Right("".to_string()),
-                        };
-                    let grounding_query = query_compound(qual_identifier, &mut gqs, variant)?;
-                    Grounding::NonBoolean(grounding_query)
+                        // custom boolean function with complex identifier
+                        ground_boolean_compound(qual_identifier, &mut gqs, &typ)
+                    },
                 }
-            },
-            None => {
-                // constructor.  todo: this should not happen
-                // todo: use construct() in SQL
-                let variant = Right("".to_string());
-                let grounding_query = query_compound(qual_identifier, &mut vec![], variant)?;
-                Grounding::NonBoolean(grounding_query)
-            },
-        };
-    Ok(grounding)
+
+            } else {
+
+                // custom non-boolean function
+                let variant =
+                    match typ {
+                        InterpretationType::Calculated => Right("apply".to_string()),
+                    };
+                let grounding_query = query_for_compound(qual_identifier, &mut gqs, variant)?;
+                Ok(Grounding::NonBoolean(grounding_query))
+            }
+        },
+        None => {
+            // constructor.  todo: this should not happen
+            // todo: use construct() in SQL
+            let variant = Right("construct".to_string());
+            let grounding_query = query_for_compound(qual_identifier, &mut vec![], variant)?;
+            Ok(Grounding::NonBoolean(grounding_query))
+        },
+    }
 }
 
 
@@ -445,8 +445,8 @@ fn ground_boolean_compound(
     // custom boolean function
     match typ {
         InterpretationType::Calculated => {
-            let variant = Right("".to_string());
-            let grounding_query = query_compound(qual_identifier, gqs, variant)?;
+            let variant = Right("apply".to_string());
+            let grounding_query = query_for_compound(qual_identifier, gqs, variant)?;
             let tu = grounding_query.clone();
             let uf = grounding_query.clone();
             Ok(Grounding::Boolean{tu, uf, g: grounding_query})
