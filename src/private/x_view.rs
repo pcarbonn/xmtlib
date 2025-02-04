@@ -38,9 +38,9 @@ pub(crate) enum SQLExpr {
     Variable(Symbol),
     Construct(Symbol, Box<Vec<SQLExpr>>),  // constructor
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
-    // Only in GroundingView.groundings
+    // Only in GroundingQuery.groundings
     Value(Column),  // in an interpretation table.
-    //  Only in GroundingView.conditions
+    //  Only in GroundingQuery.conditions
     Equality(bool, Box<SQLExpr>, Column),  // gated c_i.
 }
 
@@ -85,7 +85,7 @@ pub(crate) enum Ids {
 
 /// Contains what is needed to construct the grounding view of a term, in a composable way.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct GroundingView {
+pub(crate) struct GroundingQuery {
 
     pub(crate) variables: IndexMap<Symbol, Column>,  // maps variables to either a Type table or (better) an Interpretation table
     pub(crate) conditions: Vec<SQLExpr>,  // vector of non-empty SQL expressions
@@ -98,7 +98,7 @@ pub(crate) struct GroundingView {
     pub(crate) ids: Ids,  // if the groundings are all Ids
 }
 
-impl std::fmt::Display for GroundingView {
+impl std::fmt::Display for GroundingQuery {
 
     // SELECT {variables.0} AS {variables.1},
     //        {condition} AS cond,  -- if condition
@@ -177,10 +177,10 @@ impl std::fmt::Display for GroundingView {
 
 /////////////////////  Grounding implementations ////////////////////////////////////////
 
-pub(crate) fn ground_spec_constant(
+pub(crate) fn query_spec_constant(
     spec_constant: &SpecConstant
-) -> GroundingView {
-    GroundingView {
+) -> GroundingQuery {
+    GroundingQuery {
         variables: IndexMap::new(),
         conditions: vec![],
         grounding: SQLExpr::Constant(spec_constant.clone()),
@@ -192,11 +192,11 @@ pub(crate) fn ground_spec_constant(
 }
 
 
-pub(crate) fn ground_compound(
+pub(crate) fn query_compound(
     qual_identifier: &QualIdentifier,
-    sub_views: &mut Vec<GroundingView>,
+    sub_queries: &mut Vec<GroundingQuery>,
     solver: &mut Solver
-) -> Result<GroundingView, SolverError> {
+) -> Result<GroundingQuery, SolverError> {
 
     let mut variables: IndexMap<Symbol, Column> = IndexMap::new();
     let mut conditions= vec![];
@@ -205,22 +205,22 @@ pub(crate) fn ground_compound(
     let mut theta_joins = vec![];
     let mut ids: Ids = Ids::All;
 
-    for gv in sub_views {
+    for sub_q in sub_queries {
 
-        conditions.append(&mut gv.conditions);
-        groundings.push(gv.grounding.clone());
-        natural_joins.append(&mut gv.natural_joins.clone());
-        theta_joins.append(&mut gv.theta_joins);
-        ids = max(ids, gv.ids.clone());
+        conditions.append(&mut sub_q.conditions);
+        groundings.push(sub_q.grounding.clone());
+        natural_joins.append(&mut sub_q.natural_joins.clone());
+        theta_joins.append(&mut sub_q.theta_joins);
+        ids = max(ids, sub_q.ids.clone());
 
-        for (symbol, column) in &gv.variables {
+        for (symbol, column) in &sub_q.variables {
             // insert if not there yet,
             // or if it was a natural join column, but not anymore
             if match variables.get(symbol) {
                     None => true,
                     Some(old_column) =>
                         natural_joins.contains_key(&old_column.table_name)
-                        && ! gv.natural_joins.contains_key(&column.table_name)
+                        && ! sub_q.natural_joins.contains_key(&column.table_name)
                 } {
                     variables.insert(symbol.clone(), column.clone());
                 }
@@ -230,7 +230,7 @@ pub(crate) fn ground_compound(
     // todo: use interpretation table of qual_identifier
     let grounding = SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings));
 
-    Ok(GroundingView {
+    Ok(GroundingQuery {
         variables,
         conditions,
         grounding,
@@ -241,9 +241,9 @@ pub(crate) fn ground_compound(
     })
 }
 
-// impl GroundingView {
+// impl GroundingQuery {
 
-//     /// first mandatory step in building a GroundingView for an interpreted function application.
+//     /// first mandatory step in building a GroundingQuery for an interpreted function application.
 //     fn add_interpretation(
 //         &mut self,
 //         index: TermId,  // index of self in solver.groundings
@@ -259,7 +259,7 @@ pub(crate) fn ground_compound(
 //         &mut self,
 //         position: usize,  // index of the sub-term in the list of argument
 //         subterm_id: TermId,  // TermId of the sub-term
-//         sub_grounding_view: GroundingView,  // grounding view of the sub-term,
+//         sub_grounding_view: GroundingQuery,  // grounding view of the sub-term,
 //         variant: Option<(F, Option<String>)>  // None for interpretation_table, or (lambda, default)
 //     ) -> Result<(), SolverError>
 //     where F: Fn(&mut Self, Vec<usize>) -> String,

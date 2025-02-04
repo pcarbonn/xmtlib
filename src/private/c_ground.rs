@@ -9,14 +9,14 @@ use crate::api::{Identifier, QualIdentifier, SortedVar, Symbol, Term, VarBinding
 use crate::error::SolverError::{self, *};
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, InterpretationType};
-use crate::private::x_view::{GroundingView, ground_compound, ground_spec_constant};
+use crate::private::x_view::{GroundingQuery, query_compound, query_spec_constant};
 use crate::solver::Solver;
 
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum Grounding {
-    NonBoolean(GroundingView),
-    Boolean{tu: GroundingView, uf: GroundingView, g: GroundingView}
+    NonBoolean(GroundingQuery),
+    Boolean{tu: GroundingQuery, uf: GroundingQuery, g: GroundingQuery}
 }
 impl std::fmt::Display for Grounding {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -42,18 +42,22 @@ pub(crate) fn assert_(
 ) -> Result<String, SolverError> {
 
     let mut variables = IndexMap::new();
-    let new_term = transform_term(term, &mut variables, solver)?;
+    let new_term = annotate_term(term, &mut variables, solver)?;
     solver.assertions_to_ground.push((new_term, command));
     Ok("".to_string())
 }
 
 
-/// Removes ambiguity in identifiers by replacing each occurrence of a variable by a Term::XSortedVar
-pub(crate) fn transform_term(
+/// Removes ambiguity in identifiers by
+/// - replacing each occurrence of a variable by a Term::XSortedVar
+/// - todo: replace ambiguous simple identifier by a qualified identifier
+pub(crate) fn annotate_term(
     term: &Term,
     variables: &mut IndexMap<Symbol, Option<SortedVar>>,  // can't use XSortedVar here because it's a term variant
     solver: &Solver
 ) -> Result<Term, SolverError> {
+
+        // todo: disambiguate ambiguous simple identifier
 
         // Helper function to avoid code duplication
         fn process_quantification (
@@ -78,7 +82,7 @@ pub(crate) fn transform_term(
                     None => return Err(InternalError(2486645)),
                 }
             };
-            let new_term = transform_term(term, &mut new_variables, solver)?;
+            let new_term = annotate_term(term, &mut new_variables, solver)?;
             Ok((new_sorted_vars, new_term))
         }  // end helper function
 
@@ -89,10 +93,10 @@ pub(crate) fn transform_term(
             match qual_identifier {
                 QualIdentifier::Identifier(Identifier::Simple(ref symbol)) => {
                     match variables.get(symbol) {
-                        Some(Some(SortedVar(_, ref sort))) => // an interpreted variable
+                        Some(Some(SortedVar(_, ref sort))) => // a variable of uninterpreted type
                             Ok(Term::XSortedVar(symbol.clone(), Some(sort.clone()))),
                         Some(None) =>
-                            Ok(Term::XSortedVar(symbol.clone(), None)),  // an uninterpreted variable
+                            Ok(Term::XSortedVar(symbol.clone(), None)),  // a variable of interpreted type
                         None =>
                             Ok(term.clone())  // a regular identifier
                     }
@@ -103,7 +107,7 @@ pub(crate) fn transform_term(
 
         Term::Application(qual_identifier, terms) => {
             let new_terms = terms.iter()
-                .map(|t| transform_term(t, variables, solver))
+                .map(|t| annotate_term(t, variables, solver))
                 .collect::<Result<Vec<_>, _>>()?;
             Ok(Term::Application(qual_identifier.clone(), new_terms))
         },
@@ -113,11 +117,11 @@ pub(crate) fn transform_term(
             let mut new_variables = variables.clone();
             let mut new_var_bindings = vec![];
             for VarBinding(symbol, binding) in var_bindings {
-                let binding = transform_term(&binding, variables, solver)?;
+                let binding = annotate_term(&binding, variables, solver)?;
                 new_variables.insert(symbol.clone(), None);  // don't try to interpret the variable during grounding of term
                 new_var_bindings.push(VarBinding(symbol.clone(), binding))
             };
-            let new_term = transform_term(term, &mut new_variables, solver)?;
+            let new_term = annotate_term(term, &mut new_variables, solver)?;
             Ok(Term::Let(new_var_bindings, Box::new(new_term)))
         },
 
@@ -132,10 +136,10 @@ pub(crate) fn transform_term(
         },
 
         Term::Match(_, _) => {
-            // let term = transform_term(term, variables, solver)?;
+            // let term = annotate_term(term, variables, solver)?;
             // let mut new_match_cases = vec![];
             // for MatchCase(pattern, result) in match_cases {
-            //     let new_result = transform_term(result, variables, solver)?;
+            //     let new_result = annotate_term(result, variables, solver)?;
             //     new_match_cases.push(MatchCase(pattern.clone(), new_result));
             // }
             // Ok(Term::Match(Box::new(term), new_match_cases))
@@ -143,7 +147,7 @@ pub(crate) fn transform_term(
         },
 
         Term::Annotation(term, attributes) => {
-            let new_term = transform_term(&term, variables, solver)?;
+            let new_term = annotate_term(&term, variables, solver)?;
             Ok(Term::Annotation(Box::new(new_term), attributes.clone()))
         },
 
@@ -221,13 +225,13 @@ pub(crate) fn ground_term_(
         Term::SpecConstant(spec_constant) => {
 
             // a number or string
-            let grounding = ground_spec_constant(spec_constant);
+            let grounding = query_spec_constant(spec_constant);
             Ok((term.clone(), Grounding::NonBoolean(grounding)))
         },
         Term::XSortedVar(..) => todo!(),  // sorted var should be handled by the quantification
         Term::Identifier(qual_identifier) => {
 
-            let grounding = ground_compound(qual_identifier, &mut vec![], solver)?;
+            let grounding = query_compound(qual_identifier, &mut vec![], solver)?;
             Ok((term.clone(), Grounding::NonBoolean(grounding)))
 
 
@@ -286,15 +290,15 @@ pub(crate) fn ground_term_(
 
             // collect the full grounding views
             // todo: boolean case
-            let mut gvs = groundings.iter()
+            let mut gqs = groundings.iter()
                 .map( |(_,g)|
                     match g {
-                        Grounding::NonBoolean(gv) => gv.clone(),
-                        Grounding::Boolean{g: gv, ..} => gv.clone()
+                        Grounding::NonBoolean(gq) => gq.clone(),
+                        Grounding::Boolean{g: gq, ..} => gq.clone()
                     })
                 .collect::<Vec<_>>();
 
-            let grounding = ground_compound(qual_identifier, &mut gvs, solver)?;
+            let grounding = query_compound(qual_identifier, &mut gqs, solver)?;
             Ok((term.clone(), Grounding::NonBoolean(grounding)))
         },
         Term::Let(..) => todo!(),

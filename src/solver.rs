@@ -33,7 +33,7 @@ pub struct Solver {
     pub(crate) sorts: IndexMap<Sort, SortObject>,
 
     // predicate and function symbols
-    pub(crate) functions: IndexMap<Identifier, FunctionObject>,
+    pub(crate) functions: IndexMap<QualIdentifier, FunctionObject>,
     // pub(crate) qualified_functions: IndexMap<QualIdentifier, FunctionObject>,
 
     // to support differed grounding of terms
@@ -91,7 +91,8 @@ impl Default for Solver {
 
         // create pre-defined functions
         let mut functions = IndexMap::new();
-        let function = |s: &str| Identifier::Simple(Symbol(s.to_string()));
+        let function = |s: &str|
+            QualIdentifier::Identifier(Identifier::Simple(Symbol(s.to_string())));
 
         // boolean pre-defined functions
         for s in ["true", "false",

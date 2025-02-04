@@ -5,7 +5,7 @@ use std::fmt::Display;
 
 use indexmap::IndexSet;
 
-use crate::api::{Sort, Symbol, Identifier};
+use crate::api::{Sort, Symbol, Identifier, QualIdentifier};
 use crate::private::a_sort::instantiate_parent_sort;
 use crate::{error::SolverError, solver::Solver};
 
@@ -57,7 +57,7 @@ pub(crate) fn declare_fun(
     }
     instantiate_parent_sort(&co_domain, &declaring, solver)?;
 
-    let identifier = Identifier::Simple(symbol);
+    let identifier = QualIdentifier::Identifier(Identifier::Simple(symbol));
     let typ = InterpretationType::Calculated;
     let boolean = match co_domain {
         Sort::Sort(Identifier::Simple(Symbol(ref s))) => s=="Bool",
