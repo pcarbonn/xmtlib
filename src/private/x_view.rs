@@ -4,9 +4,9 @@ use std::cmp::max;
 
 use indexmap::IndexMap;
 
-use crate::{api::{QualIdentifier, SpecConstant, Symbol, Term}, error::SolverError::{self, InternalError}, solver::Solver};
-use crate::private::c_ground::{ground_term_, Grounding};
-use crate::solver::TermId;
+use crate::api::{QualIdentifier, SpecConstant, Symbol};
+use crate::error::SolverError;
+use crate::solver::{Solver, TermId};
 
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -60,9 +60,12 @@ impl SQLExpr {
             SQLExpr::Construct(symbol, exprs) => todo!(),
             SQLExpr::Apply(qual_identifier, exprs) => {
                 if exprs.len() == 0 {
-                    format!("{qual_identifier})")
+                    format!("\"{qual_identifier}\"")
                 } else {
-                    todo!()
+                    let terms = exprs.iter()
+                        .map(|e| e.show(variables))
+                        .collect::<Vec<_>>().join(", ");
+                    format!("apply(\"{qual_identifier}\", {})", terms)
                 }
             },
             SQLExpr::Value(column) => todo!(),
@@ -191,13 +194,9 @@ pub(crate) fn ground_spec_constant(
 
 pub(crate) fn ground_compound(
     qual_identifier: &QualIdentifier,
-    sub_terms: &Vec<Term>,
+    sub_views: &mut Vec<GroundingView>,
     solver: &mut Solver
 ) -> Result<GroundingView, SolverError> {
-
-    let grounding_views = sub_terms.iter()
-        .map( |t| ground_term_(t, false, solver) )
-        .collect::<Result<Vec<_>,_>>()?;
 
     let mut variables: IndexMap<Symbol, Column> = IndexMap::new();
     let mut conditions= vec![];
@@ -206,33 +205,29 @@ pub(crate) fn ground_compound(
     let mut theta_joins = vec![];
     let mut ids: Ids = Ids::All;
 
-    for (_, g) in grounding_views {
-        let mut gv = match g {
-            Grounding::NonBoolean(gv) => gv,
-            Grounding::Boolean{g: gv, ..} => gv
-        };
+    for gv in sub_views {
 
         conditions.append(&mut gv.conditions);
-        groundings.push(gv.grounding);
+        groundings.push(gv.grounding.clone());
         natural_joins.append(&mut gv.natural_joins.clone());
         theta_joins.append(&mut gv.theta_joins);
-        ids = max(ids, gv.ids);
+        ids = max(ids, gv.ids.clone());
 
-        for (symbol, column) in gv.variables {
+        for (symbol, column) in &gv.variables {
             // insert if not there yet,
             // or if it was a natural join column, but not anymore
-            if match variables.get(&symbol) {
+            if match variables.get(symbol) {
                     None => true,
                     Some(old_column) =>
                         natural_joins.contains_key(&old_column.table_name)
                         && ! gv.natural_joins.contains_key(&column.table_name)
                 } {
-                    variables.insert(symbol, column);
+                    variables.insert(symbol.clone(), column.clone());
                 }
         }
     }
 
-    // todo: lookup
+    // todo: use interpretation table of qual_identifier
     let grounding = SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings));
 
     Ok(GroundingView {

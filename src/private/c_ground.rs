@@ -227,7 +227,7 @@ pub(crate) fn ground_term_(
         Term::XSortedVar(..) => todo!(),  // sorted var should be handled by the quantification
         Term::Identifier(qual_identifier) => {
 
-            let grounding = ground_compound(qual_identifier, &vec![], solver)?;
+            let grounding = ground_compound(qual_identifier, &mut vec![], solver)?;
             Ok((term.clone(), Grounding::NonBoolean(grounding)))
 
 
@@ -278,7 +278,25 @@ pub(crate) fn ground_term_(
             //     QualIdentifier::Sorted(..) => todo!(),
             // }
         },
-        Term::Application(..) => todo!(),
+        Term::Application(qual_identifier, sub_terms) => {
+
+            let groundings = sub_terms.iter()
+                .map( |t| ground_term_(t, false, solver) )
+                .collect::<Result<Vec<_>,_>>()?;
+
+            // collect the full grounding views
+            // todo: boolean case
+            let mut gvs = groundings.iter()
+                .map( |(_,g)|
+                    match g {
+                        Grounding::NonBoolean(gv) => gv.clone(),
+                        Grounding::Boolean{g: gv, ..} => gv.clone()
+                    })
+                .collect::<Vec<_>>();
+
+            let grounding = ground_compound(qual_identifier, &mut gvs, solver)?;
+            Ok((term.clone(), Grounding::NonBoolean(grounding)))
+        },
         Term::Let(..) => todo!(),
         Term::Forall(..) => todo!(),
         Term::Exists(..) => todo!(),
@@ -287,63 +305,57 @@ pub(crate) fn ground_term_(
     }
 }
 
-/// # Arguments
-///
-/// * term: the full term
-/// * qual_identifier: the applied function
-/// * variables: the variables in the current scope
-///
-fn ground_application(
-    term: &Term,
-    qual_identifier: &QualIdentifier,
-    arguments: &Vec<Term>,
-    _variables: &mut IndexMap<Symbol, SortedVar>,
-    solver: &mut Solver
-) -> Result<(Term, Grounding), SolverError> {
+// fn ground_application(
+//     term: &Term,
+//     qual_identifier: &QualIdentifier,
+//     arguments: &Vec<Term>,
+//     _variables: &mut IndexMap<Symbol, SortedVar>,
+//     solver: &mut Solver
+// ) -> Result<(Term, Grounding), SolverError> {
 
-    let function_object = match qual_identifier {
-        QualIdentifier::Identifier(identifier) => {
-            // todo detect operators, true, false
-            solver.functions.get(identifier)
-        },
-        QualIdentifier::Sorted(..) =>
-        // lookup solver.qualified_functions
-            todo!()
-    };
+//     let function_object = match qual_identifier {
+//         QualIdentifier::Identifier(identifier) => {
+//             // todo detect operators, true, false
+//             solver.functions.get(identifier)
+//         },
+//         QualIdentifier::Sorted(..) =>
+//         // lookup solver.qualified_functions
+//             todo!()
+//     };
 
-    match function_object {
-        Some(FunctionObject{typ, boolean, ..}) => {
-            match typ {
-                InterpretationType::Calculated => {
-                    if arguments.len() == 0 {
+//     match function_object {
+//         Some(FunctionObject{typ, boolean, ..}) => {
+//             match typ {
+//                 InterpretationType::Calculated => {
+//                     if arguments.len() == 0 {
 
-                        // a constant
-                        // let g = View {
-                        //     variables: IndexMap::new(),
-                        //     condition: "".to_string(),
-                        //     grounding: format!("\"{qual_identifier}\""),
-                        //     joins: IndexMap::new(),
-                        //     where_: "".to_string(),
-                        //     group_by: "".to_string(),
-                        //     _ids: Ids::None,
-                        // };
-                        // let grounding =
-                        //     match boolean {
-                        //         Some(true) => Grounding::Boolean{tu: g.clone(), uf: g.clone(), g:g},
-                        //         Some(false) => Grounding::Function(g),
-                        //         None => todo!(),
-                        //     };
-                        // Ok((term.clone(), grounding))
-                        todo!()
+//                         // a constant
+//                         // let g = View {
+//                         //     variables: IndexMap::new(),
+//                         //     condition: "".to_string(),
+//                         //     grounding: format!("\"{qual_identifier}\""),
+//                         //     joins: IndexMap::new(),
+//                         //     where_: "".to_string(),
+//                         //     group_by: "".to_string(),
+//                         //     _ids: Ids::None,
+//                         // };
+//                         // let grounding =
+//                         //     match boolean {
+//                         //         Some(true) => Grounding::Boolean{tu: g.clone(), uf: g.clone(), g:g},
+//                         //         Some(false) => Grounding::Function(g),
+//                         //         None => todo!(),
+//                         //     };
+//                         // Ok((term.clone(), grounding))
+//                         todo!()
 
-                    } else {
+//                     } else {
 
-                        // a true function application
-                        todo!()
-                    }
-                }
-            }
-        },
-        None => todo!(),
-    }
-}
+//                         // a true function application
+//                         todo!()
+//                     }
+//                 }
+//             }
+//         },
+//         None => todo!(),
+//     }
+// }
