@@ -3,6 +3,7 @@
 use std::cmp::max;
 
 use indexmap::IndexMap;
+use itertools::Either;
 
 use crate::api::{QualIdentifier, SpecConstant, Symbol};
 use crate::error::SolverError;
@@ -92,7 +93,7 @@ pub(crate) struct GroundingQuery {
     pub(crate) grounding: SQLExpr,
     pub(crate) natural_joins: IndexMap<TableName, Vec<Symbol>>, // indexed table name -> list of its variables.
     pub(crate) theta_joins: Vec<(TableName, Vec<(bool, SQLExpr, Column)>)>, // indexed table name + mapping of (gated) expressions to value column
-    // pub(crate) where_: Vec<(Column, Column)>,  // pairs of columns representing the same variable in (different) interpretation tables
+    // pub(crate) where_: Vec<SQLExpr>,  // filters on the query, e.g. to select TU values
 
     pub(crate) outer: bool,  // true if outer natural join
     pub(crate) ids: Ids,  // if the groundings are all Ids
@@ -170,10 +171,30 @@ impl std::fmt::Display for GroundingQuery {
                 format!(" FROM {}", tables.join(" JOIN "))
             } else { "".to_string() };
 
+        // let where_ = self.where_.iter()
+        //     .map( |e| e.show(&self.variables) )
+        //     .collect::<Vec<_>>();
+        // let where_ = if 0 < where_.len() {
+        //     format!(" WHERE {}", where_.join(" AND "))
+        //     } else { "".to_string() };
+
         write!(f, "SELECT {variables}{condition}{grounding}{tables}")
     }
 }
 
+// impl GroundingQuery {
+//     fn add_where_clause(
+//         &self,
+//         condition: SQLExpr
+//     ) -> Self {
+//         let mut res = self.clone();
+//         match self.ids {
+//             Ids::All | Ids::Some_ => res.where_.push(condition),
+//             Ids::None => {},  // useless
+//         }
+//         res
+//     }
+// }
 
 /////////////////////  Grounding implementations ////////////////////////////////////////
 
@@ -186,6 +207,7 @@ pub(crate) fn query_spec_constant(
         grounding: SQLExpr::Constant(spec_constant.clone()),
         natural_joins: IndexMap::new(),
         theta_joins: vec![],
+        // where_: vec![],
         outer: false,
         ids: Ids::All,
     }
@@ -195,6 +217,7 @@ pub(crate) fn query_spec_constant(
 pub(crate) fn query_compound(
     qual_identifier: &QualIdentifier,
     sub_queries: &mut Vec<GroundingQuery>,
+    variant: Either<TableName, String>,  // either an interpretation or a default value ("" for inner join)
     solver: &mut Solver
 ) -> Result<GroundingQuery, SolverError> {
 
@@ -203,6 +226,7 @@ pub(crate) fn query_compound(
     let mut groundings = vec![];
     let mut natural_joins: IndexMap<TableName, Vec<Symbol>> = IndexMap::new();
     let mut theta_joins = vec![];
+    // let mut where_= vec![];
     let mut ids: Ids = Ids::All;
 
     for sub_q in sub_queries {
@@ -211,6 +235,7 @@ pub(crate) fn query_compound(
         groundings.push(sub_q.grounding.clone());
         natural_joins.append(&mut sub_q.natural_joins.clone());
         theta_joins.append(&mut sub_q.theta_joins);
+        // where_.append(&mut sub_q.where_.clone());
         ids = max(ids, sub_q.ids.clone());
 
         for (symbol, column) in &sub_q.variables {
@@ -236,6 +261,7 @@ pub(crate) fn query_compound(
         grounding,
         natural_joins,
         theta_joins,
+        // where_,
         outer: false,
         ids,
     })
