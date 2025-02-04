@@ -146,7 +146,8 @@ impl std::fmt::Display for GroundingQuery {
                     format!("{} AS {table_name} ON {on}", table_name.base_table)
                 })
             .collect::<Vec<_>>();
-        let naturals = if self.outer {
+        let naturals =
+            if self.outer && 0 < naturals.len() {
                 vec![naturals.join(" OUTER JOIN ")]
             } else {
                 naturals  // will be joined next
@@ -213,12 +214,14 @@ pub(crate) fn query_spec_constant(
     }
 }
 
-
+/// creates a query for a compound term, according to `variant`
+///
+/// Arguments:
+/// * variant: either an interpretation or a default value for outer natural joins ("" for inner natural joins)
 pub(crate) fn query_compound(
     qual_identifier: &QualIdentifier,
     sub_queries: &mut Vec<GroundingQuery>,
-    variant: Either<TableName, String>,  // either an interpretation or a default value ("" for inner join)
-    solver: &mut Solver
+    variant: Either<TableName, String>
 ) -> Result<GroundingQuery, SolverError> {
 
     let mut variables: IndexMap<Symbol, Column> = IndexMap::new();
@@ -253,7 +256,14 @@ pub(crate) fn query_compound(
     }
 
     // todo: use interpretation table of qual_identifier
-    let grounding = SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings));
+    let (grounding, outer) =
+        match variant {
+            Either::Left(table_name) => todo!(),
+            Either::Right(default) => {  // no interpretation
+                ( SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings)),
+                  default != "".to_string())
+            },
+        };
 
     Ok(GroundingQuery {
         variables,
@@ -262,83 +272,9 @@ pub(crate) fn query_compound(
         natural_joins,
         theta_joins,
         // where_,
-        outer: false,
+        outer,
         ids,
     })
 }
-
-// impl GroundingQuery {
-
-//     /// first mandatory step in building a GroundingQuery for an interpreted function application.
-//     fn add_interpretation(
-//         &mut self,
-//         index: TermId,  // index of self in solver.groundings
-//         interpretation_table: String
-//     ) -> () {
-//         self.interpretation_name = format!("{interpretation_table}_{index}");
-//         let join = format!(" {interpretation_table} AS {interpretation_table}_{index} ");
-//         self.theta_joins.push(join);
-//     }
-
-//     /// add a sub-term using a natural or outer join
-//     fn add_sub_term<F>(
-//         &mut self,
-//         position: usize,  // index of the sub-term in the list of argument
-//         subterm_id: TermId,  // TermId of the sub-term
-//         sub_grounding_view: GroundingQuery,  // grounding view of the sub-term,
-//         variant: Option<(F, Option<String>)>  // None for interpretation_table, or (lambda, default)
-//     ) -> Result<(), SolverError>
-//     where F: Fn(&mut Self, Vec<usize>) -> String,
-//     {
-//         if let Some((_, first_occurrence, _)) = self.natural_joins.get_full(&subterm_id) {
-
-//             // term already in the natural join --> reuse it
-//             let grounding = self.groundings[*first_occurrence].clone();
-//             self.groundings.push(grounding);
-//             return Ok(())
-
-//         }
-
-//         // check if the sub_grounding_view is a variable  (sgv.var[0] = sgv.g[0])
-//         let is_variable =
-//             sub_grounding_view.variables.len() == 1
-//             && sub_grounding_view.groundings.len() == 1
-//             && sub_grounding_view.variables[0] == sub_grounding_view.groundings[0];
-
-//         if is_variable {
-//             if self.interpretation_name != "" {
-
-//                 // the value of the variable is in the interpretation table, not in a Type table
-//                 let (symbol, _) = sub_grounding_view.variables.first()
-//                     .ok_or(InternalError(245566396))?;
-//                 let column = format!("{}.a_{position}", self.interpretation_name);
-//                 self.variables.insert(symbol.clone(), column.clone());
-//                 self.groundings.push(column);
-//                 return Ok(())
-//             }
-//         }
-
-//         // join the variables
-//         for (symbol, new_column) in sub_grounding_view.variables {
-//             if let Some(old_column) = self.variables.get(&symbol) {
-//                 // variable already in self -> join it
-//                 assert_eq!(old_column.clone(), new_column)
-//             } else {
-//                 self.variables.insert(symbol, new_column);
-//             }
-//         }
-
-//         assert_eq!(sub_grounding_view.groundings.len(), 1);
-//         self.groundings.push(sub_grounding_view.groundings[0].clone());
-
-//         // let top = self.natural_joins.len();
-//         // for (index, (first_occurrence, natural_join)) in sub_grounding_view.natural_joins {
-//         //     self.natural_joins.insert(top+index, (first_occurrence, natural_join));
-//         // }
-
-
-//         Ok(())
-//     }
-// }
 
 

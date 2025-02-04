@@ -4,13 +4,13 @@ use std::future::Future;
 
 use genawaiter::{sync::Gen, sync::gen, yield_};
 use indexmap::IndexMap;
-use itertools::Either::{Left, Right};
+use itertools::Either::Right;
 
 use crate::api::{Identifier, QualIdentifier, SortedVar, Symbol, Term, VarBinding};
 use crate::error::SolverError::{self, *};
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, InterpretationType};
-use crate::private::x_view::{GroundingQuery, query_compound, query_spec_constant};
+use crate::private::x_query::{GroundingQuery, query_compound, query_spec_constant};
 use crate::solver::Solver;
 
 
@@ -22,7 +22,7 @@ pub(crate) enum Grounding {
 impl std::fmt::Display for Grounding {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Grounding::NonBoolean(view) => write!(f, " {view}"),
+            Grounding::NonBoolean(query) => write!(f, " {query}"),
             Grounding::Boolean{tu, uf, g, ..} => {
                 writeln!(f, "")?;
                 writeln!(f, "    TU: {tu}")?;
@@ -233,6 +233,7 @@ pub(crate) fn ground_term_(
         Term::XSortedVar(..) => todo!(),  // sorted var should be handled by the quantification
         Term::Identifier(qual_identifier) => {
 
+            // an identifier
             let grounding = ground_compound(qual_identifier, &mut vec![], solver)?;
             Ok((term.clone(), grounding))
 
@@ -285,6 +286,8 @@ pub(crate) fn ground_term_(
             // }
         },
         Term::Application(qual_identifier, sub_terms) => {
+
+            // a compound term
             let grounding = ground_compound(qual_identifier, sub_terms, solver)?;
             Ok((term.clone(), grounding))
         },
@@ -311,7 +314,7 @@ fn ground_compound(
         .collect::<Option<Vec<_>>>()
         .ok_or(InternalError(749634))?;
 
-    // collect the full grounding views
+    // collect the full grounding queries
     let mut gqs = groundings.iter()
         .map( |(_,g)|
             match g {
@@ -322,112 +325,131 @@ fn ground_compound(
 
     let grounding =
         match solver.functions.get(qual_identifier) {
-            Some(FunctionObject { boolean: None, ..}) => { // pre-defined function
-                match qual_identifier {
-                    QualIdentifier::Identifier(Identifier::Simple(s)) => {
-                        match s.0.as_str() {
-                            "and" => { // todo
-                                // todo: add interpretation table, lambda, ...
-                                let variant = Right("".to_string());
-                                let grounding_query = query_compound(qual_identifier, &mut gqs, variant, solver)?;
-                                Grounding::NonBoolean(grounding_query)
-                            },
-                            "or" => { // todo
-                                // todo: add interpretation table, lambda, ...
-                                let variant = Right("".to_string());
-                                let grounding_query = query_compound(qual_identifier, &mut gqs, variant, solver)?;
-                                Grounding::NonBoolean(grounding_query)
-                            },
-                            _ => {
-                                todo!()  // "=>", equality, comparison
-                            }
-                        }
-                    },
-                    QualIdentifier::Identifier(Identifier::Indexed(_,_))
-                    | QualIdentifier::Sorted(_, _) => {
-                        // todo: add interpretation table, lambda, ...
-                        let variant = Right("".to_string());
-                        let grounding_query = query_compound(qual_identifier, &mut gqs, variant, solver)?;
-                        Grounding::NonBoolean(grounding_query)
-                    },
-                }
+            Some(FunctionObject { boolean: None, ..}) => { // ite
+                todo!("ite not yet supported")
             },
             Some(FunctionObject { boolean: Some(boolean), typ, ..}) => { // custom function
                 if *boolean {
-                    // todo: add interpretation table, lambda, ...
-                    let variant = Right("".to_string());
-                    let grounding_query = query_compound(qual_identifier, &mut gqs, variant, solver)?;
-                    let tu = grounding_query.clone();  // todo
-                    let uf = grounding_query.clone();
-                    Grounding::Boolean{tu, uf, g: grounding_query}
+                    match qual_identifier {
+                        QualIdentifier::Identifier(Identifier::Simple(s)) => {
+                            match s.0.as_str() {
+                                "and" => {
+
+                                    // and
+                                    let (mut tus, mut ufs) = collect_tu_uf(groundings);
+
+                                    let variant = Right("".to_string());
+                                    let grounding_query = query_compound(qual_identifier, &mut gqs, variant)?;
+
+                                    let variant = Right("".to_string());
+                                    let tu = query_compound(qual_identifier, &mut tus, variant)?;
+
+                                    let variant = Right("true".to_string());
+                                    let uf = query_compound(qual_identifier, &mut ufs, variant)?;
+
+                                    Grounding::Boolean{tu, uf, g: grounding_query}
+                                },
+                                "or" => {
+
+                                    // or
+                                    let (mut tus, mut ufs) = collect_tu_uf(groundings);
+
+                                    let variant = Right("".to_string());
+                                    let grounding_query = query_compound(qual_identifier, &mut gqs, variant)?;
+
+                                    let variant = Right("false".to_string());
+                                    let tu = query_compound(qual_identifier, &mut tus, variant)?;
+
+                                    let variant = Right("".to_string());
+                                    let uf = query_compound(qual_identifier, &mut ufs, variant)?;
+
+                                    Grounding::Boolean{tu, uf, g: grounding_query}
+                                },
+                                  "=>"
+                                | "="
+                                | "<="
+                                | "<"
+                                | ">="
+                                | ">" => todo!(),
+
+                                _ => {
+
+                                    // custom boolean function with simple name
+                                    ground_boolean_compound(qual_identifier, &mut gqs, &typ)?
+                                }
+                            }
+                        },
+                        QualIdentifier::Identifier(Identifier::Indexed(_,_))
+                        | QualIdentifier::Sorted(_, _) => {
+
+                            // custom boolean function with complex identifier
+                            ground_boolean_compound(qual_identifier, &mut gqs, &typ)?
+                        },
+                    }
+
                 } else {
-                    // todo: add interpretation table, lambda, ...
-                    let variant = Right("".to_string());
-                    let grounding_query = query_compound(qual_identifier, &mut gqs, variant, solver)?;
+
+                    // custom non-boolean function
+                    let variant =
+                        match typ {
+                            InterpretationType::Calculated => Right("".to_string()),
+                        };
+                    let grounding_query = query_compound(qual_identifier, &mut gqs, variant)?;
                     Grounding::NonBoolean(grounding_query)
                 }
             },
             None => {
-                // todo this should not happend for constructors
+                // constructor.  todo: this should not happen
+                // todo: use construct() in SQL
                 let variant = Right("".to_string());
-                let grounding_query = query_compound(qual_identifier, &mut vec![], variant, solver)?;
+                let grounding_query = query_compound(qual_identifier, &mut vec![], variant)?;
                 Grounding::NonBoolean(grounding_query)
             },
         };
     Ok(grounding)
 }
 
-// fn ground_application(
-//     term: &Term,
-//     qual_identifier: &QualIdentifier,
-//     arguments: &Vec<Term>,
-//     _variables: &mut IndexMap<Symbol, SortedVar>,
-//     solver: &mut Solver
-// ) -> Result<(Term, Grounding), SolverError> {
 
-//     let function_object = match qual_identifier {
-//         QualIdentifier::Identifier(identifier) => {
-//             // todo detect operators, true, false
-//             solver.functions.get(identifier)
-//         },
-//         QualIdentifier::Sorted(..) =>
-//         // lookup solver.qualified_functions
-//             todo!()
-//     };
+/// collect the TU (resp. UF) grounding queries in the vector of groundings
+fn collect_tu_uf(
+    groundings: Vec<(&Term, &Grounding)>
+) -> (Vec<GroundingQuery>, Vec<GroundingQuery>) {
 
-//     match function_object {
-//         Some(FunctionObject{typ, boolean, ..}) => {
-//             match typ {
-//                 InterpretationType::Calculated => {
-//                     if arguments.len() == 0 {
+    // collect the TU grounding queries
+    let tus = groundings.iter()
+        .map( |(_,g)|
+            match g {
+                Grounding::NonBoolean(q) => q.clone(),
+                Grounding::Boolean{tu: q, ..} => q.clone()
+            })
+        .collect::<Vec<_>>();
 
-//                         // a constant
-//                         // let g = View {
-//                         //     variables: IndexMap::new(),
-//                         //     condition: "".to_string(),
-//                         //     grounding: format!("\"{qual_identifier}\""),
-//                         //     joins: IndexMap::new(),
-//                         //     where_: "".to_string(),
-//                         //     group_by: "".to_string(),
-//                         //     _ids: Ids::None,
-//                         // };
-//                         // let grounding =
-//                         //     match boolean {
-//                         //         Some(true) => Grounding::Boolean{tu: g.clone(), uf: g.clone(), g:g},
-//                         //         Some(false) => Grounding::Function(g),
-//                         //         None => todo!(),
-//                         //     };
-//                         // Ok((term.clone(), grounding))
-//                         todo!()
+    // collect the UF grounding queries
+    let ufs = groundings.iter()
+        .map( |(_,g)|
+            match g {
+                Grounding::NonBoolean(q) => q.clone(),
+                Grounding::Boolean{uf: q, ..} => q.clone()
+            })
+        .collect::<Vec<_>>();
 
-//                     } else {
+    (tus, ufs)
+}
 
-//                         // a true function application
-//                         todo!()
-//                     }
-//                 }
-//             }
-//         },
-//         None => todo!(),
-//     }
-// }
+/// grounds a boolean compound term
+fn ground_boolean_compound(
+    qual_identifier: &QualIdentifier,
+    gqs: &mut Vec<GroundingQuery>,
+    typ: &InterpretationType
+) -> Result<Grounding, SolverError> {
+    // custom boolean function
+    match typ {
+        InterpretationType::Calculated => {
+            let variant = Right("".to_string());
+            let grounding_query = query_compound(qual_identifier, gqs, variant)?;
+            let tu = grounding_query.clone();
+            let uf = grounding_query.clone();
+            Ok(Grounding::Boolean{tu, uf, g: grounding_query})
+        },
+    }
+}

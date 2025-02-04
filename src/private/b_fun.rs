@@ -10,6 +10,7 @@ use crate::private::a_sort::instantiate_parent_sort;
 use crate::{error::SolverError, solver::Solver};
 
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct FunctionObject {
     pub(crate) signature: Option<(Vec<Sort>, Sort)>,  // to check interpretations.  None for pre-defined functions
     pub(crate) boolean: Option<bool>,  // None for `ite` --> need special code
