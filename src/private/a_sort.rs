@@ -29,7 +29,7 @@ pub(crate) enum SortObject{
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub(crate) enum Grounding{
+pub(crate) enum TypeInterpretation{
     Normal,  // lowest
     Unknown,
     Infinite,
@@ -94,7 +94,7 @@ pub(crate) fn declare_sort(
 
     if numeral.0 == 0 {
         let sort = Sort::Sort(Identifier::Simple(symb));
-        insert_sort(sort, None, Grounding::Unknown, None, solver)?;
+        insert_sort(sort, None, TypeInterpretation::Unknown, None, solver)?;
     } else {
         let dt_object = ParametricObject::Unknown;
         solver.parametric_sorts.insert(symb, dt_object);
@@ -210,7 +210,7 @@ pub(crate) fn create_sort(
 
     if let DatatypeDec::DatatypeDec(constructor_decls) = decl {
 
-        let mut grounding = Grounding::Normal;
+        let mut grounding = TypeInterpretation::Normal;
         // instantiate parent sorts first
         for constructor_decl in constructor_decls {
             let ConstructorDec(_, selectors) = constructor_decl;
@@ -237,7 +237,7 @@ pub(crate) fn instantiate_parent_sort(
     parent_sort: &Sort,
     declaring: &IndexSet<Symbol>,
     solver: &mut Solver,
-) -> Result<Grounding, SolverError> {
+) -> Result<TypeInterpretation, SolverError> {
 
     // Helper function
     fn mapping(
@@ -255,22 +255,22 @@ pub(crate) fn instantiate_parent_sort(
     if let Some(sort_object) = solver.sorts.get(parent_sort) {
         // already instantiated
         match sort_object {
-            SortObject::Normal{..} => Ok(Grounding::Normal),
-            SortObject::Unknown    => Ok(Grounding::Unknown),
-            SortObject::Infinite   => Ok(Grounding::Infinite),
-            SortObject::Recursive  => Ok(Grounding::Recursive),
+            SortObject::Normal{..} => Ok(TypeInterpretation::Normal),
+            SortObject::Unknown    => Ok(TypeInterpretation::Unknown),
+            SortObject::Infinite   => Ok(TypeInterpretation::Infinite),
+            SortObject::Recursive  => Ok(TypeInterpretation::Recursive),
         }
     } else {
         match parent_sort {
             Sort::Sort(id) =>   // check if recursive
                 if let Identifier::Simple(symb) = id {
                     if declaring.contains(symb) {
-                        insert_sort(parent_sort.clone(), None, Grounding::Recursive, None, solver)
+                        insert_sort(parent_sort.clone(), None, TypeInterpretation::Recursive, None, solver)
                     } else {
                         Err(InternalError(741265)) // it should be in the solver already
                     }
                 } else {  // indexed identifier
-                    insert_sort(parent_sort.clone(), None, Grounding::Unknown, None, solver)
+                    insert_sort(parent_sort.clone(), None, TypeInterpretation::Unknown, None, solver)
                 },
 
             Sort::Parametric(id, parameters) => {
@@ -279,7 +279,7 @@ pub(crate) fn instantiate_parent_sort(
 
                     // check if recursive
                     if declaring.contains(symb) {
-                        return insert_sort(parent_sort.clone(), None, Grounding::Recursive, None, solver)
+                        return insert_sort(parent_sort.clone(), None, TypeInterpretation::Recursive, None, solver)
                     }
 
                     // (declare-datatype Pair (par (X Y) ( ( white ) (pair (first X) (second Y)))))
@@ -297,7 +297,7 @@ pub(crate) fn instantiate_parent_sort(
                             let subs = mapping(variables, parameters);
 
                             // instantiate constructors
-                            let mut grounding = Grounding::Normal;
+                            let mut grounding = TypeInterpretation::Normal;
                             let mut new_constructors = vec![]; // ( ( white ) (pair (first Color) (second Color))))
                             for c in constructors {
                                 let mut new_selectors = vec![]; // first Color, second Color
@@ -345,14 +345,14 @@ pub(crate) fn instantiate_parent_sort(
                             Err(InternalError(1786496))  // Unexpected non-parametric type
                         },
                         ParametricObject::Recursive => {
-                            insert_sort(parent_sort.clone(), None, Grounding::Recursive, None, solver)
+                            insert_sort(parent_sort.clone(), None, TypeInterpretation::Recursive, None, solver)
                         },
                         ParametricObject::Unknown => {
-                            insert_sort(parent_sort.clone(), None, Grounding::Unknown, None, solver)
+                            insert_sort(parent_sort.clone(), None, TypeInterpretation::Unknown, None, solver)
                         }
                     }
                 } else {  // indexed identifier
-                    insert_sort(parent_sort.clone(), None, Grounding::Unknown, None, solver)
+                    insert_sort(parent_sort.clone(), None, TypeInterpretation::Unknown, None, solver)
                 }
             },
         }}
@@ -364,7 +364,7 @@ fn substitute_in_sort(
     subs: &IndexMap<Sort, Sort>,
     declaring: &IndexSet<Symbol>,
     solver: &mut Solver,
-) -> Result<(Grounding, Sort), SolverError> {
+) -> Result<(TypeInterpretation, Sort), SolverError> {
 
     match sort {
 
@@ -376,7 +376,7 @@ fn substitute_in_sort(
         },
 
         Sort::Parametric(id, sorts) => {
-            let mut grounding = Grounding::Normal;
+            let mut grounding = TypeInterpretation::Normal;
             let mut new_sorts = vec![];
             for s in sorts {
                 let (new_g, new_s) = substitute_in_sort(s, subs, declaring, solver)?;
@@ -398,17 +398,17 @@ fn substitute_in_sort(
 fn insert_sort(
     sort: Sort,
     decl: Option<DatatypeDec>,
-    grounding: Grounding,
+    grounding: TypeInterpretation,
     alias: Option<(String, usize)>,  // name and size of the table that `sort` is an alias for.
     solver: &mut Solver,
-) -> Result<Grounding, SolverError> {
+) -> Result<TypeInterpretation, SolverError> {
 
     if ! solver.sorts.contains_key(&sort) { // a new sort
 
         let i = solver.sorts.len();
         let sort_object =
             match grounding {
-                Grounding::Normal => {
+                TypeInterpretation::Normal => {
                     if let Some(datatype_dec) = decl {
                         match datatype_dec {
                             DatatypeDec::DatatypeDec(ref constructor_decls) => {
@@ -432,9 +432,9 @@ fn insert_sort(
                         SortObject::Unknown
                     }
                 },
-                Grounding::Unknown => SortObject::Unknown,
-                Grounding::Infinite => SortObject::Infinite,
-                Grounding::Recursive => SortObject::Recursive,
+                TypeInterpretation::Unknown => SortObject::Unknown,
+                TypeInterpretation::Infinite => SortObject::Infinite,
+                TypeInterpretation::Recursive => SortObject::Recursive,
             };
 
         // update solver.sorts
