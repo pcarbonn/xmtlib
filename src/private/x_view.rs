@@ -1,19 +1,33 @@
 // Copyright Pierre Carbonnelle, 2025.
 
+use std::cmp::max;
+
 use indexmap::IndexMap;
 
-use crate::{api::{QualIdentifier, SpecConstant, Symbol}, error::SolverError::{self, InternalError}};
+use crate::{api::{QualIdentifier, SpecConstant, Symbol, Term}, error::SolverError::{self, InternalError}, solver::Solver};
+use crate::private::c_ground::{ground_term_, Grounding};
 use crate::solver::TermId;
+
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub(crate) struct TableName {
+    base_table: String,
+    index: TermId, // to disambiguate
+}
+impl std::fmt::Display for TableName {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}_{}", self.base_table, self.index)
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Column {
-    base_table: String,
-    index: TermId, // to disambiguate
+    table_name: TableName,
     column: String
 }
 impl std::fmt::Display for Column {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}_{}.{}", self.base_table, self.index, self.column)
+        write!(f, "{}.{}", self.table_name, self.column)
     }
 }
 
@@ -44,7 +58,13 @@ impl SQLExpr {
             },
             SQLExpr::Variable(symbol) => todo!(),
             SQLExpr::Construct(symbol, exprs) => todo!(),
-            SQLExpr::Apply(qual_identifier, exprs) => todo!(),
+            SQLExpr::Apply(qual_identifier, exprs) => {
+                if exprs.len() == 0 {
+                    format!("{qual_identifier})")
+                } else {
+                    todo!()
+                }
+            },
             SQLExpr::Value(column) => todo!(),
             SQLExpr::Equality(_, expr, column) => todo!(),
         }
@@ -52,8 +72,12 @@ impl SQLExpr {
 }
 
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) enum Ids { All, Some_, None }
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub(crate) enum Ids {
+    All, // lowest
+    Some_,
+    None // highest
+}
 
 
 /// Contains what is needed to construct the grounding view of a term, in a composable way.
@@ -63,12 +87,12 @@ pub(crate) struct GroundingView {
     pub(crate) variables: IndexMap<Symbol, Column>,  // maps variables to either a Type table or (better) an Interpretation table
     pub(crate) conditions: Vec<SQLExpr>,  // vector of non-empty SQL expressions
     pub(crate) grounding: SQLExpr,
-    pub(crate) natural_joins: IndexMap<String, Vec<Symbol>>, // indexed table name -> list of its variables.
-    pub(crate) theta_joins: Vec<(String, Vec<(bool, SQLExpr, Column)>)>, // indexed table name + mapping of (gated) expressions to value column
+    pub(crate) natural_joins: IndexMap<TableName, Vec<Symbol>>, // indexed table name -> list of its variables.
+    pub(crate) theta_joins: Vec<(TableName, Vec<(bool, SQLExpr, Column)>)>, // indexed table name + mapping of (gated) expressions to value column
     // pub(crate) where_: Vec<(Column, Column)>,  // pairs of columns representing the same variable in (different) interpretation tables
 
     pub(crate) outer: bool,  // true if outer natural join
-    pub(crate) _ids: Ids,  // if the groundings are all Ids
+    pub(crate) ids: Ids,  // if the groundings are all Ids
 }
 
 impl std::fmt::Display for GroundingView {
@@ -106,26 +130,26 @@ impl std::fmt::Display for GroundingView {
             };
 
         let naturals = self.natural_joins.iter()
-            .map(|(table, on)|
+            .map(|(table_name, on)|
                 if on.len() == 0 {
-                    table.to_string()
+                    format!("{} AS {table_name}", table_name.base_table)
                 } else {
                     let on = on.iter()
                         .map( | symbol | {
                             let column = self.variables.get(symbol).unwrap();
-                            format!(" {table}.{symbol} = {column}")
+                            format!(" {table_name}.{symbol} = {column}")  // TODO eliminate true
                         }).collect::<Vec<_>>().join(" AND ");
-                    format!("{table} ON {on}")
+                    format!("{} AS {table_name} ON {on}", table_name.base_table)
                 })
             .collect::<Vec<_>>();
         let naturals = if self.outer {
                 vec![naturals.join(" OUTER JOIN ")]
             } else {
-                naturals  // will be joine next
+                naturals  // will be joined next
             };
 
         let thetas = self.theta_joins.iter()
-            .map( | (name, mapping) | {
+            .map( | (table_name, mapping) | {
                 let on = mapping.iter()
                     .map( | (gated, e, col) | {
                         let gate = if *gated {
@@ -135,7 +159,7 @@ impl std::fmt::Display for GroundingView {
                             };
                         format!(" ({gate}{col} = {}) ", e.show(&self.variables))
                     }).collect::<Vec<_>>().join(" AND ");
-                format!("{} ON {on}", name.clone())
+                format!("{} AS {table_name} ON {on}", table_name.base_table)
             }).collect::<Vec<_>>();
 
         let tables = [naturals, thetas].concat();
@@ -147,6 +171,80 @@ impl std::fmt::Display for GroundingView {
     }
 }
 
+
+/////////////////////  Grounding implementations ////////////////////////////////////////
+
+pub(crate) fn ground_spec_constant(
+    spec_constant: &SpecConstant
+) -> GroundingView {
+    GroundingView {
+        variables: IndexMap::new(),
+        conditions: vec![],
+        grounding: SQLExpr::Constant(spec_constant.clone()),
+        natural_joins: IndexMap::new(),
+        theta_joins: vec![],
+        outer: false,
+        ids: Ids::All,
+    }
+}
+
+
+pub(crate) fn ground_compound(
+    qual_identifier: &QualIdentifier,
+    sub_terms: &Vec<Term>,
+    solver: &mut Solver
+) -> Result<GroundingView, SolverError> {
+
+    let grounding_views = sub_terms.iter()
+        .map( |t| ground_term_(t, false, solver) )
+        .collect::<Result<Vec<_>,_>>()?;
+
+    let mut variables: IndexMap<Symbol, Column> = IndexMap::new();
+    let mut conditions= vec![];
+    let mut groundings = vec![];
+    let mut natural_joins: IndexMap<TableName, Vec<Symbol>> = IndexMap::new();
+    let mut theta_joins = vec![];
+    let mut ids: Ids = Ids::All;
+
+    for (_, g) in grounding_views {
+        let mut gv = match g {
+            Grounding::NonBoolean(gv) => gv,
+            Grounding::Boolean{g: gv, ..} => gv
+        };
+
+        conditions.append(&mut gv.conditions);
+        groundings.push(gv.grounding);
+        natural_joins.append(&mut gv.natural_joins.clone());
+        theta_joins.append(&mut gv.theta_joins);
+        ids = max(ids, gv.ids);
+
+        for (symbol, column) in gv.variables {
+            // insert if not there yet,
+            // or if it was a natural join column, but not anymore
+            if match variables.get(&symbol) {
+                    None => true,
+                    Some(old_column) =>
+                        natural_joins.contains_key(&old_column.table_name)
+                        && ! gv.natural_joins.contains_key(&column.table_name)
+                } {
+                    variables.insert(symbol, column);
+                }
+        }
+    }
+
+    // todo: lookup
+    let grounding = SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings));
+
+    Ok(GroundingView {
+        variables,
+        conditions,
+        grounding,
+        natural_joins,
+        theta_joins,
+        outer: false,
+        ids,
+    })
+}
 
 // impl GroundingView {
 

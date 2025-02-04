@@ -9,19 +9,19 @@ use crate::api::{Identifier, QualIdentifier, SortedVar, Symbol, Term, VarBinding
 use crate::error::SolverError::{self, *};
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, InterpretationType};
-use crate::private::x_view::{SQLExpr, GroundingView, Ids};
+use crate::private::x_view::{GroundingView, ground_compound, ground_spec_constant};
 use crate::solver::Solver;
 
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum Grounding {
-    Function(GroundingView),
+    NonBoolean(GroundingView),
     Boolean{tu: GroundingView, uf: GroundingView, g: GroundingView}
 }
 impl std::fmt::Display for Grounding {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Grounding::Function(view) => write!(f, " {view}"),
+            Grounding::NonBoolean(view) => write!(f, " {view}"),
             Grounding::Boolean{tu, uf, g, ..} => {
                 writeln!(f, "")?;
                 writeln!(f, "    TU: {tu}")?;
@@ -153,7 +153,7 @@ pub(crate) fn transform_term(
 }
 
 
-/////////////////////  Command (x-ground ////////////////////////////////////////
+/////////////////////  Command (x-ground //////////////////////////////////////
 
 pub(crate) fn ground(
     solver: &mut Solver
@@ -211,7 +211,7 @@ fn ground_term(
 ///
 /// * top_level: indicates if it is an assertion (to avoid building a conjunction)
 ///
-fn ground_term_(
+pub(crate) fn ground_term_(
     term: &Term,
     _top_level: bool,
     solver: &mut Solver
@@ -221,23 +221,20 @@ fn ground_term_(
         Term::SpecConstant(spec_constant) => {
 
             // a number or string
-            let grounding = GroundingView {
-                variables: IndexMap::new(),
-                conditions: vec![],
-                grounding: SQLExpr::Constant(spec_constant.clone()),
-                natural_joins: IndexMap::new(),
-                theta_joins: vec![],
-                outer: false,
-                _ids: Ids::All,
-            };
-            Ok((term.clone(), Grounding::Function(grounding)))
+            let grounding = ground_spec_constant(spec_constant);
+            Ok((term.clone(), Grounding::NonBoolean(grounding)))
         },
         Term::XSortedVar(..) => todo!(),  // sorted var should be handled by the quantification
         Term::Identifier(qual_identifier) => {
-            match qual_identifier {
-                QualIdentifier::Identifier(identifier) => {
-                    match identifier {
-                        Identifier::Simple(symbol) => {
+
+            let grounding = ground_compound(qual_identifier, &vec![], solver)?;
+            Ok((term.clone(), Grounding::NonBoolean(grounding)))
+
+
+            // match qual_identifier {
+            //     QualIdentifier::Identifier(identifier) => {
+            //         match identifier {
+            //             Identifier::Simple(symbol) => {
                             // match variables.get(symbol) {
                             //     None => {
 
@@ -273,13 +270,13 @@ fn ground_term_(
                             //         }
                             //     },
                             // }
-                            todo!()
-                        },
-                        Identifier::Indexed(..) => todo!()
-                    }
-                },
-                QualIdentifier::Sorted(..) => todo!(),
-            }
+            //                 todo!()
+            //             },
+            //             Identifier::Indexed(..) => todo!()
+            //         }
+            //     },
+            //     QualIdentifier::Sorted(..) => todo!(),
+            // }
         },
         Term::Application(..) => todo!(),
         Term::Let(..) => todo!(),
