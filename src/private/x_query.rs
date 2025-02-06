@@ -319,7 +319,7 @@ pub(crate) fn query_for_compound(
                         ( SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings)),
                             "false".to_string()
                         ),
-                    _ => todo!("{}", function)
+                    _ => return Err(SolverError::InternalError(62479519))
                 }
             },
         };

@@ -36,8 +36,10 @@ pub struct Solver {
     pub(crate) functions: IndexMap<QualIdentifier, FunctionObject>,
     // pub(crate) qualified_functions: IndexMap<QualIdentifier, FunctionObject>,
 
-    // to support differed grounding of terms
-    pub(crate) assertions_to_ground: Vec<(Term, String)>,
+    // To support differed grounding of terms.
+    // The string is the original assertion command.
+    // The first element is the annotated term
+    pub(crate) assertions_to_ground: Vec<(String, Term)>,
     // a mapping from a term to a composable representation of its grounding
     pub(crate) groundings: IndexMap<Term, Grounding>,
 }

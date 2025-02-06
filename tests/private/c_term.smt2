@@ -1,8 +1,6 @@
-(assert #x3F)
 (declare-const p Bool)
 (declare-const c Int)
 (assert p)
-(assert c)
 (declare-datatype Color ( ( red ) ( green ) ))
 (declare-fun q (Color) Bool)
 (assert (q red))
@@ -12,29 +10,35 @@
 (x-ground)
 (x-debug solver groundings)
 -------------------------
-
 (declare-const p Bool)
 (declare-const c Int)
-
 
 (declare-datatype Color ((red ) (green )))
 (declare-fun q (Color) Bool)
 
 
 
-(assert #x3F)
+(push)
 (assert p)
-(assert c)
+(pop)
+(assert p)
+(push)
 (assert (q red))
+(pop)
+(assert (q red))
+(push)
 (assert (or (q red) (q green)))
+(pop)
+(assert (or (q red) (q green)))
+(push)
+(assert (or (q red) (q red)))
+(pop)
 (assert (or (q red) (q red)))
 Groundings:
- - #x3F: SELECT "#x3F" AS G
  - p:
     TU: SELECT "p" AS G
     UF: SELECT "p" AS G
     G : SELECT "p" AS G
- - c: SELECT "c" AS G
  - red: SELECT "red" AS G
  - (q red):
     TU: SELECT apply("q", "red") AS G

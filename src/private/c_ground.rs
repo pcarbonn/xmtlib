@@ -5,6 +5,7 @@ use std::future::Future;
 use genawaiter::{sync::Gen, sync::gen, yield_};
 use indexmap::IndexMap;
 use itertools::Either::Right;
+use rusqlite::Connection;
 
 use crate::api::{Identifier, QualIdentifier, SortedVar, Symbol, Term, VarBinding};
 use crate::error::SolverError::{self, *};
@@ -44,7 +45,7 @@ pub(crate) fn assert_(
 
     let mut variables = IndexMap::new();
     let new_term = annotate_term(term, &mut variables, solver)?;
-    solver.assertions_to_ground.push((new_term, command));
+    solver.assertions_to_ground.push((command, new_term));
     Ok("".to_string())
 }
 
@@ -166,17 +167,33 @@ pub(crate) fn ground(
 
     gen!({
         // extract terms and commands
-        let (terms, commands) = solver.assertions_to_ground.iter()
-            .map(|(term,command)| (term.clone(), command.clone()))
+        let (commands, terms) = solver.assertions_to_ground.iter()
+            .map(|(command, term)| (command.clone(), term.clone()))
             .collect::<(Vec<_>, Vec<_>)>();
 
         for (term, command) in terms.iter().zip(commands) {
             // todo: push and pop, to avoid polluting the SMT state
+            yield_!(solver.exec("(push)"));
             yield_!(solver.exec(&command));
+            yield_!(solver.exec("(pop)"));
 
             match ground_term(&term, true, solver) {
-                Ok((i, g)) => {
-                    // todo: run the query, and solver.exec(the resulting grounding)
+                Ok(g) => {
+                    match g {
+                        Grounding::NonBoolean(_) => yield_!(Err(InternalError(4852956))),
+                        Grounding::Boolean{uf, ..} => {
+                            // execute the UF query
+                            let query = format!("{uf}");
+                            match execute_query(query, &mut solver.conn) {
+                                Ok(asserts) => {
+                                    for assert in asserts {
+                                        yield_!(solver.exec(&assert));
+                                    }
+                                },
+                                Err(e) => yield_!(Err(e))
+                            }
+                        }
+                    }
                 },
                 Err(e) => yield_!(Err(e))
             }
@@ -185,6 +202,24 @@ pub(crate) fn ground(
         // reset terms to ground
         solver.assertions_to_ground = vec![];
     })
+}
+
+
+fn execute_query(
+    query: String,
+    conn: &mut Connection
+) -> Result<Vec<String>, SolverError> {
+    let mut stmt = conn.prepare(&query)?;
+    let row_iter = stmt.query_map([], |row| {
+        row.get::<usize, String>(0)
+    })?;
+
+    let mut res = vec![];
+    for row in row_iter {
+        let assert = format!("(assert {})", row?);
+        res.push(assert)
+    }
+    Ok(res)
 }
 
 
@@ -199,14 +234,14 @@ fn ground_term(
     term: &Term,
     top_level: bool,
     solver: &mut Solver
-) -> Result<(usize, Grounding), SolverError> {
+) -> Result<Grounding, SolverError> {
 
     if let Some((i, _, grounding)) = solver.groundings.get_full(term) {
-        Ok((i, grounding.clone()))
+        Ok(grounding.clone())
     } else {
         let grounding = ground_term_(term, top_level, solver)?;
         let (i, _) = solver.groundings.insert_full(term.clone(), grounding.clone());
-        Ok((i, grounding))
+        Ok(grounding)
     }
 }
 
@@ -305,12 +340,9 @@ fn ground_compound(
 ) -> Result<Grounding, SolverError> {
 
     // ground sub_terms, creating an entry in solver.groundings if necessary
-    let t_groundings = sub_terms.iter()
+    let groundings = sub_terms.iter()
         .map( |t| ground_term(t, false, solver))
         .collect::<Result<Vec<_>,_>>()?;
-    let groundings = t_groundings.iter()
-        .map(|(_, g)| g)
-        .collect::<Vec<_>>();
 
     // collect the full grounding queries
     let mut gqs = groundings.iter()
@@ -398,7 +430,7 @@ fn ground_compound(
             }
         },
         None => {
-            // constructor.  todo: this should not happen
+            // constructor.  todo: this should not happen once consturctors are declared
             // todo: use construct() in SQL
             let variant = Right("construct".to_string());
             let grounding_query = query_for_compound(qual_identifier, &mut vec![], variant)?;
@@ -410,7 +442,7 @@ fn ground_compound(
 
 /// collect the TU (resp. UF) grounding queries in the vector of groundings
 fn collect_tu_uf(
-    groundings: Vec<&Grounding>
+    groundings: Vec<Grounding>
 ) -> (Vec<GroundingQuery>, Vec<GroundingQuery>) {
 
     // collect the TU grounding queries
