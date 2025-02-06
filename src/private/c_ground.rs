@@ -175,7 +175,7 @@ pub(crate) fn ground(
             yield_!(solver.exec(&command));
 
             match ground_term(&term, true, solver) {
-                Ok(i) => {
+                Ok((i, g)) => {
                     // todo: run the query, and solver.exec(the resulting grounding)
                 },
                 Err(e) => yield_!(Err(e))
@@ -199,14 +199,14 @@ fn ground_term(
     term: &Term,
     top_level: bool,
     solver: &mut Solver
-) -> Result<usize, SolverError> {
+) -> Result<(usize, Grounding), SolverError> {
 
-    if let Some(i) = solver.groundings.get_index_of(term) {
-        Ok(i)
+    if let Some((i, _, grounding)) = solver.groundings.get_full(term) {
+        Ok((i, grounding.clone()))
     } else {
-        let (new_term, grounding) = ground_term_(term, top_level, solver)?;
-        let (i, _) = solver.groundings.insert_full(new_term, grounding);
-        Ok(i)
+        let grounding = ground_term_(term, top_level, solver)?;
+        let (i, _) = solver.groundings.insert_full(term.clone(), grounding.clone());
+        Ok((i, grounding))
     }
 }
 
@@ -221,21 +221,20 @@ pub(crate) fn ground_term_(
     term: &Term,
     _top_level: bool,
     solver: &mut Solver
-) -> Result<(Term, Grounding), SolverError> {
+) -> Result<Grounding, SolverError> {
 
     match term {
         Term::SpecConstant(spec_constant) => {
 
-            // a number or string
+            // a number or string; cannot be Boolean
             let grounding = query_spec_constant(spec_constant);
-            Ok((term.clone(), Grounding::NonBoolean(grounding)))
+            Ok(Grounding::NonBoolean(grounding))
         },
         Term::XSortedVar(..) => todo!(),  // sorted var should be handled by the quantification
         Term::Identifier(qual_identifier) => {
 
             // an identifier
-            let grounding = ground_compound(qual_identifier, &mut vec![], solver)?;
-            Ok((term.clone(), grounding))
+            ground_compound(qual_identifier, &mut vec![], solver)
 
 
             // match qual_identifier {
@@ -288,8 +287,7 @@ pub(crate) fn ground_term_(
         Term::Application(qual_identifier, sub_terms) => {
 
             // a compound term
-            let grounding = ground_compound(qual_identifier, sub_terms, solver)?;
-            Ok((term.clone(), grounding))
+            ground_compound(qual_identifier, sub_terms, solver)
         },
         Term::Let(..) => todo!(),
         Term::Forall(..) => todo!(),
@@ -307,16 +305,16 @@ fn ground_compound(
 ) -> Result<Grounding, SolverError> {
 
     // ground sub_terms, creating an entry in solver.groundings if necessary
-    let groundings = sub_terms.iter()
+    let t_groundings = sub_terms.iter()
         .map( |t| ground_term(t, false, solver))
-        .collect::<Result<Vec<_>,_>>()?
-        .iter().map( |i| solver.groundings.get_index(*i))
-        .collect::<Option<Vec<_>>>()
-        .ok_or(InternalError(749634))?;
+        .collect::<Result<Vec<_>,_>>()?;
+    let groundings = t_groundings.iter()
+        .map(|(_, g)| g)
+        .collect::<Vec<_>>();
 
     // collect the full grounding queries
     let mut gqs = groundings.iter()
-        .map( |(_,g)|
+        .map( |g|
             match g {
                 Grounding::NonBoolean(gq) => gq.clone(),
                 Grounding::Boolean{g: gq, ..} => gq.clone()
@@ -412,12 +410,12 @@ fn ground_compound(
 
 /// collect the TU (resp. UF) grounding queries in the vector of groundings
 fn collect_tu_uf(
-    groundings: Vec<(&Term, &Grounding)>
+    groundings: Vec<&Grounding>
 ) -> (Vec<GroundingQuery>, Vec<GroundingQuery>) {
 
     // collect the TU grounding queries
     let tus = groundings.iter()
-        .map( |(_,g)|
+        .map( |g|
             match g {
                 Grounding::NonBoolean(q) => q.clone(),
                 Grounding::Boolean{tu: q, ..} => q.clone()
@@ -426,7 +424,7 @@ fn collect_tu_uf(
 
     // collect the UF grounding queries
     let ufs = groundings.iter()
-        .map( |(_,g)|
+        .map( |g|
             match g {
                 Grounding::NonBoolean(q) => q.clone(),
                 Grounding::Boolean{uf: q, ..} => q.clone()
