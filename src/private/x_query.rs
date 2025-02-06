@@ -7,7 +7,7 @@ use itertools::Either;
 
 use crate::api::{QualIdentifier, SpecConstant, Symbol};
 use crate::error::SolverError;
-use crate::solver::{Solver, TermId};
+use crate::solver::TermId;
 
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -115,7 +115,6 @@ pub(crate) struct GroundingQuery {
     pub(crate) theta_joins: Vec<(TableName, Vec<(bool, SQLExpr, Column)>)>, // indexed table name + mapping of (gated) expressions to value column
     // pub(crate) where_: Vec<SQLExpr>,  // filters on the query, e.g. to select TU values
 
-    pub(crate) default: String,  // "" for inner natural join; "true" (resp. "false") for "and" (resp. "or")
     pub(crate) ids: Ids,  // if the groundings are all Ids
 }
 
@@ -137,17 +136,12 @@ impl std::fmt::Display for GroundingQuery {
         // condition
         let condition = self.conditions.iter()
             .map( |e| {
-                if self.default == ""
-                || self.natural_joins.len() <= 1 {  // can't have nulls
-                    format!("({})", e.show(&self.variables))
-                } else {
-                    format!("IFNULL({}, \"{}\")", e.show(&self.variables), self.default)
-                }
+                format!("({})", e.show(&self.variables))
             })
             .collect::<Vec<_>>().join(" AND ");
         let condition =
             if condition == "" {
-                "".to_string()
+                condition
             } else if variables != "" {
                 format!(", {condition} AS cond")
             } else {
@@ -155,13 +149,7 @@ impl std::fmt::Display for GroundingQuery {
             };
 
         // grounding
-        let grounding =
-            if self.default == ""
-            || self.natural_joins.len() <= 1 {  // can't have nulls
-                self.grounding.show(&self.variables)
-            } else {
-                format!("IFNULL({}, \"{}\")", self.grounding.show(&self.variables), self.default)
-            };
+        let grounding = self.grounding.show(&self.variables);
         let grounding =
             if condition == "" {
                 format!("{} AS G", grounding)
@@ -171,24 +159,25 @@ impl std::fmt::Display for GroundingQuery {
 
         // natural joins
         let naturals = self.natural_joins.iter()
-            .map(|(table_name, on)|
-                if on.len() == 0 {
-                    format!("{} AS {table_name}", table_name.base_table)
-                } else {
-                    let on = on.iter()
-                        .map( | symbol | {
-                            let column = self.variables.get(symbol).unwrap();
-                            format!(" {table_name}.{symbol} = {column}")  // TODO eliminate true
-                        }).collect::<Vec<_>>().join(" AND ");
-                    format!("{} AS {table_name} ON {on}", table_name.base_table)
-                })
+            .map(|(table_name, on)| {
+                let name = format!("{} AS {table_name}", table_name.base_table);
+                let on = on.iter()
+                    .map( | symbol | {
+                        let column = self.variables.get(symbol).unwrap();
+                        let this_column = Column{table_name: table_name.clone(), column: symbol.to_string()};
+                        if this_column == *column {
+                            "".to_string()
+                        } else {
+                            format!(" {this_column} = {column}")
+                        }
+                    })
+                    .filter( |cond| cond != "" )
+                    .collect::<Vec<_>>().join(" AND ");
+                let on = if on == "" { on } else { format!(" ON {on}")};
+
+                format!("{name}{on}")
+            })
             .collect::<Vec<_>>();
-        let naturals =
-            if self.default !="" && 0 < naturals.len() {
-                vec![naturals.join(" OUTER JOIN ")]
-            } else {
-                naturals  // will be joined next
-            };
 
         // theta joins
         let thetas = self.theta_joins.iter()
@@ -196,6 +185,7 @@ impl std::fmt::Display for GroundingQuery {
                 let on = mapping.iter()
                     .map( | (gated, e, col) | {
                         let gate = if *gated {
+                                // todo add to condition too !
                                 format!("NOT(is_id({})) OR ", e.show(&self.variables))
                             } else {
                                 "".to_string()
@@ -222,19 +212,6 @@ impl std::fmt::Display for GroundingQuery {
     }
 }
 
-// impl GroundingQuery {
-//     fn add_where_clause(
-//         &self,
-//         condition: SQLExpr
-//     ) -> Self {
-//         let mut res = self.clone();
-//         match self.ids {
-//             Ids::All | Ids::Some_ => res.where_.push(condition),
-//             Ids::None => {},  // useless
-//         }
-//         res
-//     }
-// }
 
 /////////////////////  Grounding implementations ////////////////////////////////////////
 
@@ -248,7 +225,6 @@ pub(crate) fn query_spec_constant(
         natural_joins: IndexMap::new(),
         theta_joins: vec![],
         // where_: vec![],
-        default: "".to_string(),
         ids: Ids::All,
     }
 }
@@ -295,30 +271,18 @@ pub(crate) fn query_for_compound(
                     variables.insert(symbol.clone(), column.clone());
                 }
         }
-    }
+    };
 
     // todo: use interpretation table of qual_identifier
-    let (grounding, default) =
+    let grounding =
         match variant {
-            Either::Left(table_name) => todo!(),
+            Either::Left(_) => todo!(),
             Either::Right(function) => {  // no interpretation
                 match function.as_str() {
-                    "apply" =>
-                        ( SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings)),
-                          "".to_string()
-                        ),
-                    "construct" =>
-                        ( SQLExpr::Construct(qual_identifier.clone(), Box::new(groundings)),
-                          "".to_string()
-                        ),
-                    "and" =>
-                        ( SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings)),
-                          "true".to_string()
-                        ),
-                    "or" =>
-                        ( SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings)),
-                            "false".to_string()
-                        ),
+                    "construct" => SQLExpr::Construct(qual_identifier.clone(), Box::new(groundings)),
+                    "apply"
+                    | "and"
+                    | "or" => SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings)),
                     _ => return Err(SolverError::InternalError(62479519))
                 }
             },
@@ -331,7 +295,6 @@ pub(crate) fn query_for_compound(
         natural_joins,
         theta_joins,
         // where_,
-        default,
         ids,
     })
 }

@@ -11,7 +11,8 @@ use crate::error::{format_error, SolverError};
 use crate::grammar::parse;
 use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, ParametricObject, SortObject};
 use crate::private::b_fun::{declare_fun, FunctionObject, InterpretationType::*};
-use crate::private::c_ground::{assert_, ground, Grounding};
+use crate::private::c_assert::assert_;
+use crate::private::d_ground::{ground, Grounding};
 use crate::private::y_db::init_db;
 
 
