@@ -11,7 +11,7 @@ use crate::api::{Identifier, QualIdentifier, SortedVar, Symbol, Term, VarBinding
 use crate::error::SolverError::{self, *};
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, InterpretationType};
-use crate::private::x_query::{GroundingQuery, query_for_compound, query_spec_constant};
+use crate::private::x_query::{GroundingQuery, TableName, query_for_compound, query_spec_constant};
 use crate::solver::Solver;
 
 
@@ -37,6 +37,7 @@ impl std::fmt::Display for Grounding {
 
 /////////////////////  Command (x-ground //////////////////////////////////////
 
+/// ground the pending assertions
 pub(crate) fn ground(
     solver: &mut Solver
 ) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {
@@ -104,7 +105,8 @@ fn execute_query(
 ///
 /// # Arguments
 ///
-/// * top_level: indicates if it is an assertion (to avoid building a conjunction)
+/// * top_level: indicates if it is an assertion (to avoid building a conjunction
+/// if the term is a universal quantification).
 ///
 fn ground_term(
     term: &Term,
@@ -122,7 +124,6 @@ fn ground_term(
 }
 
 /// Helper function to ground a new term.
-/// An identifier term representing a variable is replaced by a XSortedVar term.
 ///
 /// # Arguments:
 ///
@@ -141,7 +142,13 @@ pub(crate) fn ground_term_(
             let grounding = query_spec_constant(spec_constant);
             Ok(Grounding::NonBoolean(grounding))
         },
-        Term::XSortedVar(..) => todo!(),  // sorted var should be handled by the quantification
+        Term::XSortedVar(..) => {
+
+            // if var is boolean: generate 3 queries
+            // else generate 1 query on the type
+            // do not generate a view !
+            todo!()
+        },
         Term::Identifier(qual_identifier) => {
 
             // an identifier
@@ -201,14 +208,30 @@ pub(crate) fn ground_term_(
             ground_compound(qual_identifier, sub_terms, solver)
         },
         Term::Let(..) => todo!(),
-        Term::Forall(..) => todo!(),
-        Term::Exists(..) => todo!(),
+        Term::Forall(..) => {
+            // get sub_tu, sub_uf, sub_g
+            // table_name = "Agg_{solver.groundings.len()}"
+            // tu = query_for_aggregate(sub_g, "and", "false", "{table_name}_TU)
+            // uf = query_for_aggregate(sub_uf, "and", "", "{table_name}_UF)
+            // g = query_for_aggregate(sub_g, "and", "", "{table_name}_G)
+            // Ok(GroundingView{tu, uf, g})
+            todo!()
+        },
+        Term::Exists(..) => {
+            // get sub_tu, sub_uf, sub_g
+            // table_name = "Agg_{solver.groundings.len()}"
+            // tu = query_for_aggregate(sub_tu, "or", "", "{table_name}_TU)
+            // uf = query_for_aggregate(sub_g, "or", "true", "{table_name}_UF)
+            // g = query_for_aggregate(sub_g, "or", "", "{table_name}_G)
+            // Ok(GroundingView{tu, uf, g})
+            todo!();
+        },
         Term::Match(..) => todo!(),
         Term::Annotation(..) => todo!(),
     }
 }
 
-// grounds a compound term
+// Grounds a compound term
 fn ground_compound(
     qual_identifier: &QualIdentifier,
     sub_terms: &Vec<Term>,
@@ -245,13 +268,12 @@ fn ground_compound(
                                 let (mut tus, mut ufs) = collect_tu_uf(groundings);
 
                                 let variant = Right("apply".to_string());
-                                let grounding_query = query_for_compound(qual_identifier, &mut gqs, variant)?;
+                                let grounding_query = query_for_compound(qual_identifier, &mut gqs, &variant)?;
 
-                                let variant = Right("apply".to_string());
-                                let tu = query_for_compound(qual_identifier, &mut tus, variant)?;
+                                let tu = query_for_compound(qual_identifier, &mut tus, &variant)?;
 
-                                let variant = Right("and".to_string());
-                                let uf = query_for_compound(qual_identifier, &mut ufs, variant)?;
+                                // todo: union query(qual_identifer, ufs)
+                                let uf = query_for_compound(qual_identifier, &mut ufs, &variant)?;
 
                                 Ok(Grounding::Boolean{tu, uf, g: grounding_query})
                             },
@@ -261,18 +283,21 @@ fn ground_compound(
                                 let (mut tus, mut ufs) = collect_tu_uf(groundings);
 
                                 let variant = Right("apply".to_string());
-                                let grounding_query = query_for_compound(qual_identifier, &mut gqs, variant)?;
+                                let grounding_query = query_for_compound(qual_identifier, &mut gqs, &variant)?;
 
-                                let variant = Right("or".to_string());
-                                let tu = query_for_compound(qual_identifier, &mut tus, variant)?;
+                                // todo: union query(qual_identifer, ufs)
+                                let tu = query_for_compound(qual_identifier, &mut tus, &variant)?;
 
-                                let variant = Right("apply".to_string());
-                                let uf = query_for_compound(qual_identifier, &mut ufs, variant)?;
+                                let uf = query_for_compound(qual_identifier, &mut ufs, &variant)?;
 
                                 Ok(Grounding::Boolean{tu, uf, g: grounding_query})
                             },
-                              "not"
-                            | "=>"
+                              "not" => {
+                                // get tu, uf, g of groundings[0]
+                                // return uf, tu, g with grounding G replaced by not(G)
+                                todo!()
+                              },
+                            "=>"
                             | "="
                             | "<="
                             | "<"
@@ -282,7 +307,7 @@ fn ground_compound(
                             _ => {
 
                                 // custom boolean function with simple name
-                                ground_boolean_compound(qual_identifier, &mut gqs, &typ)
+                                ground_boolean_compound(qual_identifier, groundings, &mut gqs, &typ)
                             }
                         }
                     },
@@ -290,7 +315,7 @@ fn ground_compound(
                     | QualIdentifier::Sorted(_, _) => {
 
                         // custom boolean function with complex identifier
-                        ground_boolean_compound(qual_identifier, &mut gqs, &typ)
+                        ground_boolean_compound(qual_identifier, groundings, &mut gqs, &typ)
                     },
                 }
 
@@ -300,23 +325,24 @@ fn ground_compound(
                 let variant =
                     match typ {
                         InterpretationType::Calculated => Right("apply".to_string()),
+                        // todo : Constructed
                     };
-                let grounding_query = query_for_compound(qual_identifier, &mut gqs, variant)?;
+                let grounding_query = query_for_compound(qual_identifier, &mut gqs, &variant)?;
                 Ok(Grounding::NonBoolean(grounding_query))
             }
         },
         None => {
-            // constructor.  todo: this should not happen once consturctors are declared
+            // constructor.  todo: this should not happen once constructors are declared
             // todo: use construct() in SQL
             let variant = Right("construct".to_string());
-            let grounding_query = query_for_compound(qual_identifier, &mut vec![], variant)?;
+            let grounding_query = query_for_compound(qual_identifier, &mut vec![], &variant)?;
             Ok(Grounding::NonBoolean(grounding_query))
         },
     }
 }
 
 
-/// collect the TU (resp. UF) grounding queries in the vector of groundings
+/// Collect the TU (resp. UF) grounding queries in the vector of groundings
 fn collect_tu_uf(
     groundings: Vec<Grounding>
 ) -> (Vec<GroundingQuery>, Vec<GroundingQuery>) {
@@ -345,17 +371,34 @@ fn collect_tu_uf(
 /// grounds a boolean compound term
 fn ground_boolean_compound(
     qual_identifier: &QualIdentifier,
+    groundings: Vec<Grounding>,
     gqs: &mut Vec<GroundingQuery>,
     typ: &InterpretationType
 ) -> Result<Grounding, SolverError> {
     // custom boolean function
     match typ {
         InterpretationType::Calculated => {
+            let (mut tus, mut ufs) = collect_tu_uf(groundings);
             let variant = Right("apply".to_string());
-            let grounding_query = query_for_compound(qual_identifier, gqs, variant)?;
-            let tu = grounding_query.clone();
-            let uf = grounding_query.clone();
-            Ok(Grounding::Boolean{tu, uf, g: grounding_query})
+
+            let g = query_for_compound(qual_identifier, gqs, &variant)?;
+
+            let tu = query_for_compound(qual_identifier, &mut tus, &variant)?;
+
+            let uf = query_for_compound(qual_identifier, &mut ufs, &variant)?;
+
+            Ok(Grounding::Boolean{tu, uf, g})
         },
     }
+}
+
+
+/// Creates a query over an aggregate view, possibly adding a where clause if exclude is not empty
+fn query_for_aggregate(
+    sub_query: &GroundingQuery,
+    agg: &String,
+    exclude: &String,
+    table_name: String
+) -> Result<GroundingQuery, SolverError> {
+    todo!()
 }

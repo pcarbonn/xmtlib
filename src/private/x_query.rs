@@ -82,14 +82,17 @@ impl SQLExpr {
                     SpecConstant::String(s) => format!("\"{s}\""),
                 }
             },
-            SQLExpr::Variable(symbol) => todo!(),
+            SQLExpr::Variable(symbol) => {
+                // lookup column in variables
+                todo!()
+            },
             SQLExpr::Construct(qual_identifier, exprs) => {
                 sql_for("construct2", qual_identifier, exprs, variables)
             },
             SQLExpr::Apply(qual_identifier, exprs) => {
                 sql_for("apply", qual_identifier, exprs, variables)
             },
-            SQLExpr::Value(column) => todo!(),
+            SQLExpr::Value(column) => format!("\"{column}\""),
             SQLExpr::Equality(_, expr, column) => todo!(),
         }
     }
@@ -113,7 +116,6 @@ pub(crate) struct GroundingQuery {
     pub(crate) grounding: SQLExpr,
     pub(crate) natural_joins: IndexMap<TableName, Vec<Symbol>>, // indexed table name -> list of its variables.
     pub(crate) theta_joins: Vec<(TableName, Vec<(bool, SQLExpr, Column)>)>, // indexed table name + mapping of (gated) expressions to value column
-    // pub(crate) where_: Vec<SQLExpr>,  // filters on the query, e.g. to select TU values
 
     pub(crate) ids: Ids,  // if the groundings are all Ids
 }
@@ -190,8 +192,10 @@ impl std::fmt::Display for GroundingQuery {
                             } else {
                                 "".to_string()
                             };
+                        // todo: drop if equality is satisfied
                         format!(" ({gate}{col} = {}) ", e.show(&self.variables))
                     }).collect::<Vec<_>>().join(" AND ");
+                // todo: use where for first table
                 format!("{} AS {table_name} ON {on}", table_name.base_table)
             }).collect::<Vec<_>>();
 
@@ -224,7 +228,6 @@ pub(crate) fn query_spec_constant(
         grounding: SQLExpr::Constant(spec_constant.clone()),
         natural_joins: IndexMap::new(),
         theta_joins: vec![],
-        // where_: vec![],
         ids: Ids::All,
     }
 }
@@ -233,13 +236,12 @@ pub(crate) fn query_spec_constant(
 ///
 /// Arguments:
 /// * variant: either an interpretation or a function name.  The function name can be:
-///     * "apply" (implies inner natural joins)
-///     * "construct" (implies inner natural joins)
-///     * "and" or "or" (implies outer natural joins)
+///     * "apply"
+///     * "construct"
 pub(crate) fn query_for_compound(
     qual_identifier: &QualIdentifier,
     sub_queries: &mut Vec<GroundingQuery>,
-    variant: Either<TableName, String>
+    variant: &Either<TableName, String>
 ) -> Result<GroundingQuery, SolverError> {
 
     let mut variables: IndexMap<Symbol, Column> = IndexMap::new();
@@ -247,7 +249,6 @@ pub(crate) fn query_for_compound(
     let mut groundings = vec![];
     let mut natural_joins: IndexMap<TableName, Vec<Symbol>> = IndexMap::new();
     let mut theta_joins = vec![];
-    // let mut where_= vec![];
     let mut ids: Ids = Ids::All;
 
     for sub_q in sub_queries {
@@ -256,33 +257,35 @@ pub(crate) fn query_for_compound(
         groundings.push(sub_q.grounding.clone());
         natural_joins.append(&mut sub_q.natural_joins.clone());
         theta_joins.append(&mut sub_q.theta_joins);
-        // where_.append(&mut sub_q.where_.clone());
         ids = max(ids, sub_q.ids.clone());
 
         for (symbol, column) in &sub_q.variables {
             // insert if not there yet,
             // or if it was a natural join column, but not anymore
-            if match variables.get(symbol) {
-                    None => true,
-                    Some(old_column) =>
-                        natural_joins.contains_key(&old_column.table_name)
-                        && ! sub_q.natural_joins.contains_key(&column.table_name)
-                } {
+            match variables.get(symbol) {
+                None => {
                     variables.insert(symbol.clone(), column.clone());
+                },
+                Some(old_column) => {
+                    if natural_joins.contains_key(&old_column.table_name)
+                    && ! sub_q.natural_joins.contains_key(&column.table_name) {
+                        // todo remove natural join
+                        variables.insert(symbol.clone(), column.clone());
+                    } else {
+
+                    }
                 }
+            }
         }
     };
 
-    // todo: use interpretation table of qual_identifier
     let grounding =
         match variant {
-            Either::Left(_) => todo!(),
+            Either::Left(_) => todo!(), // todo: use interpretation table of qual_identifier
             Either::Right(function) => {  // no interpretation
                 match function.as_str() {
                     "construct" => SQLExpr::Construct(qual_identifier.clone(), Box::new(groundings)),
-                    "apply"
-                    | "and"
-                    | "or" => SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings)),
+                    "apply" => SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings)),
                     _ => return Err(SolverError::InternalError(62479519))
                 }
             },
@@ -294,10 +297,16 @@ pub(crate) fn query_for_compound(
         grounding,
         natural_joins,
         theta_joins,
-        // where_,
         ids,
     })
 }
 
 
-
+fn filter(
+    query: GroundingQuery,
+    value: String,
+    table_name: String
+) -> GroundingQuery {
+    // create view by adding "where" clause to display of query
+    todo!()
+}

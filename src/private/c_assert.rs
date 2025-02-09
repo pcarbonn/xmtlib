@@ -30,12 +30,19 @@ pub(crate) fn assert_(
 }
 
 
-/// Removes ambiguity in identifiers by
-/// - replacing each occurrence of a variable by a Term::XSortedVar
-/// - todo: replace ambiguous simple identifier by a qualified identifier
+/// Transform and annotate the formula:
+/// - replace each occurrence of a variable by an XSorted term, with type
+/// - replace ambiguous simple identifier (constructor) by a qualified identifier
+/// - annotate `ite` with the type
+/// - push negation down
+/// - push universal quantification up disjunction, down conjunction
+/// - push existential quantification up conjunction, down disjunction
+/// - remove duplicate conjuncts/disjuncts, and merge nested conjunction/disjunction
+/// - merge nested quantification/aggregate of the same type
 pub(crate) fn annotate_term(
     term: &Term,
     variables: &mut IndexMap<Symbol, Option<SortedVar>>,  // can't use XSortedVar here because it's a term variant
+    //todo add expected_type
     solver: &Solver
 ) -> Result<Term, SolverError> {
 
