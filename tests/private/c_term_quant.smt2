@@ -10,7 +10,7 @@
 (assert (forall ((x Int)) (q x)))
 (declare-fun r (Bool) Bool)
 (assert (not (exists ((x Bool)) (r x))))
-(assert (forall ((x Bool)) (=> (r x) false)))
+(assert (forall ((x Bool)) (=> (and (r x) (r x)) false)))
 
 (x-ground)
 (x-debug solver groundings)
@@ -62,7 +62,7 @@
 (pop)
 (assert (not (or (r true) (r false))))
 (push)
-(assert (forall ((x Bool)) (=> (r x) false)))
+(assert (forall ((x Bool)) (=> (and (r x) (r x)) false)))
 (pop)
 (assert (and (or (not (r true)) false) (or (not (r false)) false)))
 Groundings:

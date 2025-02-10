@@ -1,6 +1,6 @@
 // Copyright Pierre Carbonnelle, 2025.
 
-use indexmap::IndexMap;
+use indexmap::{IndexMap, IndexSet};
 
 use crate::api::{Identifier, QualIdentifier, SortedVar, Symbol, Term, VarBinding};
 use crate::error::SolverError::{self, *};
@@ -26,12 +26,13 @@ pub(crate) fn assert_(
 /// Transform and annotate the formula:
 /// - replace each occurrence of a variable by an XSorted term, with type
 /// - replace p=>(q=>r) by ~p|~q|r
+/// - merge nested conjunction (resp. disjunction)
+/// - remove duplicate conjuncts/disjuncts
+/// - todo: push negation down
 /// - todo: replace ambiguous simple identifier (constructor) by a qualified identifier
 /// - todo: annotate `ite` with the type
-/// - todo: push negation down
 /// - todo: push universal quantification up disjunction, down conjunction
 /// - todo: push existential quantification up conjunction, down disjunction
-/// - todo: remove duplicate conjuncts/disjuncts, and merge nested conjunction/disjunction
 /// - todo: merge nested quantification/aggregate of the same type
 pub(crate) fn annotate_term(
     term: &Term,
@@ -79,6 +80,8 @@ pub(crate) fn annotate_term(
         Term::SpecConstant(_) => Ok(term.clone()),
 
         Term::Identifier(ref qual_identifier) => {
+
+            // replace variable by XSortedVar
             match qual_identifier {
                 QualIdentifier::Identifier(Identifier::Simple(ref symbol)) => {
                     match variables.get(symbol) {
@@ -95,25 +98,104 @@ pub(crate) fn annotate_term(
         },
 
         Term::Application(qual_identifier, terms) => {
-            let new_terms = terms.iter()
-                .map(|t| annotate_term(t, variables, solver))
-                .collect::<Result<Vec<_>, _>>()?;
+            let not = QualIdentifier::Identifier(Identifier::Simple(Symbol("not".to_string())));
+            let  or = QualIdentifier::Identifier(Identifier::Simple(Symbol( "or".to_string())));
+            let and = QualIdentifier::Identifier(Identifier::Simple(Symbol("and".to_string())));
 
             match qual_identifier.to_string().as_str() {
-                "=>" => {  // p => (q => r) becomes ~p | ~q | r
-                    let not = QualIdentifier::Identifier(Identifier::Simple(Symbol("not".to_string())));
-                    let  or = QualIdentifier::Identifier(Identifier::Simple(Symbol( "or".to_string())));
+                "=>" => {
+                    // p => (q => r) becomes ~p | ~q | r
                     // negate all terms, except the last one
-                    let new_terms2 = new_terms.iter().enumerate()
-                        .map( | (i, t) | if i < new_terms.len()-1 {
+                    let new_terms = terms.iter().enumerate()
+                        .map( | (i, t) | if i < terms.len()-1 {
                             Term::Application(not.clone(), vec![t.clone()])
                         } else {
                             t.clone()
                         }).collect::<Vec<_>>();
-                    Ok(Term::Application(or, new_terms2))
+                    let new_term = Term::Application(or, new_terms);
+                    annotate_term(&new_term, variables, solver)
                 },
-                _ => // a regular identifier
+                "not" => {
+                    assert_eq!(terms.len(), 1);
+                    match terms.get(0) {
+                        Some(sub_term) => {
+                            match sub_term {
+                                Term::Application(sub_identifier, sub_terms) => {
+                                    match sub_identifier.to_string().as_str() {
+                                        "and" => {
+                                            // not((and ps)) becomes (or (not ps))
+                                            // negate all terms
+                                            let new_terms = sub_terms.iter()
+                                                .map( | t | Term::Application(not.clone(), vec![t.clone()]))
+                                                .collect::<IndexSet<_>>();
+                                            let new_term = Term::Application(or, new_terms.iter().cloned().collect());
+                                            annotate_term(&new_term, variables, solver)
+                                        },
+                                        "or" => {
+                                            // not((or ps)) becomes (and (not ps))
+                                            // negate all terms
+                                            let new_terms = sub_terms.iter()
+                                                .map( | t | Term::Application(not.clone(), vec![t.clone()]))
+                                                .collect::<IndexSet<_>>();
+                                            let new_term = Term::Application(and, new_terms.iter().cloned().collect());
+                                            annotate_term(&new_term, variables, solver)
+                                        },
+                                        _ => {
+                                            let new_term = annotate_term(sub_term, variables, solver)?;
+                                            Ok(Term::Application(qual_identifier.clone(), vec![new_term]))
+                                        }
+                                    }
+                                }
+                                _ => {
+                                    let new_term = annotate_term(sub_term, variables, solver)?;
+                                    Ok(Term::Application(qual_identifier.clone(), vec![new_term]))
+                                }
+                            }
+                        }
+                        None => Err(InternalError(4266))
+                    }
+                },
+                "and" => {
+                    // (and p (and qs)) becomes (and p qs), without repetition
+                    let mut new_sub_terms = vec![];
+                    for sub_term in terms {
+                        let sub_term = annotate_term(sub_term, variables, solver)?;
+                        if let Term::Application(ref sub_identifier, ref sub_terms2) = sub_term {
+                            if sub_identifier.to_string() == "oandr" {
+                                new_sub_terms.append(&mut sub_terms2.clone());
+                            } else {
+                                new_sub_terms.push(sub_term);
+                            }
+                        } else {
+                            new_sub_terms.push(sub_term);
+                        }
+                    };
+                    Ok(Term::Application(and, new_sub_terms))
+                },
+                "or" => {
+                    // (or p (or qs)) becomes (or p qs), without repetition
+                    let mut new_sub_terms = vec![];
+                    for sub_term in terms {
+                        let sub_term = annotate_term(sub_term, variables, solver)?;
+                        if let Term::Application(ref sub_identifier, ref sub_terms2) = sub_term {
+                            if sub_identifier.to_string() == "or" {
+                                new_sub_terms.append(&mut sub_terms2.clone());
+                            } else {
+                                new_sub_terms.push(sub_term);
+                            }
+                        } else {
+                            new_sub_terms.push(sub_term);
+                        }
+                    };
+                    Ok(Term::Application(or, new_sub_terms))
+                },
+                _ => {
+                    // a regular identifier
+                    let new_terms = terms.iter()
+                        .map(|t| annotate_term(t, variables, solver))
+                        .collect::<Result<Vec<_>, _>>()?;
                     Ok(Term::Application(qual_identifier.clone(), new_terms))
+                }
             }
 
         },
