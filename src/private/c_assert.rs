@@ -25,9 +25,9 @@ pub(crate) fn assert_(
 
 /// Transform and annotate the formula:
 /// - replace each occurrence of a variable by an XSorted term, with type
+/// - replace p=>(q=>r) by ~p|~q|r
 /// - todo: replace ambiguous simple identifier (constructor) by a qualified identifier
 /// - todo: annotate `ite` with the type
-/// - todo: replace p=>q by ~p|q
 /// - todo: push negation down
 /// - todo: push universal quantification up disjunction, down conjunction
 /// - todo: push existential quantification up conjunction, down disjunction
@@ -98,7 +98,24 @@ pub(crate) fn annotate_term(
             let new_terms = terms.iter()
                 .map(|t| annotate_term(t, variables, solver))
                 .collect::<Result<Vec<_>, _>>()?;
-            Ok(Term::Application(qual_identifier.clone(), new_terms))
+
+            match qual_identifier.to_string().as_str() {
+                "=>" => {  // p => (q => r) becomes ~p | ~q | r
+                    let not = QualIdentifier::Identifier(Identifier::Simple(Symbol("not".to_string())));
+                    let  or = QualIdentifier::Identifier(Identifier::Simple(Symbol( "or".to_string())));
+                    // negate all terms, except the last one
+                    let new_terms2 = new_terms.iter().enumerate()
+                        .map( | (i, t) | if i < new_terms.len()-1 {
+                            Term::Application(not.clone(), vec![t.clone()])
+                        } else {
+                            t.clone()
+                        }).collect::<Vec<_>>();
+                    Ok(Term::Application(or, new_terms2))
+                },
+                _ => // a regular identifier
+                    Ok(Term::Application(qual_identifier.clone(), new_terms))
+            }
+
         },
 
         Term::Let(var_bindings, term) => {

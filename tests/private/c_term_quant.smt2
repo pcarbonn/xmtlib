@@ -10,6 +10,7 @@
 (assert (forall ((x Int)) (q x)))
 (declare-fun r (Bool) Bool)
 (assert (not (exists ((x Bool)) (r x))))
+(assert (forall ((x Bool)) (=> (r x) false)))
 
 (x-ground)
 (x-debug solver groundings)
@@ -26,6 +27,7 @@
 (declare-fun q (Int) Bool)
 
 (declare-fun r (Bool) Bool)
+
 
 (push)
 (assert (forall ((x Int)) true))
@@ -59,6 +61,10 @@
 (assert (not (exists ((x Bool)) (r x))))
 (pop)
 (assert (not (or (r true) (r false))))
+(push)
+(assert (forall ((x Bool)) (=> (r x) false)))
+(pop)
+(assert (and (or (not (r true)) false) (or (not (r false)) false)))
 Groundings:
  - true:
     TU: SELECT "true" AS G
@@ -115,4 +121,20 @@ Groundings:
     TU: SELECT apply("not", Agg_12_UF.G) AS G FROM Agg_12_UF
     UF: SELECT apply("not", Agg_12_TU.G) AS G FROM Agg_12_TU
     G : SELECT apply("not", Agg_12_G.G) AS G FROM Agg_12_G
+ - (not (r x)):
+    TU: SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
+    UF: SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
+    G : SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
+ - false:
+    TU: SELECT "false" AS G
+    UF: SELECT "false" AS G
+    G : SELECT "false" AS G
+ - (or (not (r x)) false):
+    TU: SELECT Bool_12.G AS x, apply("or", apply("not", apply("r", Bool_12.G)), "false") AS G FROM Bool AS Bool_12
+    UF: SELECT Bool_12.G AS x, apply("or", apply("not", apply("r", Bool_12.G)), "false") AS G FROM Bool AS Bool_12
+    G : SELECT Bool_12.G AS x, apply("or", apply("not", apply("r", Bool_12.G)), "false") AS G FROM Bool AS Bool_12
+ - (forall () (or (not (r x)) false)):
+    TU: SELECT Agg_16_TU.G AS G FROM Agg_16_TU
+    UF: SELECT Agg_16_UF.G AS G FROM Agg_16_UF
+    G : SELECT Agg_16_G.G AS G FROM Agg_16_G
 CREATE VIEW Agg_12_UF AS SELECT or_aggregate(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
