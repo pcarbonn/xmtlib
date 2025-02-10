@@ -5,7 +5,7 @@ use std::cmp::max;
 use indexmap::IndexMap;
 use itertools::Either;
 
-use crate::api::{Identifier, QualIdentifier, SpecConstant, Symbol};
+use crate::api::{Identifier, QualIdentifier, SortedVar, SpecConstant, Symbol};
 use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 
@@ -45,6 +45,8 @@ pub(crate) enum SQLExpr {
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
     // Only in GroundingQuery.groundings
     Value(Column),  // in an interpretation table.
+    Forall(Vec<SortedVar>, Box<SQLExpr>),
+    Exists(Vec<SortedVar>, Box<SQLExpr>),
     //  Only in GroundingQuery.conditions
     Equality(bool, Box<SQLExpr>, Column),  // gated c_i.
 }
@@ -97,6 +99,18 @@ impl SQLExpr {
                 sql_for("apply", qual_identifier, exprs, variables)
             },
             SQLExpr::Value(column) => format!("{column}"),
+            SQLExpr::Forall(uninterpreted_variables, expr) => {
+                let vars = uninterpreted_variables.iter()
+                    .map( |sv| sv.to_string())
+                    .collect::<Vec<_>>().join(" ");
+                format!("\"(forall ({vars}) \" || {} || \")\"", expr.show(variables))
+            },
+            SQLExpr::Exists(uninterpreted_variables, expr) => {
+                let vars = uninterpreted_variables.iter()
+                    .map( |sv| sv.to_string())
+                    .collect::<Vec<_>>().join(" ");
+                format!("\"(exists ({vars}) \" || {} || \")\"", expr.show(variables))
+            },
             SQLExpr::Equality(_, expr, column) => todo!(),
         }
     }
@@ -315,14 +329,18 @@ pub(crate) fn query_for_compound(
 pub(crate) fn query_for_aggregate(
     sub_query: &GroundingQuery,
     free_variables: &IndexMap<Symbol, Column>,
+    variables: &Vec<SortedVar>,  // variables that are aggregated over infinite sort
     agg: &str,
     exclude: &str,
     table_name: TableName,
     solver: &mut Solver
 ) -> Result<GroundingQuery, SolverError> {
 
+    // create sql of the view, using a GroundingQuery
     let mut view = sub_query.clone();
+
     view.variables = free_variables.clone();
+
     let agg_id = QualIdentifier::Identifier(Identifier::Simple(Symbol(agg.to_string())));
     if 0 < sub_query.conditions.len() {
         let imply = QualIdentifier::Identifier(Identifier::Simple(Symbol("=>".to_string())));
@@ -331,9 +349,18 @@ pub(crate) fn query_for_aggregate(
         view.conditions = vec![];
     }
     view.grounding = SQLExpr::Apply(agg_id, Box::new(vec![view.grounding]));
+    if 0 < variables.len() {  // add (forall {vars} {grounding})
+        if agg == "and".to_string() {
+            view.grounding = SQLExpr::Forall(variables.clone(), Box::new(view.grounding))
+        } else {
+            view.grounding = SQLExpr::Exists(variables.clone(), Box::new(view.grounding))
+        }
+    }
+
     let where_ = if exclude == "" { "".to_string() } else {
         format!(" WHERE {} != {exclude}", view.grounding.show(&sub_query.variables))
     };
+
     let group_by = free_variables.iter()
         .map( |(_, column)| format!("{column}") )
         .collect::<Vec<_>>().join(", ");
@@ -341,7 +368,6 @@ pub(crate) fn query_for_aggregate(
         format!(" GROUP BY {group_by}")
     };
 
-    //todo use exclude
     let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS {view}{where_}{group_by}");
     solver.conn.execute(&sql, ())?;
 

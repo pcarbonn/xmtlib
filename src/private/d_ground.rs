@@ -227,6 +227,7 @@ pub(crate) fn ground_term_(
                     let tu = query_for_aggregate(
                         &sub_g,
                         &free_variables,
+                        &variables,
                         "and",
                         "false",
                         TableName{base_table: table_name.clone() + "_TU", index: 0},
@@ -234,6 +235,7 @@ pub(crate) fn ground_term_(
                     let uf = query_for_aggregate(
                         &sub_uf,
                         &free_variables,
+                        &variables,
                         "and",
                         "",
                         TableName{base_table: table_name.clone() + "_UF", index: 0},
@@ -241,6 +243,7 @@ pub(crate) fn ground_term_(
                     let g = query_for_aggregate(
                         &sub_g,
                         &free_variables,
+                        &variables,
                         "and",
                         "",
                         TableName{base_table: table_name.clone() + "_G", index: 0},
@@ -249,14 +252,49 @@ pub(crate) fn ground_term_(
                 },
             }
         },
-        Term::Exists(..) => {
-            // get sub_tu, sub_uf, sub_g
-            // table_name = "Agg_{solver.groundings.len()}"
-            // tu = query_for_aggregate(sub_tu, "or", "", "{table_name}_TU)
-            // uf = query_for_aggregate(sub_g, "or", "true", "{table_name}_UF)
-            // g = query_for_aggregate(sub_g, "or", "", "{table_name}_G)
-            // Ok(GroundingView{tu, uf, g})
-            todo!();
+        Term::Exists(variables, term, Some(interpreted_vars)) => {
+            match ground_term(term, false, solver)? {
+                Grounding::NonBoolean(_) =>
+                    Err(InternalError(42578548)),
+                Grounding::Boolean { tu: _, uf: sub_uf, g: sub_g } => {
+
+                    let mut free_variables = sub_g.variables.clone();
+                    for SortedVar(symbol, _) in variables {
+                        free_variables.shift_remove(symbol);
+                    }
+                    for SortedVar(symbol, _) in interpreted_vars {
+                        free_variables.shift_remove(symbol);
+                    }
+
+                    let index = solver.groundings.len();
+                    let table_name = format!("Agg_{index}");
+                    let tu = query_for_aggregate(
+                        &sub_g,
+                        &free_variables,
+                        &variables,
+                        "or",
+                        "",
+                        TableName{base_table: table_name.clone() + "_TU", index: 0},
+                        solver)?;
+                    let uf = query_for_aggregate(
+                        &sub_uf,
+                        &free_variables,
+                        &variables,
+                        "or",
+                        "true",
+                        TableName{base_table: table_name.clone() + "_UF", index: 0},
+                        solver)?;
+                    let g = query_for_aggregate(
+                        &sub_g,
+                        &free_variables,
+                        &variables,
+                        "or",
+                        "",
+                        TableName{base_table: table_name.clone() + "_G", index: 0},
+                        solver)?;
+                    Ok(Grounding::Boolean{tu, uf, g})
+                },
+            }
         },
         Term::Forall(_, _, None)
         | Term::Exists(_, _, None) => Err(InternalError(95788566)),
