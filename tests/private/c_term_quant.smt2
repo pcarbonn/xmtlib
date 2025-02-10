@@ -9,11 +9,11 @@
 (declare-fun q (Int) Bool)
 (assert (forall ((x Int)) (q x)))
 (declare-fun r (Bool) Bool)
-(assert (exists ((x Bool)) (r x)))
+(assert (not (exists ((x Bool)) (r x))))
 
 (x-ground)
 (x-debug solver groundings)
-(x-debug db-view Agg_5_UF)
+(x-debug db-view Agg_12_UF)
 -------------------------
 
 
@@ -56,9 +56,9 @@
 (pop)
 (assert (forall ((x Int)) (q x)))
 (push)
-(assert (exists ((x Bool)) (r x)))
+(assert (not (exists ((x Bool)) (r x))))
 (pop)
-(assert (or (r true) (r false)))
+(assert (not (or (r true) (r false))))
 Groundings:
  - true:
     TU: SELECT "true" AS G
@@ -111,4 +111,8 @@ Groundings:
     TU: SELECT Agg_12_TU.G AS G FROM Agg_12_TU
     UF: SELECT Agg_12_UF.G AS G FROM Agg_12_UF
     G : SELECT Agg_12_G.G AS G FROM Agg_12_G
-CREATE VIEW Agg_5_UF AS SELECT and_aggregate(apply("p", Color_5.G)) AS G FROM Color AS Color_5
+ - (not (exists () (r x))):
+    TU: SELECT apply("not", Agg_12_UF.G) AS G FROM Agg_12_UF
+    UF: SELECT apply("not", Agg_12_TU.G) AS G FROM Agg_12_TU
+    G : SELECT apply("not", Agg_12_G.G) AS G FROM Agg_12_G
+CREATE VIEW Agg_12_UF AS SELECT or_aggregate(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12

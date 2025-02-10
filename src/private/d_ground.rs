@@ -49,7 +49,7 @@ pub(crate) fn ground(
             .collect::<(Vec<_>, Vec<_>)>();
 
         for (term, command) in terms.iter().zip(commands) {
-            // todo: push and pop, to avoid polluting the SMT state
+            // push and pop, to avoid polluting the SMT state
             yield_!(solver.exec("(push)"));
             yield_!(solver.exec(&command));
             yield_!(solver.exec("(pop)"));
@@ -309,37 +309,48 @@ fn ground_compound(
                             "and" => {
 
                                 // and
-                                let (mut tus, mut ufs) = collect_tu_uf(groundings);
+                                let (mut tus, _) = collect_tu_uf(groundings);
 
                                 let variant = Right("apply".to_string());
                                 let grounding_query = query_for_compound(qual_identifier, &mut gqs, &variant)?;
 
                                 let tu = query_for_compound(qual_identifier, &mut tus, &variant)?;
 
-                                // todo: union query(qual_identifer, ufs)
-                                let uf = query_for_compound(qual_identifier, &mut ufs, &variant)?;
+                                // todo: union query(qual_identifer, ufs)  Use g in the mean time.
+                                let uf = query_for_compound(qual_identifier, &mut gqs, &variant)?;
 
                                 Ok(Grounding::Boolean{tu, uf, g: grounding_query})
                             },
                             "or" => {
 
                                 // or
-                                let (mut tus, mut ufs) = collect_tu_uf(groundings);
+                                let (_, mut ufs) = collect_tu_uf(groundings);
 
                                 let variant = Right("apply".to_string());
                                 let grounding_query = query_for_compound(qual_identifier, &mut gqs, &variant)?;
 
-                                // todo: union query(qual_identifer, ufs)
-                                let tu = query_for_compound(qual_identifier, &mut tus, &variant)?;
+                                // todo: union query(qual_identifer, tus).  Use g in the mean time.
+                                let tu = query_for_compound(qual_identifier, &mut gqs, &variant)?;
 
                                 let uf = query_for_compound(qual_identifier, &mut ufs, &variant)?;
 
                                 Ok(Grounding::Boolean{tu, uf, g: grounding_query})
                             },
                               "not" => {
-                                // get tu, uf, g of groundings[0]
+
+                                // not
                                 // return uf, tu, g with grounding G replaced by not(G)
-                                todo!()
+                                match groundings.get(0) {
+                                    Some(Grounding::Boolean { tu, uf, g }) => {
+                                        let (mut tu, mut uf, mut g) = (tu.clone(), uf.clone(), g.clone());
+                                        tu.grounding = SQLExpr::Apply(qual_identifier.clone(), Box::new(vec![tu.grounding]));
+                                        uf.grounding = SQLExpr::Apply(qual_identifier.clone(), Box::new(vec![uf.grounding]));
+                                         g.grounding = SQLExpr::Apply(qual_identifier.clone(), Box::new(vec![ g.grounding]));
+                                        Ok(Grounding::Boolean{tu: uf, uf: tu, g})
+                                    },
+                                    Some(Grounding::NonBoolean(_))
+                                    | None => Err(InternalError(85896566))
+                                }
                               },
                             "=>"
                             | "="

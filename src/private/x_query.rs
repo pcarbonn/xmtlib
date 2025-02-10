@@ -40,7 +40,6 @@ impl std::fmt::Display for Column {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum SQLExpr {
     Constant(SpecConstant),
-    Variable(Symbol),
     Construct(QualIdentifier, Box<Vec<SQLExpr>>),  // constructor
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
     // Only in GroundingQuery.groundings
@@ -88,10 +87,6 @@ impl SQLExpr {
                     SpecConstant::Binary(s) => format!("\"{s}\""),
                     SpecConstant::String(s) => format!("\"{s}\""),
                 }
-            },
-            SQLExpr::Variable(symbol) => {
-                // lookup column in variables
-                todo!()
             },
             SQLExpr::Construct(qual_identifier, exprs) => {
                 sql_for("construct2", qual_identifier, exprs, variables)
