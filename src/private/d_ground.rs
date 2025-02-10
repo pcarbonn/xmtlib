@@ -3,15 +3,13 @@
 use std::future::Future;
 
 use genawaiter::{sync::Gen, sync::gen, yield_};
-use indexmap::IndexMap;
 use itertools::Either::Right;
 use rusqlite::Connection;
 
-use crate::api::{Identifier, QualIdentifier, SortedVar, Symbol, Term, VarBinding};
+use crate::api::{Identifier, QualIdentifier, SortedVar, Term};
 use crate::error::SolverError::{self, *};
-use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, InterpretationType};
-use crate::private::x_query::{GroundingQuery, TableName, Column, query_for_compound, query_spec_constant, query_for_aggregate};
+use crate::private::x_query::{GroundingQuery, TableName, query_for_compound, query_spec_constant, query_for_aggregate};
 use crate::solver::Solver;
 
 

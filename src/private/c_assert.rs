@@ -1,17 +1,10 @@
 // Copyright Pierre Carbonnelle, 2025.
 
-use std::future::Future;
-
-use genawaiter::{sync::Gen, sync::gen, yield_};
 use indexmap::IndexMap;
-use itertools::Either::Right;
-use rusqlite::Connection;
 
 use crate::api::{Identifier, QualIdentifier, SortedVar, Symbol, Term, VarBinding};
 use crate::error::SolverError::{self, *};
 use crate::private::a_sort::SortObject;
-use crate::private::b_fun::{FunctionObject, InterpretationType};
-use crate::private::x_query::{GroundingQuery, query_for_compound, query_spec_constant};
 use crate::solver::Solver;
 
 
@@ -31,14 +24,15 @@ pub(crate) fn assert_(
 
 
 /// Transform and annotate the formula:
-/// - replace each occurrence of a variable by an XSorted term, with type
-/// - replace ambiguous simple identifier (constructor) by a qualified identifier
-/// - annotate `ite` with the type
-/// - push negation down
-/// - push universal quantification up disjunction, down conjunction
-/// - push existential quantification up conjunction, down disjunction
-/// - remove duplicate conjuncts/disjuncts, and merge nested conjunction/disjunction
-/// - merge nested quantification/aggregate of the same type
+/// - todo: replace each occurrence of a variable by an XSorted term, with type
+/// - todo: replace ambiguous simple identifier (constructor) by a qualified identifier
+/// - todo: annotate `ite` with the type
+/// - todo: replace p=>q by ~p|q
+/// - todo: push negation down
+/// - todo: push universal quantification up disjunction, down conjunction
+/// - todo: push existential quantification up conjunction, down disjunction
+/// - todo: remove duplicate conjuncts/disjuncts, and merge nested conjunction/disjunction
+/// - todo: merge nested quantification/aggregate of the same type
 pub(crate) fn annotate_term(
     term: &Term,
     variables: &mut IndexMap<Symbol, Option<SortedVar>>,  // can't use XSortedVar here because it's a term variant
@@ -46,17 +40,19 @@ pub(crate) fn annotate_term(
     solver: &Solver
 ) -> Result<Term, SolverError> {
 
-        // todo: disambiguate ambiguous simple identifier
-
-        // Helper function to avoid code duplication
-        // The first element of the result is a copy of `variables` updated with sorted_vars (with an empty SortedVar if the sort is infinite);
-        // The second element of the result is the annotated term.
+        // Helper function to avoid code duplication.
+        // `variables` is updated with the `sorted_vars`.
+        //
+        // The first element of the result is the subset of `variables` with an infinite domain;
+        // The second element of the result is the annotated term with the updated variables;
+        // The third element of the result is the subset of `variables` with finite domain.
         fn process_quantification (
             sorted_vars: &Vec<SortedVar>,
             term: &Box<Term>,
             variables: &mut IndexMap<Symbol, Option<SortedVar>>,
             solver: &Solver
         ) -> Result<(Vec<SortedVar>, Term, Option<Vec<SortedVar>>), SolverError> {
+
             let mut new_variables = variables.clone();
             let mut new_sorted_vars = vec![];  // keeps the variables with infinite domain
             let mut interpreted_vars = vec![];
@@ -119,12 +115,14 @@ pub(crate) fn annotate_term(
         },
 
         Term::Forall(sorted_vars, term, _) => {
-            let (new_sorted_vars, new_term, interpreted_vars) = process_quantification(sorted_vars, term, variables, solver)?;
+            let (new_sorted_vars, new_term, interpreted_vars) =
+                process_quantification(sorted_vars, term, variables, solver)?;
             Ok(Term::Forall(new_sorted_vars, Box::new(new_term), interpreted_vars))
         },
 
         Term::Exists(sorted_vars, term, _) => {
-            let (new_sorted_vars, new_term, interpreted_vars) = process_quantification(sorted_vars, term, variables, solver)?;
+            let (new_sorted_vars, new_term, interpreted_vars) =
+                process_quantification(sorted_vars, term, variables, solver)?;
             Ok(Term::Exists(new_sorted_vars, Box::new(new_term), interpreted_vars))
         },
 

@@ -378,7 +378,6 @@ pub(crate) fn query_for_aggregate(
             (symbol.clone(), Column{table_name: table_name.clone(), column: format!("{symbol}")}))
         .collect::<IndexMap<Symbol, Column>>();
 
-    let new_table_name = TableName{base_table: table_name.to_string(), index: 0};
     let natural_joins = IndexMap::from([(table_name.clone(), free_variables.keys().cloned().collect())]);
 
     Ok(GroundingQuery{
