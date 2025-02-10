@@ -3,7 +3,7 @@ name = "xmtlib"
 version = "0.1.0"
 authors = ["Pierre Carbonnelle"]
 edition = "2021"
-rust-version = "1.65.0"
+rust-version = "1.84.1"
 description = "A high-level language for interacting with SMT solvers"
 documentation = "https://docs.rs/xmtlib"
 readme = "README.md"
@@ -14,7 +14,7 @@ categories = ["mathematics", "science"]
 
 [dependencies]
 chic = "1.2.2"
-clap = { version = "4.5.27", features = ["derive"] }
+clap = { version = "4.5.28", features = ["derive"] }
 debug_print = "1.0.0"
 genawaiter = "0.99.1"
 indexmap = "2.7.1"
