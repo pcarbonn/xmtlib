@@ -1,3 +1,4 @@
+(assert true)
 (declare-const p Bool)
 (declare-const c Int)
 (assert p)
@@ -10,6 +11,7 @@
 (x-ground)
 (x-debug solver groundings)
 -------------------------
+
 (declare-const p Bool)
 (declare-const c Int)
 
@@ -18,6 +20,10 @@
 
 
 
+(push)
+(assert true)
+(pop)
+(assert true)
 (push)
 (assert p)
 (pop)
@@ -35,6 +41,10 @@
 (pop)
 (assert (or (q red) (q red)))
 Groundings:
+ - true:
+    TU: SELECT "true" AS G
+    UF: SELECT "true" AS G
+    G : SELECT "true" AS G
  - p:
     TU: SELECT "p" AS G
     UF: SELECT "p" AS G

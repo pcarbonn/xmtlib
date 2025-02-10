@@ -49,18 +49,22 @@ pub(crate) fn annotate_term(
         // todo: disambiguate ambiguous simple identifier
 
         // Helper function to avoid code duplication
+        // The first element of the result is a copy of `variables` updated with sorted_vars (with an empty SortedVar if the sort is infinite);
+        // The second element of the result is the annotated term.
         fn process_quantification (
             sorted_vars: &Vec<SortedVar>,
             term: &Box<Term>,
             variables: &mut IndexMap<Symbol, Option<SortedVar>>,
             solver: &Solver
-        ) -> Result<(Vec<SortedVar>, Term), SolverError> {
+        ) -> Result<(Vec<SortedVar>, Term, Option<Vec<SortedVar>>), SolverError> {
             let mut new_variables = variables.clone();
             let mut new_sorted_vars = vec![];  // keeps the variables with infinite domain
+            let mut interpreted_vars = vec![];
             for SortedVar(symbol, sort, ) in sorted_vars {
                 match solver.sorts.get(sort) {
                     Some(SortObject::Normal{..}) => {
                         new_variables.insert(symbol.clone(), Some(SortedVar(symbol.clone(), sort.clone())));
+                        interpreted_vars.push(SortedVar(symbol.clone(), sort.clone()))
                     },
                     Some(SortObject::Infinite)
                     | Some(SortObject::Recursive)
@@ -72,7 +76,7 @@ pub(crate) fn annotate_term(
                 }
             };
             let new_term = annotate_term(term, &mut new_variables, solver)?;
-            Ok((new_sorted_vars, new_term))
+            Ok((new_sorted_vars, new_term, Some(interpreted_vars)))
         }  // end helper function
 
     match term {
@@ -82,10 +86,10 @@ pub(crate) fn annotate_term(
             match qual_identifier {
                 QualIdentifier::Identifier(Identifier::Simple(ref symbol)) => {
                     match variables.get(symbol) {
-                        Some(Some(SortedVar(_, ref sort))) => // a variable of uninterpreted type
+                        Some(Some(SortedVar(_, ref sort))) => // a variable of finite sort
                             Ok(Term::XSortedVar(symbol.clone(), Some(sort.clone()))),
                         Some(None) =>
-                            Ok(Term::XSortedVar(symbol.clone(), None)),  // a variable of interpreted type
+                            Ok(Term::XSortedVar(symbol.clone(), None)),  // a variable of infinite sort
                         None =>
                             Ok(term.clone())  // a regular identifier
                     }
@@ -114,14 +118,14 @@ pub(crate) fn annotate_term(
             Ok(Term::Let(new_var_bindings, Box::new(new_term)))
         },
 
-        Term::Forall(sorted_vars, term) => {
-            let (new_sorted_vars, new_term) = process_quantification(sorted_vars, term, variables, solver)?;
-            Ok(Term::Forall(new_sorted_vars, Box::new(new_term)))
+        Term::Forall(sorted_vars, term, _) => {
+            let (new_sorted_vars, new_term, interpreted_vars) = process_quantification(sorted_vars, term, variables, solver)?;
+            Ok(Term::Forall(new_sorted_vars, Box::new(new_term), interpreted_vars))
         },
 
-        Term::Exists(sorted_vars, term) => {
-            let (new_sorted_vars, new_term) = process_quantification(sorted_vars, term, variables, solver)?;
-            Ok(Term::Exists(new_sorted_vars, Box::new(new_term)))
+        Term::Exists(sorted_vars, term, _) => {
+            let (new_sorted_vars, new_term, interpreted_vars) = process_quantification(sorted_vars, term, variables, solver)?;
+            Ok(Term::Exists(new_sorted_vars, Box::new(new_term), interpreted_vars))
         },
 
         Term::Match(_, _) => {
@@ -141,7 +145,7 @@ pub(crate) fn annotate_term(
         },
 
         Term::XSortedVar(_, _) =>
-            Err(InternalError(812685563)),
+            Err(InternalError(812685563)),  // XSortedVar not expected here
     }
 }
 

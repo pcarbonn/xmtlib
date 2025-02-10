@@ -5,19 +5,23 @@ use std::cmp::max;
 use indexmap::IndexMap;
 use itertools::Either;
 
-use crate::api::{QualIdentifier, SpecConstant, Symbol};
+use crate::api::{Identifier, QualIdentifier, SpecConstant, Symbol};
 use crate::error::SolverError;
-use crate::solver::TermId;
+use crate::solver::{Solver, TermId};
 
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct TableName {
-    base_table: String,
-    index: TermId, // to disambiguate
+    pub(crate) base_table: String,
+    pub(crate) index: TermId, // to disambiguate
 }
 impl std::fmt::Display for TableName {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}_{}", self.base_table, self.index)
+        if self.index == 0 {
+            write!(f, "{}", self.base_table)
+        } else {
+            write!(f, "{}_{}", self.base_table, self.index)
+        }
     }
 }
 
@@ -92,7 +96,7 @@ impl SQLExpr {
             SQLExpr::Apply(qual_identifier, exprs) => {
                 sql_for("apply", qual_identifier, exprs, variables)
             },
-            SQLExpr::Value(column) => format!("\"{column}\""),
+            SQLExpr::Value(column) => format!("{column}"),
             SQLExpr::Equality(_, expr, column) => todo!(),
         }
     }
@@ -162,7 +166,11 @@ impl std::fmt::Display for GroundingQuery {
         // natural joins
         let naturals = self.natural_joins.iter()
             .map(|(table_name, on)| {
-                let name = format!("{} AS {table_name}", table_name.base_table);
+                let name = if table_name.index == 0 {
+                        format!("{}", table_name.base_table)
+                    } else {
+                        format!("{} AS {table_name}", table_name.base_table)
+                    };
                 let on = on.iter()
                     .map( | symbol | {
                         let column = self.variables.get(symbol).unwrap();
@@ -302,11 +310,57 @@ pub(crate) fn query_for_compound(
 }
 
 
-fn filter(
-    query: GroundingQuery,
-    value: String,
-    table_name: String
-) -> GroundingQuery {
-    // create view by adding "where" clause to display of query
-    todo!()
+
+/// Creates a query over an aggregate view, possibly adding a where clause if exclude is not empty
+pub(crate) fn query_for_aggregate(
+    sub_query: &GroundingQuery,
+    free_variables: &IndexMap<Symbol, Column>,
+    agg: &str,
+    exclude: &str,
+    table_name: TableName,
+    solver: &mut Solver
+) -> Result<GroundingQuery, SolverError> {
+
+    let mut view = sub_query.clone();
+    view.variables = free_variables.clone();
+    let agg_id = QualIdentifier::Identifier(Identifier::Simple(Symbol(agg.to_string())));
+    if 0 < sub_query.conditions.len() {
+        let imply = QualIdentifier::Identifier(Identifier::Simple(Symbol("=>".to_string())));
+        view.conditions.push(view.grounding);
+        view.grounding = SQLExpr::Apply(imply, Box::new(view.conditions));
+        view.conditions = vec![];
+    }
+    view.grounding = SQLExpr::Apply(agg_id, Box::new(vec![view.grounding]));
+    let where_ = if exclude == "" { "".to_string() } else {
+        format!(" WHERE {} != {exclude}", view.grounding.show(&sub_query.variables))
+    };
+    let group_by = free_variables.iter()
+        .map( |(_, column)| format!("{column}") )
+        .collect::<Vec<_>>().join(", ");
+    let group_by = if group_by == "" { group_by } else {
+        format!(" GROUP BY {group_by}")
+    };
+
+    //todo use exclude
+    let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS {view}{where_}{group_by}");
+    solver.conn.execute(&sql, ())?;
+
+    // construct the GroundingQuery
+    // select {free_variables}, {table_name}.G from {table_name}
+    let select = free_variables.iter()
+        .map( |(symbol, _)|
+            (symbol.clone(), Column{table_name: table_name.clone(), column: format!("{symbol}")}))
+        .collect::<IndexMap<Symbol, Column>>();
+
+    let new_table_name = TableName{base_table: table_name.to_string(), index: 0};
+    let natural_joins = IndexMap::from([(table_name.clone(), free_variables.keys().cloned().collect())]);
+
+    Ok(GroundingQuery{
+        variables: select,
+        conditions: vec![],
+        grounding: SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()}),
+        natural_joins: natural_joins,
+        theta_joins: vec![],
+        ids: Ids::None
+    })
 }

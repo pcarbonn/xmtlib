@@ -11,7 +11,7 @@ use crate::api::{Identifier, QualIdentifier, SortedVar, Symbol, Term, VarBinding
 use crate::error::SolverError::{self, *};
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, InterpretationType};
-use crate::private::x_query::{GroundingQuery, TableName, query_for_compound, query_spec_constant};
+use crate::private::x_query::{GroundingQuery, TableName, Column, query_for_compound, query_spec_constant, query_for_aggregate};
 use crate::solver::Solver;
 
 
@@ -208,14 +208,46 @@ pub(crate) fn ground_term_(
             ground_compound(qual_identifier, sub_terms, solver)
         },
         Term::Let(..) => todo!(),
-        Term::Forall(..) => {
-            // get sub_tu, sub_uf, sub_g
-            // table_name = "Agg_{solver.groundings.len()}"
-            // tu = query_for_aggregate(sub_g, "and", "false", "{table_name}_TU)
-            // uf = query_for_aggregate(sub_uf, "and", "", "{table_name}_UF)
-            // g = query_for_aggregate(sub_g, "and", "", "{table_name}_G)
-            // Ok(GroundingView{tu, uf, g})
-            todo!()
+        Term::Forall(variables, term, Some(interpreted_vars)) => {
+            match ground_term(term, false, solver)? {
+                Grounding::NonBoolean(_) =>
+                    Err(InternalError(42578548)),
+                Grounding::Boolean { tu: _, uf: sub_uf, g: sub_g } => {
+
+                    let mut free_variables = sub_g.variables.clone();
+                    for SortedVar(symbol, _) in variables {
+                        free_variables.shift_remove(symbol);
+                    }
+                    for SortedVar(symbol, _) in interpreted_vars {
+                        free_variables.shift_remove(symbol);
+                    }
+
+                    let index = solver.groundings.len();
+                    let table_name = format!("Agg_{index}");
+                    let tu = query_for_aggregate(
+                        &sub_g,
+                        &free_variables,
+                        "and",
+                        "false",
+                        TableName{base_table: table_name.clone() + "_TU", index: 0},
+                        solver)?;
+                    let uf = query_for_aggregate(
+                        &sub_uf,
+                        &free_variables,
+                        "and",
+                        "",
+                        TableName{base_table: table_name.clone() + "_UF", index: 0},
+                        solver)?;
+                    let g = query_for_aggregate(
+                        &sub_g,
+                        &free_variables,
+                        "and",
+                        "",
+                        TableName{base_table: table_name.clone() + "_G", index: 0},
+                        solver)?;
+                    Ok(Grounding::Boolean{tu, uf, g})
+                },
+            }
         },
         Term::Exists(..) => {
             // get sub_tu, sub_uf, sub_g
@@ -226,6 +258,8 @@ pub(crate) fn ground_term_(
             // Ok(GroundingView{tu, uf, g})
             todo!();
         },
+        Term::Forall(_, _, None)
+        | Term::Exists(_, _, None) => Err(InternalError(95788566)),
         Term::Match(..) => todo!(),
         Term::Annotation(..) => todo!(),
     }
@@ -392,13 +426,3 @@ fn ground_boolean_compound(
     }
 }
 
-
-/// Creates a query over an aggregate view, possibly adding a where clause if exclude is not empty
-fn query_for_aggregate(
-    sub_query: &GroundingQuery,
-    agg: &String,
-    exclude: &String,
-    table_name: String
-) -> Result<GroundingQuery, SolverError> {
-    todo!()
-}
