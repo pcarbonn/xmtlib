@@ -388,7 +388,6 @@ fn ground_compound(
         },
         None => {
             // constructor.  todo: this should not happen once constructors are declared
-            // todo: use construct() in SQL
             let variant = Right("construct".to_string());
             let grounding_query = query_for_compound(qual_identifier, &mut vec![], &variant)?;
             Ok(Grounding::NonBoolean(grounding_query))

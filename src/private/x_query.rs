@@ -206,17 +206,23 @@ impl std::fmt::Display for GroundingQuery {
             .map( | (table_name, mapping) | {
                 let on = mapping.iter()
                     .map( | (gated, e, col) | {
-                        let gate = if *gated {
-                                // todo add to condition too !
-                                format!("NOT(is_id({})) OR ", e.show(&self.variables))
-                            } else {
-                                "".to_string()
-                            };
-                        // todo: drop if equality is satisfied
-                        format!(" ({gate}{col} = {}) ", e.show(&self.variables))
-                    }).collect::<Vec<_>>().join(" AND ");
-                // todo: use where for first table
-                format!("{} AS {table_name} ON {on}", table_name.base_table)
+                        let value = e.show(&self.variables);
+                        if col.to_string() == value {
+                            "".to_string()
+                        } else {
+                            let gate = if *gated {
+                                    // todo add to condition too !
+                                    format!("NOT(is_id({})) OR ", e.show(&self.variables))
+                                } else {
+                                    "".to_string()
+                                };
+                            format!(" ({gate}{col} = {value}) ")
+                        }
+                    }).filter( |s| s != "" )
+                    .collect::<Vec<_>>().join(" AND ");
+                let on = if on == "" { on } else { format!(" ON {on}")};
+
+                format!("{} AS {table_name}{on}", table_name.base_table)
             }).collect::<Vec<_>>();
 
         // naturals + thetas
@@ -225,13 +231,7 @@ impl std::fmt::Display for GroundingQuery {
                 format!(" FROM {}", tables.join(" JOIN "))
             } else { "".to_string() };
 
-        // let where_ = self.where_.iter()
-        //     .map( |e| e.show(&self.variables) )
-        //     .collect::<Vec<_>>();
-        // let where_ = if 0 < where_.len() {
-        //     format!(" WHERE {}", where_.join(" AND "))
-        //     } else { "".to_string() };
-
+        // todo: replace `on` by `where` if only one table
         write!(f, "SELECT {variables}{condition}{grounding}{tables}")
     }
 }
