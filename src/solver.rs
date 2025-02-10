@@ -7,7 +7,7 @@ use indexmap::IndexMap;
 use rusqlite::{Connection, Result};
 
 use crate::api::*;
-use crate::error::{format_error, SolverError};
+use crate::error::{format_error, SolverError::{self, InternalError}};
 use crate::grammar::parse;
 use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, ParametricObject, SortObject};
 use crate::private::b_fun::{declare_fun, FunctionObject, InterpretationType::*};
@@ -289,6 +289,17 @@ impl Solver {
                             } else {
                                 yield_!(Err(SolverError::ExprError("Unknown table".to_string(), None)))
                             }
+                        },
+                        "db-view" => {
+                            // helper function
+                            let query = || {
+                                let mut stmt = self.conn.prepare("SELECT sql FROM sqlite_master WHERE type='view' AND name=?1")?;
+                                match stmt.query_row([obj], |row| row.get(0))? {
+                                    Some(view_sql) => Ok(view_sql),
+                                    None => Err(InternalError(4895566))
+                                }
+                            };
+                            yield_!(query())
                         },
                         _ => yield_!(Err(SolverError::ExprError("Unknown 'x-debug' parameter".to_string(), None)))
                     }

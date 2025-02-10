@@ -3,13 +3,15 @@
 use std::future::Future;
 
 use genawaiter::{sync::Gen, sync::gen, yield_};
+use indexmap::IndexMap;
 use itertools::Either::Right;
 use rusqlite::Connection;
 
 use crate::api::{Identifier, QualIdentifier, SortedVar, Term};
 use crate::error::SolverError::{self, *};
 use crate::private::b_fun::{FunctionObject, InterpretationType};
-use crate::private::x_query::{GroundingQuery, TableName, query_for_compound, query_spec_constant, query_for_aggregate};
+use crate::private::x_query::{Column, TableName, GroundingQuery, Ids, SQLExpr,
+    query_spec_constant, query_for_aggregate, query_for_compound};
 use crate::solver::Solver;
 
 
@@ -133,6 +135,7 @@ pub(crate) fn ground_term_(
     solver: &mut Solver
 ) -> Result<Grounding, SolverError> {
 
+    let index = solver.groundings.len();
     match term {
         Term::SpecConstant(spec_constant) => {
 
@@ -140,65 +143,38 @@ pub(crate) fn ground_term_(
             let grounding = query_spec_constant(spec_constant);
             Ok(Grounding::NonBoolean(grounding))
         },
-        Term::XSortedVar(..) => {
+        Term::XSortedVar(symbol, sort) => {
 
-            // if var is boolean: generate 3 queries
-            // else generate 1 query on the type
-            // do not generate a view !
-            todo!()
+            // a variable
+            if let Some(sort) = sort {  // finite domain
+                let base_table = format!("{sort}");
+                let table_name = TableName{base_table: base_table.clone(), index};
+                let column = Column{table_name: table_name.clone(), column: "G".to_string()};
+                let g = GroundingQuery{
+                    variables: IndexMap::from([(symbol.clone(), column.clone())]),
+                    conditions: vec![],
+                    grounding: SQLExpr::Value(column),
+                    natural_joins: IndexMap::from([(table_name, vec![])]),
+                    theta_joins: vec![],
+                    ids: Ids::All,
+                };
+
+                if base_table == "bool" {
+                    Ok(Grounding::Boolean { tu: g.clone(), uf: g.clone(), g: g })
+                } else {
+                    Ok(Grounding::NonBoolean(g))
+                }
+            } else {  // infinite domain
+                let qual_identifier = QualIdentifier::Identifier(Identifier::Simple(symbol.clone()));
+                let variant = Right("apply".to_string());
+                let g = query_for_compound(&qual_identifier, &mut vec![], &variant)?;
+                Ok(Grounding::NonBoolean(g))
+            }
         },
         Term::Identifier(qual_identifier) => {
 
             // an identifier
             ground_compound(qual_identifier, &mut vec![], solver)
-
-
-            // match qual_identifier {
-            //     QualIdentifier::Identifier(identifier) => {
-            //         match identifier {
-            //             Identifier::Simple(symbol) => {
-                            // match variables.get(symbol) {
-                            //     None => {
-
-                            //         // a predicate or constant
-                            //         ground_application(term, qual_identifier, &vec![], variables, solver)
-
-                            //     },
-                            //     Some(SortedVar(_, sort)) => {
-
-                            //         // a variable
-                            //         match solver.sorts.get(sort) {
-                            //             Some(SortObject::Normal {table_name, ..}) => {
-                            //                 // variable `symbol`` in `table_name`
-                            //                 // let view = View {
-                            //                 //     variables: IndexMap::from([(symbol.clone(), table_name.clone())]),
-                            //                 //     condition: "".to_string(),
-                            //                 //     grounding: format!("{table_name}.G"),
-                            //                 //     joins: IndexMap::from([(table_name.clone(), "".to_string())]),
-                            //                 //     where_: "".to_string(),
-                            //                 //     group_by: "".to_string(),
-                            //                 //     _ids: Ids::All,
-                            //                 // };
-                            //                 // Ok((term.clone(), Grounding::Function(view)))
-                            //                 todo!()
-                            //             },
-                            //             Some(SortObject::Infinite)
-                            //             | Some(SortObject::Recursive)
-                            //             | Some(SortObject::Unknown) => {
-                            //                 // `symbol` as computed
-                            //                 todo!()
-                            //             },
-                            //             None => { todo!() }
-                            //         }
-                            //     },
-                            // }
-            //                 todo!()
-            //             },
-            //             Identifier::Indexed(..) => todo!()
-            //         }
-            //     },
-            //     QualIdentifier::Sorted(..) => todo!(),
-            // }
         },
         Term::Application(qual_identifier, sub_terms) => {
 
@@ -220,7 +196,6 @@ pub(crate) fn ground_term_(
                         free_variables.shift_remove(symbol);
                     }
 
-                    let index = solver.groundings.len();
                     let table_name = format!("Agg_{index}");
                     let tu = query_for_aggregate(
                         &sub_g,
@@ -264,7 +239,6 @@ pub(crate) fn ground_term_(
                         free_variables.shift_remove(symbol);
                     }
 
-                    let index = solver.groundings.len();
                     let table_name = format!("Agg_{index}");
                     let tu = query_for_aggregate(
                         &sub_g,
@@ -295,7 +269,7 @@ pub(crate) fn ground_term_(
             }
         },
         Term::Forall(_, _, None)
-        | Term::Exists(_, _, None) => Err(InternalError(95788566)),
+        | Term::Exists(_, _, None) => Err(InternalError(95788566)),  // expecting Some(vec![]) if no interpretation
         Term::Match(..) => todo!(),
         Term::Annotation(..) => todo!(),
     }

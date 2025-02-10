@@ -27,8 +27,8 @@ impl std::fmt::Display for TableName {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Column {
-    table_name: TableName,
-    column: String
+    pub(crate) table_name: TableName,
+    pub(crate) column: String
 }
 impl std::fmt::Display for Column {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -45,6 +45,7 @@ pub(crate) enum SQLExpr {
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
     // Only in GroundingQuery.groundings
     Value(Column),  // in an interpretation table.
+    Aggregate(String, Box<SQLExpr>),
     Forall(Vec<SortedVar>, Box<SQLExpr>),
     Exists(Vec<SortedVar>, Box<SQLExpr>),
     //  Only in GroundingQuery.conditions
@@ -99,6 +100,8 @@ impl SQLExpr {
                 sql_for("apply", qual_identifier, exprs, variables)
             },
             SQLExpr::Value(column) => format!("{column}"),
+            SQLExpr::Aggregate(function, term) =>
+                format!("{function}({})", term.show(variables)),
             SQLExpr::Forall(uninterpreted_variables, expr) => {
                 let vars = uninterpreted_variables.iter()
                     .map( |sv| sv.to_string())
@@ -171,7 +174,7 @@ impl std::fmt::Display for GroundingQuery {
         // grounding
         let grounding = self.grounding.show(&self.variables);
         let grounding =
-            if condition == "" {
+            if variables =="" && condition == "" {
                 format!("{} AS G", grounding)
             } else {
                 format!(", {} AS G", grounding)
@@ -341,14 +344,13 @@ pub(crate) fn query_for_aggregate(
 
     view.variables = free_variables.clone();
 
-    let agg_id = QualIdentifier::Identifier(Identifier::Simple(Symbol(agg.to_string())));
     if 0 < sub_query.conditions.len() {
         let imply = QualIdentifier::Identifier(Identifier::Simple(Symbol("=>".to_string())));
         view.conditions.push(view.grounding);
         view.grounding = SQLExpr::Apply(imply, Box::new(view.conditions));
         view.conditions = vec![];
     }
-    view.grounding = SQLExpr::Apply(agg_id, Box::new(vec![view.grounding]));
+    view.grounding = SQLExpr::Aggregate(format!("{agg}_aggregate"), Box::new(view.grounding));
     if 0 < variables.len() {  // add (forall {vars} {grounding})
         if agg == "and".to_string() {
             view.grounding = SQLExpr::Forall(variables.clone(), Box::new(view.grounding))
@@ -357,10 +359,6 @@ pub(crate) fn query_for_aggregate(
         }
     }
 
-    let where_ = if exclude == "" { "".to_string() } else {
-        format!(" WHERE {} != {exclude}", view.grounding.show(&sub_query.variables))
-    };
-
     let group_by = free_variables.iter()
         .map( |(_, column)| format!("{column}") )
         .collect::<Vec<_>>().join(", ");
@@ -368,7 +366,7 @@ pub(crate) fn query_for_aggregate(
         format!(" GROUP BY {group_by}")
     };
 
-    let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS {view}{where_}{group_by}");
+    let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS {view}{group_by}");
     solver.conn.execute(&sql, ())?;
 
     // construct the GroundingQuery
@@ -380,6 +378,7 @@ pub(crate) fn query_for_aggregate(
 
     let natural_joins = IndexMap::from([(table_name.clone(), free_variables.keys().cloned().collect())]);
 
+    //todo add exclude
     Ok(GroundingQuery{
         variables: select,
         conditions: vec![],

@@ -24,7 +24,7 @@ pub(crate) fn assert_(
 
 
 /// Transform and annotate the formula:
-/// - todo: replace each occurrence of a variable by an XSorted term, with type
+/// - replace each occurrence of a variable by an XSorted term, with type
 /// - todo: replace ambiguous simple identifier (constructor) by a qualified identifier
 /// - todo: annotate `ite` with the type
 /// - todo: replace p=>q by ~p|q

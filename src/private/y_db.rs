@@ -1,8 +1,10 @@
 // Copyright Pierre Carbonnelle, 2025.
 
-use rusqlite::{functions::FunctionFlags, Connection};
+use rusqlite::{Connection, Result};
+use rusqlite::functions::{Context, FunctionFlags, Aggregate};
 
 use crate::error::SolverError;
+
 
 pub(crate) fn init_db(
     conn: &mut Connection
@@ -60,5 +62,93 @@ pub(crate) fn init_db(
         },
     )?;
 
+    conn.create_aggregate_function(
+        "and_aggregate",
+        1,
+        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,
+        AndState {terms: vec![]})?;
+
+    conn.create_aggregate_function(
+        "or_aggregate",
+        1,
+        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,
+        OrState {terms: vec![]})?;
+
     Ok(())
+}
+
+
+//////////////////////////// AND aggregate ////////////////////////////////////
+
+#[derive(Default, Clone)]
+struct AndState {
+    terms: Vec<String>,
+}
+
+/// Implement the `Aggregate` trait for `SumSquares`
+impl Aggregate<AndState, String> for AndState {
+
+    fn init(&self, _ctx: &mut Context<'_>)  -> Result<AndState> {
+        Ok(AndState{terms: vec![]})
+    }
+    /// Called for each row in the query
+    fn step(&self, ctx: &mut Context<'_>, acc: &mut AndState) -> rusqlite::Result<()> {
+        // todo: simplify ?
+        let value: String = ctx.get(0)?;
+        acc.terms.push(value);
+        Ok(())
+    }
+
+    /// Called at the end to return the final result
+    fn finalize(&self, _ctx: &mut Context<'_>, acc: Option<AndState>) -> rusqlite::Result<String> {
+        if let Some(acc) = acc {
+            if acc.terms.len() == 0 {
+                Ok("true".to_string())
+            } else if acc.terms.len() == 1 {
+                Ok(acc.terms.join(" "))
+            } else {
+                Ok(format!("(and {})", acc.terms.join(" ")))
+            }
+        } else {
+            Ok("".to_string())
+        }
+    }
+}
+
+
+//////////////////////////// OR aggregate ////////////////////////////////////
+
+#[derive(Default, Clone)]
+struct OrState {
+    terms: Vec<String>,
+}
+
+/// Implement the `Aggregate` trait for `SumSquares`
+impl Aggregate<OrState, String> for OrState {
+
+    fn init(&self, _ctx: &mut Context<'_>)  -> Result<OrState> {
+        Ok(OrState{terms: vec![]})
+    }
+    /// Called for each row in the query
+    fn step(&self, ctx: &mut Context<'_>, acc: &mut OrState) -> rusqlite::Result<()> {
+        // todo: simplify ?
+        let value: String = ctx.get(0)?;
+        acc.terms.push(value);
+        Ok(())
+    }
+
+    /// Called at the end to return the final result
+    fn finalize(&self, _ctx: &mut Context<'_>, acc: Option<OrState>) -> rusqlite::Result<String> {
+        if let Some(acc) = acc {
+            if acc.terms.len() == 0 {
+                Ok("false".to_string())
+            } else if acc.terms.len() == 1 {
+                Ok(acc.terms.join(" "))
+            } else {
+                Ok(format!("(or {})", acc.terms.join(" ")))
+            }
+        } else {
+            Ok("".to_string())
+        }
+    }
 }
