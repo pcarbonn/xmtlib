@@ -220,7 +220,11 @@ peg::parser!{
             / _ "(" _ "!" term:term() attributes:(attribute() ++ __) _ ")"
               { Term::Annotation(Box::new(term), attributes)}
 
-
+        rule xtuple() -> XTuple
+            = _ "("
+              terms: ( term() ++ __ )
+              _ ")"
+              { XTuple(terms) }
 
         // //////////////////////////// Theories     ////////////////////////////
         // //////////////////////////// Logics       ////////////////////////////
@@ -274,6 +278,7 @@ peg::parser!{
                       / declare_fun()
                       / declare_sort()
                       / define_sort()
+                      / xinterpret_pred()
                       / xdebug()
                       / xground()
                       / verbatim())
@@ -329,11 +334,17 @@ peg::parser!{
 
         // //////////////////////////// X-Commands     ////////////////////////////
 
+        rule xinterpret_pred() -> Command
+            = _ "x-interpret-pred"
+              __ symbol: symbol()
+              __ tuples: ( xtuple() ++ __ )
+              { XInterpretPred(symbol, tuples) }
+
         rule xdebug() -> Command
             = _ "x-debug"
-            __ typ:simple_symbol()
-            __ object:simple_symbol()
-            { XDebug (typ, object) }
+              __ typ:simple_symbol()
+              __ object:simple_symbol()
+              { XDebug (typ, object) }
 
         rule xground() -> Command
             = _ "x-ground"

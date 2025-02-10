@@ -328,6 +328,14 @@ impl std::fmt::Display for Term {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct XTuple(pub Vec<Term>);
+impl std::fmt::Display for XTuple {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "({})", self.0.iter().format(" "))
+    }
+}
+
 // //////////////////////////// Theories     ////////////////////////////
 // //////////////////////////// Logics       ////////////////////////////
 // //////////////////////////// Info flags   ////////////////////////////
@@ -395,6 +403,7 @@ pub enum Command {
     DefineSort(Symbol, Vec<Symbol>, Sort),
     XDebug(String, String),
     XGround,
+    XInterpretPred(Symbol, Vec<XTuple>),
     Verbatim(String),
 }
 impl Display for Command {
@@ -452,6 +461,7 @@ impl Display for Command {
             // Self::SetOption(m0) => write!(f, "(set-option {})", m0),
             // Self::Simplify(m0) => write!(f, "(simplify {})", m0),
 
+            Self::XInterpretPred(s1, s2 ) => write!(f, "(x-interpreted-pred {s1} {})", s2.iter().format(" ")),
             Self::XDebug(s1, s2) => write!(f, "(x-debug {s1} {s2})"),
             Self::XGround => write!(f, "(x-ground)"),
             Self::Verbatim(s) => write!(f, "{s}"),

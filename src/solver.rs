@@ -13,6 +13,7 @@ use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, 
 use crate::private::b_fun::{declare_fun, FunctionObject, InterpretationType::*};
 use crate::private::c_assert::assert_;
 use crate::private::d_ground::{ground, Grounding};
+use crate::private::e_interpret::interpret_pred;
 use crate::private::y_db::init_db;
 
 
@@ -182,37 +183,32 @@ impl Solver {
             let command = format!("{}", c);
             match c {
 
-                Command::Assert(term) => {
-                    yield_!(assert_(&term, command, self));
-                },
+                Command::Assert(term) =>
+                    yield_!(assert_(&term, command, self)),
 
-                Command::CheckSat => {
-                    yield_!(Ok("sat".to_string()));  // TODO
-                },
+                Command::CheckSat =>
+                    yield_!(Ok("sat".to_string())),  // TODO
 
-                Command::DeclareConst(symb, sort) => {
-                    yield_!(declare_fun(symb, vec![], sort, command, self))
-                },
+                Command::DeclareConst(symb, sort) =>
+                    yield_!(declare_fun(symb, vec![], sort, command, self)),
 
-                Command::DeclareDatatype(symb, decl) => {
-                    yield_!(declare_datatype(symb, decl, command, self))
-                }
+                Command::DeclareDatatype(symb, decl) =>
+                    yield_!(declare_datatype(symb, decl, command, self)),
 
-                Command::DeclareDatatypes(sort_decls, decls) => {
-                    yield_!(declare_datatypes(sort_decls, decls, command, self))
-                }
+                Command::DeclareDatatypes(sort_decls, decls) =>
+                    yield_!(declare_datatypes(sort_decls, decls, command, self)),
 
-                Command::DeclareFun(symb, domain, co_domain) => {
-                    yield_!(declare_fun(symb, domain, co_domain, command, self))
-                },
+                Command::DeclareFun(symb, domain, co_domain) =>
+                    yield_!(declare_fun(symb, domain, co_domain, command, self)),
 
-                Command::DeclareSort(symb, numeral) => {
-                    yield_!(declare_sort(symb, numeral, command, self))
-                }
+                Command::DeclareSort(symb, numeral) =>
+                    yield_!(declare_sort(symb, numeral, command, self)),
 
-                Command::DefineSort(symb, variables, sort) => {
-                    yield_!(define_sort(symb, variables, sort, command, self))
-                }
+                Command::DefineSort(symb, variables, sort) =>
+                    yield_!(define_sort(symb, variables, sort, command, self)),
+
+                Command::XInterpretPred(symbol, tuples) =>
+                    yield_!(interpret_pred(symbol, tuples, command, self)),
 
                 Command::XDebug(typ, obj) => {
                     match typ.as_str() {
