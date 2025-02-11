@@ -10,7 +10,7 @@ use crate::api::*;
 use crate::error::{format_error, SolverError::{self, InternalError}};
 use crate::grammar::parse;
 use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, ParametricObject, SortObject};
-use crate::private::b_fun::{declare_fun, FunctionObject, InterpretationType::*};
+use crate::private::b_fun::{declare_fun, FunctionObject, InterpretationType};
 use crate::private::c_assert::assert_;
 use crate::private::d_ground::{ground, Grounding};
 use crate::private::e_interpret::interpret_pred;
@@ -54,7 +54,7 @@ impl Default for Solver {
         let mut conn = Connection::open_in_memory().unwrap();
         conn.execute(
             "CREATE TABLE Bool (
-                    G    TEXT
+                    G    TEXT PRIMARY KEY
             )",
             (), // empty list of parameters.
         ).unwrap();
@@ -106,19 +106,28 @@ impl Default for Solver {
                         "<=", "<", ">=", ">"
                         ] {
             functions.insert(function(s),
-                FunctionObject{signature: None, boolean: Some(true), typ: Calculated});
+                FunctionObject{
+                    signature: None,
+                    boolean: Some(true),
+                    typ: InterpretationType::Calculated});
         }
 
         // ite
         functions.insert(function("ite"),
-            FunctionObject{signature: None, boolean: None, typ: Calculated});
+            FunctionObject{
+                signature: None,
+                boolean: None,
+                typ: InterpretationType::Calculated});
 
         // non-boolean pre-defined functions
         for s in ["+", "-", "*", "div",
                         "mod", "abs",
                         ] {
             functions.insert(function(s),
-                FunctionObject{signature: None, boolean: Some(false), typ: Calculated});
+                FunctionObject{
+                    signature: None,
+                    boolean: Some(false),
+                    typ: InterpretationType::Calculated});
         }
 
         Solver {
@@ -207,8 +216,8 @@ impl Solver {
                 Command::DefineSort(symb, variables, sort) =>
                     yield_!(define_sort(symb, variables, sort, command, self)),
 
-                Command::XInterpretPred(symbol, tuples) =>
-                    yield_!(interpret_pred(symbol, tuples, command, self)),
+                Command::XInterpretPred(identifier, tuples) =>
+                    yield_!(interpret_pred(identifier, tuples, command, self)),
 
                 Command::XDebug(typ, obj) => {
                     match typ.as_str() {

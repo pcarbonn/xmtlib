@@ -137,4 +137,4 @@ Groundings:
     TU: SELECT Agg_16_TU.G AS G FROM Agg_16_TU
     UF: SELECT Agg_16_UF.G AS G FROM Agg_16_UF
     G : SELECT Agg_16_G.G AS G FROM Agg_16_G
-CREATE VIEW Agg_12_UF AS SELECT or_aggregate(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
+CREATE VIEW Agg_12_UF AS SELECT or_aggregate(G) as G from (SELECT Bool_12.G AS x, apply("r", Bool_12.G) AS G FROM Bool AS Bool_12)

@@ -7,36 +7,37 @@ use indexmap::IndexSet;
 
 use crate::api::{Sort, Symbol, Identifier, QualIdentifier};
 use crate::private::a_sort::instantiate_parent_sort;
+use crate::private::x_query::Ids;
 use crate::{error::SolverError, solver::Solver};
 
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct FunctionObject {
     pub(crate) signature: Option<(Vec<Sort>, Sort)>,  // to check interpretations.  None for pre-defined functions
     pub(crate) boolean: Option<bool>,  // None for `ite` --> need special code
     pub(crate) typ: InterpretationType
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum InterpretationType {
     Calculated,  // function without interpretation table
     // Constructed, // constructor; no table in DB
 
-    // db_name is the sanitized function name (without any suffix)
-    // it is used for the full view
-
-    // FunctionPartial{db_name: String},  // + _K table, _U view
-    // FunctionTotal{db_name: String},
-
-    // PredicatePartialF{db_name: String}, // False default; + _T, _U tables: + _TU, _UF views
-    // PredicatePartialU{db_name: String}, // False default; + _T, _F tables; + _TU, _UF views
-    // PredicatePartialT{db_name: String}, // False default; + _F, _U tables: + _TU, _UF views
-    // PredicateTotal{db_name: String},
+    // NonBoolean{table_G: String, ids: Ids}
+    Boolean{
+        table_tu: String,   // todo: string is empty if table is infinite
+        table_uf: String,
+        table_g: String,
+        ids: Ids    // todo: ids per table ?
+    },
 }
 impl Display for InterpretationType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            InterpretationType::Calculated => write!(f, "calculated")
+            InterpretationType::Calculated =>
+                write!(f, "calculated"),
+            InterpretationType::Boolean { table_g, ids, .. } =>
+                write!(f, "{table_g} {ids}"),
         }
     }
 }

@@ -477,7 +477,7 @@ fn create_table(
         conn: &mut Connection
     ) -> Result<(), SolverError> {
 
-        conn.execute(format!("CREATE TABLE {table_name} (G TEXT)").as_str(), ())?;
+        conn.execute(format!("CREATE TABLE {table_name} (G TEXT PRIMARY KEY)").as_str(), ())?;
 
         let mut stmt = conn.prepare(format!("INSERT INTO {table_name} (G) VALUES (?)").as_str())?;
         for value in values {

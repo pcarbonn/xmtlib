@@ -4,7 +4,7 @@ use std::future::Future;
 
 use genawaiter::{sync::Gen, sync::gen, yield_};
 use indexmap::IndexMap;
-use itertools::Either::Right;
+use itertools::Either::{Right, Left};
 use rusqlite::Connection;
 
 use crate::api::{Identifier, QualIdentifier, SortedVar, Term};
@@ -153,7 +153,7 @@ pub(crate) fn ground_term_(
                 let g = GroundingQuery{
                     variables: IndexMap::from([(symbol.clone(), column.clone())]),
                     conditions: vec![],
-                    grounding: SQLExpr::Value(column),
+                    grounding: SQLExpr::Variable(symbol.clone()),
                     natural_joins: IndexMap::from([(table_name, vec![])]),
                     theta_joins: vec![],
                     ids: Ids::All,
@@ -174,12 +174,12 @@ pub(crate) fn ground_term_(
         Term::Identifier(qual_identifier) => {
 
             // an identifier
-            ground_compound(qual_identifier, &mut vec![], solver)
+            ground_compound(qual_identifier, &mut vec![], index, solver)
         },
         Term::Application(qual_identifier, sub_terms) => {
 
             // a compound term
-            ground_compound(qual_identifier, sub_terms, solver)
+            ground_compound(qual_identifier, sub_terms, index, solver)
         },
         Term::Let(..) => todo!(),
         Term::Forall(variables, term, Some(interpreted_vars)) => {
@@ -197,6 +197,7 @@ pub(crate) fn ground_term_(
                     }
 
                     let table_name = format!("Agg_{index}");
+
                     let tu = query_for_aggregate(
                         &sub_g,
                         &free_variables,
@@ -205,6 +206,7 @@ pub(crate) fn ground_term_(
                         "false",
                         TableName{base_table: table_name.clone() + "_TU", index: 0},
                         solver)?;
+
                     let uf = query_for_aggregate(
                         &sub_uf,
                         &free_variables,
@@ -213,6 +215,7 @@ pub(crate) fn ground_term_(
                         "",
                         TableName{base_table: table_name.clone() + "_UF", index: 0},
                         solver)?;
+
                     let g = query_for_aggregate(
                         &sub_g,
                         &free_variables,
@@ -229,7 +232,7 @@ pub(crate) fn ground_term_(
             match ground_term(term, false, solver)? {
                 Grounding::NonBoolean(_) =>
                     Err(InternalError(42578548)),
-                Grounding::Boolean { tu: _, uf: sub_uf, g: sub_g } => {
+                Grounding::Boolean { tu: sub_tu, uf: _, g: sub_g } => {
 
                     let mut free_variables = sub_g.variables.clone();
                     for SortedVar(symbol, _) in variables {
@@ -241,21 +244,23 @@ pub(crate) fn ground_term_(
 
                     let table_name = format!("Agg_{index}");
                     let tu = query_for_aggregate(
-                        &sub_g,
+                        &sub_tu,
                         &free_variables,
                         &variables,
                         "or",
                         "",
                         TableName{base_table: table_name.clone() + "_TU", index: 0},
                         solver)?;
+
                     let uf = query_for_aggregate(
-                        &sub_uf,
+                        &sub_g,
                         &free_variables,
                         &variables,
                         "or",
                         "true",
                         TableName{base_table: table_name.clone() + "_UF", index: 0},
                         solver)?;
+
                     let g = query_for_aggregate(
                         &sub_g,
                         &free_variables,
@@ -279,6 +284,7 @@ pub(crate) fn ground_term_(
 fn ground_compound(
     qual_identifier: &QualIdentifier,
     sub_terms: &Vec<Term>,
+    index: usize,
     solver: &mut Solver
 ) -> Result<Grounding, SolverError> {
 
@@ -362,7 +368,7 @@ fn ground_compound(
                             _ => {
 
                                 // custom boolean function with simple name
-                                ground_boolean_compound(qual_identifier, groundings, &mut gqs, &typ)
+                                ground_boolean_compound(qual_identifier, groundings, &mut gqs, &typ, index)
                             }
                         }
                     },
@@ -370,17 +376,18 @@ fn ground_compound(
                     | QualIdentifier::Sorted(_, _) => {
 
                         // custom boolean function with complex identifier
-                        ground_boolean_compound(qual_identifier, groundings, &mut gqs, &typ)
+                        ground_boolean_compound(qual_identifier, groundings, &mut gqs, &typ, index)
                     },
                 }
 
-            } else {
+            } else {  // not boolean
 
                 // custom non-boolean function
                 let variant =
                     match typ {
                         InterpretationType::Calculated => Right("apply".to_string()),
                         // todo : Constructed
+                        InterpretationType::Boolean {..} => return Err(InternalError(25963955))
                     };
                 let grounding_query = query_for_compound(qual_identifier, &mut gqs, &variant)?;
                 Ok(Grounding::NonBoolean(grounding_query))
@@ -427,22 +434,36 @@ fn ground_boolean_compound(
     qual_identifier: &QualIdentifier,
     groundings: Vec<Grounding>,
     gqs: &mut Vec<GroundingQuery>,
-    typ: &InterpretationType
+    typ: &InterpretationType,
+    index: usize
 ) -> Result<Grounding, SolverError> {
     // custom boolean function
+    let (mut tus, mut ufs) = collect_tu_uf(groundings);
     match typ {
         InterpretationType::Calculated => {
-            let (mut tus, mut ufs) = collect_tu_uf(groundings);
             let variant = Right("apply".to_string());
 
-            let g = query_for_compound(qual_identifier, gqs, &variant)?;
-
+            let  g = query_for_compound(qual_identifier, gqs, &variant)?;
             let tu = query_for_compound(qual_identifier, &mut tus, &variant)?;
-
             let uf = query_for_compound(qual_identifier, &mut ufs, &variant)?;
 
             Ok(Grounding::Boolean{tu, uf, g})
         },
+        InterpretationType::Boolean { table_tu, table_uf, table_g, ids } => {
+            let table_name = TableName{base_table: table_tu.clone(), index};
+            let variant = Left((table_name, ids.clone()));
+            let tu = query_for_compound(qual_identifier, &mut tus, &variant)?;
+
+            let table_name = TableName{base_table: table_uf.clone(), index};
+            let variant = Left((table_name, ids.clone()));
+            let uf = query_for_compound(qual_identifier, &mut ufs, &variant)?;
+
+            let table_name = TableName{base_table: table_g.clone(), index};
+            let variant = Left((table_name, ids.clone()));
+            let g = query_for_compound(qual_identifier, gqs, &variant)?;
+
+            Ok(Grounding::Boolean{tu, uf, g})
+        }
     }
 }
 

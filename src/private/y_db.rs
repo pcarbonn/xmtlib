@@ -66,13 +66,13 @@ pub(crate) fn init_db(
         "and_aggregate",
         1,
         FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,
-        AndState {terms: vec![]})?;
+        AndState(Some(vec![])))?;
 
     conn.create_aggregate_function(
         "or_aggregate",
         1,
         FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,
-        OrState {terms: vec![]})?;
+        OrState(Some(vec![])))?;
 
     Ok(())
 }
@@ -81,36 +81,39 @@ pub(crate) fn init_db(
 //////////////////////////// AND aggregate ////////////////////////////////////
 
 #[derive(Default, Clone)]
-struct AndState {
-    terms: Vec<String>,
-}
+struct AndState ( Option<Vec<String>> );
 
 /// Implement the `Aggregate` trait for `SumSquares`
 impl Aggregate<AndState, String> for AndState {
 
     fn init(&self, _ctx: &mut Context<'_>)  -> Result<AndState> {
-        Ok(AndState{terms: vec![]})
+        Ok(AndState(Some(vec![])))
     }
     /// Called for each row in the query
     fn step(&self, ctx: &mut Context<'_>, acc: &mut AndState) -> rusqlite::Result<()> {
-        // todo: simplify ?
         let value: String = ctx.get(0)?;
-        acc.terms.push(value);
+        if let AndState(Some(terms)) = acc { // if not false already
+            if value == "false" {
+                *acc = AndState(None)
+            } else if value != "true" {
+                terms.push(value)
+            };
+        }
         Ok(())
     }
 
     /// Called at the end to return the final result
     fn finalize(&self, _ctx: &mut Context<'_>, acc: Option<AndState>) -> rusqlite::Result<String> {
-        if let Some(acc) = acc {
-            if acc.terms.len() == 0 {
+        if let Some(AndState(Some(terms))) = acc {  // not false
+            if terms.len() == 0 {
                 Ok("true".to_string())
-            } else if acc.terms.len() == 1 {
-                Ok(acc.terms.join(" "))
+            } else if terms.len() == 1 {
+                Ok(terms.join(" "))  // get the first one
             } else {
-                Ok(format!("(and {})", acc.terms.join(" ")))
+                Ok(format!("(and {})", terms.join(" ")))
             }
         } else {
-            Ok("".to_string())
+            Ok("false".to_string())
         }
     }
 }
@@ -119,36 +122,41 @@ impl Aggregate<AndState, String> for AndState {
 //////////////////////////// OR aggregate ////////////////////////////////////
 
 #[derive(Default, Clone)]
-struct OrState {
-    terms: Vec<String>,
-}
+struct OrState ( Option<Vec<String>> );
 
 /// Implement the `Aggregate` trait for `SumSquares`
 impl Aggregate<OrState, String> for OrState {
 
     fn init(&self, _ctx: &mut Context<'_>)  -> Result<OrState> {
-        Ok(OrState{terms: vec![]})
+        Ok(OrState(Some(vec![])))
     }
     /// Called for each row in the query
     fn step(&self, ctx: &mut Context<'_>, acc: &mut OrState) -> rusqlite::Result<()> {
-        // todo: simplify ?
         let value: String = ctx.get(0)?;
-        acc.terms.push(value);
+        if let OrState(Some(terms)) = acc { // if not true already
+            if value == "true" {
+                *acc = OrState(None)
+            } else if value != "false" {
+                terms.push(value)
+            };
+        }
         Ok(())
     }
 
     /// Called at the end to return the final result
     fn finalize(&self, _ctx: &mut Context<'_>, acc: Option<OrState>) -> rusqlite::Result<String> {
-        if let Some(acc) = acc {
-            if acc.terms.len() == 0 {
+        if let Some(OrState(Some(terms))) = acc {  // not true
+            if terms.len() == 0 {
                 Ok("false".to_string())
-            } else if acc.terms.len() == 1 {
-                Ok(acc.terms.join(" "))
+            } else if terms.len() == 1 {
+                Ok(terms.join(" "))
             } else {
-                Ok(format!("(or {})", acc.terms.join(" ")))
+                Ok(format!("(or {})", terms.join(" ")))
             }
         } else {
-            Ok("".to_string())
+            Ok("true".to_string())
         }
     }
 }
+
+// todo isid

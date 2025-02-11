@@ -403,7 +403,7 @@ pub enum Command {
     DefineSort(Symbol, Vec<Symbol>, Sort),
     XDebug(String, String),
     XGround,
-    XInterpretPred(Symbol, Vec<XTuple>),
+    XInterpretPred(Identifier, Vec<XTuple>),
     Verbatim(String),
 }
 impl Display for Command {

@@ -222,7 +222,7 @@ peg::parser!{
 
         rule xtuple() -> XTuple
             = _ "("
-              terms: ( term() ++ __ )
+              terms: ( term() ** __ )
               _ ")"
               { XTuple(terms) }
 
@@ -336,9 +336,9 @@ peg::parser!{
 
         rule xinterpret_pred() -> Command
             = _ "x-interpret-pred"
-              __ symbol: symbol()
-              __ tuples: ( xtuple() ++ __ )
-              { XInterpretPred(symbol, tuples) }
+              __ identifier: identifier()
+              __ tuples: ( xtuple() ** __ )
+              { XInterpretPred(identifier, tuples) }
 
         rule xdebug() -> Command
             = _ "x-debug"

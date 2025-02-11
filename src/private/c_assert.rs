@@ -37,7 +37,7 @@ pub(crate) fn assert_(
 pub(crate) fn annotate_term(
     term: &Term,
     variables: &mut IndexMap<Symbol, Option<SortedVar>>,  // can't use XSortedVar here because it's a term variant
-    //todo add expected_type
+    //todo add expected_type to allow qualification of identifier
     solver: &Solver
 ) -> Result<Term, SolverError> {
 
