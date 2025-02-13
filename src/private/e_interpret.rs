@@ -52,8 +52,8 @@ pub(crate) fn interpret_pred(
     let mut foreign_keys = domain.iter().enumerate()
         .map( |(i, sort)| {
             match solver.sorts.get(sort) {
-                Some(SortObject::Normal{table_name, ..}) =>
-                    Ok(format!("FOREIGN KEY (a_{i}) REFERENCES {table_name}(G)")),
+                Some(SortObject::Normal{table, ..}) =>
+                    Ok(format!("FOREIGN KEY (a_{i}) REFERENCES {table}(G)")),
                 Some(_) => // infinite domain
                     Ok("".to_string()),
                 None =>
@@ -96,8 +96,8 @@ pub(crate) fn interpret_pred(
     let joins = domain.iter().enumerate()
         .map( |(i, sort)| {
             match solver.sorts.get(sort) {
-                Some(SortObject::Normal{table_name, ..}) =>
-                    Ok(format!("{table_name} AS {table_name}_{i}")),
+                Some(SortObject::Normal{table, ..}) =>
+                    Ok(format!("{table} AS {table}_{i}")),
                 Some(_) => // infinite domain
                     Ok("".to_string()),
                 None =>

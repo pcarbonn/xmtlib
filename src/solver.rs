@@ -84,7 +84,7 @@ impl Default for Solver {
                     ConstructorDec (Symbol("false".to_string()),vec![]),
                 ],
                 ),
-            table_name: "Bool".to_string(),
+            table: "Bool".to_string(),
             count: 2};
         sorts.insert(sort("Bool"), bool_decl);
         sorts.insert(sort("Int" ), SortObject::Infinite);
@@ -227,8 +227,8 @@ impl Solver {
                                     yield_!(Ok("Sorts:".to_string()));
                                     for (sort, decl) in &self.sorts {
                                         match decl {
-                                            SortObject::Normal{datatype_dec, table_name, count} =>
-                                                yield_!(Ok(format!(" - ({table_name}: {count}) {sort}: {datatype_dec}"))),
+                                            SortObject::Normal{datatype_dec, table, count} =>
+                                                yield_!(Ok(format!(" - ({table}: {count}) {sort}: {datatype_dec}"))),
                                             SortObject::Recursive =>
                                                 yield_!(Ok(format!(" - (recursive) {sort}"))),
                                             SortObject::Infinite =>

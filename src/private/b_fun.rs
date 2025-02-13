@@ -15,7 +15,7 @@ use crate::{error::SolverError, solver::Solver};
 pub(crate) struct FunctionObject {
     pub(crate) signature: Option<(Vec<Sort>, Sort)>,  // to check interpretations.  None for pre-defined functions
     pub(crate) boolean: Option<bool>,  // None for `ite` --> need special code
-    pub(crate) typ: InterpretationType
+    pub(crate) typ: InterpretationType  // todo: merge FunctionObject and Interpretation type in one enum
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -25,7 +25,7 @@ pub(crate) enum InterpretationType {
 
     // NonBoolean{table_G: String, ids: Ids}
     Boolean{
-        table_tu: String,   // todo: string is empty if table is infinite
+        table_tu: String,   // todo: string is empty if table is infinite, or have a Table type
         table_uf: String,
         table_g: String,
         ids: Ids    // todo: ids per table ?

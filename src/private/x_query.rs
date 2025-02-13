@@ -40,10 +40,10 @@ impl std::fmt::Display for Column {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum SQLExpr {
     Constant(SpecConstant),
+    Boolean(bool),
+    Variable(Symbol),
     Construct(QualIdentifier, Box<Vec<SQLExpr>>),  // constructor
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
-    Variable(Symbol),
-    Boolean(bool),
     // Only in GroundingQuery.groundings
     Value(Column),  // in an interpretation table.
     //  Only in GroundingQuery.conditions
@@ -107,15 +107,15 @@ impl SQLExpr {
                     SpecConstant::String(s) => format!("\"{s}\""),
                 }
             },
+            SQLExpr::Boolean(value) => format!("\"{value}\""),
+            SQLExpr::Variable(symbol) => variables.get(symbol).unwrap().to_string(),
             SQLExpr::Construct(qual_identifier, exprs) => {
                 sql_for("construct2", qual_identifier.to_string(), exprs, variables)
             },
             SQLExpr::Apply(qual_identifier, exprs) => {
                 sql_for("apply", qual_identifier.to_string(), exprs, variables)
             },
-            SQLExpr::Variable(symbol) => variables.get(symbol).unwrap().to_string(),
             SQLExpr::Value(column) => column.to_string(),
-            SQLExpr::Boolean(value) => format!("\"{value}\""),
             SQLExpr::Equality(ids, expr, column) => {
                 let expr = expr.show(variables);
                 match ids {
