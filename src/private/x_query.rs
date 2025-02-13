@@ -303,7 +303,6 @@ pub(crate) fn query_for_compound(
         // handle the special case where an argument is a variable
         if let Some(symbol) = sub_q.is_for_a_variable()? {
             if let Left((table_name, _)) = variant {
-                // todo: check that table name is complete
                 let column = Column{table_name: table_name.clone(), column: format!("a_{i}")};
 
                 //  update the wuery in progress
@@ -389,7 +388,7 @@ pub(crate) fn query_for_aggregate(
     sub_query: &GroundingQuery,
     free_variables: &IndexMap<Symbol, Column>,
     variables: &Vec<SortedVar>,  // variables that are aggregated over infinite sort
-    agg: &str,
+    agg: &str,  // "and", "or" or ""
     _exclude: &str,
     table_name: TableName,
     solver: &mut Solver
@@ -419,20 +418,28 @@ pub(crate) fn query_for_aggregate(
     let vars = variables.iter()
         .map( |sv| sv.to_string() )
         .collect::<Vec<_>>().join(" ");
-    let grounding = if variables.len() == 0 {
+    let grounding =
+        if variables.len() == 0 && agg == "" {
+            format!("G")
+        } else if variables.len() == 0 && agg != ""{
             format!("{agg}_aggregate(G)")
         } else if agg == "and" {
             format!("\"(forall ({vars}) \" || {agg}_aggregate(G) || \")\"")
         } else if agg == "or" {
             format!("\"(exists ({vars}) \" || {agg}_aggregate(G) || \")\"")
-        } else { return Err(InternalError(396945456))};
+        } else {
+            format!("\"(exists ({vars}) \" || G || \")\"")
+        };
 
     let group_by = free_variables.iter()
         .map( |(_, column)| column.to_string() )
         .collect::<Vec<_>>().join(", ");
-    let group_by = if group_by == "" { group_by } else {
-        format!(" GROUP BY {group_by}")
-    };
+    let group_by =
+        if group_by == "" || agg == "" {
+            "".to_string()
+        } else {
+            format!(" GROUP BY {group_by}")
+        };
 
     let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {free}{grounding} as G from ({sub_view}){group_by}");
     solver.conn.execute(&sql, ())?;

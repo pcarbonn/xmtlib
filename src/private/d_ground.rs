@@ -131,7 +131,7 @@ fn ground_term(
 ///
 pub(crate) fn ground_term_(
     term: &Term,
-    _top_level: bool,
+    top_level: bool,
     solver: &mut Solver
 ) -> Result<Grounding, SolverError> {
 
@@ -211,7 +211,7 @@ pub(crate) fn ground_term_(
                         &sub_uf,
                         &free_variables,
                         &variables,
-                        "and",
+                        if top_level { "" } else { "and" },
                         "",
                         TableName{base_table: table_name.clone() + "_UF", index: 0},
                         solver)?;

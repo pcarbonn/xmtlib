@@ -32,7 +32,7 @@
 (push)
 (assert (forall ((x Int)) true))
 (pop)
-(assert (forall ((x Int)) true))
+(assert (exists ((x Int)) true))
 (push)
 (assert (exists ((x Int)) true))
 (pop)
@@ -48,7 +48,8 @@
 (push)
 (assert (forall ((x Color)) (p x)))
 (pop)
-(assert (and (p red) (p green)))
+(assert (p red))
+(assert (p green))
 (push)
 (assert (exists ((x Color)) (p x)))
 (pop)
@@ -56,7 +57,7 @@
 (push)
 (assert (forall ((x Int)) (q x)))
 (pop)
-(assert (forall ((x Int)) (q x)))
+(assert (exists ((x Int)) (q x)))
 (push)
 (assert (not (exists ((x Bool)) (r x))))
 (pop)
@@ -64,7 +65,8 @@
 (push)
 (assert (forall ((x Bool)) (=> (and (r x) (r x)) false)))
 (pop)
-(assert (and (or (not (r true)) false) (or (not (r false)) false)))
+(assert (or (not (r true)) false))
+(assert (or (not (r false)) false))
 Groundings:
  - true:
     TU: SELECT "true" AS G
