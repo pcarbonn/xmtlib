@@ -189,7 +189,7 @@ impl Solver {
         c: Command
     ) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {
         gen!({
-            let command = format!("{}", c);
+            let command = c.to_string();
             match c {
 
                 Command::Assert(term) =>
@@ -264,7 +264,7 @@ impl Solver {
                                         let signature = match signature {
                                             Some((domain, co_domain)) => {
                                                 let domain = domain.iter()
-                                                    .map(|s| format!("{s}"))
+                                                    .map(|s| s.to_string())
                                                     .collect::<Vec<_>>().join(" * ");
                                                 format!("{domain} -> {co_domain}")
                                             },

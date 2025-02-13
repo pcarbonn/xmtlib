@@ -114,7 +114,7 @@ impl SQLExpr {
                 sql_for("apply", qual_identifier.to_string(), exprs, variables)
             },
             SQLExpr::Variable(symbol) => variables.get(symbol).unwrap().to_string(),
-            SQLExpr::Value(column) => format!("{column}"),
+            SQLExpr::Value(column) => column.to_string(),
             SQLExpr::Boolean(value) => format!("\"{value}\""),
             SQLExpr::Equality(ids, expr, column) => {
                 let expr = expr.show(variables);
@@ -156,7 +156,7 @@ pub(crate) struct GroundingQuery {
     pub(crate) variables: IndexMap<Symbol, Column>,  // maps variables to either a Type table or (better) an Interpretation table
     pub(crate) conditions: Vec<SQLExpr>,  // vector of non-empty SQL expressions
     pub(crate) grounding: SQLExpr,
-    pub(crate) natural_joins: IndexMap<TableName, Option<Symbol>>, // indexed table name -> variable if variable view.
+    pub(crate) natural_joins: IndexMap<TableName, Either<Symbol, Vec<Symbol>>>, // indexed table name -> the table is either for one variable, or an aggregate term.
     pub(crate) theta_joins: Vec<(TableName, Vec<(Ids, SQLExpr, Column)>)>, // indexed table name + mapping of (gated) expressions to value column
 
     pub(crate) ids: Ids,  // if the groundings are all Ids
@@ -199,21 +199,23 @@ impl std::fmt::Display for GroundingQuery {
         let naturals = self.natural_joins.iter()
             .map(|(table_name, on)| {
                 let name = if table_name.index == 0 {
-                        format!("{}", table_name.base_table)
+                        table_name.base_table.to_string()
                     } else {
                         format!("{} AS {table_name}", table_name.base_table)
                     };
-
-                if let Some(symbol) = on {
-                    let column = self.variables.get(symbol).unwrap();
-                    let this_column = Column{table_name: table_name.clone(), column: "G".to_string()};
-                    if this_column != *column {
-                        format!("{name} ON {this_column} = {column}")
-                    } else {
+                match on {
+                    Left(_) => {  // a variable table is never naturally joined
                         name
+                    },
+                    Right(symbols) => {
+                        let on = symbols.iter()
+                            .map( | symbol | {
+                                let column = self.variables.get(symbol).unwrap();
+                                let this_column = Column{table_name: table_name.clone(), column: symbol.to_string()};
+                                format!(" {this_column} = {column}")
+                            }).collect::<Vec<_>>().join(" AND ");
+                        if on == "" { name  } else { format!("{name} ON {on}")}
                     }
-                } else {
-                    name
                 }
             })
             .collect::<Vec<_>>();
@@ -222,22 +224,21 @@ impl std::fmt::Display for GroundingQuery {
         let thetas = self.theta_joins.iter()
             .map( | (table_name, mapping) | {
                 let on = mapping.iter()
-                    .map( | (ids, e, col) | {
+                    .filter_map( | (ids, e, col) | {
                         let value = e.show(&self.variables);
                         if col.to_string() == value {
-                            "".to_string()
+                            None
                         } else {
                             match ids {
                                 Ids::All =>
-                                    format!("{value} = {col}"),
+                                    Some(format!("{value} = {col}")),
                                 Ids::Some =>
-                                    format!("(NOT(is_id({value})) OR {value} = {col})"),
+                                    Some(format!("(NOT(is_id({value})) OR {value} = {col})")),
                                 Ids::None =>
-                                    "".to_string()
+                                    None
                             }
                         }
-                    }).filter( |s| s != "" )
-                    .collect::<Vec<_>>().join(" AND ");
+                    }).collect::<Vec<_>>().join(" AND ");
                 let on = if on == "" { on } else { format!(" ON {on}")};
 
                 format!("{} AS {table_name}{on}", table_name.base_table)
@@ -311,7 +312,7 @@ pub(crate) fn query_for_compound(
     let mut variables: IndexMap<Symbol, Column> = IndexMap::new();
     let mut conditions= vec![];
     let mut groundings = vec![];
-    let mut natural_joins: IndexMap<TableName, Option<Symbol>> = IndexMap::new();
+    let mut natural_joins: IndexMap<TableName, Either<Symbol, Vec<Symbol>>> = IndexMap::new();
     let mut theta_joins = vec![];
     let mut thetas = vec![];
     let mut ids: Ids = Ids::All;
@@ -367,18 +368,15 @@ pub(crate) fn query_for_compound(
 
     };
 
-    // remove natural_joins that are not used in variables
+    // remove natural_joins of types that are not used in variables
     let natural_joins = natural_joins.into_iter()
-        .filter_map( |(table_name, symbol)| {
-            if let Some(symbol) = symbol {
-                let column = variables.get(&symbol).unwrap();
-                if column.table_name == table_name {
-                    Some((table_name, Some(symbol)))
-                } else {
-                    None
-                }
-            } else {
-                None
+        .filter( |(table_name, symbols)| {
+            match symbols {
+                Left(ref symbol) => {
+                    let column = variables.get(symbol).unwrap();
+                    column.table_name == *table_name // otherwise, unused variable
+                },
+                Right(_) => true
             }
         }).collect();
 
@@ -479,10 +477,12 @@ pub(crate) fn query_for_aggregate(
     // select {free_variables}, {table_name}.G from {table_name}
     let select = free_variables.iter()
         .map( |(symbol, _)|
-            (symbol.clone(), Column{table_name: table_name.clone(), column: format!("{symbol}")}))
+            (symbol.clone(), Column{table_name: table_name.clone(), column: symbol.to_string()}))
         .collect::<IndexMap<Symbol, Column>>();
 
-    let natural_joins = IndexMap::from([(table_name.clone(), None)]);
+    let natural_joins = IndexMap::from([
+        (table_name.clone(), Right(free_variables.keys().cloned().collect()))
+    ]);
 
     Ok(GroundingQuery{
         variables: select,

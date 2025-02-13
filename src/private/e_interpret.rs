@@ -73,7 +73,7 @@ pub(crate) fn interpret_pred(
     let mut stmt = solver.conn.prepare(&stmt)?;
     for XTuple(tuple) in &tuples {
         if tuple.len() == domain.len() {
-            let tuples_t = tuple.iter().map(|t| format!("{t}"));  //todo: construct !
+            let tuples_t = tuple.iter().map(|t| t.to_string() );  //todo: construct !
             stmt.execute(params_from_iter(tuples_t))?;
         } else {
             return Err(SolverError::ExprError("Incorrect tuple length".to_string(), None))

@@ -60,7 +60,7 @@ pub(crate) fn ground(
                         Grounding::NonBoolean(_) => yield_!(Err(InternalError(4852956))),
                         Grounding::Boolean{uf, ..} => {
                             // execute the UF query
-                            let query = format!("{uf}");
+                            let query = uf.to_string();
                             match execute_query(query, &mut solver.conn) {
                                 Ok(asserts) => {
                                     for assert in asserts {
@@ -147,14 +147,14 @@ pub(crate) fn ground_term_(
 
             // a variable
             if let Some(sort) = sort {  // finite domain
-                let base_table = format!("{sort}");
+                let base_table = sort.to_string();
                 let table_name = TableName{base_table: base_table.clone(), index};
                 let column = Column{table_name: table_name.clone(), column: "G".to_string()};
                 let g = GroundingQuery{
                     variables: IndexMap::from([(symbol.clone(), column.clone())]),
                     conditions: vec![],
                     grounding: SQLExpr::Variable(symbol.clone()),
-                    natural_joins: IndexMap::from([(table_name, Some(symbol.clone()))]),
+                    natural_joins: IndexMap::from([(table_name, Left(symbol.clone()))]),
                     theta_joins: vec![],
                     ids: Ids::All,
                 };

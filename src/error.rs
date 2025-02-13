@@ -41,7 +41,7 @@ pub fn format_error(input: &str, e: SolverError) -> String {
         ExprError(msg, offset) =>
             if let Some(offset_) = offset {
                 match offset_to_line_col_utf8(&input, offset_) {
-                    None => format!("{}", msg),
+                    None => msg,
                     Some(location) =>
                         pretty_print(input, location, msg)
                 }
