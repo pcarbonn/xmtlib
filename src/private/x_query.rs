@@ -417,7 +417,7 @@ pub(crate) fn query_for_aggregate(
     free_variables: &IndexMap<Symbol, Column>,
     variables: &Vec<SortedVar>,  // variables that are aggregated over infinite sort
     agg: &str,  // "and", "or" or ""
-    _exclude: &str,
+    exclude: &str, // "true" or "false"
     table_name: TableName,
     solver: &mut Solver
 ) -> Result<GroundingQuery, SolverError> {
@@ -469,7 +469,10 @@ pub(crate) fn query_for_aggregate(
             format!(" GROUP BY {group_by}")
         };
 
-    let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {free}{grounding} as G from ({sub_view}){group_by}");
+    let mut sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {free}{grounding} as G from ({sub_view}){group_by}");
+    if exclude != "" {
+        sql = sql + format!(" HAVING {grounding} <> {exclude}").as_str()
+    }
     solver.conn.execute(&sql, ())?;
 
     // construct the GroundingQuery
@@ -481,7 +484,6 @@ pub(crate) fn query_for_aggregate(
 
     let natural_joins = IndexMap::from([(table_name.clone(), None)]);
 
-    //todo add exclude
     Ok(GroundingQuery{
         variables: select,
         conditions: vec![],

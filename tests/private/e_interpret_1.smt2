@@ -65,7 +65,7 @@ Functions:
 (assert (exists ((x Color)) (same x x)))
 (pop)
 (assert true)
-CREATE VIEW Agg_0_UF AS SELECT or_aggregate(G) as G from (SELECT bright_G.a_0 AS x, bright_G.G AS G FROM bright_G AS bright_G)
+CREATE VIEW Agg_0_UF AS SELECT or_aggregate(G) as G from (SELECT bright_G.a_0 AS x, bright_G.G AS G FROM bright_G AS bright_G) HAVING or_aggregate(G) <> true
 Groundings:
  - x: SELECT Color.G AS x, Color.G AS G FROM Color
  - (bright x):
