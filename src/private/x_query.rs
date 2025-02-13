@@ -43,6 +43,7 @@ pub(crate) enum SQLExpr {
     Construct(QualIdentifier, Box<Vec<SQLExpr>>),  // constructor
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
     Variable(Symbol),
+    Boolean(bool),
     // Only in GroundingQuery.groundings
     Value(Column),  // in an interpretation table.
     //  Only in GroundingQuery.conditions
@@ -60,20 +61,39 @@ impl SQLExpr {
             /// See description of these functions in y_db module.
             ///
             /// Arguments:
-            /// * function: either "apply" or "construct2"
+            /// * application: either "apply" or "construct2"
             fn sql_for(
-                function: &str,
-                qual_identifier: &QualIdentifier,
+                application: &str,
+                function: String,
                 exprs: &Box<Vec<SQLExpr>>,
                 variables: &IndexMap<Symbol, Column>
             ) -> String {
-                if exprs.len() == 0 {
-                    format!("\"{qual_identifier}\"")
+                if ["and", "or"].contains(&function.as_str()) {
+                    let exprs =
+                        exprs.iter().cloned().filter_map( |e| {  // try to simplify
+                            match e {
+                                SQLExpr::Boolean(b) => {
+                                    if function == "and" && b { None }
+                                    else if function == "or" && !b { None }
+                                    else { Some(e.show(variables)) }
+                                },
+                                _ => Some(e.show(variables))
+                            }
+                        }).collect::<Vec<_>>();
+                    if exprs.len() == 0 {
+                        if function == "and" { "\"true\"".to_string() } else { "\"false\"".to_string()}
+                    } else if exprs.len() == 1 {
+                        exprs.first().unwrap().to_string()
+                    } else {
+                        format!("{application}(\"{function}\", {})", exprs.join(", "))
+                    }
+                } else if exprs.len() == 0 {
+                    format!("\"{function}\"")
                 } else {
                     let terms = exprs.iter()
                         .map(|e| e.show(variables))
                         .collect::<Vec<_>>().join(", ");
-                    format!("{function}(\"{qual_identifier}\", {})", terms)
+                    format!("{application}(\"{function}\", {})", terms)
                 }
             }  // end helper
 
@@ -88,13 +108,14 @@ impl SQLExpr {
                 }
             },
             SQLExpr::Construct(qual_identifier, exprs) => {
-                sql_for("construct2", qual_identifier, exprs, variables)
+                sql_for("construct2", qual_identifier.to_string(), exprs, variables)
             },
             SQLExpr::Apply(qual_identifier, exprs) => {
-                sql_for("apply", qual_identifier, exprs, variables)
+                sql_for("apply", qual_identifier.to_string(), exprs, variables)
             },
             SQLExpr::Variable(symbol) => variables.get(symbol).unwrap().to_string(),
             SQLExpr::Value(column) => format!("{column}"),
+            SQLExpr::Boolean(value) => format!("\"{value}\""),
             SQLExpr::Equality(ids, expr, column) => {
                 let expr = expr.show(variables);
                 match ids {
@@ -135,7 +156,7 @@ pub(crate) struct GroundingQuery {
     pub(crate) variables: IndexMap<Symbol, Column>,  // maps variables to either a Type table or (better) an Interpretation table
     pub(crate) conditions: Vec<SQLExpr>,  // vector of non-empty SQL expressions
     pub(crate) grounding: SQLExpr,
-    pub(crate) natural_joins: IndexMap<TableName, Vec<Symbol>>, // indexed table name -> list of its variables.
+    pub(crate) natural_joins: IndexMap<TableName, Option<Symbol>>, // indexed table name -> variable if variable view.
     pub(crate) theta_joins: Vec<(TableName, Vec<(Ids, SQLExpr, Column)>)>, // indexed table name + mapping of (gated) expressions to value column
 
     pub(crate) ids: Ids,  // if the groundings are all Ids
@@ -182,21 +203,18 @@ impl std::fmt::Display for GroundingQuery {
                     } else {
                         format!("{} AS {table_name}", table_name.base_table)
                     };
-                let on = on.iter()
-                    .map( | symbol | {
-                        let column = self.variables.get(symbol).unwrap();
-                        let this_column = Column{table_name: table_name.clone(), column: symbol.to_string()};
-                        if this_column == *column {
-                            "".to_string()
-                        } else {
-                            format!(" {this_column} = {column}")
-                        }
-                    })
-                    .filter( |cond| cond != "" )
-                    .collect::<Vec<_>>().join(" AND ");
-                let on = if on == "" { on } else { format!(" ON {on}")};
 
-                format!("{name}{on}")
+                if let Some(symbol) = on {
+                    let column = self.variables.get(symbol).unwrap();
+                    let this_column = Column{table_name: table_name.clone(), column: "G".to_string()};
+                    if this_column != *column {
+                        format!("{name} ON {this_column} = {column}")
+                    } else {
+                        name
+                    }
+                } else {
+                    name
+                }
             })
             .collect::<Vec<_>>();
 
@@ -293,7 +311,7 @@ pub(crate) fn query_for_compound(
     let mut variables: IndexMap<Symbol, Column> = IndexMap::new();
     let mut conditions= vec![];
     let mut groundings = vec![];
-    let mut natural_joins: IndexMap<TableName, Vec<Symbol>> = IndexMap::new();
+    let mut natural_joins: IndexMap<TableName, Option<Symbol>> = IndexMap::new();
     let mut theta_joins = vec![];
     let mut thetas = vec![];
     let mut ids: Ids = Ids::All;
@@ -330,12 +348,7 @@ pub(crate) fn query_for_compound(
                 None => {
                     variables.insert(symbol.clone(), column.clone());
                 },
-                Some(old_column) => {
-                    if natural_joins.contains_key(&old_column.table_name)
-                    && ! sub_q.natural_joins.contains_key(&column.table_name) {
-                        variables.insert(symbol.clone(), column.clone());
-                    }
-                }
+                Some(_) => { }
             }
         }
 
@@ -353,6 +366,21 @@ pub(crate) fn query_for_compound(
         }
 
     };
+
+    // remove natural_joins that are not used in variables
+    let natural_joins = natural_joins.into_iter()
+        .filter_map( |(table_name, symbol)| {
+            if let Some(symbol) = symbol {
+                let column = variables.get(&symbol).unwrap();
+                if column.table_name == table_name {
+                    Some((table_name, Some(symbol)))
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        }).collect();
 
     let grounding =
         match variant {
@@ -451,7 +479,7 @@ pub(crate) fn query_for_aggregate(
             (symbol.clone(), Column{table_name: table_name.clone(), column: format!("{symbol}")}))
         .collect::<IndexMap<Symbol, Column>>();
 
-    let natural_joins = IndexMap::from([(table_name.clone(), free_variables.keys().cloned().collect())]);
+    let natural_joins = IndexMap::from([(table_name.clone(), None)]);
 
     //todo add exclude
     Ok(GroundingQuery{

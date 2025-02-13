@@ -154,7 +154,7 @@ pub(crate) fn ground_term_(
                     variables: IndexMap::from([(symbol.clone(), column.clone())]),
                     conditions: vec![],
                     grounding: SQLExpr::Variable(symbol.clone()),
-                    natural_joins: IndexMap::from([(table_name, vec![])]),
+                    natural_joins: IndexMap::from([(table_name, Some(symbol.clone()))]),
                     theta_joins: vec![],
                     ids: Ids::All,
                 };
@@ -349,8 +349,18 @@ fn ground_compound(
                                 match groundings.get(0) {
                                     Some(Grounding::Boolean { tu, uf, g }) => {
                                         let (mut tu, mut uf, mut g) = (tu.clone(), uf.clone(), g.clone());
-                                        tu.grounding = SQLExpr::Apply(qual_identifier.clone(), Box::new(vec![tu.grounding]));
-                                        uf.grounding = SQLExpr::Apply(qual_identifier.clone(), Box::new(vec![uf.grounding]));
+                                        tu.grounding =
+                                            if tu.ids == Ids::All {
+                                                SQLExpr::Boolean(false)
+                                            } else {
+                                                SQLExpr::Apply(qual_identifier.clone(), Box::new(vec![tu.grounding]))
+                                            };
+                                        uf.grounding =
+                                            if uf.ids == Ids::All {
+                                                SQLExpr::Boolean(true)
+                                            } else {
+                                                SQLExpr::Apply(qual_identifier.clone(), Box::new(vec![uf.grounding]))
+                                            };
                                          g.grounding = SQLExpr::Apply(qual_identifier.clone(), Box::new(vec![ g.grounding]));
                                         Ok(Grounding::Boolean{tu: uf, uf: tu, g})
                                     },
