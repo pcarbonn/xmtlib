@@ -264,7 +264,7 @@ peg::parser!{
             { DatatypeDec::Par(v, c) }
 
             / _ "("
-              c:( constructor_dec() ++ __ )
+              c:( constructor_dec() ** _ )
               _ ")"
             { DatatypeDec::DatatypeDec(c) }
 
@@ -337,7 +337,7 @@ peg::parser!{
         rule xinterpret_pred() -> Command
             = _ "x-interpret-pred"
               __ identifier: identifier()
-              __ tuples: ( xtuple() ** __ )
+              _ tuples: ( xtuple() ** _ )
               { XInterpretPred(identifier, tuples) }
 
         rule xdebug() -> Command
