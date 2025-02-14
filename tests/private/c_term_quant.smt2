@@ -1,3 +1,4 @@
+(set-option :backend none)
 (assert (forall ((x Int)) true))
 (assert (exists ((x Int)) true))
 (declare-datatype Color ( ( red ) ( green ) ))
@@ -16,6 +17,7 @@
 (x-debug solver groundings)
 (x-debug db-view Agg_12_UF)
 -------------------------
+
 
 
 (declare-datatype Color ((red ) (green )))

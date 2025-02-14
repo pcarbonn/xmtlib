@@ -13,16 +13,17 @@
 (x-ground)
 ;(x-debug db-view Agg_0_UF)
 (x-debug solver groundings)
+(check-sat)
 -------------------------
-(declare-datatype Node ((|1| ) (|2| ) (|3| )))
-(declare-fun Edge (Node Node) Bool)
-(declare-fun phi (Node Node Node) Bool)
+
+
+
 (x-interpret-pred Edge (|1| |2|) (|2| |3|) (|1| |3|))
 
-(push)
-(assert (forall ((x Node) (y Node) (z Node)) (=> (and (Edge x y) (Edge y z) (Edge x z)) (phi x y z))))
-(pop)
-(assert (phi |1| |2| |3|))
+
+
+
+
 Groundings:
  - x: SELECT Node.G AS x, Node.G AS G FROM Node
  - y: SELECT Node_1.G AS y, Node_1.G AS G FROM Node AS Node_1
@@ -63,3 +64,4 @@ Groundings:
     TU: SELECT Agg_0_TU.G AS G FROM Agg_0_TU
     UF: SELECT Agg_0_UF.G AS G FROM Agg_0_UF
     G : SELECT Agg_0_G.G AS G FROM Agg_0_G
+sat

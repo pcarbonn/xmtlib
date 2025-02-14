@@ -58,11 +58,10 @@ mod tests {
             .build();
         let _ = WriteLogger::init(LevelFilter::Trace, config, File::create("xmtlib.log").unwrap());
 
-        tester( "
-            (declare-datatype Color ( ( red ) ( green ) ( blue ) ))
+        tester( "(assert false)
             (check-sat)",
 
-        "(declare-datatype Color ((red ) (green ) (blue )))\nsat"
+        "\n\n\n\n\nunsat\n"
         );
     }
 }

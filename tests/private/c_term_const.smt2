@@ -1,3 +1,4 @@
+(set-option :backend none)
 (assert true)
 (declare-const p Bool)
 (declare-const c Int)
@@ -11,6 +12,7 @@
 (x-ground)
 (x-debug solver groundings)
 -------------------------
+
 
 (declare-const p Bool)
 (declare-const c Int)

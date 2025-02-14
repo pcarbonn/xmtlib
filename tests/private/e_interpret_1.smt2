@@ -1,3 +1,4 @@
+(set-option :backend none)
 ; arity 1
 (declare-datatype Color ( ( red ) ( green ) ))
 (declare-fun bright (Color) Bool)
@@ -14,6 +15,7 @@
 (x-debug db-view Agg_0_UF)
 (x-debug solver groundings)
 -------------------------
+
 (declare-datatype Color ((red ) (green )))
 (declare-fun bright (Color) Bool)
 (x-interpret-pred bright (red))

@@ -1,3 +1,11 @@
+(set-option :backend none)
+(assert false)
 (check-sat)
 -------------------------
-sat
+
+
+(push)
+(assert false)
+(pop)
+(assert false)
+(check-sat)

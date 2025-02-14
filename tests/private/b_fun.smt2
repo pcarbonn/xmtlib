@@ -1,3 +1,4 @@
+(set-option :backend none)
 (declare-datatype Color ( ( red ) ( green ) ))
 (declare-datatype Pair (par (X) ((pair (first X) (second X)))))
 (declare-fun bright (Color) Bool)
@@ -7,6 +8,7 @@
 (x-debug solver sorts)
 (x-debug solver functions)
 -------------------------
+
 (declare-datatype Color ((red ) (green )))
 (declare-datatype Pair (par (X) ((pair (first X) (second X)))))
 (declare-fun bright (Color) Bool)

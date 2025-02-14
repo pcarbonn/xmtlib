@@ -1,4 +1,5 @@
 ; declare-datatype
+(set-option :backend none)
 (declare-datatype Color ( ( red ) ( green ) ))
 (declare-datatype Pair (par (X Y) ( ( white ) (pair (first X) (second Y)))))
 (declare-datatype P ( (p (x (Pair Color Color)))))
@@ -16,6 +17,7 @@
 (x-debug db Q)
 (check-sat)
 -------------------------
+
 (declare-datatype Color ((red ) (green )))
 (declare-datatype Pair (par (X Y) ((white ) (pair (first X) (second Y)))))
 (declare-datatype P ((p (x (Pair Color Color)))))
@@ -86,4 +88,4 @@ Sorts:
 ├─────────────┼────────────────────────────────────────────────┼─────────────────────────────────────────────────────┤
 │ "q"         │ " (triplet  (pair red white))"                 │ " (q  (triplet  (pair red white)))"                 │
 └─────────────┴────────────────────────────────────────────────┴─────────────────────────────────────────────────────┘
-sat
+(check-sat)

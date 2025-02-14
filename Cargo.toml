@@ -14,7 +14,7 @@ categories = ["mathematics", "science"]
 
 [dependencies]
 chic = "1.2.2"
-clap = { version = "4.5.28", features = ["derive"] }
+clap = { version = "4.5.29", features = ["derive"] }
 debug_print = "1.0.0"
 genawaiter = "0.99.1"
 indexmap = "2.7.1"
@@ -24,3 +24,4 @@ pretty-sqlite = "0.0.3"
 rusqlite = { version = "0.33.0", features = ["bundled", "functions"] }
 simplelog = "0.12.2"
 thiserror = "2.0.11"
+z3-sys = "0.8.1"

@@ -5,6 +5,7 @@ use std::future::Future;
 use genawaiter::{sync::Gen, sync::gen, yield_};
 use indexmap::IndexMap;
 use rusqlite::{Connection, Result};
+use z3_sys::*;
 
 use crate::api::*;
 use crate::error::{format_error, SolverError::{self, InternalError}};
@@ -18,7 +19,8 @@ use crate::private::y_db::init_db;
 
 
 pub enum Backend {
-    NoDriver
+    NoDriver,
+    Z3(Z3_context)
 }
 
 pub(crate) type TermId = usize;
@@ -130,16 +132,23 @@ impl Default for Solver {
                     typ: InterpretationType::Calculated});
         }
 
-        Solver {
-            backend: Backend::NoDriver,
-            conn: conn,
-            parametric_sorts: parametric_sorts,
-            sorts: sorts,
-            functions: functions,
-            // qualified_functions: IndexMap::new(),
-            assertions_to_ground: vec![],
-            groundings: IndexMap::new(),
+        unsafe {
+            let cfg = Z3_mk_config();
+            let ctx = Z3_mk_context(cfg);
+            let backend = Backend::Z3(ctx);
+
+            Solver {
+                backend: backend,
+                conn: conn,
+                parametric_sorts: parametric_sorts,
+                sorts: sorts,
+                functions: functions,
+                // qualified_functions: IndexMap::new(),
+                assertions_to_ground: vec![],
+                groundings: IndexMap::new(),
+            }
         }
+
     }
 }
 
@@ -195,8 +204,17 @@ impl Solver {
                 Command::Assert(term) =>
                     yield_!(assert_(&term, command, self)),
 
-                Command::CheckSat =>
-                    yield_!(Ok("sat".to_string())),  // TODO
+                Command::CheckSat => {
+                    for res in ground(self) {
+                        yield_!(res)
+                    }
+                    match self.exec(&command) {
+                        Ok(res) => yield_!(Ok(res)),
+                        Err(err) => {
+                            yield_!(Err(err));
+                        }
+                    };
+                }
 
                 Command::DeclareConst(symb, sort) =>
                     yield_!(declare_fun(symb, vec![], sort, command, self)),
@@ -218,6 +236,9 @@ impl Solver {
 
                 Command::XInterpretPred(identifier, tuples) =>
                     yield_!(interpret_pred(identifier, tuples, command, self)),
+
+                Command::SetOption(option) =>
+                    yield_!(self.set_option(option, command)),
 
                 Command::XDebug(typ, obj) => {
                     match typ.as_str() {
@@ -333,7 +354,45 @@ impl Solver {
         match self.backend {
             Backend::NoDriver => {
                 return Ok(cmd.to_string())
+            },
+            Backend::Z3(ctx) => {
+                unsafe {
+                    let c_cmd = std::ffi::CString::new(cmd).unwrap();
+                    let response = Z3_eval_smtlib2_string(ctx, c_cmd.as_ptr());
+                    let c_str: &std::ffi::CStr = std::ffi::CStr::from_ptr(response);
+                    let str_slice: &str = c_str.to_str().unwrap();
+                    let result: String = str_slice.to_owned();
+                    return Ok(result)
+                }
             }
+        }
+    }
+
+    pub(crate) fn set_option(&mut self, option: Option_, cmd: String) -> Result<String, SolverError> {
+        match option {
+            Option_::Attribute(Attribute::Keyword(_)) => {
+                self.exec(&cmd)
+            },
+            Option_::Attribute(Attribute::WithValue(keyword, value)) => {
+                match (keyword.0.as_str(), value) {
+                    (":backend", AttributeValue::Symbol(Symbol(value))) => {
+                        match value.as_str() {
+                            "none" => self.backend = Backend::NoDriver,
+                            "z3" => {
+                                unsafe {
+                                    let cfg = Z3_mk_config();
+                                    let ctx = Z3_mk_context(cfg);
+                                    self.backend = Backend::Z3(ctx);
+                                }
+                            },
+                            _ => return Err(SolverError::ExprError("Unknown backend".to_string(), None))
+                        }
+                        Ok("".to_string())
+                    },
+                    _ => self.exec(&cmd)
+                }
+
+            },
         }
     }
 

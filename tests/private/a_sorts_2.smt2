@@ -1,3 +1,4 @@
+(set-option :backend none)
 (declare-datatypes ( (Tree 1) (TreeList 1) ) (
     ; tree
         ( par ( X ) ( ( node ( value X ) ( children ( TreeList X )) )))
@@ -16,6 +17,7 @@
 (x-debug solver sorts)
 (check-sat)
 -------------------------
+
 (declare-datatypes ((Tree 1) (TreeList 1)) ((par (X) ((node (value X) (children (TreeList X))))) (par (Y) ((empty ) (insert (head (Tree Y)) (tail (TreeList Y)))))))
 (declare-datatype TreeInt ((treeint (value (Tree Int)))))
 (declare-sort Pair 2)
@@ -40,4 +42,4 @@ Sorts:
  - (unknown) B
  - (unknown) (Pair A B)
  - (unknown) MyPair
-sat
+(check-sat)

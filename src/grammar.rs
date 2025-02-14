@@ -151,11 +151,11 @@ peg::parser!{
               { AttributeValue::Expr(s_expr) }
 
         rule attribute() -> Attribute
-            = keyword:keyword()
-              { Attribute::Keyword(keyword) }
+            = keyword:keyword() attribute_value:attribute_value()
+            { Attribute::WithValue(keyword, attribute_value)}
 
-            / keyword:keyword() attribute_value:attribute_value()
-              { Attribute::WithValue(keyword, attribute_value)}
+            / keyword:keyword()
+            { Attribute::Keyword(keyword) }
 
         // //////////////////////////// Terms        ////////////////////////////
 
@@ -230,6 +230,11 @@ peg::parser!{
         // //////////////////////////// Logics       ////////////////////////////
         // //////////////////////////// Info flags   ////////////////////////////
         // //////////////////////////// Command Options /////////////////////////
+
+        rule option() -> Option_
+            = attribute: attribute()
+            { Option_::Attribute(attribute) }
+
         // //////////////////////////// Commands     ////////////////////////////
 
         rule sort_dec() -> SortDec
@@ -268,6 +273,10 @@ peg::parser!{
               _ ")"
             { DatatypeDec::DatatypeDec(c) }
 
+        rule set_option() -> Command
+            = _ "set-option" option:option()
+            { SetOption(option) }
+
         rule command() -> Command
             = _ "("
               command:( assert()
@@ -278,6 +287,7 @@ peg::parser!{
                       / declare_fun()
                       / declare_sort()
                       / define_sort()
+                      / set_option()
                       / xinterpret_pred()
                       / xdebug()
                       / xground()
@@ -371,7 +381,6 @@ peg::parser!{
                          / "reset-assertions"
                          / "set-info"
                          / "set-logic"
-                         / "set-option"
                          / "simplify"
                          )
               s: (s_expr() ** __)

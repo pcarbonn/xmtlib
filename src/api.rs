@@ -340,6 +340,22 @@ impl std::fmt::Display for XTuple {
 // //////////////////////////// Logics       ////////////////////////////
 // //////////////////////////// Info flags   ////////////////////////////
 // //////////////////////////// Command Options /////////////////////////
+
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Option_ {
+    /// `<attribute>`
+    Attribute(Attribute),
+}
+impl std::fmt::Display for Option_ {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Attribute(m0) => write!(f, "{}", m0),
+        }
+    }
+}
+
+
 // //////////////////////////// Commands     ////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -401,6 +417,7 @@ pub enum Command {
     DeclareFun(Symbol, Vec<Sort>, Sort),
     DeclareSort(Symbol, Numeral),
     DefineSort(Symbol, Vec<Symbol>, Sort),
+    SetOption(Option_),
     XDebug(String, String),
     XGround,
     XInterpretPred(Identifier, Vec<XTuple>),
@@ -458,7 +475,7 @@ impl Display for Command {
             // Self::ResetAssertions => write!(f, "(reset-assertions)"),
             // Self::SetInfo(m0) => write!(f, "(set-info {})", m0),
             // Self::SetLogic(m0) => write!(f, "(set-logic {})", m0),
-            // Self::SetOption(m0) => write!(f, "(set-option {})", m0),
+            Self::SetOption(m0) => write!(f, "(set-option {})", m0),
             // Self::Simplify(m0) => write!(f, "(simplify {})", m0),
 
             Self::XInterpretPred(s1, s2 ) => write!(f, "(x-interpreted-pred {s1} {})", s2.iter().format(" ")),
