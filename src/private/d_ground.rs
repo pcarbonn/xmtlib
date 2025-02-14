@@ -43,6 +43,9 @@ pub(crate) fn ground(
 ) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {
 
     gen!({
+        // update statistics in DB
+        solver.conn.execute("ANALYZE", []).unwrap();
+
         // extract terms and commands
         let (commands, terms) = solver.assertions_to_ground.iter()
             .map(|(command, term)| (command.clone(), term.clone()))
