@@ -50,7 +50,7 @@ pub(crate) fn declare_fun(
     solver: &mut Solver
 ) -> Result<String, SolverError> {
 
-    let out = solver.exec(&command)?;  // this also validates the declaration
+    let out = solver.backend.exec(&command)?;  // this also validates the declaration
 
     // instantiate the sorts, if needed
     let declaring = IndexSet::new();

@@ -43,6 +43,9 @@ pub(crate) fn ground(
 ) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {
 
     gen!({
+        // update statistics in DB
+        solver.conn.execute("ANALYZE", []).unwrap();
+
         // extract terms and commands
         let (commands, terms) = solver.assertions_to_ground.iter()
             .map(|(command, term)| (command.clone(), term.clone()))
@@ -50,9 +53,9 @@ pub(crate) fn ground(
 
         for (term, command) in terms.iter().zip(commands) {
             // push and pop, to avoid polluting the SMT state
-            yield_!(solver.exec("(push)"));
-            yield_!(solver.exec(&command));
-            yield_!(solver.exec("(pop)"));
+            yield_!(solver.backend.exec("(push)"));
+            yield_!(solver.backend.exec(&command));
+            yield_!(solver.backend.exec("(pop)"));
 
             match ground_term(&term, true, solver) {
                 Ok(g) => {
@@ -64,10 +67,11 @@ pub(crate) fn ground(
                             match execute_query(query, &mut solver.conn) {
                                 Ok(asserts) => {
                                     for assert in asserts {
-                                        yield_!(solver.exec(&assert));
+                                        yield_!(solver.backend.exec(&assert));
                                     }
                                 },
-                                Err(e) => yield_!(Err(e))
+                                Err(e) =>
+                                    yield_!(Err(e))
                             }
                         }
                     }

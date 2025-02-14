@@ -1,67 +1,66 @@
 // Copyright Pierre Carbonnelle, 2025.
 
-pub mod api;
-pub mod error;
-pub mod grammar;
-pub mod solver;
-mod private;
+// cargo run --release
 
-use std::fs;
-use std::path::PathBuf;
+use std::time::Instant;
 
-use clap::Parser;
+use rusqlite::params;
 
-use crate::solver::Solver;
+use xmtlib::solver::Solver;
 
-/// A high-level language for interacting with SMT solvers
-#[derive(Parser)]
-#[command(author, version, about, long_about = None)]
-struct Cli {
-    /// Path to the problem file in XMT-Lib format.
-    file_path: PathBuf,
+fn execute(solver: &mut Solver, commands: &str) -> () {
+    let results = solver.parse_and_execute(&commands);
+    for _result in results {
+        //println!("{}", _result);
+    }
 }
 
-fn main() {
-    let args = Cli::parse();
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let n = 10000+1;
 
-    if args.file_path.exists() {
-        let source = fs::read_to_string(args.file_path).unwrap();
-        let mut solver = Solver::default();
-        let results = solver.parse_and_execute(&source);
-        for result in results {
-            println!("{}", result);
+    let start = Instant::now();
+    let mut solver = Solver::default();
+
+    let nodes = (1..n).map( |i| format!("(|{}|)", i) ).collect::<Vec<String>>().join("");
+
+    execute(&mut solver, format!(r#"
+    (set-option :backend z3)
+    (declare-datatype Node ({nodes}))
+    (declare-fun Edge (Node Node) Bool)
+    (declare-fun phi (Node Node Node) Bool)
+    (x-interpret-pred Edge)"#).as_str());
+
+    let declaration = Instant::now();
+    println!("Declarations: {:?}", declaration.duration_since(start));
+
+    {
+        let mut stmt = solver.conn.prepare("INSERT INTO Edge_T (a_0, a_1) VALUES (?, ?)")?;
+        for i in 1..n {
+            for j in 1..4 {
+                if i+j < n {
+                    stmt.execute(params![format!("|{i}|"), format!("|{}|", i+j)])?;
+                }
+            }
         }
-    } else {
-        eprintln!("Error: File '{:?}' does not exist.", args.file_path);
-        std::process::exit(1);
     }
-}
+    let data_entry = Instant::now();
+    println!("Data entry: {:?}", data_entry.duration_since(declaration));
 
+    let source = r#"
+(assert (forall ((x Node) (y Node) (z Node))
+            (=> (and (Edge x y) (Edge y z) (Edge x z))
+                     (phi x y z)
+            )))
+(x-ground)
+    "#;
+    execute(&mut solver, source);
+    let grounding = Instant::now();
+    println!("Grounding: {:?}", grounding.duration_since(data_entry));
 
-#[cfg(test)]
-mod tests {
-    use std::fs::File;
+    execute(&mut solver, "(check-sat)");
+    let solving = Instant::now();
+    println!("Solving: {:?}", solving.duration_since(grounding));
+    println!("Total: {:?}", solving.duration_since(start));
 
-    use simplelog::*;
-    use crate::solver::Solver;
-
-    fn tester(source: &str, output: &str) {
-        let mut solver = Solver::default();
-        let results = solver.parse_and_execute(source);
-        assert_eq!(results.into_iter().collect::<Vec<_>>().join("\n"), output);
-    }
-
-    #[test]
-    fn sandbox() {
-        let config = ConfigBuilder::new()
-            .set_time_level(LevelFilter::Off)
-            .build();
-        let _ = WriteLogger::init(LevelFilter::Trace, config, File::create("xmtlib.log").unwrap());
-
-        tester( "(assert false)
-            (check-sat)",
-
-        "\n\n\n\n\nunsat\n"
-        );
-    }
+    Ok(())
 }

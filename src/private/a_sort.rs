@@ -62,7 +62,7 @@ pub(crate) fn declare_datatypes(
     solver: &mut Solver
 ) -> Result<String, SolverError> {
 
-    let out = solver.exec(&command)?;  // this also validates the declaration
+    let out = solver.backend.exec(&command)?;  // this also validates the declaration
 
     // collect the declared symbols, for recursivity detection
     let declaring = sort_decs.iter().map(|sd| {
@@ -90,7 +90,7 @@ pub(crate) fn declare_sort(
     solver: &mut Solver
 ) -> Result<String, SolverError> {
 
-    let out = solver.exec(&command)?;
+    let out = solver.backend.exec(&command)?;
 
     if numeral.0 == 0 {
         let sort = Sort::Sort(Identifier::Simple(symb));
@@ -111,7 +111,7 @@ pub(crate) fn define_sort(
     solver: &mut Solver
 ) -> Result<String, SolverError> {
 
-    let out = solver.exec(&command)?;
+    let out = solver.backend.exec(&command)?;
 
     if variables.len() == 0 {  // non-parametric
         let declaring = IndexSet::new();
