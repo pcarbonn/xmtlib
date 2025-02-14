@@ -60,6 +60,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     execute(&mut solver, "(check-sat)");
     let solving = Instant::now();
     println!("Solving: {:?}", solving.duration_since(grounding));
+    println!("Total: {:?}", solving.duration_since(start));
 
     Ok(())
 }
