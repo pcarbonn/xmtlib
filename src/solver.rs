@@ -28,7 +28,7 @@ pub(crate) type TermId = usize;
 
 pub struct Solver {
     pub(crate) backend: Backend,
-    pub(crate) conn: Connection,
+    pub conn: Connection,
 
     // contains only parametric data type declarations
     pub(crate) parametric_sorts: IndexMap<Symbol, ParametricObject>,
@@ -208,7 +208,7 @@ impl Solver {
                     for res in ground(self) {
                         yield_!(res)
                     }
-                    match self.exec(&command) {
+                    match self.backend.exec(&command) {
                         Ok(res) => yield_!(Ok(res)),
                         Err(err) => {
                             yield_!(Err(err));
@@ -338,7 +338,7 @@ impl Solver {
                 }
 
                 Command::Verbatim(_) => {
-                    match self.exec(&command) {
+                    match self.backend.exec(&command) {
                         Ok(res) => yield_!(Ok(res)),
                         Err(err) => {
                             yield_!(Err(err));
@@ -349,29 +349,10 @@ impl Solver {
         })
     }
 
-    // execute a command string
-    pub(crate) fn exec(&mut self, cmd: &str) -> Result<String, SolverError> {
-        match self.backend {
-            Backend::NoDriver => {
-                return Ok(cmd.to_string())
-            },
-            Backend::Z3(ctx) => {
-                unsafe {
-                    let c_cmd = std::ffi::CString::new(cmd).unwrap();
-                    let response = Z3_eval_smtlib2_string(ctx, c_cmd.as_ptr());
-                    let c_str: &std::ffi::CStr = std::ffi::CStr::from_ptr(response);
-                    let str_slice: &str = c_str.to_str().unwrap();
-                    let result: String = str_slice.to_owned();
-                    return Ok(result)
-                }
-            }
-        }
-    }
-
     pub(crate) fn set_option(&mut self, option: Option_, cmd: String) -> Result<String, SolverError> {
         match option {
             Option_::Attribute(Attribute::Keyword(_)) => {
-                self.exec(&cmd)
+                self.backend.exec(&cmd)
             },
             Option_::Attribute(Attribute::WithValue(keyword, value)) => {
                 match (keyword.0.as_str(), value) {
@@ -389,10 +370,34 @@ impl Solver {
                         }
                         Ok("".to_string())
                     },
-                    _ => self.exec(&cmd)
+                    _ => self.backend.exec(&cmd)
                 }
 
             },
+        }
+    }
+
+}
+
+
+impl Backend {
+
+    /// execute a command string
+    pub(crate) fn exec(&mut self, cmd: &str) -> Result<String, SolverError> {
+        match self {
+            Backend::NoDriver => {
+                return Ok(cmd.to_string())
+            },
+            Backend::Z3(ctx) => {
+                unsafe {
+                    let c_cmd = std::ffi::CString::new(cmd).unwrap();
+                    let response = Z3_eval_smtlib2_string(*ctx, c_cmd.as_ptr());
+                    let c_str: &std::ffi::CStr = std::ffi::CStr::from_ptr(response);
+                    let str_slice: &str = c_str.to_str().unwrap();
+                    let result: String = str_slice.to_owned();
+                    return Ok(result)
+                }
+            }
         }
     }
 
