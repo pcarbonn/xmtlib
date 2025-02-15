@@ -20,7 +20,7 @@ pub(crate) struct GroundingQuery {
     pub(crate) variables: IndexMap<Symbol, Column>,  // maps variables to either a Type table or (better) an Interpretation table
     pub(crate) conditions: Vec<SQLExpr>,  // vector of non-empty SQL expressions
     pub(crate) grounding: SQLExpr,
-    pub(crate) natural_joins: IndexMap<TableName, Either<Symbol, Vec<Symbol>>>, // indexed table name -> the table is either for one variable, or an aggregate term.
+    pub(crate) natural_joins: IndexSet<NaturalJoin>,
     pub(crate) theta_joins: IndexSet<ThetaJoin>,
 
     pub(crate) ids: Ids,  // if the groundings are all Ids
@@ -38,6 +38,13 @@ pub(crate) enum SQLExpr {
     Value(Column),  // in an interpretation table.
     //  Only in GroundingQuery.conditions
     Equality(Ids, Box<SQLExpr>, Column),  // c_i, i.e., `is_id(expr) or expr=col`.
+}
+
+/// Natural join with a table interpreting a variable or a quantification.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub(crate) enum NaturalJoin {
+    Variable(TableName, Symbol),  // natural join with a table interpreting a variable
+    Quantification(TableName, Vec<Symbol>),  // natural join with a table interpreting a quantification
 }
 
 
@@ -58,6 +65,8 @@ pub(crate) struct TableName {
     pub(crate) index: TermId, // to disambiguate
 }
 
+
+/// A flag indicating whether the values in an inetrpretation table are all Ids, some Ids, or all unknown.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) enum Ids {
     All, // lowest
@@ -104,17 +113,24 @@ impl std::fmt::Display for GroundingQuery {
 
         // natural joins
         let naturals = self.natural_joins.iter()
-            .map(|(table_name, on)| {
-                let name = if table_name.index == 0 {
-                        table_name.base_table.to_string()
-                    } else {
-                        format!("{} AS {table_name}", table_name.base_table)
-                    };
-                match on {
-                    Left(_) => {  // a variable table is never naturally joined
-                        name
+            .map(|natural_join| {
+
+                    /// Helper function.  Returns the name of a table, with an optional alias.
+                    fn name(table_name: &TableName) -> String {
+                        if table_name.index == 0 {
+                            table_name.base_table.to_string()
+                        } else {
+                            format!("{} AS {table_name}", table_name.base_table)
+                        }
+                    }  // end helper
+
+                match natural_join {
+                    NaturalJoin::Variable(table_name, _) => {
+                        // a variable table never has join conditions
+                        name(table_name)
                     },
-                    Right(symbols) => {
+                    NaturalJoin::Quantification(table_name, symbols) => {
+                        let name = name(table_name);
                         let on = symbols.iter()
                             .map( | symbol | {
                                 let column = self.variables.get(symbol).unwrap();
@@ -288,7 +304,7 @@ pub(crate) fn query_spec_constant(
         variables: IndexMap::new(),
         conditions: vec![],
         grounding: SQLExpr::Constant(spec_constant.clone()),
-        natural_joins: IndexMap::new(),
+        natural_joins: IndexSet::new(),
         theta_joins: IndexSet::new(),
         ids: Ids::All,
     }
@@ -303,11 +319,12 @@ pub(crate) fn query_for_variable(
 ) -> GroundingQuery {
     let table_name = TableName{base_table: base_table.clone(), index};
     let column = Column{table_name: table_name.clone(), column: "G".to_string()};
+
     GroundingQuery{
         variables: IndexMap::from([(symbol.clone(), column.clone())]),
         conditions: vec![],
         grounding: SQLExpr::Variable(symbol.clone()),
-        natural_joins: IndexMap::from([(table_name, Left(symbol.clone()))]),
+        natural_joins: IndexSet::from([NaturalJoin::Variable(table_name, symbol.clone())]),
         theta_joins: IndexSet::new(),
         ids: Ids::All,
     }
@@ -329,7 +346,7 @@ pub(crate) fn query_for_compound(
     let mut variables: IndexMap<Symbol, Column> = IndexMap::new();
     let mut conditions= vec![];
     let mut groundings = vec![];
-    let mut natural_joins: IndexMap<TableName, Either<Symbol, Vec<Symbol>>> = IndexMap::new();
+    let mut natural_joins = IndexSet::new();
     let mut theta_joins = IndexSet::new();
     let mut thetas = vec![];
     let mut ids: Ids = Ids::All;
@@ -387,13 +404,15 @@ pub(crate) fn query_for_compound(
 
     // remove natural_joins of types that are not used in variables
     let natural_joins = natural_joins.into_iter()
-        .filter( |(table_name, symbols)| {
-            match symbols {
-                Left(ref symbol) => {
+        .filter( |natural_join| {
+            match natural_join {
+                NaturalJoin::Variable(table_name, symbol) => {
                     let column = variables.get(symbol).unwrap();
                     column.table_name == *table_name // otherwise, unused variable
                 },
-                Right(_) => true
+                NaturalJoin::Quantification(..) => {
+                    true
+                }
             }
         }).collect();
 
@@ -496,8 +515,8 @@ pub(crate) fn query_for_aggregate(
             (symbol.clone(), Column{table_name: table_name.clone(), column: symbol.to_string()}))
         .collect::<IndexMap<Symbol, Column>>();
 
-    let natural_joins = IndexMap::from([
-        (table_name.clone(), Right(free_variables.keys().cloned().collect()))
+    let natural_joins = IndexSet::from([
+        NaturalJoin::Quantification(table_name.clone(),free_variables.keys().cloned().collect())
     ]);
 
     Ok(GroundingQuery{
@@ -519,15 +538,12 @@ impl GroundingQuery {
         && self.ids == Ids::All {
             let (symbol, column) = self.variables.first()
                 .ok_or(InternalError(7954155))?;
-            let (table_name, _) = self.natural_joins.first()
-                .ok_or(InternalError(1285861))?;
-            if column.table_name == *table_name && column.column == "G" {
-                Ok(Some(symbol.clone()))
-            } else {
-                Ok(None)
+            if let Some(NaturalJoin::Variable(table_name, _)) = self.natural_joins.first() {
+                if column.table_name == *table_name && column.column == "G" {
+                    return Ok(Some(symbol.clone()))
+                }
             }
-        } else {
-            Ok(None)
         }
+        Ok(None)
     }
 }
