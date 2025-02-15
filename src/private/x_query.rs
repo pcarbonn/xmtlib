@@ -29,11 +29,11 @@ pub(crate) struct GroundingQuery {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum SQLExpr {
-    Constant(SpecConstant),
     Boolean(bool),
+    Constant(SpecConstant),
     Variable(Symbol),
-    Construct(QualIdentifier, Box<Vec<SQLExpr>>),  // constructor
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
+    Construct(QualIdentifier, Box<Vec<SQLExpr>>),  // constructor
     // Only in GroundingQuery.groundings
     Value(Column),  // in an interpretation table.
     //  Only in GroundingQuery.conditions
@@ -231,6 +231,7 @@ impl SQLExpr {
             }  // end helper
 
         match self {
+            SQLExpr::Boolean(value) => format!("\"{value}\""),
             SQLExpr::Constant(spec_constant) => {
                 match spec_constant {
                     SpecConstant::Numeral(s) => format!("\"{s}\""),
@@ -240,13 +241,12 @@ impl SQLExpr {
                     SpecConstant::String(s) => format!("\"{s}\""),
                 }
             },
-            SQLExpr::Boolean(value) => format!("\"{value}\""),
             SQLExpr::Variable(symbol) => variables.get(symbol).unwrap().to_string(),
-            SQLExpr::Construct(qual_identifier, exprs) => {
-                sql_for("construct2", qual_identifier.to_string(), exprs, variables)
-            },
             SQLExpr::Apply(qual_identifier, exprs) => {
                 sql_for("apply", qual_identifier.to_string(), exprs, variables)
+            },
+            SQLExpr::Construct(qual_identifier, exprs) => {
+                sql_for("construct2", qual_identifier.to_string(), exprs, variables)
             },
             SQLExpr::Value(column) => column.to_string(),
             SQLExpr::Equality(ids, expr, column) => {
