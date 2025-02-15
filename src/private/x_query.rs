@@ -2,7 +2,7 @@
 
 use std::cmp::max;
 
-use indexmap::IndexMap;
+use indexmap::{IndexMap, IndexSet};
 use itertools::Either::{self, Left, Right};
 
 use crate::api::{Identifier, QualIdentifier, SortedVar, SpecConstant, Symbol};
@@ -21,13 +21,13 @@ pub(crate) struct GroundingQuery {
     pub(crate) conditions: Vec<SQLExpr>,  // vector of non-empty SQL expressions
     pub(crate) grounding: SQLExpr,
     pub(crate) natural_joins: IndexMap<TableName, Either<Symbol, Vec<Symbol>>>, // indexed table name -> the table is either for one variable, or an aggregate term.
-    pub(crate) theta_joins: Vec<(TableName, Vec<(Ids, SQLExpr, Column)>)>, // indexed table name + mapping of (gated) expressions to value column
+    pub(crate) theta_joins: IndexSet<ThetaJoin>,
 
     pub(crate) ids: Ids,  // if the groundings are all Ids
 }
 
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum SQLExpr {
     Constant(SpecConstant),
     Boolean(bool),
@@ -41,10 +41,14 @@ pub(crate) enum SQLExpr {
 }
 
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// indexed table name + mapping of (gated) expressions to value column
+pub(crate) type ThetaJoin = (TableName, Vec<(Ids, SQLExpr, Column)>);
+
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct Column {
-    pub(crate) table_name: TableName,
-    pub(crate) column: String
+    table_name: TableName,
+    column: String
 }
 
 
@@ -285,7 +289,26 @@ pub(crate) fn query_spec_constant(
         conditions: vec![],
         grounding: SQLExpr::Constant(spec_constant.clone()),
         natural_joins: IndexMap::new(),
-        theta_joins: vec![],
+        theta_joins: IndexSet::new(),
+        ids: Ids::All,
+    }
+}
+
+
+/// Creates a query for a variable
+pub(crate) fn query_for_variable(
+    symbol: &Symbol,
+    base_table: &String,
+    index: usize
+) -> GroundingQuery {
+    let table_name = TableName{base_table: base_table.clone(), index};
+    let column = Column{table_name: table_name.clone(), column: "G".to_string()};
+    GroundingQuery{
+        variables: IndexMap::from([(symbol.clone(), column.clone())]),
+        conditions: vec![],
+        grounding: SQLExpr::Variable(symbol.clone()),
+        natural_joins: IndexMap::from([(table_name, Left(symbol.clone()))]),
+        theta_joins: IndexSet::new(),
         ids: Ids::All,
     }
 }
@@ -307,7 +330,7 @@ pub(crate) fn query_for_compound(
     let mut conditions= vec![];
     let mut groundings = vec![];
     let mut natural_joins: IndexMap<TableName, Either<Symbol, Vec<Symbol>>> = IndexMap::new();
-    let mut theta_joins = vec![];
+    let mut theta_joins = IndexSet::new();
     let mut thetas = vec![];
     let mut ids: Ids = Ids::All;
 
@@ -377,7 +400,7 @@ pub(crate) fn query_for_compound(
     let grounding =
         match variant {
             Left((table_name, ids_)) => {
-                theta_joins.push((table_name.clone(), thetas));
+                theta_joins.insert((table_name.clone(), thetas));
                 ids = max(ids, ids_.clone());
                 SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()})
             },
@@ -482,7 +505,7 @@ pub(crate) fn query_for_aggregate(
         conditions: vec![],
         grounding: SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()}),
         natural_joins: natural_joins,
-        theta_joins: vec![],
+        theta_joins: IndexSet::new(),
         ids: Ids::None
     })
 }

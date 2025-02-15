@@ -3,15 +3,14 @@
 use std::future::Future;
 
 use genawaiter::{sync::Gen, sync::gen, yield_};
-use indexmap::IndexMap;
 use itertools::Either::{Right, Left};
 use rusqlite::Connection;
 
 use crate::api::{Identifier, QualIdentifier, SortedVar, Term};
 use crate::error::SolverError::{self, *};
 use crate::private::b_fun::{FunctionObject, InterpretationType};
-use crate::private::x_query::{Column, TableName, GroundingQuery, Ids, SQLExpr,
-    query_spec_constant, query_for_aggregate, query_for_compound};
+use crate::private::x_query::{TableName, GroundingQuery, Ids, SQLExpr,
+    query_spec_constant, query_for_variable, query_for_aggregate, query_for_compound};
 use crate::solver::Solver;
 
 
@@ -154,16 +153,7 @@ pub(crate) fn ground_term_(
             // a variable
             if let Some(sort) = sort {  // finite domain
                 let base_table = sort.to_string();
-                let table_name = TableName{base_table: base_table.clone(), index};
-                let column = Column{table_name: table_name.clone(), column: "G".to_string()};
-                let g = GroundingQuery{
-                    variables: IndexMap::from([(symbol.clone(), column.clone())]),
-                    conditions: vec![],
-                    grounding: SQLExpr::Variable(symbol.clone()),
-                    natural_joins: IndexMap::from([(table_name, Left(symbol.clone()))]),
-                    theta_joins: vec![],
-                    ids: Ids::All,
-                };
+                let g = query_for_variable(symbol, &base_table, index);
 
                 if base_table == "bool" {
                     Ok(Grounding::Boolean { tu: g.clone(), uf: g.clone(), g: g })
