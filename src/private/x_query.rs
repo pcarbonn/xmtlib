@@ -10,30 +10,20 @@ use crate::error::SolverError::{self, InternalError};
 use crate::solver::{Solver, TermId};
 
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub(crate) struct TableName {
-    pub(crate) base_table: String,
-    pub(crate) index: TermId, // to disambiguate
-}
-impl std::fmt::Display for TableName {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        if self.index == 0 {
-            write!(f, "{}", self.base_table)
-        } else {
-            write!(f, "{}_{}", self.base_table, self.index)
-        }
-    }
-}
+////////////////////// Data structures for grounding queries //////////////////
 
+
+/// Contains what is needed to construct the grounding view of a term, in a composable way.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct Column {
-    pub(crate) table_name: TableName,
-    pub(crate) column: String
-}
-impl std::fmt::Display for Column {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}.{}", self.table_name, self.column)
-    }
+pub(crate) struct GroundingQuery {
+
+    pub(crate) variables: IndexMap<Symbol, Column>,  // maps variables to either a Type table or (better) an Interpretation table
+    pub(crate) conditions: Vec<SQLExpr>,  // vector of non-empty SQL expressions
+    pub(crate) grounding: SQLExpr,
+    pub(crate) natural_joins: IndexMap<TableName, Either<Symbol, Vec<Symbol>>>, // indexed table name -> the table is either for one variable, or an aggregate term.
+    pub(crate) theta_joins: Vec<(TableName, Vec<(Ids, SQLExpr, Column)>)>, // indexed table name + mapping of (gated) expressions to value column
+
+    pub(crate) ids: Ids,  // if the groundings are all Ids
 }
 
 
@@ -50,87 +40,19 @@ pub(crate) enum SQLExpr {
     Equality(Ids, Box<SQLExpr>, Column),  // c_i, i.e., `is_id(expr) or expr=col`.
 }
 
-impl SQLExpr {
-    // it can return an empty string !
-    fn show(
-        &self,
-        variables: &IndexMap<Symbol, Column>
-    ) -> String {
 
-            /// Helper: use either "apply" or "construct2", according to the first argument.
-            /// See description of these functions in y_db module.
-            ///
-            /// Arguments:
-            /// * application: either "apply" or "construct2"
-            fn sql_for(
-                application: &str,
-                function: String,
-                exprs: &Box<Vec<SQLExpr>>,
-                variables: &IndexMap<Symbol, Column>
-            ) -> String {
-                if ["and", "or"].contains(&function.as_str()) {
-                    let exprs =
-                        exprs.iter().cloned().filter_map( |e| {  // try to simplify
-                            match e {
-                                SQLExpr::Boolean(b) => {
-                                    if function == "and" && b { None }
-                                    else if function == "or" && !b { None }
-                                    else { Some(e.show(variables)) }
-                                },
-                                _ => Some(e.show(variables))
-                            }
-                        }).collect::<Vec<_>>();
-                    if exprs.len() == 0 {
-                        if function == "and" { "\"true\"".to_string() } else { "\"false\"".to_string()}
-                    } else if exprs.len() == 1 {
-                        exprs.first().unwrap().to_string()
-                    } else {
-                        format!("{application}(\"{function}\", {})", exprs.join(", "))
-                    }
-                } else if exprs.len() == 0 {
-                    format!("\"{function}\"")
-                } else {
-                    let terms = exprs.iter()
-                        .map(|e| e.show(variables))
-                        .collect::<Vec<_>>().join(", ");
-                    format!("{application}(\"{function}\", {})", terms)
-                }
-            }  // end helper
-
-        match self {
-            SQLExpr::Constant(spec_constant) => {
-                match spec_constant {
-                    SpecConstant::Numeral(s) => format!("\"{s}\""),
-                    SpecConstant::Decimal(s) => format!("\"{s}\""),
-                    SpecConstant::Hexadecimal(s) => format!("\"{s}\""),
-                    SpecConstant::Binary(s) => format!("\"{s}\""),
-                    SpecConstant::String(s) => format!("\"{s}\""),
-                }
-            },
-            SQLExpr::Boolean(value) => format!("\"{value}\""),
-            SQLExpr::Variable(symbol) => variables.get(symbol).unwrap().to_string(),
-            SQLExpr::Construct(qual_identifier, exprs) => {
-                sql_for("construct2", qual_identifier.to_string(), exprs, variables)
-            },
-            SQLExpr::Apply(qual_identifier, exprs) => {
-                sql_for("apply", qual_identifier.to_string(), exprs, variables)
-            },
-            SQLExpr::Value(column) => column.to_string(),
-            SQLExpr::Equality(ids, expr, column) => {
-                let expr = expr.show(variables);
-                match ids {
-                    Ids::All =>
-                         "".to_string(),
-                    Ids::Some =>
-                         format!("(is_id({expr}) OR {expr} = {column})"),
-                    Ids::None =>
-                         format!("{expr} = {column}"),
-                }
-            },
-        }
-    }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct Column {
+    pub(crate) table_name: TableName,
+    pub(crate) column: String
 }
 
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub(crate) struct TableName {
+    pub(crate) base_table: String,
+    pub(crate) index: TermId, // to disambiguate
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) enum Ids {
@@ -138,29 +60,10 @@ pub(crate) enum Ids {
     Some,
     None // highest
 }
-impl std::fmt::Display for Ids {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Ids::All => write!(f, "Complete"),
-            Ids::Some => write!(f, "Partial"),
-            Ids::None => write!(f, "Unknown"),
-        }
-    }
-}
 
 
-/// Contains what is needed to construct the grounding view of a term, in a composable way.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct GroundingQuery {
+///////////////////////////  Display //////////////////////////////////////////
 
-    pub(crate) variables: IndexMap<Symbol, Column>,  // maps variables to either a Type table or (better) an Interpretation table
-    pub(crate) conditions: Vec<SQLExpr>,  // vector of non-empty SQL expressions
-    pub(crate) grounding: SQLExpr,
-    pub(crate) natural_joins: IndexMap<TableName, Either<Symbol, Vec<Symbol>>>, // indexed table name -> the table is either for one variable, or an aggregate term.
-    pub(crate) theta_joins: Vec<(TableName, Vec<(Ids, SQLExpr, Column)>)>, // indexed table name + mapping of (gated) expressions to value column
-
-    pub(crate) ids: Ids,  // if the groundings are all Ids
-}
 
 impl std::fmt::Display for GroundingQuery {
 
@@ -260,30 +163,120 @@ impl std::fmt::Display for GroundingQuery {
 }
 
 
-impl GroundingQuery {
-    /// returns the variable if the query is for a variable
-    fn is_for_a_variable(&self) -> Result<Option<Symbol>, SolverError> {
-        if self.variables.len() == 1
-        && self.natural_joins.len() == 1
-        && self.ids == Ids::All {
-            let (symbol, column) = self.variables.first()
-                .ok_or(InternalError(7954155))?;
-            let (table_name, _) = self.natural_joins.first()
-                .ok_or(InternalError(1285861))?;
-            if column.table_name == *table_name && column.column == "G" {
-                Ok(Some(symbol.clone()))
-            } else {
-                Ok(None)
-            }
-        } else {
-            Ok(None)
+impl SQLExpr {
+    // it can return an empty string !
+    fn show(
+        &self,
+        variables: &IndexMap<Symbol, Column>
+    ) -> String {
+
+            /// Helper: use either "apply" or "construct2", according to the first argument.
+            /// See description of these functions in y_db module.
+            ///
+            /// Arguments:
+            /// * application: either "apply" or "construct2"
+            fn sql_for(
+                application: &str,
+                function: String,
+                exprs: &Box<Vec<SQLExpr>>,
+                variables: &IndexMap<Symbol, Column>
+            ) -> String {
+                if ["and", "or"].contains(&function.as_str()) {
+                    let exprs =
+                        exprs.iter().cloned().filter_map( |e| {  // try to simplify
+                            match e {
+                                SQLExpr::Boolean(b) => {
+                                    if function == "and" && b { None }
+                                    else if function == "or" && !b { None }
+                                    else { Some(e.show(variables)) }
+                                },
+                                _ => Some(e.show(variables))
+                            }
+                        }).collect::<Vec<_>>();
+                    if exprs.len() == 0 {
+                        if function == "and" { "\"true\"".to_string() } else { "\"false\"".to_string()}
+                    } else if exprs.len() == 1 {
+                        exprs.first().unwrap().to_string()
+                    } else {
+                        format!("{application}(\"{function}\", {})", exprs.join(", "))
+                    }
+                } else if exprs.len() == 0 {
+                    format!("\"{function}\"")
+                } else {
+                    let terms = exprs.iter()
+                        .map(|e| e.show(variables))
+                        .collect::<Vec<_>>().join(", ");
+                    format!("{application}(\"{function}\", {})", terms)
+                }
+            }  // end helper
+
+        match self {
+            SQLExpr::Constant(spec_constant) => {
+                match spec_constant {
+                    SpecConstant::Numeral(s) => format!("\"{s}\""),
+                    SpecConstant::Decimal(s) => format!("\"{s}\""),
+                    SpecConstant::Hexadecimal(s) => format!("\"{s}\""),
+                    SpecConstant::Binary(s) => format!("\"{s}\""),
+                    SpecConstant::String(s) => format!("\"{s}\""),
+                }
+            },
+            SQLExpr::Boolean(value) => format!("\"{value}\""),
+            SQLExpr::Variable(symbol) => variables.get(symbol).unwrap().to_string(),
+            SQLExpr::Construct(qual_identifier, exprs) => {
+                sql_for("construct2", qual_identifier.to_string(), exprs, variables)
+            },
+            SQLExpr::Apply(qual_identifier, exprs) => {
+                sql_for("apply", qual_identifier.to_string(), exprs, variables)
+            },
+            SQLExpr::Value(column) => column.to_string(),
+            SQLExpr::Equality(ids, expr, column) => {
+                let expr = expr.show(variables);
+                match ids {
+                    Ids::All =>
+                         "".to_string(),
+                    Ids::Some =>
+                         format!("(is_id({expr}) OR {expr} = {column})"),
+                    Ids::None =>
+                         format!("{expr} = {column}"),
+                }
+            },
         }
     }
 }
 
 
-/////////////////////  Grounding implementations ////////////////////////////////////////
+impl std::fmt::Display for Column {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}.{}", self.table_name, self.column)
+    }
+}
 
+
+impl std::fmt::Display for TableName {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        if self.index == 0 {
+            write!(f, "{}", self.base_table)
+        } else {
+            write!(f, "{}_{}", self.base_table, self.index)
+        }
+    }
+}
+
+impl std::fmt::Display for Ids {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Ids::All => write!(f, "Complete"),
+            Ids::Some => write!(f, "Partial"),
+            Ids::None => write!(f, "Unknown"),
+        }
+    }
+}
+
+
+/////////////////////  Grounding Query creation  //////////////////////////////
+
+
+/// Creates a query for a constant
 pub(crate) fn query_spec_constant(
     spec_constant: &SpecConstant
 ) -> GroundingQuery {
@@ -297,7 +290,8 @@ pub(crate) fn query_spec_constant(
     }
 }
 
-/// creates a query for a compound term, according to `variant`.
+
+/// Creates a query for a compound term, according to `variant`.
 ///
 /// Arguments:
 /// * variant: either an interpretation or a function name.  The function name can be:
@@ -408,7 +402,6 @@ pub(crate) fn query_for_compound(
 }
 
 
-
 /// Creates a query over an aggregate view, possibly adding a where clause if exclude is not empty
 pub(crate) fn query_for_aggregate(
     sub_query: &GroundingQuery,
@@ -492,4 +485,26 @@ pub(crate) fn query_for_aggregate(
         theta_joins: vec![],
         ids: Ids::None
     })
+}
+
+
+impl GroundingQuery {
+    /// returns the variable if the query is for a variable
+    fn is_for_a_variable(&self) -> Result<Option<Symbol>, SolverError> {
+        if self.variables.len() == 1
+        && self.natural_joins.len() == 1
+        && self.ids == Ids::All {
+            let (symbol, column) = self.variables.first()
+                .ok_or(InternalError(7954155))?;
+            let (table_name, _) = self.natural_joins.first()
+                .ok_or(InternalError(1285861))?;
+            if column.table_name == *table_name && column.column == "G" {
+                Ok(Some(symbol.clone()))
+            } else {
+                Ok(None)
+            }
+        } else {
+            Ok(None)
+        }
+    }
 }

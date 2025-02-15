@@ -15,6 +15,9 @@ use crate::private::x_query::{Column, TableName, GroundingQuery, Ids, SQLExpr,
 use crate::solver::Solver;
 
 
+/////////////////////  Data structure for Grounding  //////////////////////////
+
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum Grounding {
     NonBoolean(GroundingQuery),

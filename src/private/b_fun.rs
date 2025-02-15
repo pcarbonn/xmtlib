@@ -11,6 +11,9 @@ use crate::private::x_query::Ids;
 use crate::{error::SolverError, solver::Solver};
 
 
+/////////////////////  Data structure for Function  ///////////////////////////
+
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct FunctionObject {
     pub(crate) signature: Option<(Vec<Sort>, Sort)>,  // to check interpretations.  None for pre-defined functions
@@ -31,6 +34,11 @@ pub(crate) enum InterpretationType {
         ids: Ids    // todo: ids per table ?
     },
 }
+
+
+/////////////////////  Implementation  ////////////////////////////////////////
+
+
 impl Display for InterpretationType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

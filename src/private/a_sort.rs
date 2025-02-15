@@ -12,6 +12,9 @@ use crate::{error::SolverError::{self, InternalError}, solver::Solver};
 #[allow(unused_imports)]
 use debug_print::debug_println as dprintln;
 
+
+/////////////////////  Data structure for Sort  ///////////////////////////////
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum ParametricObject {
     Datatype(DatatypeDec),
