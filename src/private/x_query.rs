@@ -44,7 +44,7 @@ pub(crate) enum SQLExpr {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum NaturalJoin {
     Variable(TableName, Symbol),  // natural join with a table interpreting a variable
-    Quantification(TableName, Vec<Symbol>),  // natural join with a table interpreting a quantification
+    View(TableName, Vec<Symbol>),  // natural join with a table interpreting a quantification, or a union of grounding views
 }
 
 
@@ -129,7 +129,7 @@ impl std::fmt::Display for GroundingQuery {
                         // a variable table never has join conditions
                         name(table_name)
                     },
-                    NaturalJoin::Quantification(table_name, symbols) => {
+                    NaturalJoin::View(table_name, symbols) => {
                         let name = name(table_name);
                         let on = symbols.iter()
                             .map( | symbol | {
@@ -410,7 +410,7 @@ pub(crate) fn query_for_compound(
                     let column = variables.get(symbol).unwrap();
                     column.table_name == *table_name // otherwise, unused variable
                 },
-                NaturalJoin::Quantification(..) => {
+                NaturalJoin::View(..) => {
                     true
                 }
             }
@@ -516,7 +516,7 @@ pub(crate) fn query_for_aggregate(
         .collect::<IndexMap<Symbol, Column>>();
 
     let natural_joins = IndexSet::from([
-        NaturalJoin::Quantification(table_name.clone(),free_variables.keys().cloned().collect())
+        NaturalJoin::View(table_name.clone(),free_variables.keys().cloned().collect())
     ]);
 
     Ok(GroundingQuery{

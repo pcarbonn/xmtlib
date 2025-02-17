@@ -15,37 +15,53 @@ use crate::{error::SolverError, solver::Solver};
 
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct FunctionObject {
-    pub(crate) signature: Option<(Vec<Sort>, Sort)>,  // to check interpretations.  None for pre-defined functions
-    pub(crate) boolean: Option<bool>,  // None for `ite` --> need special code
-    pub(crate) typ: InterpretationType  // todo: merge FunctionObject and Interpretation type in one enum
+pub(crate) enum FunctionIs {
+    Predefined{boolean: Option<bool>},  // None for `ite` --> need special code
+    // Constructed,
+    Calculated{signature: (Vec<Sort>, Sort, bool)},  // signature used to create table, when later interpreted
+    //NonBooleanInterpreted{ table_g: Interpretation},
+    BooleanInterpreted{table_tu: Interpretation, table_uf: Interpretation, table_g: Interpretation}
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) enum InterpretationType {
-    Calculated,  // function without interpretation table
-    // Constructed, // constructor; no table in DB
-
-    // NonBoolean{table_G: String, ids: Ids}
-    Boolean{
-        table_tu: String,   // todo: string is empty if table is infinite, or have a Table type
-        table_uf: String,
-        table_g: String,
-        ids: Ids    // todo: ids per table ?
-    },
+pub(crate) enum Interpretation {
+    Table{name: String, ids: Ids},
+    Infinite  // for UF, G of interpreted predicate over infinite domain
 }
 
 
 /////////////////////  Implementation  ////////////////////////////////////////
 
 
-impl Display for InterpretationType {
+impl Display for FunctionIs {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            InterpretationType::Calculated =>
-                write!(f, "calculated"),
-            InterpretationType::Boolean { table_g, ids, .. } =>
-                write!(f, "{table_g} {ids}"),
+            Self::Predefined{boolean} =>
+                if let Some(b) = boolean {
+                    write!(f, "Predefined ({})", b)
+                } else {
+                    write!(f, "Predefined (?)")
+                },
+            // Self::Constructed =>
+            //     write!(f, "Constructed"),
+            Self::Calculated{signature} =>
+                write!(f, "Calculated({:?})", signature),
+            // Self::NonBooleanInterpreted{table_g} =>
+            //     write!(f, "NonBooleanInterpreted ({})", table_g),
+            Self::BooleanInterpreted{table_tu, table_uf, table_g} =>
+                write!(f, "BooleanInterpreted ({}, {}, {})", table_tu, table_uf, table_g),
+        }
+    }
+}
+
+
+impl Display for Interpretation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Table{name, ids} =>
+                write!(f, "{name} {ids}"),
+            Self::Infinite {} =>
+                write!(f, "(infinite)"),
         }
     }
 }
@@ -68,13 +84,12 @@ pub(crate) fn declare_fun(
     instantiate_parent_sort(&co_domain, &declaring, solver)?;
 
     let identifier = QualIdentifier::Identifier(Identifier::Simple(symbol));
-    let typ = InterpretationType::Calculated;
     let boolean = match co_domain {
         Sort::Sort(Identifier::Simple(Symbol(ref s))) => s=="Bool",
         _ => false
     };
-    let object = FunctionObject{signature: Some((domain, co_domain)), boolean: Some(boolean), typ};
-    solver.functions.insert(identifier, object);
+    let function_is = FunctionIs::Calculated{signature: (domain, co_domain, boolean)};
+    solver.functions.insert(identifier, function_is);
 
     Ok(out)
 }

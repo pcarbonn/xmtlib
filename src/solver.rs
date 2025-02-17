@@ -11,7 +11,7 @@ use crate::api::*;
 use crate::error::{format_error, SolverError::{self, InternalError}};
 use crate::grammar::parse;
 use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, ParametricObject, SortObject};
-use crate::private::b_fun::{declare_fun, FunctionObject, InterpretationType};
+use crate::private::b_fun::{declare_fun, FunctionIs};
 use crate::private::c_assert::assert_;
 use crate::private::d_ground::{ground, Grounding};
 use crate::private::e_interpret::interpret_pred;
@@ -37,7 +37,7 @@ pub struct Solver {
     pub(crate) sorts: IndexMap<Sort, SortObject>,
 
     // predicate and function symbols
-    pub(crate) functions: IndexMap<QualIdentifier, FunctionObject>,
+    pub(crate) functions: IndexMap<QualIdentifier, FunctionIs>,
     // pub(crate) qualified_functions: IndexMap<QualIdentifier, FunctionObject>,
 
     // To support differed grounding of terms.
@@ -101,35 +101,31 @@ impl Default for Solver {
             QualIdentifier::Identifier(Identifier::Simple(Symbol(s.to_string())));
 
         // boolean pre-defined functions
-        for s in ["true", "false",
-                        "not",
+        for s in ["true", "false"] {
+            functions.insert(function(s),
+                FunctionIs::Calculated{signature: (vec![], sort("Bool"), true)});  // todo use Constructed ?
+        }
+
+        // boolean pre-defined functions
+        for s in ["not",
                         "=>", "and", "or", "xor",
                         "=", "distinct",
                         "<=", "<", ">=", ">"
                         ] {
             functions.insert(function(s),
-                FunctionObject{
-                    signature: None,
-                    boolean: Some(true),
-                    typ: InterpretationType::Calculated});
+                FunctionIs::Predefined{ boolean: Some(true) });
         }
 
         // ite
         functions.insert(function("ite"),
-            FunctionObject{
-                signature: None,
-                boolean: None,
-                typ: InterpretationType::Calculated});
+            FunctionIs::Predefined { boolean: None });
 
         // non-boolean pre-defined functions
         for s in ["+", "-", "*", "div",
                         "mod", "abs",
                         ] {
             functions.insert(function(s),
-                FunctionObject{
-                    signature: None,
-                    boolean: Some(false),
-                    typ: InterpretationType::Calculated});
+                FunctionIs::Predefined{ boolean: Some(false) });
         }
 
         unsafe {
@@ -281,23 +277,28 @@ impl Solver {
                                 "functions" => {
                                     yield_!(Ok("Functions:".to_string()));
                                     for (symbol, func) in &self.functions {
-                                        let FunctionObject{signature, boolean, typ} = func;
-                                        let signature = match signature {
-                                            Some((domain, co_domain)) => {
+                                        match func {
+                                            FunctionIs::Predefined{boolean} =>
+                                                if let Some(boolean) = boolean {
+                                                    yield_!(Ok(format!(" - {symbol}: Predefined ({boolean})")))
+                                                } else {
+                                                    yield_!(Ok(format!(" - {symbol}: Predefined (?)")))
+                                                },
+                                            // FunctionIs::Constructed =>
+                                            //     yield_!(Ok(format!(" - {symbol}: Constructed"))),
+                                            FunctionIs::Calculated{signature} => {
+                                                let (domain, co_domain, boolean) = signature;
                                                 let domain = domain.iter()
                                                     .map(|s| s.to_string())
                                                     .collect::<Vec<_>>().join(" * ");
-                                                format!("{domain} -> {co_domain}")
+                                                let co_domain = co_domain.to_string();
+                                                yield_!(Ok(format!(" - {symbol}: {domain} -> {co_domain} ({boolean})")))
                                             },
-                                            None => {
-                                                match boolean {
-                                                    Some(true) => "(boolean)",
-                                                    Some(false) => "(non-boolean)",
-                                                    None => "(boolean ?)"
-                                                }.to_string()
-                                            }
-                                        };
-                                        yield_!(Ok(format!(" - {symbol}: {signature} ({typ})")))
+                                            // FunctionIs::NonBooleanInterpreted{table_g} =>
+                                            //     yield_!(Ok(format!(" - {symbol}: Non Boolean ({table_g})"))),
+                                            FunctionIs::BooleanInterpreted{table_tu, table_uf, table_g} =>
+                                                yield_!(Ok(format!(" - {symbol}: Boolean ({table_tu}, {table_uf}, {table_g})"))),
+                                        }
                                     }
                                 },
                                 "groundings" => {
