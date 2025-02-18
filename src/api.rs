@@ -478,7 +478,7 @@ impl Display for Command {
             Self::SetOption(m0) => write!(f, "(set-option {})", m0),
             // Self::Simplify(m0) => write!(f, "(simplify {})", m0),
 
-            Self::XInterpretPred(s1, s2 ) => write!(f, "(x-interpreted-pred {s1} {})", s2.iter().format(" ")),
+            Self::XInterpretPred(s1, s2 ) => write!(f, "(x-interpret-pred {s1} {})", s2.iter().format(" ")),
             Self::XDebug(s1, s2) => write!(f, "(x-debug {s1} {s2})"),
             Self::XGround => write!(f, "(x-ground)"),
             Self::Verbatim(s) => write!(f, "{s}"),

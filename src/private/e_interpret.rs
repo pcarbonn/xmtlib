@@ -14,7 +14,7 @@ use crate::solver::Solver;
 pub(crate) fn interpret_pred(
     identifier: Identifier,
     tuples: Vec<XTuple>,
-    _command: String,
+    command: String,
     solver: &mut Solver,
  ) -> Result<String, SolverError> {
     // get the symbol declaration
@@ -32,6 +32,10 @@ pub(crate) fn interpret_pred(
             if ! *boolean {
                 Err(SolverError::ExprError("Can't use `x-interpret-pred` for non-boolean symbol".to_string(), None))
             } else {
+                if domain.len() == 0 {
+                    // special case: arity 0
+                    return interpret_pred_0(qual_identifier, tuples, command, solver);
+                }
                 // create _T table in DB, with foreign keys
                 let mut columns = domain.iter().enumerate()
                     .map( |(i, sort)| {
@@ -140,10 +144,48 @@ pub(crate) fn interpret_pred(
 
                 }
 
-                Ok(format!("(x-interpret-pred {identifier} {})", tuples.iter().format(" ")))
-
+                Ok(command)
             }
         },
     }
 
 }
+
+pub(crate) fn interpret_pred_0(
+    qual_identifier: QualIdentifier,
+    tuples: Vec<XTuple>,
+    command: String,
+    solver: &mut Solver,
+ ) -> Result<String, SolverError> {
+
+    let table_tu = Interpretation::Table{name: format!("{qual_identifier}_TU"), ids: Ids::All};
+    let table_uf = Interpretation::Table{name: format!("{qual_identifier}_UF"), ids: Ids::All};
+    let table_g  = Interpretation::Table{name: format!("{qual_identifier}_G"), ids: Ids::All};
+
+    if tuples.len() == 0 {  // false
+        let sql = format!("CREATE VIEW IF NOT EXISTS {qual_identifier}_TU AS SELECT 'false' as G WHERE false");  // empty table
+        solver.conn.execute(&sql, ())?;
+
+        let sql = format!("CREATE VIEW IF NOT EXISTS {qual_identifier}_UF AS SELECT 'false' as G");
+        solver.conn.execute(&sql, ())?;
+
+        let sql = format!("CREATE VIEW IF NOT EXISTS {qual_identifier}_G AS SELECT 'false' as G");
+        solver.conn.execute(&sql, ())?;
+
+    } else {  // true
+        let sql = format!("CREATE VIEW IF NOT EXISTS {qual_identifier}_TU AS SELECT 'true' as G");
+        solver.conn.execute(&sql, ())?;
+
+        let sql = format!("CREATE VIEW IF NOT EXISTS {qual_identifier}_UF AS SELECT 'true' as G WHERE false");  // empty table
+        solver.conn.execute(&sql, ())?;
+
+        let sql = format!("CREATE VIEW IF NOT EXISTS {qual_identifier}_G AS SELECT 'true' as G");
+        solver.conn.execute(&sql, ())?;
+
+    };
+
+    // create FunctionIs with boolean interpretations.
+    let function_is = FunctionIs::BooleanInterpreted { table_tu, table_uf, table_g };
+    solver.functions.insert(qual_identifier.clone(), function_is);
+    Ok(command)
+ }
