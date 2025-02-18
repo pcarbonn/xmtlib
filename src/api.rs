@@ -297,9 +297,9 @@ pub enum Term {
     /// `(let (<var_binding>+) <term>)`
     Let(Vec<VarBinding>, Box<Term>),
     /// `(forall (<sorted_var>+) <term>)`
-    Forall(Vec<SortedVar>, Box<Term>, Option<Vec<SortedVar>>),  // the 3rd argument is the list of grounded variables
+    Forall(Vec<SortedVar>, Box<Term>),
     /// `(exists (<sorted_var>+) <term>)`
-    Exists(Vec<SortedVar>, Box<Term>, Option<Vec<SortedVar>>),
+    Exists(Vec<SortedVar>, Box<Term>),
     /// `(match <term> (<match_case>+))`
     Match(Box<Term>, Vec<MatchCase>),
     /// `(! <term> <attribute>+)`
@@ -313,10 +313,10 @@ impl std::fmt::Display for Term {
             Self::Identifier(m0) => write!(f, "{}", m0),
             Self::Application(m0, m1) => write!(f, "({} {})", m0, m1.iter().format(" ")),
             Self::Let(m0, m1) => write!(f, "(let ({}) {})", m0.iter().format(" "), m1),
-            Self::Forall(m0, m1, _) => {
+            Self::Forall(m0, m1) => {
                 write!(f, "(forall ({}) {})", m0.iter().format(" "), m1)
             }
-            Self::Exists(m0, m1, _) => {
+            Self::Exists(m0, m1) => {
                 write!(f, "(exists ({}) {})", m0.iter().format(" "), m1)
             }
             Self::Match(m0, m1) => {

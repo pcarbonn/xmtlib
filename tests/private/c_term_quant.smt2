@@ -42,11 +42,11 @@
 (push)
 (assert (forall ((x Color)) true))
 (pop)
-(assert true)
+(assert (exists ((x Color)) true))
 (push)
 (assert (exists ((x Color)) true))
 (pop)
-(assert true)
+(assert (exists ((x Color)) true))
 (push)
 (assert (forall ((x Color)) (p x)))
 (pop)
@@ -82,11 +82,11 @@ Groundings:
     TU: SELECT Agg_2_TU.G AS G FROM Agg_2_TU
     UF: SELECT Agg_2_UF.G AS G FROM Agg_2_UF
     G : SELECT Agg_2_G.G AS G FROM Agg_2_G
- - (forall () true):
+ - (forall ((x Color)) true):
     TU: SELECT Agg_3_TU.G AS G FROM Agg_3_TU
     UF: SELECT Agg_3_UF.G AS G FROM Agg_3_UF
     G : SELECT Agg_3_G.G AS G FROM Agg_3_G
- - (exists () true):
+ - (exists ((x Color)) true):
     TU: SELECT Agg_4_TU.G AS G FROM Agg_4_TU
     UF: SELECT Agg_4_UF.G AS G FROM Agg_4_UF
     G : SELECT Agg_4_G.G AS G FROM Agg_4_G
@@ -95,19 +95,19 @@ Groundings:
     TU: SELECT Color_5.G AS x, apply("p", Color_5.G) AS G FROM Color AS Color_5
     UF: SELECT Color_5.G AS x, apply("p", Color_5.G) AS G FROM Color AS Color_5
     G : SELECT Color_5.G AS x, apply("p", Color_5.G) AS G FROM Color AS Color_5
- - (forall () (p x)):
+ - (forall ((x Color)) (p x)):
     TU: SELECT Agg_5_TU.G AS G FROM Agg_5_TU
     UF: SELECT Agg_5_UF.G AS G FROM Agg_5_UF
     G : SELECT Agg_5_G.G AS G FROM Agg_5_G
- - (exists () (p x)):
+ - (exists ((x Color)) (p x)):
     TU: SELECT Agg_8_TU.G AS G FROM Agg_8_TU
     UF: SELECT Agg_8_UF.G AS G FROM Agg_8_UF
     G : SELECT Agg_8_G.G AS G FROM Agg_8_G
- - x: SELECT "x" AS G
+ - x: SELECT "x" AS x, "x" AS G
  - (q x):
-    TU: SELECT apply("q", "x") AS G
-    UF: SELECT apply("q", "x") AS G
-    G : SELECT apply("q", "x") AS G
+    TU: SELECT "x" AS x, apply("q", "x") AS G
+    UF: SELECT "x" AS x, apply("q", "x") AS G
+    G : SELECT "x" AS x, apply("q", "x") AS G
  - (forall ((x Int)) (q x)):
     TU: SELECT Agg_9_TU.G AS G FROM Agg_9_TU
     UF: SELECT Agg_9_UF.G AS G FROM Agg_9_UF
@@ -117,11 +117,11 @@ Groundings:
     TU: SELECT Bool_12.G AS x, apply("r", Bool_12.G) AS G FROM Bool AS Bool_12
     UF: SELECT Bool_12.G AS x, apply("r", Bool_12.G) AS G FROM Bool AS Bool_12
     G : SELECT Bool_12.G AS x, apply("r", Bool_12.G) AS G FROM Bool AS Bool_12
- - (exists () (r x)):
+ - (exists ((x Bool)) (r x)):
     TU: SELECT Agg_12_TU.G AS G FROM Agg_12_TU
     UF: SELECT Agg_12_UF.G AS G FROM Agg_12_UF
     G : SELECT Agg_12_G.G AS G FROM Agg_12_G
- - (not (exists () (r x))):
+ - (not (exists ((x Bool)) (r x))):
     TU: SELECT apply("not", Agg_12_UF.G) AS G FROM Agg_12_UF
     UF: SELECT apply("not", Agg_12_TU.G) AS G FROM Agg_12_TU
     G : SELECT apply("not", Agg_12_G.G) AS G FROM Agg_12_G
@@ -137,7 +137,7 @@ Groundings:
     TU: SELECT Bool_12.G AS x, apply("or", apply("not", apply("r", Bool_12.G)), "false") AS G FROM Bool AS Bool_12
     UF: SELECT Bool_12.G AS x, apply("or", apply("not", apply("r", Bool_12.G)), "false") AS G FROM Bool AS Bool_12
     G : SELECT Bool_12.G AS x, apply("or", apply("not", apply("r", Bool_12.G)), "false") AS G FROM Bool AS Bool_12
- - (forall () (or (not (r x)) false)):
+ - (forall ((x Bool)) (or (not (r x)) false)):
     TU: SELECT Agg_16_TU.G AS G FROM Agg_16_TU
     UF: SELECT Agg_16_UF.G AS G FROM Agg_16_UF
     G : SELECT Agg_16_G.G AS G FROM Agg_16_G

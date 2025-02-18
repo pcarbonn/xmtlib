@@ -151,19 +151,17 @@ pub(crate) fn ground_term_(
         Term::XSortedVar(symbol, sort) => {
 
             // a variable
-            if let Some(sort) = sort {  // finite domain
-                let base_table = sort.to_string();
-                let g = query_for_variable(symbol, &base_table, index);
-
-                if base_table == "bool" {
-                    Ok(Grounding::Boolean { tu: g.clone(), uf: g.clone(), g: g })
+            let base_table = if let Some(sort) = sort {  // finite domain
+                    sort.to_string()
                 } else {
-                    Ok(Grounding::NonBoolean(g))
-                }
-            } else {  // infinite domain
-                let qual_identifier = QualIdentifier::Identifier(Identifier::Simple(symbol.clone()));
-                let variant = Right("apply".to_string());
-                let g = query_for_compound(&qual_identifier, &mut vec![], &variant)?;
+                    "".to_string()
+                };
+
+            let g = query_for_variable(symbol, &base_table, index);
+
+            if base_table == "bool" {
+                Ok(Grounding::Boolean { tu: g.clone(), uf: g.clone(), g })
+            } else {
                 Ok(Grounding::NonBoolean(g))
             }
         },
@@ -178,7 +176,7 @@ pub(crate) fn ground_term_(
             ground_compound(qual_identifier, sub_terms, index, solver)
         },
         Term::Let(..) => todo!(),
-        Term::Forall(variables, term, Some(interpreted_vars)) => {
+        Term::Forall(variables, term) => {
             match ground_term(term, false, solver)? {
                 Grounding::NonBoolean(_) =>
                     Err(InternalError(42578548)),
@@ -186,9 +184,6 @@ pub(crate) fn ground_term_(
 
                     let mut free_variables = sub_g.variables.clone();
                     for SortedVar(symbol, _) in variables {
-                        free_variables.shift_remove(symbol);
-                    }
-                    for SortedVar(symbol, _) in interpreted_vars {
                         free_variables.shift_remove(symbol);
                     }
 
@@ -224,7 +219,7 @@ pub(crate) fn ground_term_(
                 },
             }
         },
-        Term::Exists(variables, term, Some(interpreted_vars)) => {
+        Term::Exists(variables, term) => {
             match ground_term(term, false, solver)? {
                 Grounding::NonBoolean(_) =>
                     Err(InternalError(42578548)),
@@ -232,9 +227,6 @@ pub(crate) fn ground_term_(
 
                     let mut free_variables = sub_g.variables.clone();
                     for SortedVar(symbol, _) in variables {
-                        free_variables.shift_remove(symbol);
-                    }
-                    for SortedVar(symbol, _) in interpreted_vars {
                         free_variables.shift_remove(symbol);
                     }
 
@@ -269,8 +261,6 @@ pub(crate) fn ground_term_(
                 },
             }
         },
-        Term::Forall(_, _, None)
-        | Term::Exists(_, _, None) => Err(InternalError(95788566)),  // expecting Some(vec![]) if no interpretation
         Term::Match(..) => todo!(),
         Term::Annotation(..) => todo!(),
     }

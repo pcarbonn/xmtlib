@@ -6,7 +6,7 @@ use indexmap::{IndexMap, IndexSet};
 use itertools::Either::{self, Left, Right};
 
 use crate::api::{Identifier, QualIdentifier, SortedVar, SpecConstant, Symbol};
-use crate::error::SolverError::{self, InternalError};
+use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 
 
@@ -17,7 +17,8 @@ use crate::solver::{Solver, TermId};
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct GroundingQuery {
 
-    pub(crate) variables: IndexMap<Symbol, Column>,  // maps variables to either a Type table or (better) an Interpretation table
+    /// maps variables to None if its domain is infinite or to a Column in a Type or Interpretation table.
+    pub(crate) variables: IndexMap<Symbol, Option<Column>>,
     pub(crate) conditions: Vec<SQLExpr>,  // vector of non-empty SQL expressions
     pub(crate) grounding: SQLExpr,
     pub(crate) natural_joins: IndexSet<NaturalJoin>,
@@ -89,8 +90,14 @@ impl std::fmt::Display for GroundingQuery {
     // SQL formatting
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let variables = self.variables.iter()
-            .map(|(symbol, column)| format!("{column} AS {symbol}"))
-            .collect::<Vec<_>>()
+            .map(|(symbol, column)| {
+                if let Some(column) = column {
+                    format!("{column} AS {symbol}")
+                } else {
+                    format!("\"{symbol}\" AS {symbol}")
+                }
+
+            }).collect::<Vec<_>>()
             .join(", ");
         let variables = if variables == "" { variables } else {variables + ", "};
 
@@ -132,10 +139,14 @@ impl std::fmt::Display for GroundingQuery {
                     NaturalJoin::View(table_name, symbols) => {
                         let name = name(table_name);
                         let on = symbols.iter()
-                            .map( | symbol | {
-                                let column = self.variables.get(symbol).unwrap();
+                            .filter_map( | symbol | {
                                 let this_column = Column{table_name: table_name.clone(), column: symbol.to_string()};
-                                format!(" {this_column} = {column}")
+                                let column = self.variables.get(symbol).unwrap();
+                                if let Some(column) = column {
+                                    Some(format!(" {this_column} = {column}"))
+                                } else {
+                                    None  // dead code
+                                }
                             }).collect::<Vec<_>>().join(" AND ");
                         if on == "" { name  } else { format!("{name} ON {on}")}
                     }
@@ -158,7 +169,12 @@ impl std::fmt::Display for GroundingQuery {
                                 Ids::Some =>
                                     Some(format!("(NOT(is_id({value})) OR {value} = {col})")),
                                 Ids::None =>
-                                    None
+                                    if let SQLExpr::Variable(_) = e {
+                                        if value != col.to_string() {
+                                            Some(format!("{value} = {col}"))
+                                        } else { None}
+
+                                    } else { None },
                             }
                         }
                     }).collect::<Vec<_>>().join(" AND ");
@@ -187,7 +203,7 @@ impl SQLExpr {
     // it can return an empty string !
     fn show(
         &self,
-        variables: &IndexMap<Symbol, Column>
+        variables: &IndexMap<Symbol, Option<Column>>
     ) -> String {
 
             /// Helper: use either "apply" or "construct2", according to the first argument.
@@ -199,7 +215,7 @@ impl SQLExpr {
                 application: &str,
                 function: String,
                 exprs: &Box<Vec<SQLExpr>>,
-                variables: &IndexMap<Symbol, Column>
+                variables: &IndexMap<Symbol, Option<Column>>
             ) -> String {
                 if ["and", "or"].contains(&function.as_str()) {
                     let exprs =
@@ -241,7 +257,14 @@ impl SQLExpr {
                     SpecConstant::String(s) => format!("\"{s}\""),
                 }
             },
-            SQLExpr::Variable(symbol) => variables.get(symbol).unwrap().to_string(),
+            SQLExpr::Variable(symbol) => {
+                let column = variables.get(symbol).unwrap();
+                if let Some(column) = column {
+                    column.to_string()
+                } else {
+                    format!("\"{symbol}\"")
+                }
+            },
             SQLExpr::Apply(qual_identifier, exprs) => {
                 sql_for("apply", qual_identifier.to_string(), exprs, variables)
             },
@@ -317,16 +340,27 @@ pub(crate) fn query_for_variable(
     base_table: &String,
     index: usize
 ) -> GroundingQuery {
-    let table_name = TableName{base_table: base_table.clone(), index};
-    let column = Column{table_name: table_name.clone(), column: "G".to_string()};
+    if *base_table != "".to_string() {
+        let table_name = TableName{base_table: base_table.clone(), index};
+        let column = Column{table_name: table_name.clone(), column: "G".to_string()};
 
-    GroundingQuery{
-        variables: IndexMap::from([(symbol.clone(), column.clone())]),
-        conditions: vec![],
-        grounding: SQLExpr::Variable(symbol.clone()),
-        natural_joins: IndexSet::from([NaturalJoin::Variable(table_name, symbol.clone())]),
-        theta_joins: IndexSet::new(),
-        ids: Ids::All,
+        GroundingQuery{
+            variables: IndexMap::from([(symbol.clone(), Some(column.clone()))]),
+            conditions: vec![],
+            grounding: SQLExpr::Variable(symbol.clone()),
+            natural_joins: IndexSet::from([NaturalJoin::Variable(table_name, symbol.clone())]),
+            theta_joins: IndexSet::new(),
+            ids: Ids::All,
+        }
+    } else {
+        GroundingQuery{
+            variables: IndexMap::from([(symbol.clone(), None)]),
+            conditions: vec![],
+            grounding: SQLExpr::Variable(symbol.clone()),
+            natural_joins: IndexSet::new(),
+            theta_joins: IndexSet::new(),
+            ids: Ids::None,
+        }
     }
 }
 
@@ -343,7 +377,7 @@ pub(crate) fn query_for_compound(
     variant: &Either<(TableName, Ids), String>
 ) -> Result<GroundingQuery, SolverError> {
 
-    let mut variables: IndexMap<Symbol, Column> = IndexMap::new();
+    let mut variables: IndexMap<Symbol, Option<Column>> = IndexMap::new();
     let mut conditions= vec![];
     let mut groundings = vec![];
     let mut natural_joins = IndexSet::new();
@@ -358,8 +392,8 @@ pub(crate) fn query_for_compound(
             if let Left((table_name, _)) = variant {
                 let column = Column{table_name: table_name.clone(), column: format!("a_{i}")};
 
-                //  update the wuery in progress
-                variables.insert(symbol.clone(), column.clone());
+                //  update the query in progress
+                variables.insert(symbol.clone(), Some(column.clone()));
                 let variable = SQLExpr::Variable(symbol);
                 // sub-query has no conditions
                 groundings.push(variable.clone());
@@ -408,7 +442,11 @@ pub(crate) fn query_for_compound(
             match natural_join {
                 NaturalJoin::Variable(table_name, symbol) => {
                     let column = variables.get(symbol).unwrap();
-                    column.table_name == *table_name // otherwise, unused variable
+                    if let Some(column) = column {
+                        column.table_name == *table_name  // // otherwise, unused variable
+                    } else {
+                        false  // infinite variable.  Dead code ?
+                    }
                 },
                 NaturalJoin::View(..) => {
                     true
@@ -447,8 +485,8 @@ pub(crate) fn query_for_compound(
 /// Creates a query over an aggregate view, possibly adding a where clause if exclude is not empty
 pub(crate) fn query_for_aggregate(
     sub_query: &GroundingQuery,
-    free_variables: &IndexMap<Symbol, Column>,
-    variables: &Vec<SortedVar>,  // variables that are aggregated over infinite sort
+    free_variables: &IndexMap<Symbol, Option<Column>>,
+    variables: &Vec<SortedVar>,  // variables being quantified
     agg: &str,  // "and", "or" or ""
     exclude: &str, // "true" or "false"
     table_name: TableName,
@@ -473,16 +511,26 @@ pub(crate) fn query_for_aggregate(
         .collect::<Vec<_>>().join(", ");
     let free = if free == "" { free } else { free + ", " };
 
+    let infinite_variables = variables.iter()
+        .filter_map ( |sv| {
+            let symbol =  &sv.0;
+            if let Some(Some(_)) = sub_query.variables.get(symbol) {
+                None
+            } else {
+                Some(sv)
+            }
+        }).collect::<Vec<_>>();
+
     // compute the grounding:-
     //   just `or_aggregate(G)``,
     //   or `or_aggregate("(forall ({vars}) " || G || ")"`
-    let vars = variables.iter()
+    let vars = infinite_variables.iter()
         .map( |sv| sv.to_string() )
         .collect::<Vec<_>>().join(" ");
     let grounding =
-        if variables.len() == 0 && agg == "" {
+        if vars.len() == 0 && agg == "" {
             format!("G")
-        } else if variables.len() == 0 && agg != ""{
+        } else if vars.len() == 0 && agg != ""{
             format!("{agg}_aggregate(G)")
         } else if agg == "and" {
             format!("\"(forall ({vars}) \" || {agg}_aggregate(G) || \")\"")
@@ -493,8 +541,13 @@ pub(crate) fn query_for_aggregate(
         };
 
     let group_by = free_variables.iter()
-        .map( |(_, column)| column.to_string() )
-        .collect::<Vec<_>>().join(", ");
+        .filter_map( |(_, column)| {
+            if let Some(column) = column {
+                Some(column.column.to_string())
+            } else {
+                None
+            }
+        }).collect::<Vec<_>>().join(", ");
     let group_by =
         if group_by == "" || agg == "" {
             "".to_string()
@@ -512,8 +565,8 @@ pub(crate) fn query_for_aggregate(
     // select {free_variables}, {table_name}.G from {table_name}
     let select = free_variables.iter()
         .map( |(symbol, _)|
-            (symbol.clone(), Column{table_name: table_name.clone(), column: symbol.to_string()}))
-        .collect::<IndexMap<Symbol, Column>>();
+            (symbol.clone(), Some(Column{table_name: table_name.clone(), column: symbol.to_string()})))
+        .collect::<IndexMap<_, _>>();
 
     let natural_joins = IndexSet::from([
         NaturalJoin::View(table_name.clone(),free_variables.keys().cloned().collect())
@@ -533,13 +586,18 @@ pub(crate) fn query_for_aggregate(
 impl GroundingQuery {
     /// returns the variable if the query is for a variable
     fn is_for_a_variable(&self) -> Result<Option<Symbol>, SolverError> {
-        if self.variables.len() == 1
-        && self.natural_joins.len() == 1
-        && self.ids == Ids::All {
-            let (symbol, column) = self.variables.first()
-                .ok_or(InternalError(7954155))?;
-            if let Some(NaturalJoin::Variable(table_name, _)) = self.natural_joins.first() {
-                if column.table_name == *table_name && column.column == "G" {
+        if let Some((symbol, column)) = self.variables.first() {
+            if self.variables.len() == 1 {
+                if let Some(column) = column {
+                    if self.natural_joins.len() == 1
+                    && self.ids == Ids::All {
+                        if let Some(NaturalJoin::Variable(table_name, _)) = self.natural_joins.first() {
+                            if column.table_name == *table_name && column.column == "G" {
+                                return Ok(Some(symbol.clone()))
+                            }
+                        }
+                    }
+                } else {  // variable over infinite domain
                     return Ok(Some(symbol.clone()))
                 }
             }

@@ -74,7 +74,7 @@ Groundings:
     TU: SELECT bright_TU.a_0 AS x, bright_TU.G AS G FROM bright_TU AS bright_TU
     UF: SELECT bright_UF.a_0 AS x, bright_UF.G AS G FROM bright_UF AS bright_UF
     G : SELECT bright_G.a_0 AS x, bright_G.G AS G FROM bright_G AS bright_G
- - (exists () (bright x)):
+ - (exists ((x Color)) (bright x)):
     TU: SELECT Agg_0_TU.G AS G FROM Agg_0_TU
     UF: SELECT Agg_0_UF.G AS G FROM Agg_0_UF
     G : SELECT Agg_0_G.G AS G FROM Agg_0_G
@@ -82,7 +82,7 @@ Groundings:
     TU: SELECT same_TU_3.a_1 AS x, same_TU_3.G AS G FROM same_TU AS same_TU_3 WHERE same_TU_3.a_1 = same_TU_3.a_0
     UF: SELECT same_UF_3.a_1 AS x, same_UF_3.G AS G FROM same_UF AS same_UF_3 WHERE same_UF_3.a_1 = same_UF_3.a_0
     G : SELECT same_G_3.a_1 AS x, same_G_3.G AS G FROM same_G AS same_G_3 WHERE same_G_3.a_1 = same_G_3.a_0
- - (exists () (same x x)):
+ - (exists ((x Color)) (same x x)):
     TU: SELECT Agg_3_TU.G AS G FROM Agg_3_TU
     UF: SELECT Agg_3_UF.G AS G FROM Agg_3_UF
     G : SELECT Agg_3_G.G AS G FROM Agg_3_G

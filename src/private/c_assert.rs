@@ -52,28 +52,24 @@ pub(crate) fn annotate_term(
             term: &Box<Term>,
             variables: &mut IndexMap<Symbol, Option<SortedVar>>,
             solver: &Solver
-        ) -> Result<(Vec<SortedVar>, Term, Option<Vec<SortedVar>>), SolverError> {
+        ) -> Result<Term, SolverError> {
 
             let mut new_variables = variables.clone();
-            let mut new_sorted_vars = vec![];  // keeps the variables with infinite domain
-            let mut interpreted_vars = vec![];
-            for SortedVar(symbol, sort, ) in sorted_vars {
+            for SortedVar(symbol, sort) in sorted_vars {
                 match solver.sorts.get(sort) {
                     Some(SortObject::Normal{..}) => {
                         new_variables.insert(symbol.clone(), Some(SortedVar(symbol.clone(), sort.clone())));
-                        interpreted_vars.push(SortedVar(symbol.clone(), sort.clone()))
                     },
                     Some(SortObject::Infinite)
                     | Some(SortObject::Recursive)
                     | Some(SortObject::Unknown) => {
-                        new_variables.insert(symbol.clone(), None);  // shadow pre-existing variables
-                        new_sorted_vars.push(SortedVar(symbol.clone(), sort.clone()));  // keep quantification over infinite variables
+                        new_variables.insert(symbol.clone(), None);
                     },
                     None => return Err(InternalError(2486645)),
                 }
             };
             let new_term = annotate_term(term, &mut new_variables, solver)?;
-            Ok((new_sorted_vars, new_term, Some(interpreted_vars)))
+            Ok(new_term)
         }  // end helper function
 
     match term {
@@ -213,16 +209,16 @@ pub(crate) fn annotate_term(
             Ok(Term::Let(new_var_bindings, Box::new(new_term)))
         },
 
-        Term::Forall(sorted_vars, term, _) => {
-            let (new_sorted_vars, new_term, interpreted_vars) =
+        Term::Forall(sorted_vars, term) => {
+            let new_term =
                 process_quantification(sorted_vars, term, variables, solver)?;
-            Ok(Term::Forall(new_sorted_vars, Box::new(new_term), interpreted_vars))
+            Ok(Term::Forall(sorted_vars.clone(), Box::new(new_term)))
         },
 
-        Term::Exists(sorted_vars, term, _) => {
-            let (new_sorted_vars, new_term, interpreted_vars) =
+        Term::Exists(sorted_vars, term) => {
+            let new_term =
                 process_quantification(sorted_vars, term, variables, solver)?;
-            Ok(Term::Exists(new_sorted_vars, Box::new(new_term), interpreted_vars))
+            Ok(Term::Exists(sorted_vars.clone(), Box::new(new_term)))
         },
 
         Term::Match(_, _) => {

@@ -206,12 +206,12 @@ peg::parser!{
             / _ "(" _ "forall" _ "("
               sorted_vars:(sorted_var() ++ __)
               _ ")" term:term() _ ")"
-              { Term::Forall(sorted_vars, Box::new(term), None) }
+              { Term::Forall(sorted_vars, Box::new(term)) }
 
             / _ "(" _ "exists" _ "("
               sorted_vars:(sorted_var() ++ __)
               _ ")" term:term() _ ")"
-              { Term::Exists(sorted_vars, Box::new(term), None) }
+              { Term::Exists(sorted_vars, Box::new(term)) }
 
             / _ "(" _ "match" term:term()
               _ "(" match_cases:(match_case() ++ __) _ ")" _ ")"

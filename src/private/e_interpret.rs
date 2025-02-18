@@ -76,44 +76,69 @@ pub(crate) fn interpret_pred(
 
                 // create TU view
                 let table_tu = Interpretation::Table{name: format!("{identifier}_TU"), ids: Ids::All};
-                let table_uf = Interpretation::Table{name: format!("{identifier}_UF"), ids: Ids::All};
-                let  table_g = Interpretation::Table{name: format!("{identifier}_G"), ids: Ids::All};
 
                 let sql = format!("CREATE VIEW IF NOT EXISTS {identifier}_TU AS SELECT *, \"true\" as G from {identifier}_T");
                 solver.conn.execute(&sql, ())?;
 
-                // create UF view
-                let columns = domain.iter().enumerate()
-                    .map( |(i, sort)| format!("{sort}_{i}.G AS a_{i}"))
-                    .collect::<Vec<_>>()
-                    .join(", ");
-                let joins = domain.iter().enumerate()
-                    .map( |(i, sort)| {
-                        match solver.sorts.get(sort) {
-                            Some(SortObject::Normal{table, ..}) =>
-                                Ok(format!("{table} AS {table}_{i}")),
-                            Some(_) => // infinite domain
-                                Ok("".to_string()),
-                            None =>
-                                Err(InternalError(658884995))
+                // is the domain infinite ?
+                let infinite = domain.iter()
+                    .any( |sort| {
+                        let sort_object = solver.sorts.get(sort);
+                        if let Some(sort_object) = sort_object {
+                            match sort_object {
+                                SortObject::Normal{..} => false,
+                                SortObject::Infinite
+                                | SortObject::Recursive
+                                | SortObject::Unknown => true,
+                            }
+                        } else {
+                            true  // dead code ?
                         }
-                    }).collect::<Result<Vec<_>, _>>()?
-                    .join(" JOIN ");
-                let thetas = domain.iter().enumerate()
-                    .map( |(i, sort)| format!("{sort}_{i}.G = {identifier}_TU.a_{i}"))
-                    .collect::<Vec<_>>()
-                    .join(" AND ");
-                let sql = format!("CREATE VIEW IF NOT EXISTS {identifier}_UF AS SELECT {columns}, \"false\" as G from {joins} LEFT JOIN {identifier}_TU ON {thetas} WHERE {identifier}_TU.G IS NULL");
-                solver.conn.execute(&sql, ())?;
+                    });
 
-                // create G view
-                let sql = format!("CREATE VIEW IF NOT EXISTS {identifier}_G AS SELECT * FROM {identifier}_TU UNION SELECT * FROM {identifier}_UF");
-                solver.conn.execute(&sql, ())?;
+                if infinite {
+                    let table_uf = Interpretation::Infinite;
+                    let table_g = Interpretation::Infinite;
 
+                    // create FunctionIs with boolean interpretations.
+                    let function_is = FunctionIs::BooleanInterpreted { table_tu, table_uf, table_g };
+                    solver.functions.insert(qual_identifier, function_is);
+                } else {
+                    // create UF view
+                    let table_uf = Interpretation::Table{name: format!("{identifier}_UF"), ids: Ids::All};
+                    let columns = domain.iter().enumerate()
+                        .map( |(i, sort)| format!("{sort}_{i}.G AS a_{i}"))
+                        .collect::<Vec<_>>()
+                        .join(", ");
+                    let joins = domain.iter().enumerate()
+                        .map( |(i, sort)| {
+                            match solver.sorts.get(sort) {
+                                Some(SortObject::Normal{table, ..}) =>
+                                    Ok(format!("{table} AS {table}_{i}")),
+                                Some(_) => // infinite domain
+                                    Ok("".to_string()),
+                                None =>
+                                    Err(InternalError(658884995))
+                            }
+                        }).collect::<Result<Vec<_>, _>>()?
+                        .join(" JOIN ");
+                    let thetas = domain.iter().enumerate()
+                        .map( |(i, sort)| format!("{sort}_{i}.G = {identifier}_TU.a_{i}"))
+                        .collect::<Vec<_>>()
+                        .join(" AND ");
+                    let sql = format!("CREATE VIEW IF NOT EXISTS {identifier}_UF AS SELECT {columns}, \"false\" as G from {joins} LEFT JOIN {identifier}_TU ON {thetas} WHERE {identifier}_TU.G IS NULL");
+                    solver.conn.execute(&sql, ())?;
 
-                // create FunctionIs with boolean interpretation, all ids.
-                let function_is = FunctionIs::BooleanInterpreted { table_tu, table_uf, table_g };
-                solver.functions.insert(qual_identifier, function_is);
+                    // create G view
+                    let  table_g = Interpretation::Table{name: format!("{identifier}_G"), ids: Ids::All};
+                    let sql = format!("CREATE VIEW IF NOT EXISTS {identifier}_G AS SELECT * FROM {identifier}_TU UNION SELECT * FROM {identifier}_UF");
+                    solver.conn.execute(&sql, ())?;
+
+                    // create FunctionIs with boolean interpretations.
+                    let function_is = FunctionIs::BooleanInterpreted { table_tu, table_uf, table_g };
+                    solver.functions.insert(qual_identifier, function_is);
+
+                }
 
                 Ok(format!("(x-interpret-pred {identifier} {})", tuples.iter().format(" ")))
 
