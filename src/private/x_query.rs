@@ -145,7 +145,7 @@ impl std::fmt::Display for GroundingQuery {
                                 if let Some(column) = column {
                                     Some(format!(" {this_column} = {column}"))
                                 } else {
-                                    None  // dead code
+                                    unreachable!("348595")
                                 }
                             }).collect::<Vec<_>>().join(" AND ");
                         if on == "" { name  } else { format!("{name} ON {on}")}

@@ -92,7 +92,7 @@ pub(crate) fn interpret_pred(
                                 | SortObject::Unknown => true,
                             }
                         } else {
-                            true  // dead code ?
+                            unreachable!("7895162")
                         }
                     });
 

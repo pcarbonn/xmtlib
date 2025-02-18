@@ -98,8 +98,16 @@ fn execute_query(
 
     let mut res = vec![];
     for row in row_iter {
-        let assert = format!("(assert {})", row?);
-        res.push(assert)
+        match row {
+            Err(e) => return Err(SolverError::from(e)),
+            Ok(row) => {
+                let assert = format!("(assert {})", row);
+                res.push(assert);
+                if row == "false" {
+                    break
+                }
+            }
+        }
     }
     Ok(res)
 }

@@ -28,7 +28,7 @@ pub(crate) type TermId = usize;
 
 pub struct Solver {
     pub(crate) backend: Backend,
-    pub(crate) conn: Connection,
+    pub conn: Connection,
 
     // contains only parametric data type declarations
     pub(crate) parametric_sorts: IndexMap<Symbol, ParametricObject>,
