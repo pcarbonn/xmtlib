@@ -38,13 +38,15 @@ pub(crate) fn interpret_pred(
                 // create _T table in DB, with foreign keys
                 let mut columns = domain.iter().enumerate()
                     .map( |(i, sort)| {
-                        match solver.sorts.get(sort) {
-                            Some(_) => // infinite domain
-                                Ok(format!("a_{i} TEXT")),
-                            None =>
-                                Err(InternalError(658884995))
+                        let sort_name = sort.to_string();
+                        if sort_name == "Int" {
+                            format!("a_{i} INTEGER")
+                        } else if sort_name == "Real" {
+                            format!("a_{i} REAL")
+                        } else {
+                            format!("a_{i} TEXT")
                         }
-                    }).collect::<Result<Vec<_>, _>>()?;
+                    }).collect::<Vec<String>>();
 
                 let mut foreign_keys: Vec<_> = domain.iter().enumerate()
                     .map( |(i, sort)| {

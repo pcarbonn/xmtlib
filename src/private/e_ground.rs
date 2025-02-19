@@ -322,26 +322,26 @@ fn ground_compound(
                             "and" => {
 
                                 // and
-                                let grounding_query = query_for_compound(qual_identifier, &mut gqs, &variant)?;
+                                let g = query_for_compound(qual_identifier, &mut gqs, &variant)?;
 
                                 let tu = query_for_compound(qual_identifier, &mut tus, &variant)?;
 
                                 // todo: union query(qual_identifer, ufs)  Use g in the mean time.
                                 let uf = query_for_compound(qual_identifier, &mut gqs, &variant)?;
 
-                                Ok(Grounding::Boolean{tu, uf, g: grounding_query})
+                                Ok(Grounding::Boolean{tu, uf, g})
                             },
                             "or" => {
 
                                 // or
-                                let grounding_query = query_for_compound(qual_identifier, &mut gqs, &variant)?;
+                                let g = query_for_compound(qual_identifier, &mut gqs, &variant)?;
 
                                 // todo: union query(qual_identifer, tus).  Use g in the mean time.
                                 let tu = query_for_compound(qual_identifier, &mut gqs, &variant)?;
 
                                 let uf = query_for_compound(qual_identifier, &mut ufs, &variant)?;
 
-                                Ok(Grounding::Boolean{tu, uf, g: grounding_query})
+                                Ok(Grounding::Boolean{tu, uf, g})
                             },
                             "not" => {
 
@@ -369,12 +369,15 @@ fn ground_compound(
                                     | None => Err(InternalError(85896566))
                                 }
                               },
-                            "=>"
-                            | "="
+                            "="
                             | "<="
                             | "<"
                             | ">="
-                            | ">" => todo!(),
+                            | ">" => {
+                                // if arguments are all Ids, use a where clause, else use apply
+                                let g = query_for_compound(qual_identifier, &mut gqs, &variant)?;
+                                Ok(Grounding::Boolean{tu: g.clone(), uf: g.clone(), g})
+                            },
 
                             _ => // unknown predefined boolean function
                                 Err(InternalError(58994512))
@@ -386,7 +389,17 @@ fn ground_compound(
                 }
             } else {  // not boolean
                 // predefined non-boolean function
-                todo!()
+                match qual_identifier {
+                    QualIdentifier::Identifier(Identifier::Simple(s)) => {
+                        match s.0.as_str() {
+                            _ => // unknown predefined boolean function
+                                Err(InternalError(58994512))
+                        }
+                    },
+                    QualIdentifier::Identifier(Identifier::Indexed(_,_))
+                    | QualIdentifier::Sorted(_, _) => // unknown predefined boolean function
+                        Err(InternalError(148855)),
+                }
             }
         },
         FunctionIs::Calculated { signature: (_, _, boolean)} => { // custom function

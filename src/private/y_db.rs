@@ -1,10 +1,10 @@
 // Copyright Pierre Carbonnelle, 2025.
 
-use rusqlite::{Connection, Result};
+use rusqlite::types::FromSql;
+use rusqlite::{Connection, Result, Error};
 use rusqlite::functions::{Context, FunctionFlags, Aggregate};
 
 use crate::error::SolverError;
-
 
 pub(crate) fn init_db(
     conn: &mut Connection
@@ -16,10 +16,7 @@ pub(crate) fn init_db(
         -1,                     // Number of arguments the function takes
         FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,                  // Deterministic (same input gives same output)
         |ctx| {                // The function logic
-            let symbol: String = ctx.get(0)?; // Get the string
-            let args: Vec<String> = (1..ctx.len())
-                .map(|i| ctx.get::<String>(i)) // Retrieve each argument as a String
-                .collect::<Result<_, _>>()?;     // Collect results or propagate errors
+            let (symbol, args) = get_symbol_args(ctx)?;
             Ok(format!("({} {})", symbol, args.join(" ")))
         },
     )?;
@@ -32,10 +29,7 @@ pub(crate) fn init_db(
         -1,                     // Number of arguments the function takes
         FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,                  // Deterministic (same input gives same output)
         |ctx| {                // The function logic
-            let symbol: String = ctx.get(0)?; // Get the string
-            let args: Vec<String> = (1..ctx.len())
-                .map(|i| ctx.get::<String>(i)) // Retrieve each argument as a String
-                .collect::<Result<_, _>>()?;     // Collect results or propagate errors
+            let (symbol, args) = get_symbol_args(ctx)?;
             Ok(format!(" ({} {})", symbol, args.join(" ")))
         },
     )?;
@@ -48,11 +42,7 @@ pub(crate) fn init_db(
         -1,                     // Number of arguments the function takes
         FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,                  // Deterministic (same input gives same output)
         |ctx| {                // The function logic
-            let symbol: String = ctx.get(0)?; // Get the string
-
-            let args: Vec<String> = (1..ctx.len())
-                .map(|i| ctx.get::<String>(i)) // Retrieve each argument as a String
-                .collect::<Result<_, _>>()?;     // Collect results or propagate errors
+            let (symbol, args) = get_symbol_args(ctx)?;
             let all_ids = args.iter().all( |arg| ! arg.starts_with("(") );
             if all_ids {  // leading space
                 Ok(format!(" ({} {})", symbol, args.join(" ")))
@@ -160,3 +150,28 @@ impl Aggregate<OrState, String> for OrState {
 }
 
 // todo isid
+
+
+/// get the symbol and args from the context
+fn get_symbol_args (ctx: &Context) -> Result<(String, Vec<String>), Error> {
+    let symbol: String = ctx.get(0)?; // Get the string
+    let args: Vec<String> = (1..ctx.len())
+        .map(|i| {
+            let value = ctx.get_raw(i);
+            match value {
+                rusqlite::types::ValueRef::Null =>
+                    Err(Error::InvalidFunctionParameterType(i, value.data_type())),
+                rusqlite::types::ValueRef::Integer(i) =>
+                    Ok(i.to_string()),
+                rusqlite::types::ValueRef::Real(r) =>
+                    Ok(r.to_string()),
+                rusqlite::types::ValueRef::Text(_) =>
+                    FromSql::column_result(value)
+                        .map_err(|_| Error::InvalidFunctionParameterType(i, value.data_type())),
+                rusqlite::types::ValueRef::Blob(_) =>
+                    Err(Error::InvalidFunctionParameterType(i, value.data_type())),
+            }
+        }).collect::<Result<_, Error>>()?;     // Collect results or propagate errors
+    Ok((symbol, args))
+}
+
