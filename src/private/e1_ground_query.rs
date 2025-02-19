@@ -364,17 +364,23 @@ pub(crate) fn query_for_variable(
     }
 }
 
+// pub(crate) enum View {
+//     TU, UF, G,
+// }
+
+/// describes the type of query to create for a compound term
+pub(crate) enum Variant {
+    Interpretation(TableName, Ids),
+    Apply,
+    Construct,
+    // Predefined(View)
+}
 
 /// Creates a query for a compound term, according to `variant`.
-///
-/// Arguments:
-/// * variant: either an interpretation or a function name.  The function name can be:
-///     * "apply"
-///     * "construct"
 pub(crate) fn query_for_compound(
     qual_identifier: &QualIdentifier,
     sub_queries: &mut Vec<GroundingQuery>,
-    variant: &Either<(TableName, Ids), String>
+    variant: &Variant
 ) -> Result<GroundingQuery, SolverError> {
 
     let mut variables: IndexMap<Symbol, Option<Column>> = IndexMap::new();
@@ -389,7 +395,7 @@ pub(crate) fn query_for_compound(
 
         // handle the special case where an argument is a variable
         if let Some(symbol) = sub_q.is_for_a_variable()? {
-            if let Left((table_name, _)) = variant {
+            if let Variant::Interpretation(table_name, _) = variant {
                 let column = Column{table_name: table_name.clone(), column: format!("a_{i}")};
 
                 //  update the query in progress
@@ -423,7 +429,7 @@ pub(crate) fn query_for_compound(
 
         // compute the join conditions, for later use
         match variant {
-            Left((table_name, _)) => {
+            Variant::Interpretation(table_name, _) => {
                 let column = Column{table_name: table_name.clone(), column: format!("a_{i}")};
 
                 // adds nothing if sub_q.ids = All
@@ -431,7 +437,8 @@ pub(crate) fn query_for_compound(
                 // adds nothing if sub_q.ids == None
                 thetas.push((sub_q.ids.clone(), sub_q.grounding.clone(), column));
             },
-            Right(_) => {}
+            Variant::Apply
+            | Variant::Construct => {}
         }
 
     };
@@ -445,7 +452,7 @@ pub(crate) fn query_for_compound(
                     if let Some(column) = column {
                         column.table_name == *table_name  // // otherwise, unused variable
                     } else {
-                        false  // infinite variable.  Dead code ?
+                        unreachable!()  // infinite variable.
                     }
                 },
                 NaturalJoin::View(..) => {
@@ -456,19 +463,22 @@ pub(crate) fn query_for_compound(
 
     let grounding =
         match variant {
-            Left((table_name, ids_)) => {
+            Variant::Interpretation(table_name, ids_) => {
                 theta_joins.insert((table_name.clone(), thetas));
                 ids = max(ids, ids_.clone());
                 SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()})
             },
-            Right(function) => {  // no interpretation
+            Variant::Apply => {
                 ids = Ids::None;
-                match function.as_str() {
-                    "construct" => SQLExpr::Construct(qual_identifier.clone(), Box::new(groundings)),
-                    "apply" => SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings)),
-                    _ => return Err(SolverError::InternalError(62479519))
-                }
+                SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings))
             },
+            Variant::Construct => {
+                ids = Ids::None;
+                SQLExpr::Construct(qual_identifier.clone(), Box::new(groundings))
+            },
+            // Variant::Predefined(view) => {
+            //     todo!()
+            // }
         };
 
     Ok(GroundingQuery {

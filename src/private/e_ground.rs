@@ -9,7 +9,7 @@ use rusqlite::Connection;
 use crate::api::{QualIdentifier, SortedVar, Term};
 use crate::error::SolverError::{self, *};
 use crate::private::b_fun::{FunctionIs, Interpretation};
-use crate::private::e1_ground_query::{TableName, GroundingQuery, Ids, SQLExpr,
+use crate::private::e1_ground_query::{TableName, GroundingQuery, Ids, SQLExpr, Variant,
     query_spec_constant, query_for_variable, query_for_aggregate, query_for_compound};
 use crate::solver::Solver;
 
@@ -300,7 +300,7 @@ fn ground_compound(
         Some(f) => f,
         None => {
             // custom constructor.  todo: this should not happen once constructors are declared
-            let variant = Right("construct".to_string());
+            let variant = Variant::Construct;
             let grounding_query = query_for_compound(qual_identifier, &mut vec![], &variant)?;
             return Ok(Grounding::NonBoolean(grounding_query));
         }
@@ -314,7 +314,7 @@ fn ground_compound(
         FunctionIs::Predefined { boolean: Some(boolean) } => {
             if *boolean {
                 let (mut tus, mut ufs) = collect_tu_uf(&groundings);
-                let variant = Right("apply".to_string());
+                let variant = Variant::Apply;
 
                 if * qual_identifier == solver.and {
                     let grounding_query = query_for_compound(qual_identifier, &mut gqs, &variant)?;
@@ -375,7 +375,7 @@ fn ground_compound(
             }
         },
         FunctionIs::Calculated { signature: (_, _, boolean)} => { // custom function
-            let variant = Right("apply".to_string());
+            let variant = Variant::Apply;
             if *boolean {
 
                 // custom boolean function
@@ -401,9 +401,9 @@ fn ground_compound(
                 let variant = match table {
                     Interpretation::Table{name, ids} => {
                         let table_name = TableName{base_table: name.to_string(), index};
-                        Left((table_name, ids.clone()))
+                        Variant::Interpretation(table_name, ids.clone())
                     },
-                    Interpretation::Infinite => Right("apply".to_string())
+                    Interpretation::Infinite => Variant::Apply
                 };
                 let new_query = query_for_compound(qual_identifier, &mut groundings, &variant)?;
                 new_queries.push(new_query);
