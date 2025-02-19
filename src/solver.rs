@@ -13,8 +13,8 @@ use crate::grammar::parse;
 use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, ParametricObject, SortObject};
 use crate::private::b_fun::{declare_fun, FunctionIs};
 use crate::private::c_assert::assert_;
-use crate::private::d_ground::{ground, Grounding};
-use crate::private::e_interpret::interpret_pred;
+use crate::private::d_interpret::interpret_pred;
+use crate::private::e_ground::{ground, Grounding};
 use crate::private::y_db::init_db;
 
 

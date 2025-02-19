@@ -7,7 +7,7 @@ use indexmap::IndexSet;
 
 use crate::api::{Sort, Symbol, Identifier, QualIdentifier};
 use crate::private::a_sort::instantiate_parent_sort;
-use crate::private::x_query::Ids;
+use crate::private::e1_ground_query::Ids;
 use crate::{error::SolverError, solver::Solver};
 
 
