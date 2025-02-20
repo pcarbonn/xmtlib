@@ -23,6 +23,7 @@ pub(crate) struct GroundingQuery {
     pub(crate) grounding: SQLExpr,
     pub(crate) natural_joins: IndexSet<NaturalJoin>,
     pub(crate) theta_joins: IndexSet<ThetaJoin>,
+    pub(crate) where_: Vec<SQLExpr>,
 
     pub(crate) ids: Ids,  // if the groundings are all Ids
 }
@@ -86,6 +87,7 @@ impl std::fmt::Display for GroundingQuery {
     //        {grounding} AS G,
     //   FROM {natural joins}
     //   JOIN {theta_joins}
+    //  WHERE {where_}
 
     // SQL formatting
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -183,15 +185,35 @@ impl std::fmt::Display for GroundingQuery {
                 format!("{} AS {table_name}{on}", table_name.base_table)
             }).collect::<Vec<_>>();
 
-        // naturals + thetas
+        let where_ = self.where_.iter()
+            .map( |e| e.show(&self.variables))
+            .collect::<Vec<_>>().join(" AND ");
+
+        // naturals + thetas + where_
         let tables = [naturals, thetas].concat();
         let tables =
             if tables.len() == 0 {
-                "".to_string()
+                if where_ == "" { where_ } else {
+                    format!(" WHERE {where_}")
+                }
             } else if tables.len() == 1 {
-                format!(" FROM {}", tables.join(" JOIN ").replace(" ON ", " WHERE "))
+                let mut tables = format!(" FROM {}", tables.join(" JOIN "));
+                if tables.contains(" ON ") {
+                    // replace the only " ON " by " WHERE "
+                    tables = tables.replace(" ON ", " WHERE ");
+                    if where_ != "" {
+                        tables = format!("{} AND {}", tables, where_)
+                    }
+                } else if where_ !="" {
+                    tables = format!("{} WHERE {}", tables, where_)
+                }
+                tables
             } else {
-                format!(" FROM {}", tables.join(" JOIN "))
+                let mut tables = format!(" FROM {}", tables.join(" JOIN "));
+                if where_ != "" {
+                    tables = format!("{} WHERE {}", tables, where_)
+                }
+                tables
             };
 
         write!(f, "SELECT {variables}{condition}{grounding}{tables}")
@@ -329,6 +351,7 @@ pub(crate) fn query_spec_constant(
         grounding: SQLExpr::Constant(spec_constant.clone()),
         natural_joins: IndexSet::new(),
         theta_joins: IndexSet::new(),
+        where_: vec![],
         ids: Ids::All,
     }
 }
@@ -350,6 +373,7 @@ pub(crate) fn query_for_variable(
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::from([NaturalJoin::Variable(table_name, symbol.clone())]),
             theta_joins: IndexSet::new(),
+            where_: vec![],
             ids: Ids::All,
         }
     } else {
@@ -359,21 +383,22 @@ pub(crate) fn query_for_variable(
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::new(),
             theta_joins: IndexSet::new(),
+            where_: vec![],
             ids: Ids::None,
         }
     }
 }
 
-// pub(crate) enum View {
-//     TU, UF, G,
-// }
+pub(crate) enum View {
+    TU, UF, G,
+}
 
 /// describes the type of query to create for a compound term
 pub(crate) enum Variant {
     Interpretation(TableName, Ids),
     Apply,
     Construct,
-    // Predefined(View)
+    PredefinedBoolean(View)
 }
 
 /// Creates a query for a compound term, according to `variant`.
@@ -438,7 +463,8 @@ pub(crate) fn query_for_compound(
                 thetas.push((sub_q.ids.clone(), sub_q.grounding.clone(), column));
             },
             Variant::Apply
-            | Variant::Construct => {}
+            | Variant::Construct
+            | Variant::PredefinedBoolean(..) => {}
         }
 
     };
@@ -476,9 +502,9 @@ pub(crate) fn query_for_compound(
                 ids = Ids::None;
                 SQLExpr::Construct(qual_identifier.clone(), Box::new(groundings))
             },
-            // Variant::Predefined(view) => {
-            //     todo!()
-            // }
+            Variant::PredefinedBoolean(view) => {
+                todo!()
+            }
         };
 
     Ok(GroundingQuery {
@@ -487,6 +513,7 @@ pub(crate) fn query_for_compound(
         grounding,
         natural_joins,
         theta_joins,
+        where_: vec![],
         ids,
     })
 }
@@ -588,6 +615,7 @@ pub(crate) fn query_for_aggregate(
         grounding: SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()}),
         natural_joins: natural_joins,
         theta_joins: IndexSet::new(),
+        where_: vec![],
         ids: Ids::None
     })
 }
