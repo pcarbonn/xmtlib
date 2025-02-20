@@ -8,6 +8,13 @@ use xmtlib::solver::Solver;
 
 
 #[test]
+fn test_sandbox() {
+    let file = Path::new("tests/sandbox.smt2");
+    test_file(file)
+}
+
+
+#[test]
 fn test_all_smt2_files() {
     let test_dir = Path::new("tests");
     all_smt2(test_dir)

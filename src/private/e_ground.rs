@@ -8,7 +8,7 @@ use rusqlite::Connection;
 use crate::api::{QualIdentifier, SortedVar, Term};
 use crate::error::SolverError::{self, *};
 use crate::private::b_fun::{FunctionIs, Interpretation};
-use crate::private::e1_ground_query::{TableName, GroundingQuery, Ids, SQLExpr, Variant,
+use crate::private::e1_ground_query::{TableName, GroundingQuery, Ids, SQLExpr, View, Variant,
     query_spec_constant, query_for_variable, query_for_aggregate, query_for_compound};
 use crate::solver::Solver;
 
@@ -27,8 +27,16 @@ impl std::fmt::Display for Grounding {
             Grounding::NonBoolean(query) => write!(f, " {query}"),
             Grounding::Boolean{tu, uf, g, ..} => {
                 writeln!(f, "")?;
-                writeln!(f, "    TU: {tu}")?;
-                writeln!(f, "    UF: {uf}")?;
+                if tu.ids == Ids::All {
+                    writeln!(f, "    T: {tu}")?;
+                } else {
+                    writeln!(f, "    TU: {tu}")?;
+                }
+                if uf.ids == Ids::All {
+                    writeln!(f, "    F: {uf}")?;
+                } else {
+                    writeln!(f, "    UF: {uf}")?;
+                }
                 write!  (f, "    G : {g}")
             },
         }
@@ -298,9 +306,9 @@ fn ground_compound(
     let function_is = match solver.functions.get(qual_identifier) {
         Some(f) => f,
         None => {
-            // custom constructor.  todo: this should not happen once constructors are declared
-            let variant = Variant::Construct;
-            let grounding_query = query_for_compound(qual_identifier, &mut vec![], &variant)?;
+            // custom (non-boolean) constructor.  todo: this should not happen once constructors are declared
+            let variant = Variant::Construct(View::G);
+            let grounding_query = query_for_compound(qual_identifier, &mut vec![], &variant, solver)?;
             return Ok(Grounding::NonBoolean(grounding_query));
         }
     };
@@ -313,47 +321,57 @@ fn ground_compound(
         FunctionIs::Predefined { boolean: Some(boolean) } => {
             if *boolean {
                 let (mut tus, mut ufs) = collect_tu_uf(&groundings);
-                let variant = Variant::Apply;
 
                 if * qual_identifier == solver.and {
-                    let grounding_query = query_for_compound(qual_identifier, &mut gqs, &variant)?;
 
-                    let tu = query_for_compound(qual_identifier, &mut tus, &variant)?;
+                    let variant = Variant::PredefinedBoolean(View::TU);
+                    let tu = query_for_compound(qual_identifier, &mut tus, &variant, solver)?;
 
-                    // todo: union query(qual_identifer, ufs)  Use g in the mean time.
-                    let uf = query_for_compound(qual_identifier, &mut gqs, &variant)?;
+                    // todo: union query(qual_identifer, ufs).
+                    let variant = Variant::PredefinedBoolean(View::UF);
+                    let uf = query_for_compound(qual_identifier, &mut gqs.clone(), &variant, solver)?;
 
-                    Ok(Grounding::Boolean{tu, uf, g: grounding_query})
+                    let variant = Variant::PredefinedBoolean(View::G);
+                    let g = query_for_compound(qual_identifier, &mut gqs, &variant, solver)?;
+
+                    Ok(Grounding::Boolean{tu, uf, g})
 
                 } else if *qual_identifier == solver.or {
-                    let grounding_query = query_for_compound(qual_identifier, &mut gqs, &variant)?;
 
-                    // todo: union query(qual_identifer, tus).  Use g in the mean time.
-                    let tu = query_for_compound(qual_identifier, &mut gqs, &variant)?;
+                    // todo: union query(qual_identifer, tus).
+                    let variant = Variant::PredefinedBoolean(View::TU);
+                    let tu = query_for_compound(qual_identifier, &mut gqs.clone(), &variant, solver)?;
 
-                    let uf = query_for_compound(qual_identifier, &mut ufs, &variant)?;
+                    let variant = Variant::PredefinedBoolean(View::UF);
+                    let uf = query_for_compound(qual_identifier, &mut ufs, &variant, solver)?;
 
-                    Ok(Grounding::Boolean{tu, uf, g: grounding_query})
+                    let variant = Variant::PredefinedBoolean(View::G);
+                    let g = query_for_compound(qual_identifier, &mut gqs, &variant, solver)?;
+
+                    Ok(Grounding::Boolean{tu, uf, g})
 
                 } else if *qual_identifier == solver.not {
                     // return uf, tu, g with grounding G replaced by not(G)
                     match groundings.get(0) {
                         Some(Grounding::Boolean { tu, uf, g }) => {
-                            let (mut tu, mut uf, mut g) = (tu.clone(), uf.clone(), g.clone());
-                            tu.grounding =
-                                if tu.ids == Ids::All {
-                                    SQLExpr::Boolean(false)
+                            // switch uf and tu
+                            let (mut new_tu, mut new_uf, mut new_g) = (uf.clone(), tu.clone(), g.clone());
+                            // negate the groundings
+                            new_tu.grounding =
+                                if new_tu.ids == Ids::All {
+                                    SQLExpr::Boolean(true)  // all ids were false
                                 } else {
-                                    SQLExpr::Apply(qual_identifier.clone(), Box::new(vec![tu.grounding]))
+                                    SQLExpr::Predefined(qual_identifier.clone(), Box::new(vec![new_tu.grounding]))
                                 };
-                            uf.grounding =
+                            new_uf.grounding =
                                 if uf.ids == Ids::All {
-                                    SQLExpr::Boolean(true)
+                                    SQLExpr::Boolean(false)  // all ids were true
                                 } else {
-                                    SQLExpr::Apply(qual_identifier.clone(), Box::new(vec![uf.grounding]))
+                                    SQLExpr::Predefined(qual_identifier.clone(), Box::new(vec![new_uf.grounding]))
                                 };
-                                g.grounding = SQLExpr::Apply(qual_identifier.clone(), Box::new(vec![g.grounding]));
-                            Ok(Grounding::Boolean{tu: uf, uf: tu, g})
+                            new_g.grounding = SQLExpr::Predefined(qual_identifier.clone(), Box::new(vec![new_g.grounding]));
+
+                            Ok(Grounding::Boolean{tu:  new_tu, uf: new_uf, g: new_g})
                         },
                         Some(Grounding::NonBoolean(_))
                         | None => Err(InternalError(85896566))
@@ -374,15 +392,18 @@ fn ground_compound(
             }
         },
         FunctionIs::Constructed => {
-            let variant = Variant::Construct;
             if *qual_identifier == solver.true_
             || *qual_identifier == solver.false_ {  // boolean
-                let  g = query_for_compound(qual_identifier, &mut vec![], &variant)?;
-                let tu = query_for_compound(qual_identifier, &mut vec![], &variant)?;
-                let uf = query_for_compound(qual_identifier, &mut vec![], &variant)?;
+                let variant = Variant::Construct(View::TU);
+                let tu = query_for_compound(qual_identifier, &mut vec![], &variant, solver)?;
+                let variant = Variant::Construct(View::UF);
+                let uf = query_for_compound(qual_identifier, &mut vec![], &variant, solver)?;
+                let variant = Variant::Construct(View::G);
+                let g = query_for_compound(qual_identifier, &mut vec![], &variant, solver)?;
                 Ok(Grounding::Boolean{tu, uf, g})
             } else {
-                let grounding_query = query_for_compound(qual_identifier, &mut gqs, &variant)?;
+                let variant = Variant::Construct(View::G);
+                let grounding_query = query_for_compound(qual_identifier, &mut gqs, &variant, solver)?;
                 Ok(Grounding::NonBoolean(grounding_query))
             }
         },
@@ -392,15 +413,15 @@ fn ground_compound(
 
                 // custom boolean function
                 let (mut tus, mut ufs) = collect_tu_uf(&groundings);
-                let  g = query_for_compound(qual_identifier, &mut gqs, &variant)?;
-                let tu = query_for_compound(qual_identifier, &mut tus, &variant)?;
-                let uf = query_for_compound(qual_identifier, &mut ufs, &variant)?;
+                let  g = query_for_compound(qual_identifier, &mut gqs, &variant, solver)?;
+                let tu = query_for_compound(qual_identifier, &mut tus, &variant, solver)?;
+                let uf = query_for_compound(qual_identifier, &mut ufs, &variant, solver)?;
 
                 Ok(Grounding::Boolean{tu, uf, g})
             } else {
 
                 // custom non-boolean function
-                let grounding_query = query_for_compound(qual_identifier, &mut gqs, &variant)?;
+                let grounding_query = query_for_compound(qual_identifier, &mut gqs, &variant, solver)?;
                 Ok(Grounding::NonBoolean(grounding_query))
             }
         },
@@ -417,7 +438,7 @@ fn ground_compound(
                     },
                     Interpretation::Infinite => Variant::Apply
                 };
-                let new_query = query_for_compound(qual_identifier, &mut groundings, &variant)?;
+                let new_query = query_for_compound(qual_identifier, &mut groundings, &variant, solver)?;
                 new_queries.push(new_query);
             };
 

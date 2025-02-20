@@ -25,7 +25,6 @@
 (push)
 (assert true)
 (pop)
-(assert true)
 (push)
 (assert p)
 (pop)
@@ -44,8 +43,8 @@
 (assert (or (q red) (q red)))
 Groundings:
  - true:
-    TU: SELECT "true" AS G
-    UF: SELECT "true" AS G
+    T: SELECT "true" AS G
+    F: SELECT "true" AS G WHERE FALSE
     G : SELECT "true" AS G
  - p:
     TU: SELECT "p" AS G
@@ -62,10 +61,10 @@ Groundings:
     UF: SELECT apply("q", "green") AS G
     G : SELECT apply("q", "green") AS G
  - (or (q red) (q green)):
-    TU: SELECT apply("or", apply("q", "red"), apply("q", "green")) AS G
-    UF: SELECT apply("or", apply("q", "red"), apply("q", "green")) AS G
-    G : SELECT apply("or", apply("q", "red"), apply("q", "green")) AS G
+    TU: SELECT or_(apply("q", "red"), apply("q", "green")) AS G
+    UF: SELECT or_(apply("q", "red"), apply("q", "green")) AS G
+    G : SELECT or_(apply("q", "red"), apply("q", "green")) AS G
  - (or (q red) (q red)):
-    TU: SELECT apply("or", apply("q", "red"), apply("q", "red")) AS G
-    UF: SELECT apply("or", apply("q", "red"), apply("q", "red")) AS G
-    G : SELECT apply("or", apply("q", "red"), apply("q", "red")) AS G
+    TU: SELECT or_(apply("q", "red"), apply("q", "red")) AS G
+    UF: SELECT or_(apply("q", "red"), apply("q", "red")) AS G
+    G : SELECT or_(apply("q", "red"), apply("q", "red")) AS G

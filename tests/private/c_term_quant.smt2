@@ -34,7 +34,6 @@
 (push)
 (assert (forall ((x Int)) true))
 (pop)
-(assert (exists ((x Int)) true))
 (push)
 (assert (exists ((x Int)) true))
 (pop)
@@ -42,7 +41,6 @@
 (push)
 (assert (forall ((x Color)) true))
 (pop)
-(assert (exists ((x Color)) true))
 (push)
 (assert (exists ((x Color)) true))
 (pop)
@@ -59,7 +57,7 @@
 (push)
 (assert (forall ((x Int)) (q x)))
 (pop)
-(assert (exists ((x Int)) (q x)))
+(assert (forall ((x Int)) (q x)))
 (push)
 (assert (not (exists ((x Bool)) (r x))))
 (pop)
@@ -67,12 +65,12 @@
 (push)
 (assert (forall ((x Bool)) (=> (and (r x) (r x)) false)))
 (pop)
-(assert (or (not (r true)) false))
-(assert (or (not (r false)) false))
+(assert (not (r true)))
+(assert (not (r false)))
 Groundings:
  - true:
-    TU: SELECT "true" AS G
-    UF: SELECT "true" AS G
+    T: SELECT "true" AS G
+    F: SELECT "true" AS G WHERE FALSE
     G : SELECT "true" AS G
  - (forall ((x Int)) true):
     TU: SELECT Agg_0_TU.G AS G FROM Agg_0_TU
@@ -122,21 +120,21 @@ Groundings:
     UF: SELECT Agg_12_UF.G AS G FROM Agg_12_UF
     G : SELECT Agg_12_G.G AS G FROM Agg_12_G
  - (not (exists ((x Bool)) (r x))):
-    TU: SELECT apply("not", Agg_12_UF.G) AS G FROM Agg_12_UF
-    UF: SELECT apply("not", Agg_12_TU.G) AS G FROM Agg_12_TU
-    G : SELECT apply("not", Agg_12_G.G) AS G FROM Agg_12_G
+    TU: SELECT not_(Agg_12_UF.G) AS G FROM Agg_12_UF
+    UF: SELECT not_(Agg_12_TU.G) AS G FROM Agg_12_TU
+    G : SELECT not_(Agg_12_G.G) AS G FROM Agg_12_G
  - (not (r x)):
-    TU: SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
-    UF: SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
-    G : SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
+    TU: SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
+    UF: SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
+    G : SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
  - false:
-    TU: SELECT "false" AS G
-    UF: SELECT "false" AS G
+    T: SELECT "false" AS G WHERE FALSE
+    F: SELECT "false" AS G
     G : SELECT "false" AS G
  - (or (not (r x)) false):
-    TU: SELECT Bool_12.G AS x, apply("or", apply("not", apply("r", Bool_12.G)), "false") AS G FROM Bool AS Bool_12
-    UF: SELECT Bool_12.G AS x, apply("or", apply("not", apply("r", Bool_12.G)), "false") AS G FROM Bool AS Bool_12
-    G : SELECT Bool_12.G AS x, apply("or", apply("not", apply("r", Bool_12.G)), "false") AS G FROM Bool AS Bool_12
+    TU: SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
+    UF: SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
+    G : SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
  - (forall ((x Bool)) (or (not (r x)) false)):
     TU: SELECT Agg_16_TU.G AS G FROM Agg_16_TU
     UF: SELECT Agg_16_UF.G AS G FROM Agg_16_UF

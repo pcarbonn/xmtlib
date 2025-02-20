@@ -85,21 +85,21 @@ Functions:
  - same: Boolean (same_TU Complete, same_UF Complete, same_G Complete)
 Groundings:
  - p:
-    TU: SELECT p_TU.G AS G FROM p_TU AS p_TU
-    UF: SELECT p_UF.G AS G FROM p_UF AS p_UF
+    T: SELECT p_TU.G AS G FROM p_TU AS p_TU
+    F: SELECT p_UF.G AS G FROM p_UF AS p_UF
     G : SELECT p_G.G AS G FROM p_G AS p_G
  - x: SELECT Color_1.G AS x, Color_1.G AS G FROM Color AS Color_1
  - (bright x):
-    TU: SELECT bright_TU_1.a_0 AS x, bright_TU_1.G AS G FROM bright_TU AS bright_TU_1
-    UF: SELECT bright_UF_1.a_0 AS x, bright_UF_1.G AS G FROM bright_UF AS bright_UF_1
+    T: SELECT bright_TU_1.a_0 AS x, bright_TU_1.G AS G FROM bright_TU AS bright_TU_1
+    F: SELECT bright_UF_1.a_0 AS x, bright_UF_1.G AS G FROM bright_UF AS bright_UF_1
     G : SELECT bright_G_1.a_0 AS x, bright_G_1.G AS G FROM bright_G AS bright_G_1
  - (exists ((x Color)) (bright x)):
     TU: SELECT Agg_1_TU.G AS G FROM Agg_1_TU
     UF: SELECT Agg_1_UF.G AS G FROM Agg_1_UF
     G : SELECT Agg_1_G.G AS G FROM Agg_1_G
  - (same x x):
-    TU: SELECT same_TU_4.a_1 AS x, same_TU_4.G AS G FROM same_TU AS same_TU_4 WHERE same_TU_4.a_1 = same_TU_4.a_0
-    UF: SELECT same_UF_4.a_1 AS x, same_UF_4.G AS G FROM same_UF AS same_UF_4 WHERE same_UF_4.a_1 = same_UF_4.a_0
+    T: SELECT same_TU_4.a_1 AS x, same_TU_4.G AS G FROM same_TU AS same_TU_4 WHERE same_TU_4.a_1 = same_TU_4.a_0
+    F: SELECT same_UF_4.a_1 AS x, same_UF_4.G AS G FROM same_UF AS same_UF_4 WHERE same_UF_4.a_1 = same_UF_4.a_0
     G : SELECT same_G_4.a_1 AS x, same_G_4.G AS G FROM same_G AS same_G_4 WHERE same_G_4.a_1 = same_G_4.a_0
  - (exists ((x Color)) (same x x)):
     TU: SELECT Agg_4_TU.G AS G FROM Agg_4_TU

@@ -52,17 +52,100 @@ pub(crate) fn init_db(
         },
     )?;
 
+    // create function "not_"
+    conn.create_scalar_function(
+        "not_",
+        1,                     // Number of arguments the function takes
+        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,                  // Deterministic (same input gives same output)
+        |ctx| {                // The function logic
+            let value = ctx.get::<String>(0)?;
+            if value == "true" {
+                Ok("false".to_string())
+            } else if value == "false" {
+                Ok("true".to_string())
+            } else {
+                Ok(format!("(not {})", value))
+            }
+        },
+    )?;
+
+    // create function "and°"
+    conn.create_scalar_function(
+        "and_",
+        -1,                     // Number of arguments the function takes
+        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,                  // Deterministic (same input gives same output)
+        |ctx| {                // The function logic
+            let mut state = AndState(Some(vec![]));
+            for i in 0..ctx.len() {
+                if let AndState(Some(ref mut terms)) = state { // if not false already
+                    let value = ctx.get::<String>(i)?;
+                    if value == "false" {
+                        state = AndState(None);
+                        break
+                    } else if value != "true" {
+                        terms.push(value)
+                    };
+                }
+            }
+            // finalize
+            if let AndState(Some(terms)) = state {  // not false
+                if terms.len() == 0 {
+                    Ok("true".to_string())
+                } else if terms.len() == 1 {
+                    Ok(terms.join(" "))  // get the first one
+                } else {
+                    Ok(format!("(and {})", terms.join(" ")))
+                }
+            } else {
+                Ok("false".to_string())
+            }
+        },
+    )?;
+
+    // create function "and°"
+    conn.create_scalar_function(
+        "or_",
+        -1,                     // Number of arguments the function takes
+        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,                  // Deterministic (same input gives same output)
+        |ctx| {                // The function logic
+            let mut state = OrState(Some(vec![]));
+            for i in 0..ctx.len() {
+                if let OrState(Some(ref mut terms)) = state { // if not true already
+                    let value = ctx.get::<String>(i)?;
+                    if value == "true" {
+                        state = OrState(None);
+                        break
+                    } else if value != "false" {
+                        terms.push(value)
+                    };
+                }
+            }
+            // finalize
+            if let OrState(Some(terms)) = state {  // not false
+                if terms.len() == 0 {
+                    Ok("false".to_string())
+                } else if terms.len() == 1 {
+                    Ok(terms.join(" "))  // get the first one
+                } else {
+                    Ok(format!("(or {})", terms.join(" ")))
+                }
+            } else {
+                Ok("true".to_string())
+            }
+        },
+    )?;
+
     conn.create_aggregate_function(
         "and_aggregate",
         1,
         FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,
-        AndState(Some(vec![])))?;
+        AndState(None))?;  // `init` will be called
 
     conn.create_aggregate_function(
         "or_aggregate",
         1,
         FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,
-        OrState(Some(vec![])))?;
+        OrState(None))?;  // `init` will be called
 
     Ok(())
 }

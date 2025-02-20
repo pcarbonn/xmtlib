@@ -30,11 +30,13 @@ pub(crate) struct GroundingQuery {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum SQLExpr {
+    False,  // SQL's false
     Boolean(bool),
     Constant(SpecConstant),
     Variable(Symbol),
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
     Construct(QualIdentifier, Box<Vec<SQLExpr>>),  // constructor
+    Predefined(QualIdentifier, Box<Vec<SQLExpr>>),
     // Only in GroundingQuery.groundings
     Value(Column),  // in an interpretation table.
     //  Only in GroundingQuery.conditions
@@ -184,6 +186,7 @@ impl std::fmt::Display for GroundingQuery {
                 format!("{} AS {table_name}{on}", table_name.base_table)
             }).collect::<Vec<_>>();
 
+        // todo simplify to FALSE
         let where_ = self.where_.iter()
             .map( |e| e.show(&self.variables))
             .collect::<Vec<_>>().join(" AND ");
@@ -238,36 +241,18 @@ impl SQLExpr {
                 exprs: &Box<Vec<SQLExpr>>,
                 variables: &IndexMap<Symbol, Option<Column>>
             ) -> String {
-                if ["and", "or"].contains(&function.as_str()) {
-                    let exprs =
-                        exprs.iter().cloned().filter_map( |e| {  // try to simplify
-                            match e {
-                                SQLExpr::Boolean(b) => {
-                                    if function == "and" && b { None }
-                                    else if function == "or" && !b { None }
-                                    else { Some(e.show(variables)) }
-                                },
-                                _ => Some(e.show(variables))
-                            }
-                        }).collect::<Vec<_>>();
-                    if exprs.len() == 0 {
-                        if function == "and" { "\"true\"".to_string() } else { "\"false\"".to_string()}
-                    } else if exprs.len() == 1 {
-                        exprs.first().unwrap().to_string()
-                    } else {
-                        format!("{application}(\"{function}\", {})", exprs.join(", "))
-                    }
-                } else if exprs.len() == 0 {
+                if exprs.len() == 0 {
                     format!("\"{function}\"")
                 } else {
                     let terms = exprs.iter()
                         .map(|e| e.show(variables))
                         .collect::<Vec<_>>().join(", ");
-                    format!("{application}(\"{function}\", {})", terms)
+                    format!("{application}(\"{function}\", {terms})")
                 }
             }  // end helper
 
         match self {
+            SQLExpr::False => "FALSE".to_string(),
             SQLExpr::Boolean(value) => format!("\"{value}\""),
             SQLExpr::Constant(spec_constant) => {
                 match spec_constant {
@@ -292,6 +277,44 @@ impl SQLExpr {
             SQLExpr::Construct(qual_identifier, exprs) => {
                 sql_for("construct2", qual_identifier.to_string(), exprs, variables)
             },
+            SQLExpr::Predefined(qual_identifier, exprs) => {
+                let function = qual_identifier.to_string();
+                // try to simplify
+                if ["and", "or"].contains(&function.as_str()) {
+                    let exprs =
+                        exprs.iter().cloned().filter_map( |e| {  // try to simplify
+                            match e {
+                                SQLExpr::Boolean(b) => {
+                                    if function == "and" && b { None }
+                                    else if function == "or" && !b { None }
+                                    else { Some(e.show(variables)) }
+                                },
+                                _ => Some(e.show(variables))
+                            }
+                        }).collect::<Vec<_>>();
+                    if exprs.len() == 0 {
+                        if function == "and" { "\"true\"".to_string() } else { "\"false\"".to_string()}
+                    } else if exprs.len() == 1 {
+                        exprs.first().unwrap().to_string()
+                    } else {
+                        format!("{function}_({})", exprs.join(", "))
+                    }
+                } else if function == "not" {
+                    let expr = exprs.first().unwrap().show(variables);
+                    if expr == "true" {
+                        "false".to_string()
+                    } else if expr == "false" {
+                        "true".to_string()
+                    } else {
+                        format!("not_({})", expr)
+                    }
+                } else {
+                    let terms = exprs.iter()
+                        .map(|e| e.show(variables))
+                        .collect::<Vec<_>>().join(", ");
+                    format!("{function}({terms})")
+                }
+            }
             SQLExpr::Value(column) => column.to_string(),
             SQLExpr::Equality(ids, expr, column) => {
                 let expr = expr.show(variables);
@@ -396,7 +419,7 @@ pub(crate) enum View {
 pub(crate) enum Variant {
     Interpretation(TableName, Ids),
     Apply,
-    Construct,
+    Construct(View),
     PredefinedBoolean(View)
 }
 
@@ -404,7 +427,8 @@ pub(crate) enum Variant {
 pub(crate) fn query_for_compound(
     qual_identifier: &QualIdentifier,
     sub_queries: &mut Vec<GroundingQuery>,
-    variant: &Variant
+    variant: &Variant,
+    solver: &Solver
 ) -> Result<GroundingQuery, SolverError> {
 
     let mut variables: IndexMap<Symbol, Option<Column>> = IndexMap::new();
@@ -413,6 +437,7 @@ pub(crate) fn query_for_compound(
     let mut natural_joins = IndexSet::new();
     let mut theta_joins = IndexSet::new();
     let mut thetas = vec![];
+    let mut where_: Vec<SQLExpr> = vec![];
     let mut ids: Ids = Ids::All;
 
     for (i, sub_q) in sub_queries.into_iter().enumerate() {
@@ -436,8 +461,9 @@ pub(crate) fn query_for_compound(
 
         conditions.append(&mut sub_q.conditions);
         groundings.push(sub_q.grounding.clone());
-        natural_joins.append(&mut sub_q.natural_joins.clone());
+        natural_joins.append(&mut sub_q.natural_joins);
         theta_joins.append(&mut sub_q.theta_joins);
+        where_.append(&mut sub_q.where_);
         ids = max(ids, sub_q.ids.clone());
 
         for (symbol, column) in &sub_q.variables {
@@ -462,7 +488,7 @@ pub(crate) fn query_for_compound(
                 thetas.push((sub_q.ids.clone(), sub_q.grounding.clone(), column));
             },
             Variant::Apply
-            | Variant::Construct
+            | Variant::Construct(..)
             | Variant::PredefinedBoolean(..) => {}
         }
 
@@ -497,12 +523,40 @@ pub(crate) fn query_for_compound(
                 ids = Ids::None;
                 SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings))
             },
-            Variant::Construct => {
-                ids = Ids::None;
-                SQLExpr::Construct(qual_identifier.clone(), Box::new(groundings))
+            Variant::Construct(view) => {
+                ids = Ids::All;
+                if *qual_identifier == solver.true_ {
+                    match view {
+                        View::TU => SQLExpr::Boolean(true),
+                        View::UF => {
+                            where_.push(SQLExpr::False);
+                            SQLExpr::Boolean(true)
+                        },
+                        View::G => SQLExpr::Boolean(true),
+                    }
+                } else if *qual_identifier == solver.false_ {
+                    match view {
+                        View::TU => {
+                            where_.push(SQLExpr::False);
+                            SQLExpr::Boolean(false)
+                        },
+                        View::UF => SQLExpr::Boolean(false),
+                        View::G => SQLExpr::Boolean(false),
+                    }
+                } else {  // non-boolean
+                    SQLExpr::Construct(qual_identifier.clone(), Box::new(groundings))
+                }
             },
             Variant::PredefinedBoolean(view) => {
-                todo!()
+                if ids == Ids::All {
+                    match view {
+                        View::TU => SQLExpr::Boolean(true),
+                        View::UF => SQLExpr::Boolean(false),
+                        View::G  => SQLExpr::Predefined(qual_identifier.clone(), Box::new(groundings)),
+                    }
+                } else {
+                    SQLExpr::Predefined(qual_identifier.clone(), Box::new(groundings))
+                }
             }
         };
 
@@ -512,7 +566,7 @@ pub(crate) fn query_for_compound(
         grounding,
         natural_joins,
         theta_joins,
-        where_: vec![],
+        where_,
         ids,
     })
 }
@@ -572,8 +626,8 @@ pub(crate) fn query_for_aggregate(
             format!("\"(forall ({vars}) \" || {agg}_aggregate(G) || \")\"")
         } else if agg == "or" {
             format!("\"(exists ({vars}) \" || {agg}_aggregate(G) || \")\"")
-        } else {
-            format!("\"(exists ({vars}) \" || G || \")\"")
+        } else {  // top-level "for all", with infinite variables
+            format!("\"(forall ({vars}) \" || G || \")\"")
         };
 
     let group_by = free_variables.iter()
