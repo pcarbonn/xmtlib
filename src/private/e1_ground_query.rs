@@ -3,7 +3,6 @@
 use std::cmp::max;
 
 use indexmap::{IndexMap, IndexSet};
-use itertools::Either::{self, Left, Right};
 
 use crate::api::{Identifier, QualIdentifier, SortedVar, SpecConstant, Symbol};
 use crate::error::SolverError;

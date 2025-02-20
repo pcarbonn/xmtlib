@@ -17,7 +17,7 @@ use crate::{error::SolverError, solver::Solver};
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum FunctionIs {
     Predefined{boolean: Option<bool>},  // None for `ite` --> need special code
-    // Constructed,
+    Constructed,
     Calculated{signature: (Vec<Sort>, Sort, bool)},  // signature used to create table, when later interpreted
     //NonBooleanInterpreted{ table_g: Interpretation},
     BooleanInterpreted{table_tu: Interpretation, table_uf: Interpretation, table_g: Interpretation}
@@ -42,8 +42,8 @@ impl Display for FunctionIs {
                 } else {
                     write!(f, "Predefined (?)")
                 },
-            // Self::Constructed =>
-            //     write!(f, "Constructed"),
+            Self::Constructed =>
+                write!(f, "Constructed"),
             Self::Calculated{signature} =>
                 write!(f, "Calculated({:?})", signature),
             // Self::NonBooleanInterpreted{table_g} =>

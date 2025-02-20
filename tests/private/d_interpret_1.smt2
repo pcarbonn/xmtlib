@@ -60,8 +60,8 @@
 └─────────┴─────────┘
 CREATE VIEW Agg_1_UF AS SELECT or_aggregate(G) as G from (SELECT bright_G_1.a_0 AS x, bright_G_1.G AS G FROM bright_G AS bright_G_1) HAVING or_aggregate(G) <> true
 Functions:
- - true:  -> Bool (true)
- - false:  -> Bool (true)
+ - true: Constructed
+ - false: Constructed
  - not: Predefined (true)
  - =>: Predefined (true)
  - and: Predefined (true)

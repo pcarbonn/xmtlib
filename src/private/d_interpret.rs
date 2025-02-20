@@ -27,6 +27,8 @@ pub(crate) fn interpret_pred(
             Err(SolverError::ExprError("Can't interpret a pre-defined symbol".to_string(), None)),
         FunctionIs::BooleanInterpreted { .. } =>
             Err(SolverError::ExprError("Can't re-interpret an interpreted symbol".to_string(), None)),
+        FunctionIs::Constructed { .. } =>
+            Err(SolverError::ExprError("Can't interpret a constructor".to_string(), None)),
         FunctionIs::Calculated { signature: (domain, _, boolean) } => {
             if ! *boolean {
                 Err(SolverError::ExprError("Can't use `x-interpret-pred` for non-boolean symbol".to_string(), None))

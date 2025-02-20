@@ -25,8 +25,8 @@ Sorts:
  - (Color: 2) Color: ((red ) (green ))
  - (Sort_7: 4) (Pair Color): ((pair (first Color) (second Color)))
 Functions:
- - true:  -> Bool (true)
- - false:  -> Bool (true)
+ - true: Constructed
+ - false: Constructed
  - not: Predefined (true)
  - =>: Predefined (true)
  - and: Predefined (true)

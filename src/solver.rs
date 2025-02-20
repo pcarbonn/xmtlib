@@ -48,6 +48,8 @@ pub struct Solver {
     pub(crate) groundings: IndexMap<Term, Grounding>,
 
     // pre-defined functions  (can't use `const`` because of String)
+    pub(crate) true_: QualIdentifier,
+    pub(crate) false_: QualIdentifier,
     pub(crate) and: QualIdentifier,
     pub(crate) or: QualIdentifier,
     pub(crate) not: QualIdentifier,
@@ -109,7 +111,7 @@ impl Default for Solver {
         // boolean pre-defined functions
         for s in ["true", "false"] {
             functions.insert(function(s),
-                FunctionIs::Calculated{signature: (vec![], sort("Bool"), true)});  // todo use Constructed ?
+                FunctionIs::Constructed);
         }
 
         // boolean pre-defined functions
@@ -134,6 +136,8 @@ impl Default for Solver {
                 FunctionIs::Predefined{ boolean: Some(false) });
         };
 
+        let true_: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("true".to_string())));
+        let false_: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("false".to_string())));
         let and: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("and".to_string())));
         let or: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("or".to_string())));
         let not: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("not".to_string())));
@@ -153,7 +157,7 @@ impl Default for Solver {
                 // qualified_functions: IndexMap::new(),
                 assertions_to_ground: vec![],
                 groundings: IndexMap::new(),
-                and, or, not, implies
+                true_, false_, and, or, not, implies
             }
         }
 
@@ -296,8 +300,8 @@ impl Solver {
                                                 } else {
                                                     yield_!(Ok(format!(" - {symbol}: Predefined (?)")))
                                                 },
-                                            // FunctionIs::Constructed =>
-                                            //     yield_!(Ok(format!(" - {symbol}: Constructed"))),
+                                            FunctionIs::Constructed =>
+                                                yield_!(Ok(format!(" - {symbol}: Constructed"))),
                                             FunctionIs::Calculated{signature} => {
                                                 let (domain, co_domain, boolean) = signature;
                                                 let domain = domain.iter()

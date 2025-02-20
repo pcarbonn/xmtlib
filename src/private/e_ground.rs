@@ -3,7 +3,6 @@
 use std::future::Future;
 
 use genawaiter::{sync::Gen, sync::gen, yield_};
-use itertools::Either::{Right, Left};
 use rusqlite::Connection;
 
 use crate::api::{QualIdentifier, SortedVar, Term};
@@ -372,6 +371,19 @@ fn ground_compound(
             } else {  // not boolean
                 // predefined non-boolean function
                 todo!()
+            }
+        },
+        FunctionIs::Constructed => {
+            let variant = Variant::Construct;
+            if *qual_identifier == solver.true_
+            || *qual_identifier == solver.false_ {  // boolean
+                let  g = query_for_compound(qual_identifier, &mut vec![], &variant)?;
+                let tu = query_for_compound(qual_identifier, &mut vec![], &variant)?;
+                let uf = query_for_compound(qual_identifier, &mut vec![], &variant)?;
+                Ok(Grounding::Boolean{tu, uf, g})
+            } else {
+                let grounding_query = query_for_compound(qual_identifier, &mut gqs, &variant)?;
+                Ok(Grounding::NonBoolean(grounding_query))
             }
         },
         FunctionIs::Calculated { signature: (_, _, boolean)} => { // custom function
