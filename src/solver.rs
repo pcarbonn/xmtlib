@@ -46,6 +46,12 @@ pub struct Solver {
     pub(crate) assertions_to_ground: Vec<(String, Term)>,
     // a mapping from a term to a composable representation of its grounding
     pub(crate) groundings: IndexMap<Term, Grounding>,
+
+    // pre-defined functions  (can't use `const`` because of String)
+    pub(crate) and: QualIdentifier,
+    pub(crate) or: QualIdentifier,
+    pub(crate) not: QualIdentifier,
+    pub(crate) implies: QualIdentifier,
 }
 
 
@@ -126,7 +132,12 @@ impl Default for Solver {
                         ] {
             functions.insert(function(s),
                 FunctionIs::Predefined{ boolean: Some(false) });
-        }
+        };
+
+        let and: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("and".to_string())));
+        let or: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("or".to_string())));
+        let not: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("not".to_string())));
+        let implies: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("=>".to_string())));
 
         unsafe {
             let cfg = Z3_mk_config();
@@ -142,6 +153,7 @@ impl Default for Solver {
                 // qualified_functions: IndexMap::new(),
                 assertions_to_ground: vec![],
                 groundings: IndexMap::new(),
+                and, or, not, implies
             }
         }
 

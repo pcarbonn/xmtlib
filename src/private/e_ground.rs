@@ -6,7 +6,7 @@ use genawaiter::{sync::Gen, sync::gen, yield_};
 use itertools::Either::{Right, Left};
 use rusqlite::Connection;
 
-use crate::api::{Identifier, QualIdentifier, SortedVar, Term};
+use crate::api::{QualIdentifier, SortedVar, Term};
 use crate::error::SolverError::{self, *};
 use crate::private::b_fun::{FunctionIs, Interpretation};
 use crate::private::e1_ground_query::{TableName, GroundingQuery, Ids, SQLExpr,
@@ -316,90 +316,62 @@ fn ground_compound(
                 let (mut tus, mut ufs) = collect_tu_uf(&groundings);
                 let variant = Right("apply".to_string());
 
-                match qual_identifier {
-                    QualIdentifier::Identifier(Identifier::Simple(s)) => {
-                        match s.0.as_str() {
-                            "and" => {
+                if * qual_identifier == solver.and {
+                    let grounding_query = query_for_compound(qual_identifier, &mut gqs, &variant)?;
 
-                                // and
-                                let g = query_for_compound(qual_identifier, &mut gqs, &variant)?;
+                    let tu = query_for_compound(qual_identifier, &mut tus, &variant)?;
 
-                                let tu = query_for_compound(qual_identifier, &mut tus, &variant)?;
+                    // todo: union query(qual_identifer, ufs)  Use g in the mean time.
+                    let uf = query_for_compound(qual_identifier, &mut gqs, &variant)?;
 
-                                // todo: union query(qual_identifer, ufs)  Use g in the mean time.
-                                let uf = query_for_compound(qual_identifier, &mut gqs, &variant)?;
+                    Ok(Grounding::Boolean{tu, uf, g: grounding_query})
 
-                                Ok(Grounding::Boolean{tu, uf, g})
-                            },
-                            "or" => {
+                } else if *qual_identifier == solver.or {
+                    let grounding_query = query_for_compound(qual_identifier, &mut gqs, &variant)?;
 
-                                // or
-                                let g = query_for_compound(qual_identifier, &mut gqs, &variant)?;
+                    // todo: union query(qual_identifer, tus).  Use g in the mean time.
+                    let tu = query_for_compound(qual_identifier, &mut gqs, &variant)?;
 
-                                // todo: union query(qual_identifer, tus).  Use g in the mean time.
-                                let tu = query_for_compound(qual_identifier, &mut gqs, &variant)?;
+                    let uf = query_for_compound(qual_identifier, &mut ufs, &variant)?;
 
-                                let uf = query_for_compound(qual_identifier, &mut ufs, &variant)?;
+                    Ok(Grounding::Boolean{tu, uf, g: grounding_query})
 
-                                Ok(Grounding::Boolean{tu, uf, g})
-                            },
-                            "not" => {
+                } else if *qual_identifier == solver.not {
+                    // return uf, tu, g with grounding G replaced by not(G)
+                    match groundings.get(0) {
+                        Some(Grounding::Boolean { tu, uf, g }) => {
+                            let (mut tu, mut uf, mut g) = (tu.clone(), uf.clone(), g.clone());
+                            tu.grounding =
+                                if tu.ids == Ids::All {
+                                    SQLExpr::Boolean(false)
+                                } else {
+                                    SQLExpr::Apply(qual_identifier.clone(), Box::new(vec![tu.grounding]))
+                                };
+                            uf.grounding =
+                                if uf.ids == Ids::All {
+                                    SQLExpr::Boolean(true)
+                                } else {
+                                    SQLExpr::Apply(qual_identifier.clone(), Box::new(vec![uf.grounding]))
+                                };
+                                g.grounding = SQLExpr::Apply(qual_identifier.clone(), Box::new(vec![g.grounding]));
+                            Ok(Grounding::Boolean{tu: uf, uf: tu, g})
+                        },
+                        Some(Grounding::NonBoolean(_))
+                        | None => Err(InternalError(85896566))
+                    }
 
-                                // not
-                                // return uf, tu, g with grounding G replaced by not(G)
-                                match groundings.get(0) {
-                                    Some(Grounding::Boolean { tu, uf, g }) => {
-                                        let (mut tu, mut uf, mut g) = (tu.clone(), uf.clone(), g.clone());
-                                        tu.grounding =
-                                            if tu.ids == Ids::All {
-                                                SQLExpr::Boolean(false)
-                                            } else {
-                                                SQLExpr::Apply(qual_identifier.clone(), Box::new(vec![tu.grounding]))
-                                            };
-                                        uf.grounding =
-                                            if uf.ids == Ids::All {
-                                                SQLExpr::Boolean(true)
-                                            } else {
-                                                SQLExpr::Apply(qual_identifier.clone(), Box::new(vec![uf.grounding]))
-                                            };
-                                         g.grounding = SQLExpr::Apply(qual_identifier.clone(), Box::new(vec![g.grounding]));
-                                        Ok(Grounding::Boolean{tu: uf, uf: tu, g})
-                                    },
-                                    Some(Grounding::NonBoolean(_))
-                                    | None => Err(InternalError(85896566))
-                                }
-                              },
-                            "="
-                            | "<="
-                            | "<"
-                            | ">="
-                            | ">" => {
-                                // if arguments are all Ids, use a where clause, else use apply
-                                let g = query_for_compound(qual_identifier, &mut gqs, &variant)?;
-                                Ok(Grounding::Boolean{tu: g.clone(), uf: g.clone(), g})
-                            },
-
-                            _ => // unknown predefined boolean function
-                                Err(InternalError(58994512))
-                        }
-                    },
-                    QualIdentifier::Identifier(Identifier::Indexed(_,_))
-                    | QualIdentifier::Sorted(_, _) => // unknown predefined boolean function
-                        Err(InternalError(4784955)),
+                // "=>"
+                // | "="
+                // | "<="
+                // | "<"
+                // | ">="
+                // | ">" => todo!(),
+                } else {
+                    Err(InternalError(58994512))
                 }
             } else {  // not boolean
                 // predefined non-boolean function
-                match qual_identifier {
-                    QualIdentifier::Identifier(Identifier::Simple(s)) => {
-                        match s.0.as_str() {
-                            _ => // unknown predefined boolean function
-                                Err(InternalError(58994512))
-                        }
-                    },
-                    QualIdentifier::Identifier(Identifier::Indexed(_,_))
-                    | QualIdentifier::Sorted(_, _) => // unknown predefined boolean function
-                        Err(InternalError(148855)),
-                }
+                todo!()
             }
         },
         FunctionIs::Calculated { signature: (_, _, boolean)} => { // custom function
