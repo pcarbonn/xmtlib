@@ -8,8 +8,9 @@ use rusqlite::Connection;
 use crate::api::{QualIdentifier, SortedVar, Term};
 use crate::error::SolverError::{self, *};
 use crate::private::b_fun::{FunctionIs, Interpretation};
-use crate::private::e1_ground_query::{TableName, GroundingQuery, Ids, SQLExpr, View, Variant,
+use crate::private::e1_ground_query::{TableName, GroundingQuery, Ids, View, Variant,
     query_spec_constant, query_for_variable, query_for_aggregate, query_for_compound};
+use crate::private::e2_ground_sql::SQLExpr;
 use crate::solver::Solver;
 
 
