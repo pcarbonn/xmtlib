@@ -11,7 +11,6 @@ use crate::private::e1_ground_query::{Column, Ids};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum SQLExpr {
-    False,  // SQL's false
     Boolean(bool),
     Constant(SpecConstant),
     Variable(Symbol),
@@ -57,7 +56,6 @@ impl SQLExpr {
             }  // end helper
 
         match self {
-            SQLExpr::False => "FALSE".to_string(),
             SQLExpr::Boolean(value) => format!("\"{value}\""),
             SQLExpr::Constant(spec_constant) => {
                 match spec_constant {

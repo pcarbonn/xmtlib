@@ -24,7 +24,7 @@ pub(crate) struct GroundingQuery {
     pub(crate) grounding: SQLExpr,
     pub(crate) natural_joins: IndexSet<NaturalJoin>,
     pub(crate) theta_joins: IndexSet<ThetaJoin>,
-    pub(crate) where_: Vec<SQLExpr>,
+    pub(crate) empty: bool,  // true when the grounding table is empty
 
     pub(crate) ids: Ids,  // if the groundings are all Ids
 }
@@ -75,7 +75,7 @@ impl std::fmt::Display for GroundingQuery {
     //        {grounding} AS G,
     //   FROM {natural joins}
     //   JOIN {theta_joins}
-    //  WHERE {where_}
+    //  WHERE FALSE  (if empty)
 
     // SQL formatting
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -173,34 +173,29 @@ impl std::fmt::Display for GroundingQuery {
                 format!("{} AS {table_name}{on}", table_name.base_table)
             }).collect::<Vec<_>>();
 
-        // todo simplify to FALSE
-        let where_ = self.where_.iter()
-            .map( |e| e.show(&self.variables))
-            .collect::<Vec<_>>().join(" AND ");
-
-        // naturals + thetas + where_
+        // naturals + thetas + empty
         let tables = [naturals, thetas].concat();
         let tables =
             if tables.len() == 0 {
-                if where_ == "" { where_ } else {
-                    format!(" WHERE {where_}")
-                }
+                if self.empty {
+                    format!(" WHERE FALSE")
+                } else { "".to_string() }
             } else if tables.len() == 1 {
                 let mut tables = format!(" FROM {}", tables.join(" JOIN "));
                 if tables.contains(" ON ") {
                     // replace the only " ON " by " WHERE "
                     tables = tables.replace(" ON ", " WHERE ");
-                    if where_ != "" {
-                        tables = format!("{} AND {}", tables, where_)
+                    if self.empty {
+                        tables = format!("{} AND FALSE", tables)
                     }
-                } else if where_ !="" {
-                    tables = format!("{} WHERE {}", tables, where_)
+                } else if self.empty {
+                    tables = format!("{} WHERE FALSE", tables)
                 }
                 tables
             } else {
                 let mut tables = format!(" FROM {}", tables.join(" JOIN "));
-                if where_ != "" {
-                    tables = format!("{} WHERE {}", tables, where_)
+                if self.empty {
+                    tables = format!("{} WHERE FALSE", tables)
                 }
                 tables
             };
@@ -250,7 +245,7 @@ pub(crate) fn query_spec_constant(
         grounding: SQLExpr::Constant(spec_constant.clone()),
         natural_joins: IndexSet::new(),
         theta_joins: IndexSet::new(),
-        where_: vec![],
+        empty: false,
         ids: Ids::All,
     }
 }
@@ -272,7 +267,7 @@ pub(crate) fn query_for_variable(
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::from([NaturalJoin::Variable(table_name, symbol.clone())]),
             theta_joins: IndexSet::new(),
-            where_: vec![],
+            empty: false,
             ids: Ids::All,
         }
     } else {
@@ -282,7 +277,7 @@ pub(crate) fn query_for_variable(
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::new(),
             theta_joins: IndexSet::new(),
-            where_: vec![],
+            empty: false,
             ids: Ids::None,
         }
     }
@@ -314,7 +309,7 @@ pub(crate) fn query_for_compound(
     let mut natural_joins = IndexSet::new();
     let mut theta_joins = IndexSet::new();
     let mut thetas = vec![];
-    let mut where_: Vec<SQLExpr> = vec![];
+    let mut empty = false;
     let mut ids: Ids = Ids::All;
 
     for (i, sub_q) in sub_queries.into_iter().enumerate() {
@@ -340,7 +335,7 @@ pub(crate) fn query_for_compound(
         groundings.push(sub_q.grounding.clone());
         natural_joins.append(&mut sub_q.natural_joins);
         theta_joins.append(&mut sub_q.theta_joins);
-        where_.append(&mut sub_q.where_);
+        empty = empty || sub_q.empty;
         ids = max(ids, sub_q.ids.clone());
 
         for (symbol, column) in &sub_q.variables {
@@ -406,7 +401,7 @@ pub(crate) fn query_for_compound(
                     match view {
                         View::TU => SQLExpr::Boolean(true),
                         View::UF => {
-                            where_.push(SQLExpr::False);
+                            empty = true;
                             SQLExpr::Boolean(true)
                         },
                         View::G => SQLExpr::Boolean(true),
@@ -414,7 +409,7 @@ pub(crate) fn query_for_compound(
                 } else if *qual_identifier == solver.false_ {
                     match view {
                         View::TU => {
-                            where_.push(SQLExpr::False);
+                            empty = true;
                             SQLExpr::Boolean(false)
                         },
                         View::UF => SQLExpr::Boolean(false),
@@ -443,7 +438,7 @@ pub(crate) fn query_for_compound(
         grounding,
         natural_joins,
         theta_joins,
-        where_,
+        empty,
         ids,
     })
 }
@@ -545,7 +540,7 @@ pub(crate) fn query_for_aggregate(
         grounding: SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()}),
         natural_joins: natural_joins,
         theta_joins: IndexSet::new(),
-        where_: vec![],
+        empty: false,
         ids: Ids::None
     })
 }
