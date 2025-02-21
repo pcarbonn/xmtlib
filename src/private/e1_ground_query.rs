@@ -34,7 +34,7 @@ pub(crate) struct GroundingQuery {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum NaturalJoin {
     Variable(TableName, Symbol),  // natural join with a table interpreting a variable
-    View(TableName, Vec<Symbol>),  // natural join with a table interpreting a quantification, or a union of grounding views
+    View(TableName, Vec<Symbol>),  // natural join with a table interpreting, e.g., a quantification
 }
 
 
@@ -96,12 +96,14 @@ impl std::fmt::Display for GroundingQuery {
             .map( |e| { e.show(&self.variables)})  // can be empty !
             .filter( |c| c != "")
             .map ( |c| format!("({c})"))
-            .collect::<Vec<_>>().join(" AND ");
+            .collect::<Vec<_>>();
         let condition =
-            if condition == "" {
-                condition
+            if condition.len() == 0 {
+                "".to_string()
+            } else if condition.len() == 1 {
+                format!("{} AS cond, ", condition[0])
             } else {
-                format!("{condition} AS cond, ")
+                format!("and_({}) AS cond, ", condition.join(", "))
             };
 
         // grounding

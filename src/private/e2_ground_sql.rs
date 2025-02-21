@@ -125,9 +125,9 @@ impl SQLExpr {
                     Ids::All =>
                          "".to_string(),
                     Ids::Some =>
-                         format!("(is_id({expr}) OR {expr} = {column})"),
+                         format!("or_(is_id({expr}), apply(\"=\",{expr}, {column}))"),
                     Ids::None =>
-                         format!("{expr} = {column}"),
+                         format!("apply(\"=\",{expr}, {column})"),
                 }
             },
         }
