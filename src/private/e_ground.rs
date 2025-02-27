@@ -10,7 +10,6 @@ use crate::error::SolverError::{self, *};
 use crate::private::b_fun::{FunctionIs, Interpretation};
 use crate::private::e1_ground_query::{TableName, GroundingQuery, Ids, View, Variant,
     query_spec_constant, query_for_variable, query_for_aggregate, query_for_compound};
-use crate::private::e2_ground_sql::SQLExpr;
 use crate::solver::Solver;
 
 
@@ -28,12 +27,12 @@ impl std::fmt::Display for Grounding {
             Grounding::NonBoolean(query) => write!(f, " {query}"),
             Grounding::Boolean{tu, uf, g, ..} => {
                 writeln!(f, "")?;
-                if tu.ids == Ids::All {
+                if tu.get_ids() == Ids::All {
                     writeln!(f, "    T: {tu}")?;
                 } else {
                     writeln!(f, "    TU: {tu}")?;
                 }
-                if uf.ids == Ids::All {
+                if uf.get_ids() == Ids::All {
                     writeln!(f, "    F: {uf}")?;
                 } else {
                     writeln!(f, "    UF: {uf}")?;
@@ -198,7 +197,8 @@ pub(crate) fn ground_term_(
                     Err(InternalError(42578548)),
                 Grounding::Boolean { tu: _, uf: sub_uf, g: sub_g } => {
 
-                    let mut free_variables = sub_g.variables.clone();
+                    let mut free_variables = sub_g.get_variables().clone();
+
                     for SortedVar(symbol, _) in variables {
                         free_variables.shift_remove(symbol);
                     }
@@ -241,7 +241,8 @@ pub(crate) fn ground_term_(
                     Err(InternalError(42578548)),
                 Grounding::Boolean { tu: sub_tu, uf: _, g: sub_g } => {
 
-                    let mut free_variables = sub_g.variables.clone();
+                    let mut free_variables = sub_g.get_variables().clone();
+
                     for SortedVar(symbol, _) in variables {
                         free_variables.shift_remove(symbol);
                     }
@@ -355,22 +356,10 @@ fn ground_compound(
                     // return uf, tu, g with grounding G replaced by not(G)
                     match groundings.get(0) {
                         Some(Grounding::Boolean { tu, uf, g }) => {
-                            // switch uf and tu
-                            let (mut new_tu, mut new_uf, mut new_g) = (uf.clone(), tu.clone(), g.clone());
-                            // negate the groundings
-                            new_tu.grounding =
-                                if new_tu.ids == Ids::All {
-                                    SQLExpr::Boolean(true)  // all ids were false
-                                } else {
-                                    SQLExpr::Predefined(qual_identifier.clone(), Box::new(vec![new_tu.grounding]))
-                                };
-                            new_uf.grounding =
-                                if uf.ids == Ids::All {
-                                    SQLExpr::Boolean(false)  // all ids were true
-                                } else {
-                                    SQLExpr::Predefined(qual_identifier.clone(), Box::new(vec![new_uf.grounding]))
-                                };
-                            new_g.grounding = SQLExpr::Predefined(qual_identifier.clone(), Box::new(vec![new_g.grounding]));
+                            // switch uf and tu and negate the groundings
+                            let new_tu = uf.negate(qual_identifier, View::UF);
+                            let new_uf = tu.negate(qual_identifier, View::TU);
+                            let new_g = g.negate(qual_identifier, View::G);
 
                             Ok(Grounding::Boolean{tu:  new_tu, uf: new_uf, g: new_g})
                         },

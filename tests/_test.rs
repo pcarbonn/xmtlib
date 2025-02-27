@@ -7,36 +7,42 @@ use std::path::Path;
 use xmtlib::solver::Solver;
 
 
-#[test]
-fn test_sandbox() {
-    let file = Path::new("tests/sandbox.smt2");
-    test_file(file)
-}
+#[test] fn test_a_sorts_1()     { test_file(Path::new("tests/private/a_sorts_1.smt2")) }
+#[test] fn test_a_sorts_2()     { test_file(Path::new("tests/private/a_sorts_1.smt2")) }
+#[test] fn test_b_fun()         { test_file(Path::new("tests/private/b_fun.smt2")) }
+#[test] fn test_c_term_const()  { test_file(Path::new("tests/private/c_term_const.smt2")) }
+#[test] fn test_c_term_quant()  { test_file(Path::new("tests/private/c_term_quant.smt2")) }
+#[test] fn test_d_interpret_1() { test_file(Path::new("tests/private/d_interpret_1.smt2")) }
+#[test] fn test_e_ground()      { test_file(Path::new("tests/private/e_ground.smt2")) }
 
+#[test] fn test_empty()         { test_file(Path::new("tests/empty.smt2")) }
+#[test] fn test_sandbox()       { test_file(Path::new("tests/sandbox.smt2")) }
+#[test] fn test_triangle_int()  { test_file(Path::new("tests/triangle Int.smt2")) }
+#[test] fn test_triangle()      { test_file(Path::new("tests/triangle.smt2")) }
 
-#[test]
-fn test_all_smt2_files() {
-    let test_dir = Path::new("tests");
-    all_smt2(test_dir)
-}
+// #[test]
+// fn test_all_smt2_files() {
+//     let test_dir = Path::new("tests");
+//     all_smt2(test_dir)
+// }
 
-/// recursively test all .smt2 files in the test directory and its subdirectories
-fn all_smt2(test_dir: &Path) {
-    for entry in fs::read_dir(test_dir).expect("read_dir call failed") {
-        if let Ok(entry) = entry {
-            let path = entry.path();
-            if path.is_file() {
-                if let Some(extension) = path.extension() {
-                    if extension == "smt2" {
-                        test_file(&path)
-                    }
-                }
-            } else if path.is_dir() {
-                all_smt2(&path)
-            }
-        }
-    }
-}
+// recursively test all .smt2 files in the test directory and its subdirectories
+// fn all_smt2(test_dir: &Path) {
+//     for entry in fs::read_dir(test_dir).expect("read_dir call failed") {
+//         if let Ok(entry) = entry {
+//             let path = entry.path();
+//             if path.is_file() {
+//                 if let Some(extension) = path.extension() {
+//                     if extension == "smt2" {
+//                         test_file(&path)
+//                     }
+//                 }
+//             } else if path.is_dir() {
+//                 all_smt2(&path)
+//             }
+//         }
+//     }
+// }
 
 
 fn test_file(path: &Path) {

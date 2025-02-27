@@ -16,17 +16,19 @@ use crate::private::e2_ground_sql::SQLExpr;
 
 /// Contains what is needed to construct the grounding view of a term, in a composable way.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct GroundingQuery {
+pub(crate) enum GroundingQuery {
 
-    /// maps variables to None if its domain is infinite or to a Column in a Type or Interpretation table.
-    pub(crate) variables: IndexMap<Symbol, Option<Column>>,
-    pub(crate) conditions: Vec<SQLExpr>,  // vector of non-empty SQL expressions
-    pub(crate) grounding: SQLExpr,
-    pub(crate) natural_joins: IndexSet<NaturalJoin>,
-    pub(crate) theta_joins: IndexSet<ThetaJoin>,
-    pub(crate) empty: bool,  // true when the grounding table is empty
+    Join {
+        /// maps variables to None if its domain is infinite or to a Column in a Type or Interpretation table.
+        variables: IndexMap<Symbol, Option<Column>>,
+        conditions: Vec<SQLExpr>,  // vector of non-empty SQL expressions
+        grounding: SQLExpr,
+        natural_joins: IndexSet<NaturalJoin>,
+        theta_joins: IndexSet<ThetaJoin>,
+        empty: bool,  // true when the grounding table is empty
 
-    pub(crate) ids: Ids,  // if the groundings are all Ids
+        ids: Ids,  // if the groundings are all Ids
+    },
 }
 
 
@@ -79,130 +81,136 @@ impl std::fmt::Display for GroundingQuery {
 
     // SQL formatting
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let variables = self.variables.iter()
-            .map(|(symbol, column)| {
-                if let Some(column) = column {
-                    format!("{column} AS {symbol}")
-                } else {
-                    format!("\"{symbol}\" AS {symbol}")
-                }
+        match self {
+            GroundingQuery::Join{variables, conditions, grounding,
+                natural_joins, theta_joins, empty, ..} => {
 
-            }).collect::<Vec<_>>()
-            .join(", ");
-        let variables = if variables == "" { variables } else {variables + ", "};
-
-        // condition
-        let condition = self.conditions.iter()
-            .map( |e| { e.show(&self.variables)})  // can be empty !
-            .filter( |c| c != "")
-            .map ( |c| format!("({c})"))
-            .collect::<Vec<_>>();
-        let condition =
-            if condition.len() == 0 {
-                "".to_string()
-            } else if condition.len() == 1 {
-                format!("{} AS cond, ", condition[0])
-            } else {
-                format!("and_({}) AS cond, ", condition.join(", "))
-            };
-
-        // grounding
-        let grounding = self.grounding.show(&self.variables);
-        let grounding = format!("{grounding} AS G");
-
-        // natural joins
-        let naturals = self.natural_joins.iter()
-            .map(|natural_join| {
-
-                    /// Helper function.  Returns the name of a table, with an optional alias.
-                    fn name(table_name: &TableName) -> String {
-                        if table_name.index == 0 {
-                            table_name.base_table.to_string()
+                let variables_ = variables.iter()
+                    .map(|(symbol, column)| {
+                        if let Some(column) = column {
+                            format!("{column} AS {symbol}")
                         } else {
-                            format!("{} AS {table_name}", table_name.base_table)
+                            format!("\"{symbol}\" AS {symbol}")
                         }
-                    }  // end helper
 
-                match natural_join {
-                    NaturalJoin::Variable(table_name, _) => {
-                        // a variable table never has join conditions
-                        name(table_name)
-                    },
-                    NaturalJoin::View(table_name, symbols) => {
-                        let name = name(table_name);
-                        let on = symbols.iter()
-                            .filter_map( | symbol | {
-                                let this_column = Column{table_name: table_name.clone(), column: symbol.to_string()};
-                                let column = self.variables.get(symbol).unwrap();
-                                if let Some(column) = column {
-                                    Some(format!(" {this_column} = {column}"))
+                    }).collect::<Vec<_>>()
+                    .join(", ");
+                let variables_ = if variables_ == "" { variables_ } else { variables_ + ", "};
+
+                // condition
+                let condition = conditions.iter()
+                    .map( |e| { e.show(&variables)})  // can be empty !
+                    .filter( |c| c != "")
+                    .map ( |c| format!("({c})"))
+                    .collect::<Vec<_>>();
+                let condition =
+                    if condition.len() == 0 {
+                        "".to_string()
+                    } else if condition.len() == 1 {
+                        format!("{} AS cond, ", condition[0])
+                    } else {
+                        format!("and_({}) AS cond, ", condition.join(", "))
+                    };
+
+                // grounding
+                let grounding_ = grounding.show(&variables);
+                let grounding_ = format!("{grounding_} AS G");
+
+                // natural joins
+                let naturals = natural_joins.iter()
+                    .map(|natural_join| {
+
+                            /// Helper function.  Returns the name of a table, with an optional alias.
+                            fn name(table_name: &TableName) -> String {
+                                if table_name.index == 0 {
+                                    table_name.base_table.to_string()
                                 } else {
-                                    unreachable!("348595")
+                                    format!("{} AS {table_name}", table_name.base_table)
                                 }
-                            }).collect::<Vec<_>>().join(" AND ");
-                        if on == "" { name  } else { format!("{name} ON {on}")}
-                    }
-                }
-            })
-            .collect::<Vec<_>>();
+                            }  // end helper
 
-        // theta joins
-        let thetas = self.theta_joins.iter()
-            .map( | (table_name, mapping) | {
-                let on = mapping.iter()
-                    .filter_map( | (ids, e, col) | {
-                        let value = e.show(&self.variables);
-                        if col.to_string() == value {
-                            None
-                        } else {
-                            match ids {
-                                Ids::All =>
-                                    Some(format!("{value} = {col}")),
-                                Ids::Some =>
-                                    Some(format!("(NOT(is_id({value})) OR {value} = {col})")),
-                                Ids::None =>
-                                    if let SQLExpr::Variable(_) = e {
-                                        if value != col.to_string() {
-                                            Some(format!("{value} = {col}"))
-                                        } else { None}
-
-                                    } else { None },
+                        match natural_join {
+                            NaturalJoin::Variable(table_name, _) => {
+                                // a variable table never has join conditions
+                                name(table_name)
+                            },
+                            NaturalJoin::View(table_name, symbols) => {
+                                let name = name(table_name);
+                                let on = symbols.iter()
+                                    .filter_map( | symbol | {
+                                        let this_column = Column{table_name: table_name.clone(), column: symbol.to_string()};
+                                        let column = variables.get(symbol).unwrap();
+                                        if let Some(column) = column {
+                                            Some(format!(" {this_column} = {column}"))
+                                        } else {
+                                            unreachable!("348595")
+                                        }
+                                    }).collect::<Vec<_>>().join(" AND ");
+                                if on == "" { name  } else { format!("{name} ON {on}")}
                             }
                         }
-                    }).collect::<Vec<_>>().join(" AND ");
-                let on = if on == "" { on } else { format!(" ON {on}")};
+                    })
+                    .collect::<Vec<_>>();
 
-                format!("{} AS {table_name}{on}", table_name.base_table)
-            }).collect::<Vec<_>>();
+                // theta joins
+                let thetas = theta_joins.iter()
+                    .map( | (table_name, mapping) | {
+                        let on = mapping.iter()
+                            .filter_map( | (ids, e, col) | {
+                                let value = e.show(&variables);
+                                if col.to_string() == value {
+                                    None
+                                } else {
+                                    match ids {
+                                        Ids::All =>
+                                            Some(format!("{value} = {col}")),
+                                        Ids::Some =>
+                                            Some(format!("(NOT(is_id({value})) OR {value} = {col})")),
+                                        Ids::None =>
+                                            if let SQLExpr::Variable(_) = e {
+                                                if value != col.to_string() {
+                                                    Some(format!("{value} = {col}"))
+                                                } else { None}
 
-        // naturals + thetas + empty
-        let tables = [naturals, thetas].concat();
-        let tables =
-            if tables.len() == 0 {
-                if self.empty {
-                    format!(" WHERE FALSE")
-                } else { "".to_string() }
-            } else if tables.len() == 1 {
-                let mut tables = format!(" FROM {}", tables.join(" JOIN "));
-                if tables.contains(" ON ") {
-                    // replace the only " ON " by " WHERE "
-                    tables = tables.replace(" ON ", " WHERE ");
-                    if self.empty {
-                        tables = format!("{} AND FALSE", tables)
-                    }
-                } else if self.empty {
-                    tables = format!("{} WHERE FALSE", tables)
-                }
-                tables
-            } else {
-                let mut tables = format!(" FROM {}", tables.join(" JOIN "));
-                if self.empty {
-                    tables = format!("{} WHERE FALSE", tables)
-                }
-                tables
-            };
+                                            } else { None },
+                                    }
+                                }
+                            }).collect::<Vec<_>>().join(" AND ");
+                        let on = if on == "" { on } else { format!(" ON {on}")};
 
-        write!(f, "SELECT {variables}{condition}{grounding}{tables}")
+                        format!("{} AS {table_name}{on}", table_name.base_table)
+                    }).collect::<Vec<_>>();
+
+                // naturals + thetas + empty
+                let tables = [naturals, thetas].concat();
+                let tables =
+                    if tables.len() == 0 {
+                        if *empty {
+                            format!(" WHERE FALSE")
+                        } else { "".to_string() }
+                    } else if tables.len() == 1 {
+                        let mut tables = format!(" FROM {}", tables.join(" JOIN "));
+                        if tables.contains(" ON ") {
+                            // replace the only " ON " by " WHERE "
+                            tables = tables.replace(" ON ", " WHERE ");
+                            if *empty {
+                                tables = format!("{} AND FALSE", tables)
+                            }
+                        } else if *empty {
+                            tables = format!("{} WHERE FALSE", tables)
+                        }
+                        tables
+                    } else {
+                        let mut tables = format!(" FROM {}", tables.join(" JOIN "));
+                        if *empty {
+                            tables = format!("{} WHERE FALSE", tables)
+                        }
+                        tables
+                    };
+
+                write!(f, "SELECT {variables_}{condition}{grounding_}{tables}")
+            }
+        }
     }
 }
 
@@ -241,7 +249,7 @@ impl std::fmt::Display for Ids {
 pub(crate) fn query_spec_constant(
     spec_constant: &SpecConstant
 ) -> GroundingQuery {
-    GroundingQuery {
+    GroundingQuery::Join {
         variables: IndexMap::new(),
         conditions: vec![],
         grounding: SQLExpr::Constant(spec_constant.clone()),
@@ -263,7 +271,7 @@ pub(crate) fn query_for_variable(
         let table_name = TableName{base_table: base_table.clone(), index};
         let column = Column{table_name: table_name.clone(), column: "G".to_string()};
 
-        GroundingQuery{
+        GroundingQuery::Join{
             variables: IndexMap::from([(symbol.clone(), Some(column.clone()))]),
             conditions: vec![],
             grounding: SQLExpr::Variable(symbol.clone()),
@@ -273,7 +281,7 @@ pub(crate) fn query_for_variable(
             ids: Ids::All,
         }
     } else {
-        GroundingQuery{
+        GroundingQuery::Join{
             variables: IndexMap::from([(symbol.clone(), None)]),
             conditions: vec![],
             grounding: SQLExpr::Variable(symbol.clone()),
@@ -285,6 +293,8 @@ pub(crate) fn query_for_variable(
     }
 }
 
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum View {
     TU, UF, G,
 }
@@ -314,58 +324,66 @@ pub(crate) fn query_for_compound(
     let mut empty = false;
     let mut ids: Ids = Ids::All;
 
-    for (i, sub_q) in sub_queries.into_iter().enumerate() {
+    for (i, sub_q) in sub_queries.iter_mut().enumerate() {
+        let for_variable = sub_q.is_for_a_variable()?;
 
-        // handle the special case where an argument is a variable
-        if let Some(symbol) = sub_q.is_for_a_variable()? {
-            if let Variant::Interpretation(table_name, _) = variant {
-                let column = Column{table_name: table_name.clone(), column: format!("a_{i}")};
+        match sub_q {
+            GroundingQuery::Join {
+                variables: sub_variables, conditions: sub_conditions,
+                grounding: sub_grounding, natural_joins: sub_natural_joins,
+                theta_joins: sub_theta_joins, empty: sub_empty,
+                ids: sub_ids } => {
 
-                //  update the query in progress
-                variables.insert(symbol.clone(), Some(column.clone()));
-                let variable = SQLExpr::Variable(symbol);
-                // sub-query has no conditions
-                groundings.push(variable.clone());
-                // do not push to natural_joins
-                thetas.push((sub_q.ids.clone(), variable.clone(), column));
+                if let Some(symbol) = for_variable {
+                    if let Variant::Interpretation(table_name, _) = variant {
+                        let column = Column{table_name: table_name.clone(), column: format!("a_{i}")};
 
-                continue  // to the next sub-query
-            }
-        };
+                        //  update the query in progress
+                        variables.insert(symbol.clone(), Some(column.clone()));
+                        let variable = SQLExpr::Variable(symbol.clone());
+                        // sub-query has no conditions
+                        groundings.push(variable.clone());
+                        // do not push to natural_joins
+                        thetas.push((sub_ids.clone(), variable.clone(), column));
 
-        conditions.append(&mut sub_q.conditions);
-        groundings.push(sub_q.grounding.clone());
-        natural_joins.append(&mut sub_q.natural_joins);
-        theta_joins.append(&mut sub_q.theta_joins);
-        empty = empty || sub_q.empty;
-        ids = max(ids, sub_q.ids.clone());
+                        continue  // to the next sub-query
+                    }
+                };
 
-        for (symbol, column) in &sub_q.variables {
-            // insert if not there yet,
-            // or if it was a natural join column, but not anymore
-            match variables.get(symbol) {
-                None => {
-                    variables.insert(symbol.clone(), column.clone());
-                },
-                Some(_) => { }
+                conditions.append(sub_conditions);
+                groundings.push(sub_grounding.clone());
+                natural_joins.append(sub_natural_joins);
+                theta_joins.append(sub_theta_joins);
+                empty = empty || *sub_empty;
+                ids = max(ids, sub_ids.clone());
+
+                for (symbol, column) in sub_variables.clone() {
+                    // insert if not there yet,
+                    // or if it was a natural join column, but not anymore
+                    match variables.get(&symbol) {
+                        None => {
+                            variables.insert(symbol.clone(), column.clone());
+                        },
+                        Some(_) => { }
+                    }
+                }
+
+                // compute the join conditions, for later use
+                match variant {
+                    Variant::Interpretation(table_name, _) => {
+                        let column = Column{table_name: table_name.clone(), column: format!("a_{i}")};
+
+                        // adds nothing if sub_ids = All
+                        conditions.push(SQLExpr::Equality(sub_ids.clone(), Box::new(sub_grounding.clone()), column.clone()));
+                        // adds nothing if sub_ids == None
+                        thetas.push((sub_ids.clone(), sub_grounding.clone(), column));
+                    },
+                    Variant::Apply
+                    | Variant::Construct(..)
+                    | Variant::PredefinedBoolean(..) => {}
+                }
             }
         }
-
-        // compute the join conditions, for later use
-        match variant {
-            Variant::Interpretation(table_name, _) => {
-                let column = Column{table_name: table_name.clone(), column: format!("a_{i}")};
-
-                // adds nothing if sub_q.ids = All
-                conditions.push(SQLExpr::Equality(sub_q.ids.clone(), Box::new(sub_q.grounding.clone()), column.clone()));
-                // adds nothing if sub_q.ids == None
-                thetas.push((sub_q.ids.clone(), sub_q.grounding.clone(), column));
-            },
-            Variant::Apply
-            | Variant::Construct(..)
-            | Variant::PredefinedBoolean(..) => {}
-        }
-
     };
 
     // remove natural_joins of types that are not used in variables
@@ -434,7 +452,7 @@ pub(crate) fn query_for_compound(
             }
         };
 
-    Ok(GroundingQuery {
+    Ok(GroundingQuery::Join {
         variables,
         conditions,
         grounding,
@@ -457,17 +475,8 @@ pub(crate) fn query_for_aggregate(
     solver: &mut Solver
 ) -> Result<GroundingQuery, SolverError> {
 
-    // create sql of a sub-view, using a GroundingQuery
-    let mut sub_view = sub_query.clone();
-
-    if 0 < sub_view.conditions.len() {
-        let imply = QualIdentifier::Identifier(Identifier::Simple(Symbol("=>".to_string())));
-        sub_view.conditions.push(sub_view.grounding);
-        sub_view.grounding = SQLExpr::Apply(imply, Box::new(sub_view.conditions));
-        sub_view.conditions = vec![];
-    }
-
-    let sub_view = sub_view.to_string();
+    // create sql of the sub_query
+    let sub_view = sub_query.as_sql();
 
     // now create the aggregation view
     let free = free_variables.iter()
@@ -475,10 +484,10 @@ pub(crate) fn query_for_aggregate(
         .collect::<Vec<_>>().join(", ");
     let free = if free == "" { free } else { free + ", " };
 
+    let sub_variables = sub_query.get_variables();
     let infinite_variables = variables.iter()
         .filter_map ( |sv| {
-            let symbol =  &sv.0;
-            if let Some(Some(_)) = sub_query.variables.get(symbol) {
+            if let Some(Some(_)) = sub_variables.get(&sv.0) {
                 None
             } else {
                 Some(sv)
@@ -536,7 +545,7 @@ pub(crate) fn query_for_aggregate(
         NaturalJoin::View(table_name.clone(),free_variables.keys().cloned().collect())
     ]);
 
-    Ok(GroundingQuery{
+    Ok(GroundingQuery::Join{
         variables: select,
         conditions: vec![],
         grounding: SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()}),
@@ -548,22 +557,97 @@ pub(crate) fn query_for_aggregate(
 }
 
 
+/////////////////////  Grounding Query utilities  //////////////////////////////
+
+
 impl GroundingQuery {
+
+    /// create the SQL code for a view
+    pub(crate) fn as_sql(&self) -> String {
+        match self {
+            GroundingQuery::Join{variables, conditions, grounding,
+                natural_joins, theta_joins, empty, ids} => {
+
+                let mut conditions = conditions.clone();
+                let mut grounding = grounding.clone();
+                if 0 < conditions.len() {
+                    let imply = QualIdentifier::Identifier(Identifier::Simple(Symbol("=>".to_string())));
+                    conditions.push(grounding);
+                    grounding = SQLExpr::Apply(imply, Box::new(conditions));
+                    conditions = vec![];
+                }
+                let sub_view = GroundingQuery::Join{
+                    variables: variables.clone(),
+                    conditions: conditions,
+                    grounding: grounding,
+                    natural_joins: natural_joins.clone(),
+                    theta_joins: theta_joins.clone(),
+                    empty: *empty,
+                    ids: ids.clone(),
+                };
+                sub_view.to_string()
+            }
+        }
+    }
+
+    pub(crate) fn get_variables(&self) -> IndexMap<Symbol, Option<Column>> {
+        match self {
+            GroundingQuery::Join{variables, ..} => variables.clone()
+        }
+    }
+
+    pub(crate) fn get_ids(&self) -> Ids {
+        match self {
+            GroundingQuery::Join{ids, ..} => ids.clone()
+        }
+    }
+
+    pub(crate) fn negate(&self, qual_identifier: &QualIdentifier, view: View) -> GroundingQuery {
+        match self {
+            GroundingQuery::Join { variables, conditions, grounding, natural_joins, theta_joins, empty, ids} => {
+                let new_grounding =
+                    if *ids == Ids::All {
+                        if view == View::TU {
+                            SQLExpr::Boolean(false)  // all ids were true
+                        } else if view == View::UF {
+                            SQLExpr::Boolean(true)  // all ids were false
+                        } else {
+                            SQLExpr::Predefined(qual_identifier.clone(), Box::new(vec![grounding.clone()]))
+                        }
+                    } else {
+                        SQLExpr::Predefined(qual_identifier.clone(), Box::new(vec![grounding.clone()]))
+                    };
+                GroundingQuery::Join {
+                    variables: variables.clone(),
+                    conditions: conditions.clone(),
+                    grounding: new_grounding,
+                    natural_joins: natural_joins.clone(),
+                    theta_joins: theta_joins.clone(),
+                    empty: *empty,
+                    ids: ids.clone()}
+            }
+        }
+    }
+
     /// returns the variable if the query is for a variable
     fn is_for_a_variable(&self) -> Result<Option<Symbol>, SolverError> {
-        if let Some((symbol, column)) = self.variables.first() {
-            if self.variables.len() == 1 {
-                if let Some(column) = column {
-                    if self.natural_joins.len() == 1
-                    && self.ids == Ids::All {
-                        if let Some(NaturalJoin::Variable(table_name, _)) = self.natural_joins.first() {
-                            if column.table_name == *table_name && column.column == "G" {
-                                return Ok(Some(symbol.clone()))
+        match self {
+            GroundingQuery::Join { variables, natural_joins, ids, .. } => {
+                if let Some((symbol, column)) = variables.first() {
+                    if variables.len() == 1 {
+                        if let Some(column) = column {
+                            if natural_joins.len() == 1
+                            && *ids == Ids::All {
+                                if let Some(NaturalJoin::Variable(table_name, _)) = natural_joins.first() {
+                                    if column.table_name == *table_name && column.column == "G" {
+                                        return Ok(Some(symbol.clone()))
+                                    }
+                                }
                             }
+                        } else {  // variable over infinite domain
+                            return Ok(Some(symbol.clone()))
                         }
                     }
-                } else {  // variable over infinite domain
-                    return Ok(Some(symbol.clone()))
                 }
             }
         }
