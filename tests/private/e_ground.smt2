@@ -23,7 +23,7 @@
 (assert false)
 Groundings:
  - false:
-    T: SELECT "false" AS G WHERE FALSE
+    T: SELECT "true" AS G WHERE FALSE
     F: SELECT "false" AS G
     G : SELECT "false" AS G
  - true:

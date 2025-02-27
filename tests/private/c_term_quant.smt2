@@ -128,7 +128,7 @@ Groundings:
     UF: SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
     G : SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
  - false:
-    T: SELECT "false" AS G WHERE FALSE
+    T: SELECT "true" AS G WHERE FALSE
     F: SELECT "false" AS G
     G : SELECT "false" AS G
  - (or (not (r x)) false):
