@@ -69,7 +69,7 @@ pub(crate) fn init_db(
         },
     )?;
 
-    // create function "and°"
+    // create function "and_"
     conn.create_scalar_function(
         "and_",
         -1,                     // Number of arguments the function takes
@@ -102,7 +102,7 @@ pub(crate) fn init_db(
         },
     )?;
 
-    // create function "and°"
+    // create function "or_"
     conn.create_scalar_function(
         "or_",
         -1,                     // Number of arguments the function takes
@@ -131,6 +131,29 @@ pub(crate) fn init_db(
                 }
             } else {
                 Ok("true".to_string())
+            }
+        },
+    )?;
+
+    // create function "implies_"
+    conn.create_scalar_function(
+        "implies_",
+        2,                     // Number of arguments the function takes
+        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,                  // Deterministic (same input gives same output)
+        |ctx| {                // The function logic
+            let a1 = ctx.get::<String>(0)?;
+            let a2 = ctx.get::<String>(1)?;
+
+            if a1 == "true" {
+                Ok(a2.to_string())
+            } else if a1 == "false" {
+                Ok("true".to_string())
+            } else if a2 == "true" {
+                Ok("true".to_string())
+            } else if a2 == "false" {
+                Ok(format!("(not {})", a1))
+            } else {
+                Ok(format!("(=> {} {})", a1, a2))
             }
         },
     )?;

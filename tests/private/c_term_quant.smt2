@@ -74,7 +74,7 @@ Groundings:
     G : SELECT "true" AS G
  - (forall ((x Int)) true):
     TU: SELECT Agg_0_TU.G AS G FROM Agg_0_TU
-    UF: SELECT Agg_0_UF.G AS G FROM Agg_0_UF
+    F: SELECT "true" AS G WHERE FALSE
     G : SELECT Agg_0_G.G AS G FROM Agg_0_G
  - (exists ((x Int)) true):
     TU: SELECT Agg_2_TU.G AS G FROM Agg_2_TU
@@ -82,7 +82,7 @@ Groundings:
     G : SELECT Agg_2_G.G AS G FROM Agg_2_G
  - (forall ((x Color)) true):
     TU: SELECT Agg_3_TU.G AS G FROM Agg_3_TU
-    UF: SELECT Agg_3_UF.G AS G FROM Agg_3_UF
+    F: SELECT "true" AS G WHERE FALSE
     G : SELECT Agg_3_G.G AS G FROM Agg_3_G
  - (exists ((x Color)) true):
     TU: SELECT Agg_4_TU.G AS G FROM Agg_4_TU
