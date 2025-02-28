@@ -20,6 +20,7 @@ pub(crate) enum GroundingQuery {
     Empty,
 
     Join {
+        view: Option<TableName>,
         /// maps variables to None if its domain is infinite or to a Column in a Type or Interpretation table.
         variables: IndexMap<Symbol, Option<Column>>,
         conditions: Vec<SQLExpr>,  // vector of non-empty SQL expressions
@@ -242,6 +243,7 @@ pub(crate) fn query_spec_constant(
     spec_constant: &SpecConstant
 ) -> GroundingQuery {
     GroundingQuery::Join {
+        view: None,
         variables: IndexMap::new(),
         conditions: vec![],
         grounding: SQLExpr::Constant(spec_constant.clone()),
@@ -263,6 +265,7 @@ pub(crate) fn query_for_variable(
         let column = Column{table_name: table_name.clone(), column: "G".to_string()};
 
         GroundingQuery::Join{
+            view: Some(table_name.clone()),
             variables: IndexMap::from([(symbol.clone(), Some(column.clone()))]),
             conditions: vec![],
             grounding: SQLExpr::Variable(symbol.clone()),
@@ -272,6 +275,7 @@ pub(crate) fn query_for_variable(
         }
     } else {
         GroundingQuery::Join{
+            view: None,
             variables: IndexMap::from([(symbol.clone(), None)]),
             conditions: vec![],
             grounding: SQLExpr::Variable(symbol.clone()),
@@ -299,6 +303,7 @@ pub(crate) enum Variant {
 /// Creates a query for a compound term, according to `variant`.
 pub(crate) fn query_for_compound(
     qual_identifier: &QualIdentifier,
+    index: TermId,
     sub_queries: &mut Vec<GroundingQuery>,
     variant: &Variant,
     solver: &Solver
@@ -322,7 +327,7 @@ pub(crate) fn query_for_compound(
             GroundingQuery::Join {
                 variables: sub_variables, conditions: sub_conditions,
                 grounding: sub_grounding, natural_joins: sub_natural_joins,
-                theta_joins: sub_theta_joins, ids: sub_ids } => {
+                theta_joins: sub_theta_joins, ids: sub_ids, .. } => {
 
                 if let Some(symbol) = for_variable {
                     if let Variant::Interpretation(table_name, _) = variant {
@@ -435,7 +440,9 @@ pub(crate) fn query_for_compound(
             }
         };
 
+    let view = Some(TableName{base_table: qual_identifier.to_string().clone(), index});
     Ok(GroundingQuery::Join {
+        view,
         variables,
         conditions,
         grounding,
@@ -546,9 +553,10 @@ pub(crate) fn query_for_aggregate(
             ]);
 
             Ok(GroundingQuery::Join{
+                view: Some(table_name.clone()),
                 variables: select,
                 conditions: vec![],
-                grounding: SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()}),
+                grounding: SQLExpr::Value(Column{table_name, column: "G".to_string()}),
                 natural_joins: natural_joins,
                 theta_joins: IndexSet::new(),
                 ids: Ids::None
@@ -577,11 +585,11 @@ impl GroundingQuery {
         }
     }
 
-    pub(crate) fn negate(&self, qual_identifier: &QualIdentifier, view: View) -> GroundingQuery {
+    pub(crate) fn negate(&self, qual_identifier: &QualIdentifier, index: TermId, view: View) -> GroundingQuery {
         match self {
             GroundingQuery::Empty => GroundingQuery::Empty,
             GroundingQuery::Join { variables, conditions, grounding,
-                natural_joins, theta_joins, ids} => {
+                natural_joins, theta_joins, ids, ..} => {
 
                 let new_grounding =
                     if *ids == Ids::All {
@@ -596,6 +604,7 @@ impl GroundingQuery {
                         SQLExpr::Predefined(qual_identifier.clone(), Box::new(vec![grounding.clone()]))
                     };
                 GroundingQuery::Join {
+                    view: Some(TableName{base_table: qual_identifier.to_string(), index}),
                     variables: variables.clone(),
                     conditions: conditions.clone(),
                     grounding: new_grounding,
