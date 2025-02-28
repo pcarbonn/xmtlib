@@ -25,19 +25,19 @@
 ├─────┼─────┼────────┤
 │ "a" │ "a" │ "true" │
 └─────┴─────┴────────┘
-CREATE VIEW Agg_0_TU AS SELECT and_aggregate(implies_(cond, G)) as G from (SELECT p_G.a_0 AS x, (apply("=",apply("f", "a"), p_G.a_1)) AS cond, not_(p_G.G) AS G FROM p_G AS p_G) HAVING and_aggregate(implies_(cond, G)) <> false
+CREATE VIEW Agg_0_TU AS SELECT and_aggregate(implies_(if_, G)) as G from (SELECT p_G.a_0 AS x, (apply("=",apply("f", "a"), p_G.a_1)) AS if_, not_(p_G.G) AS G FROM p_G AS p_G) HAVING and_aggregate(implies_(if_, G)) <> false
 Groundings:
  - x: SELECT T.G AS x, T.G AS G FROM T
  - a: SELECT "a" AS G
  - (f a): SELECT apply("f", "a") AS G
  - (p x (f a)):
-    TU: SELECT p_TU.a_0 AS x, (apply("=",apply("f", "a"), p_TU.a_1)) AS cond, p_TU.G AS G FROM p_TU AS p_TU
-    UF: SELECT p_UF.a_0 AS x, (apply("=",apply("f", "a"), p_UF.a_1)) AS cond, p_UF.G AS G FROM p_UF AS p_UF
-    G : SELECT p_G.a_0 AS x, (apply("=",apply("f", "a"), p_G.a_1)) AS cond, p_G.G AS G FROM p_G AS p_G
+    TU: SELECT p_TU.a_0 AS x, (apply("=",apply("f", "a"), p_TU.a_1)) AS if_, p_TU.G AS G FROM p_TU AS p_TU
+    UF: SELECT p_UF.a_0 AS x, (apply("=",apply("f", "a"), p_UF.a_1)) AS if_, p_UF.G AS G FROM p_UF AS p_UF
+    G : SELECT p_G.a_0 AS x, (apply("=",apply("f", "a"), p_G.a_1)) AS if_, p_G.G AS G FROM p_G AS p_G
  - (not (p x (f a))):
-    TU: SELECT p_UF.a_0 AS x, (apply("=",apply("f", "a"), p_UF.a_1)) AS cond, not_(p_UF.G) AS G FROM p_UF AS p_UF
-    UF: SELECT p_TU.a_0 AS x, (apply("=",apply("f", "a"), p_TU.a_1)) AS cond, not_(p_TU.G) AS G FROM p_TU AS p_TU
-    G : SELECT p_G.a_0 AS x, (apply("=",apply("f", "a"), p_G.a_1)) AS cond, not_(p_G.G) AS G FROM p_G AS p_G
+    TU: SELECT p_UF.a_0 AS x, (apply("=",apply("f", "a"), p_UF.a_1)) AS if_, not_(p_UF.G) AS G FROM p_UF AS p_UF
+    UF: SELECT p_TU.a_0 AS x, (apply("=",apply("f", "a"), p_TU.a_1)) AS if_, not_(p_TU.G) AS G FROM p_TU AS p_TU
+    G : SELECT p_G.a_0 AS x, (apply("=",apply("f", "a"), p_G.a_1)) AS if_, not_(p_G.G) AS G FROM p_G AS p_G
  - (forall ((x T)) (not (p x (f a)))):
     TU: SELECT Agg_0_TU.G AS G FROM Agg_0_TU
     UF: SELECT Agg_0_UF.G AS G FROM Agg_0_UF

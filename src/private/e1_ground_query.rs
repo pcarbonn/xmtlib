@@ -73,7 +73,7 @@ pub(crate) enum Ids {
 impl std::fmt::Display for GroundingQuery {
 
     // SELECT {variables.0} AS {variables.1},
-    //        {condition} AS cond,  -- if condition
+    //        {condition} AS if_,  -- if condition
     //        {grounding} AS G,
     //   FROM {natural joins}
     //   JOIN {theta_joins}
@@ -110,9 +110,9 @@ impl std::fmt::Display for GroundingQuery {
                     if condition.len() == 0 {
                         "".to_string()
                     } else if condition.len() == 1 {
-                        format!("{} AS cond, ", condition[0])
+                        format!("{} AS if_, ", condition[0])
                     } else {
-                        format!("and_({}) AS cond, ", condition.join(", "))
+                        format!("and_({}) AS if_, ", condition.join(", "))
                     };
 
                 // grounding
@@ -495,9 +495,9 @@ pub(crate) fn query_for_aggregate(
                     }
                 } else {
                     match agg {
-                        "" => "implies_(cond, G)",
-                        "and" => "and_aggregate(implies_(cond, G))",
-                        "or" => "or_aggregate(and_(cond, G))",
+                        "" => "implies_(if_, G)",
+                        "and" => "and_aggregate(implies_(if_, G))",
+                        "or" => "or_aggregate(and_(if_, G))",
                         _ => unreachable!()
                     }
                 };
