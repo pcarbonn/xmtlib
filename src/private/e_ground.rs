@@ -8,7 +8,7 @@ use rusqlite::Connection;
 use crate::api::{QualIdentifier, SortedVar, Term};
 use crate::error::SolverError::{self, *};
 use crate::private::b_fun::{FunctionIs, Interpretation};
-use crate::private::e1_ground_query::{TableName, GroundingQuery, Ids, View, Variant,
+use crate::private::e1_ground_query::{TableName, GroundingView, Ids, View, Variant,
     query_spec_constant, query_for_variable, query_for_aggregate, query_for_compound};
 use crate::solver::Solver;
 
@@ -18,8 +18,8 @@ use crate::solver::Solver;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum Grounding {
-    NonBoolean(GroundingQuery),
-    Boolean{tu: GroundingQuery, uf: GroundingQuery, g: GroundingQuery}
+    NonBoolean(GroundingView),
+    Boolean{tu: GroundingView, uf: GroundingView, g: GroundingView}
 }
 impl std::fmt::Display for Grounding {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -160,7 +160,7 @@ pub(crate) fn ground_term_(
         Term::SpecConstant(spec_constant) => {
 
             // a number or string; cannot be Boolean
-            let grounding = query_spec_constant(spec_constant);
+            let grounding = query_spec_constant(spec_constant, solver)?;
             Ok(Grounding::NonBoolean(grounding))
         },
         Term::XSortedVar(symbol, sort) => {
@@ -172,7 +172,7 @@ pub(crate) fn ground_term_(
                     "".to_string()
                 };
 
-            let g = query_for_variable(symbol, &base_table, index);
+            let g = query_for_variable(symbol, &base_table, index, solver)?;
 
             if base_table == "bool" {
                 Ok(Grounding::Boolean { tu: g.clone(), uf: g.clone(), g })
@@ -358,11 +358,11 @@ fn ground_compound(
                     match groundings.get(0) {
                         Some(Grounding::Boolean { tu, uf, g }) => {
                             // switch uf and tu and negate the groundings
-                            let new_tu = uf.negate(qual_identifier, index, View::UF);
-                            let new_uf = tu.negate(qual_identifier, index, View::TU);
-                            let new_g = g.negate(qual_identifier, index, View::G);
+                            let new_tu = uf.negate(qual_identifier, index, View::UF, solver)?;
+                            let new_uf = tu.negate(qual_identifier, index, View::TU, solver)?;
+                            let new_g = g.negate(qual_identifier, index, View::G, solver)?;
 
-                            Ok(Grounding::Boolean{tu:  new_tu, uf: new_uf, g: new_g})
+                            Ok(Grounding::Boolean{tu: new_tu, uf: new_uf, g: new_g})
                         },
                         Some(Grounding::NonBoolean(_))
                         | None => Err(InternalError(85896566))
@@ -420,7 +420,10 @@ fn ground_compound(
             let (tus, ufs) = collect_tu_uf(&groundings);
 
             let mut new_queries = vec![];
-            for (table, mut groundings) in [table_tu, table_uf, table_g].iter().zip([tus, ufs, gqs.to_vec()]) {
+
+            for (table, mut groundings)
+            in [table_tu.clone(), table_uf.clone(), table_g.clone()]
+                .iter().zip([tus, ufs, gqs.to_vec()]) {
 
                 let variant = match table {
                     Interpretation::Table{name, ids} => {
@@ -442,7 +445,7 @@ fn ground_compound(
 /// Collect the TU (resp. UF) grounding queries in the vector of groundings
 fn collect_tu_uf(
     groundings: &Vec<Grounding>
-) -> (Vec<GroundingQuery>, Vec<GroundingQuery>) {
+) -> (Vec<GroundingView>, Vec<GroundingView>) {
 
     // collect the TU grounding queries
     let tus = groundings.iter()
