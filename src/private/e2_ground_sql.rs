@@ -109,7 +109,21 @@ impl SQLExpr {
                     } else if expr == "false" {
                         "true".to_string()
                     } else {
-                        format!("not_({})", expr)
+                        format!("not_({expr})")
+                    }
+                } else if function == "implies" {
+                    let e1 = exprs.first().unwrap().show(variables);
+                    let e2 = exprs.get(2).unwrap().show(variables);
+                    if e1 == "true" {
+                        e2
+                    } else if e1 == "false" {
+                        "true".to_string()
+                    } else if e2 == "true" {
+                        "true".to_string()
+                    } else if e2 == "false" {
+                        format!("not_({e1})")
+                    } else {
+                        format!("implies_({e1}, {e2})")
                     }
                 } else {
                     let terms = exprs.iter()
