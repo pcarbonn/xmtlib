@@ -58,7 +58,7 @@
 ├─────────┼─────────┤
 │ "red"   │ "true"  │
 └─────────┴─────────┘
-CREATE VIEW Agg_1_UF AS SELECT or_aggregate(G) as G from (SELECT bright_G_1.a_0 AS x, bright_G_1.G AS G FROM bright_G AS bright_G_1) HAVING or_aggregate(G) <> true
+CREATE VIEW Agg_1_UF AS SELECT or_aggregate(G) as G from (SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2) HAVING or_aggregate(G) <> true
 Functions:
  - true: Constructed
  - false: Constructed
@@ -90,9 +90,9 @@ Groundings:
     G : SELECT p_G.G AS G FROM p_G AS p_G
  - x: SELECT Color_1.G AS x, Color_1.G AS G FROM Color AS Color_1
  - (bright x):
-    T: SELECT bright_TU_1.a_0 AS x, bright_TU_1.G AS G FROM bright_TU AS bright_TU_1
-    F: SELECT bright_UF_1.a_0 AS x, bright_UF_1.G AS G FROM bright_UF AS bright_UF_1
-    G : SELECT bright_G_1.a_0 AS x, bright_G_1.G AS G FROM bright_G AS bright_G_1
+    T: SELECT bright_TU_2.a_0 AS x, bright_TU_2.G AS G FROM bright_TU AS bright_TU_2
+    F: SELECT bright_UF_2.a_0 AS x, bright_UF_2.G AS G FROM bright_UF AS bright_UF_2
+    G : SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2
  - (exists ((x Color)) (bright x)):
     TU: SELECT Agg_1_TU.G AS G FROM Agg_1_TU
     UF: SELECT Agg_1_UF.G AS G FROM Agg_1_UF

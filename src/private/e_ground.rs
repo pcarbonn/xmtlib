@@ -183,12 +183,12 @@ pub(crate) fn ground_term_(
         Term::Identifier(qual_identifier) => {
 
             // an identifier
-            ground_compound(qual_identifier, &mut vec![], index, solver)
+            ground_compound(qual_identifier, &mut vec![], solver)
         },
         Term::Application(qual_identifier, sub_terms) => {
 
             // a compound term
-            ground_compound(qual_identifier, sub_terms, index, solver)
+            ground_compound(qual_identifier, sub_terms, solver)
         },
         Term::Let(..) => todo!(),
         Term::Forall(variables, term) => {
@@ -287,7 +287,6 @@ pub(crate) fn ground_term_(
 fn ground_compound(
     qual_identifier: &QualIdentifier,
     sub_terms: &Vec<Term>,
-    index: usize,
     solver: &mut Solver
 ) -> Result<Grounding, SolverError> {
 
@@ -295,6 +294,8 @@ fn ground_compound(
     let groundings = sub_terms.iter()
         .map( |t| ground_term(t, false, solver))
         .collect::<Result<Vec<_>,_>>()?;
+
+    let index = solver.groundings.len();
 
     // collect the full grounding queries
     let mut gqs = groundings.iter()
