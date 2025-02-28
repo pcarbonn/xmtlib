@@ -12,7 +12,7 @@ use crate::solver::{Solver, TermId};
 use crate::private::e2_ground_sql::SQLExpr;
 
 
-////////////////////// Data structures for grounding queries //////////////////
+////////////////////// Data structures for grounding views and queries ////////
 
 /// the grounding view of a term
 #[derive(Clone, PartialEq, Eq)]
@@ -23,7 +23,7 @@ pub(crate) enum GroundingView {
         condition: bool,
         ground_view: Either<String, TableName>, // Left for SpecConstant, Boolean; Right for view
 
-        query: GroundingQuery,
+        query: GroundingQuery,  // the underlying query
         ids: Ids,
     },
 }
@@ -538,19 +538,31 @@ pub(crate) fn query_for_aggregate(
                     .collect::<Vec<_>>().join(", ");
                 let free = if free == "" { free } else { free + ", " };
 
-                let infinite_variables = variables.iter()
+                // group-by is free minus the infinite variables
+                let group_by = free_variables.iter()
+                    .filter_map( |(_, column)| {
+                        if let Some(column) = column {
+                            Some(column.column.to_string())
+                        } else {
+                            None
+                        }
+                    }).collect::<Vec<_>>().join(", ");
+                let group_by =
+                    if group_by == "" || agg == "" {
+                        "".to_string()
+                    } else {
+                        format!(" GROUP BY {group_by}")
+                    };
+
+                // compute the grounding
+                let infinite_vars = variables.iter()
                     .filter_map ( |sv| {
                         if let Some(Some(_)) = sub_variables.get(&sv.0) {
                             None
                         } else {
-                            Some(sv)
+                            Some(sv.to_string())
                         }
-                    }).collect::<Vec<_>>();
-
-                // compute the grounding
-                let infinite_vars = infinite_variables.iter()
-                    .map( |sv| sv.to_string() )
-                    .collect::<Vec<_>>().join(" ");
+                    }).collect::<Vec<_>>().join(" ");
                 let grounding =
                     if conditions.len() == 0 {
                         match agg {
@@ -577,21 +589,6 @@ pub(crate) fn query_for_aggregate(
                             "or" => format!("\"(exists ({infinite_vars}) \" || {grounding} || \")\""),
                             _ => unreachable!()
                         }
-                    };
-
-                let group_by = free_variables.iter()
-                    .filter_map( |(_, column)| {
-                        if let Some(column) = column {
-                            Some(column.column.to_string())
-                        } else {
-                            None
-                        }
-                    }).collect::<Vec<_>>().join(", ");
-                let group_by =
-                    if group_by == "" || agg == "" {
-                        "".to_string()
-                    } else {
-                        format!(" GROUP BY {group_by}")
                     };
 
                 let mut sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {free}{grounding} as G from ({sub_view}){group_by}");
