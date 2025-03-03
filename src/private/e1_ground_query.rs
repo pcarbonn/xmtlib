@@ -41,7 +41,7 @@ pub(crate) enum GroundingQuery {
     },
     Aggregate {
         agg: String,  // "" (top-level), "and" or "or"
-        free_variables: IndexMap<Symbol, Option<Column>>,
+        free_variables: IndexMap<Symbol, bool>,  // true if infinite
         infinite_variables: Vec<SortedVar>,
         sub_view: Box<GroundingView>,  // the sub_view has more variables than free_variables
         exclude: Option<bool>
@@ -263,13 +263,9 @@ impl std::fmt::Display for GroundingQuery {
 
                     // group-by is free minus the infinite variables
                     let group_by = free_variables.iter()
-                        .filter_map( |(symbol, column)| {
-                            if let Some(_) = column {
-                                Some(symbol.to_string())  // no need to group-by infinite variables
-                            } else {
-                                None
-                            }
-                        }).collect::<Vec<_>>().join(", ");
+                        .filter( |(_, infinite)| ! *infinite)
+                        .map( |(symbol, _)| symbol.to_string())
+                        .collect::<Vec<_>>().join(", ");
                     let group_by =
                         if group_by == "" || agg == "" {
                             "".to_string()
@@ -598,7 +594,7 @@ pub(crate) fn query_for_compound(
 /// Creates a query over an aggregate view, possibly adding a where clause if exclude is not empty
 pub(crate) fn query_for_aggregate(
     sub_query: &GroundingView,
-    free_variables: &IndexMap<Symbol, Option<Column>>,
+    free_variables: &IndexMap<Symbol, bool>,
     infinite_variables: &Vec<SortedVar>,  // variables being quantified
     agg: &str,  // "and", "or" or ""
     exclude: Option<bool>,
@@ -715,15 +711,16 @@ pub(crate) fn create_view (
 
 impl GroundingView {
 
-    pub(crate) fn get_variables(&self) -> IndexMap<Symbol, Option<Column>> {
+    /// return the view's variables with their infinity flag
+    pub(crate) fn get_variables(&self) -> IndexMap<Symbol, bool> {
         match self {
             GroundingView::Empty => IndexMap::new(),
-            GroundingView::View{variables, query,..} => {
-                // return variables mapped to a column, according to query.variables
-                query.get_variables().iter()
-                    .filter( |(s, _)| variables.contains(*s))
-                    .map(|(s, c)| (s.clone(), c.clone()))
-                    .collect()
+            GroundingView::View{query, variables,..} => {
+                let sub_variables = query.get_variables();
+                variables.iter()
+                    .map( |symbol| {
+                        (symbol.clone(), *sub_variables.get(symbol).unwrap())
+                    }).collect()
             }
         }
     }
@@ -751,9 +748,12 @@ impl GroundingView {
 
 impl GroundingQuery {
 
-    pub(crate) fn get_variables(&self) -> IndexMap<Symbol, Option<Column>> {
+    pub(crate) fn get_variables(&self) -> IndexMap<Symbol, bool> {
         match self {
-            GroundingQuery::Join{variables, ..} => variables.clone(),
+            GroundingQuery::Join{variables, ..} =>
+                variables.iter()
+                    .map( |(symbol, c)| (symbol.clone(), ! c.is_some()))
+                    .collect(),
             GroundingQuery::Aggregate { sub_view, .. } => sub_view.get_variables()
         }
     }
