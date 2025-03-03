@@ -52,7 +52,7 @@ Groundings:
  - x: SELECT "x" AS x, "x" AS G
  - y: SELECT "y" AS y, "y" AS G
  - (Edge x y):
-    T: SELECT Edge_TU_2.a_0 AS x, Edge_TU_2.a_1 AS y, Edge_TU_2.G AS G FROM Edge_TU AS Edge_TU_2
+    T: SELECT Edge_TU_2.a_0 AS x, Edge_TU_2.a_1 AS y, "true" AS G FROM Edge_TU AS Edge_TU_2
     UF: SELECT "x" AS x, "y" AS y, apply("Edge", "x", "y") AS G
     G : SELECT "x" AS x, "y" AS y, apply("Edge", "x", "y") AS G
  - (not (Edge x y)):
@@ -61,7 +61,7 @@ Groundings:
     G : SELECT "x" AS x, "y" AS y, not_(apply("Edge", "x", "y")) AS G
  - z: SELECT "z" AS z, "z" AS G
  - (Edge y z):
-    T: SELECT Edge_TU_5.a_0 AS y, Edge_TU_5.a_1 AS z, Edge_TU_5.G AS G FROM Edge_TU AS Edge_TU_5
+    T: SELECT Edge_TU_5.a_0 AS y, Edge_TU_5.a_1 AS z, "true" AS G FROM Edge_TU AS Edge_TU_5
     UF: SELECT "y" AS y, "z" AS z, apply("Edge", "y", "z") AS G
     G : SELECT "y" AS y, "z" AS z, apply("Edge", "y", "z") AS G
  - (not (Edge y z)):
@@ -69,7 +69,7 @@ Groundings:
     F: SELECT Edge_TU_5.a_0 AS y, Edge_TU_5.a_1 AS z, "false" AS G FROM Edge_TU AS Edge_TU_5
     G : SELECT "y" AS y, "z" AS z, not_(apply("Edge", "y", "z")) AS G
  - (Edge x z):
-    T: SELECT Edge_TU_7.a_0 AS x, Edge_TU_7.a_1 AS z, Edge_TU_7.G AS G FROM Edge_TU AS Edge_TU_7
+    T: SELECT Edge_TU_7.a_0 AS x, Edge_TU_7.a_1 AS z, "true" AS G FROM Edge_TU AS Edge_TU_7
     UF: SELECT "x" AS x, "z" AS z, apply("Edge", "x", "z") AS G
     G : SELECT "x" AS x, "z" AS z, apply("Edge", "x", "z") AS G
  - (not (Edge x z)):

@@ -42,8 +42,8 @@ Groundings:
  - x: SELECT Node.G AS x, Node.G AS G FROM Node
  - y: SELECT Node_1.G AS y, Node_1.G AS G FROM Node AS Node_1
  - (Edge x y):
-    T: SELECT Edge_TU_2.a_0 AS x, Edge_TU_2.a_1 AS y, Edge_TU_2.G AS G FROM Edge_TU AS Edge_TU_2
-    F: SELECT Edge_UF_2.a_0 AS x, Edge_UF_2.a_1 AS y, Edge_UF_2.G AS G FROM Edge_UF AS Edge_UF_2
+    T: SELECT Edge_TU_2.a_0 AS x, Edge_TU_2.a_1 AS y, "true" AS G FROM Edge_TU AS Edge_TU_2
+    F: SELECT Edge_UF_2.a_0 AS x, Edge_UF_2.a_1 AS y, "false" AS G FROM Edge_UF AS Edge_UF_2
     G : SELECT Edge_G_2.a_0 AS x, Edge_G_2.a_1 AS y, Edge_G_2.G AS G FROM Edge_G AS Edge_G_2
  - (not (Edge x y)):
     T: SELECT Edge_UF_2.a_0 AS x, Edge_UF_2.a_1 AS y, "true" AS G FROM Edge_UF AS Edge_UF_2
@@ -51,16 +51,16 @@ Groundings:
     G : SELECT Edge_G_2.a_0 AS x, Edge_G_2.a_1 AS y, not_(Edge_G_2.G) AS G FROM Edge_G AS Edge_G_2
  - z: SELECT Node_4.G AS z, Node_4.G AS G FROM Node AS Node_4
  - (Edge y z):
-    T: SELECT Edge_TU_5.a_0 AS y, Edge_TU_5.a_1 AS z, Edge_TU_5.G AS G FROM Edge_TU AS Edge_TU_5
-    F: SELECT Edge_UF_5.a_0 AS y, Edge_UF_5.a_1 AS z, Edge_UF_5.G AS G FROM Edge_UF AS Edge_UF_5
+    T: SELECT Edge_TU_5.a_0 AS y, Edge_TU_5.a_1 AS z, "true" AS G FROM Edge_TU AS Edge_TU_5
+    F: SELECT Edge_UF_5.a_0 AS y, Edge_UF_5.a_1 AS z, "false" AS G FROM Edge_UF AS Edge_UF_5
     G : SELECT Edge_G_5.a_0 AS y, Edge_G_5.a_1 AS z, Edge_G_5.G AS G FROM Edge_G AS Edge_G_5
  - (not (Edge y z)):
     T: SELECT Edge_UF_5.a_0 AS y, Edge_UF_5.a_1 AS z, "true" AS G FROM Edge_UF AS Edge_UF_5
     F: SELECT Edge_TU_5.a_0 AS y, Edge_TU_5.a_1 AS z, "false" AS G FROM Edge_TU AS Edge_TU_5
     G : SELECT Edge_G_5.a_0 AS y, Edge_G_5.a_1 AS z, not_(Edge_G_5.G) AS G FROM Edge_G AS Edge_G_5
  - (Edge x z):
-    T: SELECT Edge_TU_7.a_0 AS x, Edge_TU_7.a_1 AS z, Edge_TU_7.G AS G FROM Edge_TU AS Edge_TU_7
-    F: SELECT Edge_UF_7.a_0 AS x, Edge_UF_7.a_1 AS z, Edge_UF_7.G AS G FROM Edge_UF AS Edge_UF_7
+    T: SELECT Edge_TU_7.a_0 AS x, Edge_TU_7.a_1 AS z, "true" AS G FROM Edge_TU AS Edge_TU_7
+    F: SELECT Edge_UF_7.a_0 AS x, Edge_UF_7.a_1 AS z, "false" AS G FROM Edge_UF AS Edge_UF_7
     G : SELECT Edge_G_7.a_0 AS x, Edge_G_7.a_1 AS z, Edge_G_7.G AS G FROM Edge_G AS Edge_G_7
  - (not (Edge x z)):
     T: SELECT Edge_UF_7.a_0 AS x, Edge_UF_7.a_1 AS z, "true" AS G FROM Edge_UF AS Edge_UF_7
@@ -79,15 +79,15 @@ Groundings:
     UF: SELECT G as G from (SELECT Edge_TU_2.a_0 AS x, Edge_TU_2.a_1 AS y, Edge_TU_5.a_1 AS z, apply("phi", Edge_TU_2.a_0, Edge_TU_2.a_1, Edge_TU_5.a_1) AS G FROM Edge_TU AS Edge_TU_2 JOIN Edge_TU AS Edge_TU_5 ON Edge_TU_2.a_1 = Edge_TU_5.a_0 JOIN Edge_TU AS Edge_TU_7 ON Edge_TU_2.a_0 = Edge_TU_7.a_0 AND Edge_TU_5.a_1 = Edge_TU_7.a_1)
     G : SELECT and_aggregate(G) as G from (SELECT Edge_G_2.a_0 AS x, Edge_G_2.a_1 AS y, Edge_G_5.a_1 AS z, or_(not_(Edge_G_2.G), not_(Edge_G_5.G), not_(Edge_G_7.G), apply("phi", Edge_G_2.a_0, Edge_G_2.a_1, Edge_G_5.a_1)) AS G FROM Edge_G AS Edge_G_2 JOIN Edge_G AS Edge_G_5 ON Edge_G_2.a_1 = Edge_G_5.a_0 JOIN Edge_G AS Edge_G_7 ON Edge_G_2.a_0 = Edge_G_7.a_0 AND Edge_G_5.a_1 = Edge_G_7.a_1)
  - (Edge x x):
-    T: SELECT Edge_TU_12.a_1 AS x, Edge_TU_12.G AS G FROM Edge_TU AS Edge_TU_12 WHERE Edge_TU_12.a_1 = Edge_TU_12.a_0
-    F: SELECT Edge_UF_12.a_1 AS x, Edge_UF_12.G AS G FROM Edge_UF AS Edge_UF_12 WHERE Edge_UF_12.a_1 = Edge_UF_12.a_0
+    T: SELECT Edge_TU_12.a_1 AS x, "true" AS G FROM Edge_TU AS Edge_TU_12 WHERE Edge_TU_12.a_1 = Edge_TU_12.a_0
+    F: SELECT Edge_UF_12.a_1 AS x, "false" AS G FROM Edge_UF AS Edge_UF_12 WHERE Edge_UF_12.a_1 = Edge_UF_12.a_0
     G : SELECT Edge_G_12.a_1 AS x, Edge_G_12.G AS G FROM Edge_G AS Edge_G_12 WHERE Edge_G_12.a_1 = Edge_G_12.a_0
  - (forall ((x Node)) (Edge x x)):
     TU: SELECT and_aggregate(G) as G from (SELECT Edge_G_12.a_1 AS x, Edge_G_12.G AS G FROM Edge_G AS Edge_G_12 WHERE Edge_G_12.a_1 = Edge_G_12.a_0) HAVING and_aggregate(G) <> "false"
-    UF: SELECT G as G from (SELECT Edge_UF_12.a_1 AS x, Edge_UF_12.G AS G FROM Edge_UF AS Edge_UF_12 WHERE Edge_UF_12.a_1 = Edge_UF_12.a_0)
+    UF: SELECT G as G from (SELECT Edge_UF_12.a_1 AS x, "false" AS G FROM Edge_UF AS Edge_UF_12 WHERE Edge_UF_12.a_1 = Edge_UF_12.a_0)
     G : SELECT and_aggregate(G) as G from (SELECT Edge_G_12.a_1 AS x, Edge_G_12.G AS G FROM Edge_G AS Edge_G_12 WHERE Edge_G_12.a_1 = Edge_G_12.a_0)
  - (exists ((x Node) (y Node)) (Edge x y)):
-    TU: SELECT or_aggregate(G) as G from (SELECT Edge_TU_2.a_0 AS x, Edge_TU_2.a_1 AS y, Edge_TU_2.G AS G FROM Edge_TU AS Edge_TU_2)
+    TU: SELECT or_aggregate(G) as G from (SELECT Edge_TU_2.a_0 AS x, Edge_TU_2.a_1 AS y, "true" AS G FROM Edge_TU AS Edge_TU_2)
     UF: SELECT or_aggregate(G) as G from (SELECT Edge_G_2.a_0 AS x, Edge_G_2.a_1 AS y, Edge_G_2.G AS G FROM Edge_G AS Edge_G_2) HAVING or_aggregate(G) <> "true"
     G : SELECT or_aggregate(G) as G from (SELECT Edge_G_2.a_0 AS x, Edge_G_2.a_1 AS y, Edge_G_2.G AS G FROM Edge_G AS Edge_G_2)
 (check-sat)

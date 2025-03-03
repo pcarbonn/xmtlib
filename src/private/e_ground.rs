@@ -421,14 +421,15 @@ fn ground_compound(
 
             let mut new_queries = vec![];
 
-            for (table, mut groundings)
-            in [table_tu.clone(), table_uf.clone(), table_g.clone()]
-                .iter().zip([tus, ufs, gqs.to_vec()]) {
+            for ((table, mut groundings), view)
+            in [table_tu.clone(), table_uf.clone(), table_g.clone()].iter()
+                .zip([tus, ufs, gqs.to_vec()])
+                .zip([View::TU, View::UF, View::G]) {
 
                 let variant = match table {
                     Interpretation::Table{name, ids} => {
                         let table_name = TableName{base_table: name.to_string(), index};
-                        Variant::Interpretation(table_name, ids.clone())
+                        Variant::Interpretation(table_name, ids.clone(), view)
                     },
                     Interpretation::Infinite => Variant::Apply
                 };

@@ -24,7 +24,7 @@ pub(crate) enum GroundingView {
         ground_view: Either<String, TableName>, // Left for SpecConstant, Boolean; Right for view
 
         query: GroundingQuery,  // the underlying query
-        ids: Ids,
+        ids: Ids,  // describes the groundings only.  Beware that the query may have conditions.
     },
 }
 
@@ -419,7 +419,7 @@ pub(crate) enum View {
 
 /// describes the type of query to create for a compound term
 pub(crate) enum Variant {
-    Interpretation(TableName, Ids),
+    Interpretation(TableName, Ids, View),
     Apply,
     Construct(View),
     PredefinedBoolean(View)
@@ -472,7 +472,7 @@ pub(crate) fn query_for_compound(
                             } else { None };
 
                     if let Some(symbol) = for_variable {
-                        if let Variant::Interpretation(table_name, _) = variant {
+                        if let Variant::Interpretation(table_name, ..) = variant {
                             let column = Column{table_name: table_name.clone(), column: format!("a_{i}")};
 
                             //  update the query in progress
@@ -506,7 +506,7 @@ pub(crate) fn query_for_compound(
 
                     // compute the join conditions, for later use
                     match variant {
-                        Variant::Interpretation(table_name, _) => {
+                        Variant::Interpretation(table_name, ..) => {
                             let column = Column{table_name: table_name.clone(), column: format!("a_{i}")};
 
                             // adds nothing if sub_ids = All
@@ -545,17 +545,21 @@ pub(crate) fn query_for_compound(
 
     let grounding =
         match variant {
-            Variant::Interpretation(table_name, ids_) => {
+            Variant::Interpretation(table_name, ids_, view) => {
                 theta_joins.insert((table_name.clone(), thetas));
-                ids = max(ids, ids_.clone());
-                SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()})
+                ids = ids_.clone();  // reflects the grounding column, not if_
+                match (ids_, view) {
+                    (Ids::All, View::TU) => SQLExpr::Boolean(true),
+                    (Ids::All, View::UF) => SQLExpr::Boolean(false),
+                    _ => SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()})
+                }
             },
             Variant::Apply => {
                 ids = Ids::None;
                 SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings))
             },
             Variant::Construct(view) => {
-                ids = Ids::All;
+                // do not change ids.
                 if *qual_identifier == solver.true_ {
                     match view {
                         View::TU => SQLExpr::Boolean(true),
@@ -645,9 +649,9 @@ pub(crate) fn create_view (
     match query {
         GroundingQuery::Join{ref variables, ref conditions, ref grounding, ..} => {
 
-            match grounding {
-                SQLExpr::Boolean(_)
-                | SQLExpr::Constant(_) => {  // no need to create a view in DB
+            match (conditions.len(), grounding) {
+                (0, SQLExpr::Boolean(_))
+                | (0, SQLExpr::Constant(_)) => {  // no need to create a view in DB
                     Ok(GroundingView::View {
                         variables: IndexSet::new(),
                         condition: false,
