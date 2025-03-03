@@ -44,7 +44,6 @@
 (push)
 (assert (exists ((x Color)) true))
 (pop)
-(assert (exists ((x Color)) true))
 (push)
 (assert (forall ((x Color)) (p x)))
 (pop)
@@ -81,13 +80,13 @@ Groundings:
     UF: SELECT "(exists ((x Int)) " || or_aggregate(G) || ")" as G from (SELECT "true" AS G) HAVING "(exists ((x Int)) " || or_aggregate(G) || ")" <> "true"
     G : SELECT "(exists ((x Int)) " || or_aggregate(G) || ")" as G from (SELECT "true" AS G)
  - (forall ((x Color)) true):
-    TU: SELECT "(forall ((x Color)) " || and_aggregate(G) || ")" as G from (SELECT "true" AS G) HAVING "(forall ((x Color)) " || and_aggregate(G) || ")" <> "false"
+    TU: SELECT and_aggregate(G) as G from (SELECT "true" AS G) HAVING and_aggregate(G) <> "false"
     F: SELECT "true" AS G WHERE FALSE
-    G : SELECT "(forall ((x Color)) " || and_aggregate(G) || ")" as G from (SELECT "true" AS G)
+    G : SELECT and_aggregate(G) as G from (SELECT "true" AS G)
  - (exists ((x Color)) true):
-    TU: SELECT "(exists ((x Color)) " || or_aggregate(G) || ")" as G from (SELECT "true" AS G)
-    UF: SELECT "(exists ((x Color)) " || or_aggregate(G) || ")" as G from (SELECT "true" AS G) HAVING "(exists ((x Color)) " || or_aggregate(G) || ")" <> "true"
-    G : SELECT "(exists ((x Color)) " || or_aggregate(G) || ")" as G from (SELECT "true" AS G)
+    TU: SELECT or_aggregate(G) as G from (SELECT "true" AS G)
+    UF: SELECT or_aggregate(G) as G from (SELECT "true" AS G) HAVING or_aggregate(G) <> "true"
+    G : SELECT or_aggregate(G) as G from (SELECT "true" AS G)
  - x: SELECT Color_5.G AS x, Color_5.G AS G FROM Color AS Color_5
  - (p x):
     TU: SELECT Color_5.G AS x, apply("p", Color_5.G) AS G FROM Color AS Color_5

@@ -7,6 +7,7 @@ use rusqlite::Connection;
 
 use crate::api::{QualIdentifier, SortedVar, Term};
 use crate::error::SolverError::{self, *};
+use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionIs, Interpretation};
 use crate::private::e1_ground_query::{TableName, GroundingView, Ids, View, Variant,
     query_spec_constant, query_for_variable, query_for_aggregate, query_for_compound};
@@ -197,18 +198,28 @@ pub(crate) fn ground_term_(
                     Err(InternalError(42578548)),
                 Grounding::Boolean { tu: _, uf: sub_uf, g: sub_g } => {
 
+                    // free_variables = query.variables \ variables
                     let mut free_variables = sub_g.get_variables().clone();
-
                     for SortedVar(symbol, _) in variables {
                         free_variables.shift_remove(symbol);
                     }
+
+                    // infinite_variables < variables
+                    let infinite_variables = variables.iter()
+                        .filter( |SortedVar(_, sort)|
+                            match solver.sorts.get(sort).unwrap() {
+                                SortObject::Normal { .. } => false,
+                                SortObject::Recursive
+                                | SortObject::Infinite
+                                | SortObject::Unknown => true
+                        }).map(|var| var.clone()).collect::<Vec<_>>();
 
                     let table_name = format!("Agg_{index}");
 
                     let tu = query_for_aggregate(
                         &sub_g,
                         &free_variables,
-                        &variables,
+                        &infinite_variables,
                         "and",
                         Some(false),
                         TableName{base_table: table_name.clone() + "_TU", index: 0},
@@ -217,7 +228,7 @@ pub(crate) fn ground_term_(
                     let uf = query_for_aggregate(
                         &sub_uf,
                         &free_variables,
-                        &variables,
+                        &infinite_variables,
                         if top_level { "" } else { "and" },
                         None,
                         TableName{base_table: table_name.clone() + "_UF", index: 0},
@@ -226,7 +237,7 @@ pub(crate) fn ground_term_(
                     let g = query_for_aggregate(
                         &sub_g,
                         &free_variables,
-                        &variables,
+                        &infinite_variables,
                         "and",
                         None,
                         TableName{base_table: table_name.clone() + "_G", index: 0},
@@ -241,17 +252,27 @@ pub(crate) fn ground_term_(
                     Err(InternalError(42578548)),
                 Grounding::Boolean { tu: sub_tu, uf: _, g: sub_g } => {
 
+                    // free_variables = query.variables \ variables
                     let mut free_variables = sub_g.get_variables().clone();
-
                     for SortedVar(symbol, _) in variables {
                         free_variables.shift_remove(symbol);
                     }
+
+                    // infinite_variables < variables
+                    let infinite_variables = variables.iter()
+                    .filter( |SortedVar(_, sort)|
+                        match solver.sorts.get(sort).unwrap() {
+                            SortObject::Normal { .. } => false,
+                            SortObject::Recursive
+                            | SortObject::Infinite
+                            | SortObject::Unknown => true
+                    }).map(|var| var.clone()).collect::<Vec<_>>();
 
                     let table_name = format!("Agg_{index}");
                     let tu = query_for_aggregate(
                         &sub_tu,
                         &free_variables,
-                        &variables,
+                        &infinite_variables,
                         "or",
                         None,
                         TableName{base_table: table_name.clone() + "_TU", index: 0},
@@ -260,7 +281,7 @@ pub(crate) fn ground_term_(
                     let uf = query_for_aggregate(
                         &sub_g,
                         &free_variables,
-                        &variables,
+                        &infinite_variables,
                         "or",
                         Some(true),
                         TableName{base_table: table_name.clone() + "_UF", index: 0},
@@ -269,7 +290,7 @@ pub(crate) fn ground_term_(
                     let g = query_for_aggregate(
                         &sub_g,
                         &free_variables,
-                        &variables,
+                        &infinite_variables,
                         "or",
                         None,
                         TableName{base_table: table_name.clone() + "_G", index: 0},

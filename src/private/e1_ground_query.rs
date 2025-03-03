@@ -42,8 +42,8 @@ pub(crate) enum GroundingQuery {
     Aggregate {
         agg: String,  // "" (top-level), "and" or "or"
         free_variables: IndexMap<Symbol, Option<Column>>,
-        quantified_variables: Vec<SortedVar>,
-        sub_view: Box<GroundingView>,
+        infinite_variables: Vec<SortedVar>,
+        sub_view: Box<GroundingView>,  // the sub_view has more variables than free_variables
         exclude: Option<bool>
     }
 }
@@ -248,8 +248,8 @@ impl std::fmt::Display for GroundingQuery {
 
                 write!(f, "SELECT {variables_}{condition}{grounding_}{tables}")
             }
-            GroundingQuery::Aggregate { agg, free_variables, quantified_variables, sub_view, exclude } => {
-                if let GroundingView::View { condition, query, ..} = &**sub_view {
+            GroundingQuery::Aggregate { agg, free_variables, infinite_variables, sub_view, exclude } => {
+                if let GroundingView::View { condition, ..} = &**sub_view {
                     // SELECT {free_variables},
                     //        "(forall ({infinite_vars}) " || and_aggregate(implies_(if_, G)) || ")" AS G
                     //   FROM {sub_view}
@@ -263,9 +263,9 @@ impl std::fmt::Display for GroundingQuery {
 
                     // group-by is free minus the infinite variables
                     let group_by = free_variables.iter()
-                        .filter_map( |(_, column)| {
-                            if let Some(column) = column {
-                                Some(column.column.to_string())  // no need to group-by infinite variables
+                        .filter_map( |(symbol, column)| {
+                            if let Some(_) = column {
+                                Some(symbol.to_string())  // no need to group-by infinite variables
                             } else {
                                 None
                             }
@@ -278,15 +278,9 @@ impl std::fmt::Display for GroundingQuery {
                         };
 
                     // compute the grounding
-                    let sub_variables = query.get_variables();
-                    let infinite_vars = quantified_variables.iter()
-                        .filter_map ( |sv| {
-                            if let Some(Some(_)) = sub_variables.get(&sv.0) {  // sub_variable is finite
-                                None
-                            } else {
-                                Some(sv.to_string())
-                            }
-                        }).collect::<Vec<_>>().join(" ");
+                    let infinite_vars = infinite_variables.iter()
+                        .map ( |sv| sv.to_string() )
+                        .collect::<Vec<_>>().join(" ");
                     let grounding =
                         if ! condition {
                             match agg.as_str() {
@@ -605,7 +599,7 @@ pub(crate) fn query_for_compound(
 pub(crate) fn query_for_aggregate(
     sub_query: &GroundingView,
     free_variables: &IndexMap<Symbol, Option<Column>>,
-    quantified_variables: &Vec<SortedVar>,  // variables being quantified
+    infinite_variables: &Vec<SortedVar>,  // variables being quantified
     agg: &str,  // "and", "or" or ""
     exclude: Option<bool>,
     table_name: TableName,
@@ -617,21 +611,39 @@ pub(crate) fn query_for_aggregate(
             Ok(GroundingView::Empty)
         },
         GroundingView::View{query, ids,..} => {
-            match query {
-                GroundingQuery::Join {  .. } => {
+            // if the query is an aggregate, try to have only one aggregate
+            if let GroundingQuery::Aggregate {
+                agg: sub_agg,
+                infinite_variables: sub_infinite_variables,
+                sub_view: sub_sub_view,
+                exclude: sub_exclude , ..}
+                = query {
+                    if agg == sub_agg
+                    && (sub_exclude.is_none() || exclude == *sub_exclude)  {
+                        // it's possible to by pass the sub-aggregate
+                        let mut infinite_variables = infinite_variables.clone();
+                        infinite_variables.extend(sub_infinite_variables.iter().cloned());
 
-                    let query = GroundingQuery::Aggregate {
-                        agg: agg.to_string(),
-                        free_variables: free_variables.clone(),
-                        quantified_variables: quantified_variables.clone(),
-                        sub_view: Box::new(sub_query.clone()),
-                        exclude,
-                    };
-
-                    create_view(table_name, query, ids.clone(), solver)
-                },
-                _ => todo!()
+                        let query = GroundingQuery::Aggregate {
+                            agg: agg.to_string(),
+                            free_variables: free_variables.clone(),
+                            infinite_variables: infinite_variables.clone(),
+                            sub_view: Box::new(*sub_sub_view.clone()),
+                            exclude,
+                        };
+                        return create_view(table_name, query, ids.clone(), solver)
+                    }
             }
+
+            let query = GroundingQuery::Aggregate {
+                agg: agg.to_string(),
+                free_variables: free_variables.clone(),
+                infinite_variables: infinite_variables.clone(),
+                sub_view: Box::new(sub_query.clone()),
+                exclude,
+            };
+
+            create_view(table_name, query, ids.clone(), solver)
         }
     }
 }
@@ -706,7 +718,13 @@ impl GroundingView {
     pub(crate) fn get_variables(&self) -> IndexMap<Symbol, Option<Column>> {
         match self {
             GroundingView::Empty => IndexMap::new(),
-            GroundingView::View{query, ..} => query.get_variables()
+            GroundingView::View{variables, query,..} => {
+                // return variables mapped to a column, according to query.variables
+                query.get_variables().iter()
+                    .filter( |(s, _)| variables.contains(*s))
+                    .map(|(s, c)| (s.clone(), c.clone()))
+                    .collect()
+            }
         }
     }
 
@@ -773,11 +791,11 @@ impl GroundingQuery {
                         let view = TableName{base_table: qual_identifier.to_string(), index};
                         create_view(view, query, ids.clone(), solver)
                     }
-            GroundingQuery::Aggregate { agg, free_variables, quantified_variables, sub_view, exclude } => {
+            GroundingQuery::Aggregate { agg, free_variables, infinite_variables, sub_view, exclude } => {
                 let query = GroundingQuery::Aggregate {
                     agg : if agg == "or" { "and".to_string() } else { "or".to_string() },
                     free_variables: free_variables.clone(),
-                    quantified_variables: quantified_variables.clone(),
+                    infinite_variables: infinite_variables.clone(),
                     sub_view: Box::new(sub_view.negate(qual_identifier, index, view, solver)?),
                     exclude: if let Some(bool) = exclude { Some(! bool) } else { *exclude }
                 };
