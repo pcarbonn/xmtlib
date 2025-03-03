@@ -39,11 +39,9 @@
 (push)
 (assert (exists ((x Color)) (bright x)))
 (pop)
-(assert true)
 (push)
 (assert (exists ((x Color)) (same x x)))
 (pop)
-(assert true)
  TABLE: bright_TU
 ┌───────┬────────┐
 │ a_0   │ G      │
@@ -58,7 +56,7 @@
 ├─────────┼─────────┤
 │ "red"   │ "true"  │
 └─────────┴─────────┘
-CREATE VIEW Agg_1_UF AS SELECT or_aggregate(G) as G from (SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2) HAVING or_aggregate(G) <> true
+CREATE VIEW Agg_1_UF AS SELECT or_aggregate(G) as G from (SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2) HAVING or_aggregate(G) <> "true"
 Functions:
  - true: Constructed
  - false: Constructed
@@ -94,14 +92,14 @@ Groundings:
     F: SELECT bright_UF_2.a_0 AS x, bright_UF_2.G AS G FROM bright_UF AS bright_UF_2
     G : SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2
  - (exists ((x Color)) (bright x)):
-    TU: SELECT Agg_1_TU.G AS G FROM Agg_1_TU
-    UF: SELECT Agg_1_UF.G AS G FROM Agg_1_UF
-    G : SELECT Agg_1_G.G AS G FROM Agg_1_G
+    TU: SELECT or_aggregate(G) as G from (SELECT bright_TU_2.a_0 AS x, bright_TU_2.G AS G FROM bright_TU AS bright_TU_2)
+    UF: SELECT or_aggregate(G) as G from (SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2) HAVING or_aggregate(G) <> "true"
+    G : SELECT or_aggregate(G) as G from (SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2)
  - (same x x):
     T: SELECT same_TU_4.a_1 AS x, same_TU_4.G AS G FROM same_TU AS same_TU_4 WHERE same_TU_4.a_1 = same_TU_4.a_0
     F: SELECT same_UF_4.a_1 AS x, same_UF_4.G AS G FROM same_UF AS same_UF_4 WHERE same_UF_4.a_1 = same_UF_4.a_0
     G : SELECT same_G_4.a_1 AS x, same_G_4.G AS G FROM same_G AS same_G_4 WHERE same_G_4.a_1 = same_G_4.a_0
  - (exists ((x Color)) (same x x)):
-    TU: SELECT Agg_4_TU.G AS G FROM Agg_4_TU
-    UF: SELECT Agg_4_UF.G AS G FROM Agg_4_UF
-    G : SELECT Agg_4_G.G AS G FROM Agg_4_G
+    TU: SELECT or_aggregate(G) as G from (SELECT same_TU_4.a_1 AS x, same_TU_4.G AS G FROM same_TU AS same_TU_4 WHERE same_TU_4.a_1 = same_TU_4.a_0)
+    UF: SELECT or_aggregate(G) as G from (SELECT same_G_4.a_1 AS x, same_G_4.G AS G FROM same_G AS same_G_4 WHERE same_G_4.a_1 = same_G_4.a_0) HAVING or_aggregate(G) <> "true"
+    G : SELECT or_aggregate(G) as G from (SELECT same_G_4.a_1 AS x, same_G_4.G AS G FROM same_G AS same_G_4 WHERE same_G_4.a_1 = same_G_4.a_0)

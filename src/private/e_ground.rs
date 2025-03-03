@@ -210,7 +210,7 @@ pub(crate) fn ground_term_(
                         &free_variables,
                         &variables,
                         "and",
-                        "false",
+                        Some(false),
                         TableName{base_table: table_name.clone() + "_TU", index: 0},
                         solver)?;
 
@@ -219,7 +219,7 @@ pub(crate) fn ground_term_(
                         &free_variables,
                         &variables,
                         if top_level { "" } else { "and" },
-                        "",
+                        None,
                         TableName{base_table: table_name.clone() + "_UF", index: 0},
                         solver)?;
 
@@ -228,7 +228,7 @@ pub(crate) fn ground_term_(
                         &free_variables,
                         &variables,
                         "and",
-                        "",
+                        None,
                         TableName{base_table: table_name.clone() + "_G", index: 0},
                         solver)?;
                     Ok(Grounding::Boolean{tu, uf, g})
@@ -253,7 +253,7 @@ pub(crate) fn ground_term_(
                         &free_variables,
                         &variables,
                         "or",
-                        "",
+                        None,
                         TableName{base_table: table_name.clone() + "_TU", index: 0},
                         solver)?;
 
@@ -262,7 +262,7 @@ pub(crate) fn ground_term_(
                         &free_variables,
                         &variables,
                         "or",
-                        "true",
+                        Some(true),
                         TableName{base_table: table_name.clone() + "_UF", index: 0},
                         solver)?;
 
@@ -271,7 +271,7 @@ pub(crate) fn ground_term_(
                         &free_variables,
                         &variables,
                         "or",
-                        "",
+                        None,
                         TableName{base_table: table_name.clone() + "_G", index: 0},
                         solver)?;
                     Ok(Grounding::Boolean{tu, uf, g})

@@ -25,7 +25,7 @@
 ├─────┼─────┼────────┤
 │ "a" │ "a" │ "true" │
 └─────┴─────┴────────┘
-CREATE VIEW Agg_0_TU AS SELECT and_aggregate(implies_(if_, G)) as G from (SELECT p_G_3.a_0 AS x, (apply("=",apply("f", "a"), p_G_3.a_1)) AS if_, not_(p_G_3.G) AS G FROM p_G AS p_G_3) HAVING and_aggregate(implies_(if_, G)) <> false
+CREATE VIEW Agg_0_TU AS SELECT and_aggregate(implies_(if_, G)) as G from (SELECT p_G_3.a_0 AS x, (apply("=",apply("f", "a"), p_G_3.a_1)) AS if_, not_(p_G_3.G) AS G FROM p_G AS p_G_3) HAVING and_aggregate(implies_(if_, G)) <> "false"
 Groundings:
  - x: SELECT T.G AS x, T.G AS G FROM T
  - a: SELECT "a" AS G
@@ -39,6 +39,6 @@ Groundings:
     UF: SELECT p_TU_3.a_0 AS x, (apply("=",apply("f", "a"), p_TU_3.a_1)) AS if_, not_(p_TU_3.G) AS G FROM p_TU AS p_TU_3
     G : SELECT p_G_3.a_0 AS x, (apply("=",apply("f", "a"), p_G_3.a_1)) AS if_, not_(p_G_3.G) AS G FROM p_G AS p_G_3
  - (forall ((x T)) (not (p x (f a)))):
-    TU: SELECT Agg_0_TU.G AS G FROM Agg_0_TU
-    UF: SELECT Agg_0_UF.G AS G FROM Agg_0_UF
-    G : SELECT Agg_0_G.G AS G FROM Agg_0_G
+    TU: SELECT and_aggregate(implies_(if_, G)) as G from (SELECT p_G_3.a_0 AS x, (apply("=",apply("f", "a"), p_G_3.a_1)) AS if_, not_(p_G_3.G) AS G FROM p_G AS p_G_3) HAVING and_aggregate(implies_(if_, G)) <> "false"
+    UF: SELECT implies_(if_, G) as G from (SELECT p_TU_3.a_0 AS x, (apply("=",apply("f", "a"), p_TU_3.a_1)) AS if_, not_(p_TU_3.G) AS G FROM p_TU AS p_TU_3)
+    G : SELECT and_aggregate(implies_(if_, G)) as G from (SELECT p_G_3.a_0 AS x, (apply("=",apply("f", "a"), p_G_3.a_1)) AS if_, not_(p_G_3.G) AS G FROM p_G AS p_G_3)
