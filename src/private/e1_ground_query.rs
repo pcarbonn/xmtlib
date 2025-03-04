@@ -441,50 +441,35 @@ pub(crate) fn query_for_compound(
             GroundingView::View {variables: sub_variables, condition: sub_condition,
                 ground_view, query, ids: sub_ids,..} => {
 
+                ids = max(ids, sub_ids.clone());
+
                 if let GroundingQuery::Join { variables: sub_variables, conditions: sub_conditions,
                     grounding: sub_grounding, natural_joins: sub_natural_joins,
                     theta_joins: sub_theta_joins, .. } = query {
 
-                    // handle the special case of variables
-                    let for_variable =
-                            if let Some((symbol, column)) = sub_variables.first() {
-                                if sub_variables.len() == 1 {
-                                    if let Some(column) = column {
-                                        if sub_natural_joins.len() == 1
-                                        && *sub_ids == Ids::All {
-                                            if let Some(NaturalJoin::Variable(table_name, _)) = sub_natural_joins.first() {
-                                                if column.table_name == *table_name && column.column == "G" {
-                                                    Some(symbol.clone())
-                                                } else { None }
-                                            } else { None }
-                                        } else { None }
-                                    } else {  // variable over infinite domain
-                                        Some(symbol.clone())
-                                    }
-                                } else { None }
-                            } else { None };
+                    // handle the special case of a query for a variable
+                    match sub_grounding {
+                        SQLExpr::Variable(symbol) => {
+                            if let Variant::Interpretation(table_name, ..) = variant {
+                                let column = Column{table_name: table_name.clone(), column: format!("a_{i}")};
 
-                    if let Some(symbol) = for_variable {
-                        if let Variant::Interpretation(table_name, ..) = variant {
-                            let column = Column{table_name: table_name.clone(), column: format!("a_{i}")};
+                                //  update the query in progress
+                                variables.insert(symbol.clone(), Some(column.clone()));
+                                // sub-query has no conditions
+                                groundings.push(sub_grounding.clone());
+                                // do not push to natural_joins
+                                thetas.push((sub_ids.clone(), sub_grounding.clone(), column));
 
-                            //  update the query in progress
-                            variables.insert(symbol.clone(), Some(column.clone()));
-                            let variable = SQLExpr::Variable(symbol.clone());
-                            // sub-query has no conditions
-                            groundings.push(variable.clone());
-                            // do not push to natural_joins
-                            thetas.push((sub_ids.clone(), variable.clone(), column));
-
-                            continue  // to the next sub-query
-                        }
+                                continue  // to the next sub-query
+                            }
+                        },
+                        _ => {}
                     };
 
                     conditions.append(sub_conditions);
                     groundings.push(sub_grounding.clone());
                     natural_joins.append(sub_natural_joins);
                     theta_joins.append(sub_theta_joins);
-                    ids = max(ids, sub_ids.clone());
 
                     // merge the variables
                     for (symbol, column) in sub_variables.clone() {
@@ -520,7 +505,6 @@ pub(crate) fn query_for_compound(
                             groundings.push(SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()}));
                             let sub_natural_join = NaturalJoin::View(table_name.clone(), vec![]);
                             natural_joins.append(&mut IndexSet::from([sub_natural_join]));
-                            ids = max(ids, sub_ids.clone());
 
                             // merge the variables
                             for (symbol, _) in sub_variables.clone() {
