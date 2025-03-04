@@ -19,9 +19,9 @@ use crate::private::e2_ground_sql::SQLExpr;
 pub(crate) enum GroundingView {
     Empty,
     View {  // select vars, cond, grounding from view
-        variables: IndexSet<Symbol>,
+        variables: IndexMap<Symbol, bool>,
         condition: bool,
-        ground_view: Either<String, TableName>, // Left for SpecConstant, Boolean; Right for view
+        ground_view: Either<SQLExpr, TableName>, // Left for SpecConstant, Boolean; Right for view
 
         query: GroundingQuery,  // the underlying query
         ids: Ids,  // describes the groundings only.  Beware that the query may have conditions.
@@ -95,13 +95,13 @@ impl std::fmt::Debug for GroundingView {
             GroundingView::View { variables, condition, ground_view, .. } => {
 
                 let vars = variables.iter()
-                    .map(|symbol| symbol.to_string())
+                    .map(|(symbol, _)| symbol.to_string())
                     .collect::<Vec<_>>()
                     .join(", ");
                 let vars = if vars == "" { vars } else { vars + ", " };
                 let if_= if *condition { "if_, " } else { "" };
                 let g_v = match ground_view {
-                    Either::Left(c) => format!("{c}"),
+                    Either::Left(c) => format!("{}", c.show(&IndexMap::new())),
                     Either::Right(view) => format!("G from {view}")
                 };
                 write!(f,"SELECT {vars}{if_}{g_v}")
@@ -438,11 +438,14 @@ pub(crate) fn query_for_compound(
             GroundingView::Empty => {
                 return Ok(GroundingView::Empty)
             },
-            GroundingView::View {query, ids: sub_ids,..} => {
+            GroundingView::View {variables: sub_variables, condition: sub_condition,
+                ground_view, query, ids: sub_ids,..} => {
+
                 if let GroundingQuery::Join { variables: sub_variables, conditions: sub_conditions,
                     grounding: sub_grounding, natural_joins: sub_natural_joins,
                     theta_joins: sub_theta_joins, .. } = query {
 
+                    // handle the special case of variables
                     let for_variable =
                             if let Some((symbol, column)) = sub_variables.first() {
                                 if sub_variables.len() == 1 {
@@ -483,14 +486,10 @@ pub(crate) fn query_for_compound(
                     theta_joins.append(sub_theta_joins);
                     ids = max(ids, sub_ids.clone());
 
+                    // merge the variables
                     for (symbol, column) in sub_variables.clone() {
-                        // insert if not there yet,
-                        // or if it was a natural join column, but not anymore
-                        match variables.get(&symbol) {
-                            None => {
-                                variables.insert(symbol.clone(), column.clone());
-                            },
-                            Some(_) => { }
+                        if variables.get(&symbol).is_none() {
+                            variables.insert(symbol.clone(), column.clone());
                         }
                     }
 
@@ -509,7 +508,29 @@ pub(crate) fn query_for_compound(
                         | Variant::PredefinedBoolean(..) => {}
                     }
                 } else {
-                    todo!()
+                    match ground_view {
+                        Either::Left(constant) =>
+                            groundings.push(constant.clone()),
+
+                        Either::Right(table_name) => {
+                            if *sub_condition {
+                                let sub_condition = SQLExpr::Value(Column{table_name: table_name.clone(), column: "if_".to_string()});
+                                conditions.push(sub_condition);
+                            }
+                            groundings.push(SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()}));
+                            let sub_natural_join = NaturalJoin::View(table_name.clone(), vec![]);
+                            natural_joins.append(&mut IndexSet::from([sub_natural_join]));
+                            ids = max(ids, sub_ids.clone());
+
+                            // merge the variables
+                            for (symbol, _) in sub_variables.clone() {
+                                if variables.get(&symbol).is_none() {
+                                    let column = Column{table_name: table_name.clone(), column: symbol.to_string()};
+                                    variables.insert(symbol.clone(), Some(column));
+                                }
+                            }
+                        },
+                    }
                 }
             }
         }
@@ -661,20 +682,22 @@ pub(crate) fn create_view (
                 (0, SQLExpr::Boolean(_))
                 | (0, SQLExpr::Constant(_)) => {  // no need to create a view in DB
                     Ok(GroundingView::View {
-                        variables: IndexSet::new(),
+                        variables: IndexMap::new(),
                         condition: false,
-                        ground_view: Either::Left(grounding.show(&IndexMap::new())),
+                        ground_view: Either::Left(grounding.clone()),
                         query,
                         ids
                     })
                 },
                 _ => {
-                    let variables: IndexSet<Symbol> = variables.keys().cloned().collect();
+                    let variables: IndexMap<Symbol, bool> = variables.iter()
+                        .map( |(symbol, column)| (symbol.clone(), ! column.is_some()))
+                        .collect();
                     let condition = conditions.len() > 0;
 
                     // create the view in the database
                     let vars = variables.iter()
-                        .map(|symbol| symbol.to_string())
+                        .map(|(symbol, _)| symbol.to_string())
                         .collect::<Vec<_>>()
                         .join(", ");
                     let vars = if vars == "" { vars } else { vars + ", " };
@@ -698,7 +721,7 @@ pub(crate) fn create_view (
             solver.conn.execute(&sql, ())?;
 
            Ok(GroundingView::View {
-                variables: free_variables.keys().cloned().collect::<IndexSet<_>>(),
+                variables: free_variables.clone(),
                 condition: false,
                 ground_view: Either::Right(table_name),
                 query,
@@ -715,13 +738,7 @@ impl GroundingView {
     pub(crate) fn get_variables(&self) -> IndexMap<Symbol, bool> {
         match self {
             GroundingView::Empty => IndexMap::new(),
-            GroundingView::View{query, variables,..} => {
-                let sub_variables = query.get_variables();
-                variables.iter()
-                    .map( |symbol| {
-                        (symbol.clone(), *sub_variables.get(symbol).unwrap())
-                    }).collect()
-            }
+            GroundingView::View{variables,..} => variables.clone()
         }
     }
 
@@ -747,16 +764,6 @@ impl GroundingView {
 }
 
 impl GroundingQuery {
-
-    pub(crate) fn get_variables(&self) -> IndexMap<Symbol, bool> {
-        match self {
-            GroundingQuery::Join{variables, ..} =>
-                variables.iter()
-                    .map( |(symbol, c)| (symbol.clone(), ! c.is_some()))
-                    .collect(),
-            GroundingQuery::Aggregate { sub_view, .. } => sub_view.get_variables()
-        }
-    }
 
     pub(crate) fn negate(
         &self,
