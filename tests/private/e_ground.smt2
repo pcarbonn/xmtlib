@@ -27,7 +27,6 @@
 (push)
 (assert (and true true))
 (pop)
-(assert false)
 (push)
 (assert (or false false))
 (pop)
@@ -47,7 +46,7 @@ Groundings:
     G : SELECT "true" AS G
  - (and true true):
     T: SELECT "true" AS G
-    F: SELECT "false" AS G
+    F: SELECT "true" AS G WHERE FALSE
     G : SELECT "true" AS G
  - (or false false):
     T: SELECT "true" AS G

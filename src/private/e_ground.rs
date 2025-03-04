@@ -10,7 +10,7 @@ use crate::error::SolverError::{self, *};
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionIs, Interpretation};
 use crate::private::e1_ground_query::{TableName, GroundingView, Ids, View, Variant,
-    query_spec_constant, query_for_variable, query_for_aggregate, query_for_compound};
+    query_spec_constant, query_for_variable, query_for_compound, query_for_aggregate, query_for_union};
 use crate::solver::Solver;
 
 
@@ -352,8 +352,9 @@ fn ground_compound(
                     let tu = query_for_compound(qual_identifier, index, &mut tus, &variant, solver)?;
 
                     // todo: union query(qual_identifer, ufs).
-                    let variant = Variant::PredefinedBoolean(View::UF);
-                    let uf = query_for_compound(qual_identifier, index, &mut gqs.clone(), &variant, solver)?;
+                    let uf = query_for_union(ufs, "and".to_string(), index, solver)?;
+                    // let variant = Variant::PredefinedBoolean(View::UF);
+                    // let uf = query_for_compound(qual_identifier, index, &mut gqs.clone(), &variant, solver)?;
 
                     let variant = Variant::PredefinedBoolean(View::G);
                     let g = query_for_compound(qual_identifier, index, &mut gqs, &variant, solver)?;

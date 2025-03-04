@@ -45,6 +45,10 @@ pub(crate) enum GroundingQuery {
         infinite_variables: Vec<SortedVar>,
         sub_view: Box<GroundingView>,  // the sub_view has more variables than free_variables
         exclude: Option<bool>
+    },
+    Union {
+        free_variables: IndexMap<Symbol, String>,  // table name ("" if infinite)
+        sub_queries: Box<Vec<GroundingQuery>>  // the sub-queries are Join and have the same columns
     }
 }
 
@@ -317,6 +321,12 @@ impl std::fmt::Display for GroundingQuery {
                     write!(f, "{}", sub_view)
                 }
             },
+            GroundingQuery::Union { sub_queries, .. } => {
+                let view = sub_queries.iter()
+                    .map( |query| query.to_string() )
+                    .collect::<Vec<_>>().join(" UNION ");
+                write!(f, "{}", view)
+            }
         }
     }
 }
@@ -654,6 +664,100 @@ pub(crate) fn query_for_aggregate(
 }
 
 
+pub(crate) fn query_for_union(
+    sub_views: Vec<GroundingView>,
+    agg: String,
+    index: TermId,
+    solver: &mut Solver
+) -> Result<GroundingView, SolverError> {
+
+    // determine variables, condition and ids
+    let mut free_variables = IndexMap::new();
+    let mut condition = false;
+    let mut ids = Ids::All;
+    for sub_view in sub_views.clone() {
+        if let GroundingView::View { free_variables: sub_free_variables,
+            condition: sub_condition, ids: sub_ids, .. } = sub_view {
+
+            free_variables.append(&mut sub_free_variables.clone());
+            condition |= sub_condition;
+            ids = max(ids, sub_ids);
+        } else {
+            return Ok(GroundingView::Empty)
+        }
+    }
+
+    // build the sub-queries
+    let sub_queries = sub_views.iter()
+        .filter_map( |sub_view| {
+            if let GroundingView::View { free_variables: sub_free_variables, condition: sub_condition,
+                ground_view, ..} = sub_view {
+
+                if let Either::Right(table_name) = ground_view {
+                    let mut q_variables = IndexMap::new();
+                    let natural_join = NaturalJoin::View(table_name.clone(), sub_free_variables.keys().cloned().collect());
+                    let mut natural_joins = IndexSet::from([natural_join]);
+                    for (symbol, _) in free_variables.iter() {
+                        if let Some(_) = sub_free_variables.get(symbol) {  // the variable is in the sub_view
+                            let column = Column{table_name: table_name.clone(), column: symbol.to_string()};
+                            q_variables.insert(symbol.clone(), Some(column));
+                        } else {  // create cross-product
+                            todo!()
+                        }
+                    }
+
+                    let conditions =
+                        if *sub_condition {
+                            vec![SQLExpr::Value(Column{table_name: table_name.clone(), column: "if_".to_string()})]
+                        } else if condition {
+                            vec![SQLExpr::Boolean(true)]
+                        } else { vec![] };
+
+                    Some(GroundingQuery::Join {
+                        variables: q_variables,
+                        conditions,
+                        grounding: SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()}),
+                        natural_joins,
+                        theta_joins: IndexSet::new()
+                    })
+                } else { // a variable ??
+                    unreachable!()
+                }
+            } else { // empty view
+                None
+             }
+        }).collect();
+
+    // create the union
+    let query = GroundingQuery::Union{ free_variables: free_variables.clone(), sub_queries: Box::new(sub_queries) };
+    let table_name = TableName{base_table: "union".to_string(), index};
+
+    let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS {query}");
+    solver.conn.execute(&sql, ())?;
+
+    // create the sub_view
+    let sub_view = GroundingView::View {
+        free_variables: free_variables.clone(),
+        condition: condition,
+        ground_view: Either::Right(table_name),
+        query,
+        ids: ids.clone()
+    };
+
+    // create the aggregate
+    let table_name = TableName{base_table: "agg_union".to_string(), index};
+    let query = GroundingQuery::Aggregate {
+        agg: agg.to_string(),
+        free_variables: free_variables.clone(),
+        infinite_variables: vec![],
+        sub_view: Box::new(sub_view),
+        exclude: None,
+    };
+
+    create_view(table_name, free_variables, query, ids.clone(), solver)
+}
+
+
 /////////////////////  Grounding Query utilities  //////////////////////////////
 
 
@@ -713,6 +817,26 @@ pub(crate) fn create_view (
                 query,
                 ids: Ids::None
             })
+        },
+        GroundingQuery::Union { ref sub_queries, .. } => {
+
+            let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS {query}");
+            solver.conn.execute(&sql, ())?;
+
+            Ok(GroundingView::View {
+                free_variables: free_variables.clone(),
+                condition: sub_queries.iter().any( |view| {
+                    if let GroundingQuery::Join{conditions, ..} = view {
+                        0 < conditions.len()
+                    } else {
+                        false
+                    }
+                }),
+                ground_view: Either::Right(table_name),
+                query,
+                ids
+            })
+
         }
     }
 }
@@ -797,6 +921,7 @@ impl GroundingQuery {
                 let view = TableName{base_table: qual_identifier.to_string(), index};
                 create_view(view, free_variables, query, ids.clone(), solver)
             },
+            GroundingQuery::Union {..} => unreachable!()
         }
     }
 
