@@ -351,10 +351,7 @@ fn ground_compound(
                     let variant = Variant::PredefinedBoolean(View::TU);
                     let tu = query_for_compound(qual_identifier, index, &mut tus, &variant, solver)?;
 
-                    // todo: union query(qual_identifer, ufs).
                     let uf = query_for_union(ufs, "and".to_string(), index, solver)?;
-                    // let variant = Variant::PredefinedBoolean(View::UF);
-                    // let uf = query_for_compound(qual_identifier, index, &mut gqs.clone(), &variant, solver)?;
 
                     let variant = Variant::PredefinedBoolean(View::G);
                     let g = query_for_compound(qual_identifier, index, &mut gqs, &variant, solver)?;

@@ -19,7 +19,7 @@ use crate::private::e2_ground_sql::SQLExpr;
 pub(crate) enum GroundingView {
     Empty,
     View {  // select vars, cond, grounding from view
-        free_variables: IndexMap<Symbol, String>,  // table name ("" if infinite)
+        free_variables: IndexMap<Symbol, Option<TableName>>,  // None for infinite variables
         condition: bool,
         ground_view: Either<SQLExpr, TableName>, // Left for SpecConstant, Boolean; Right for view
 
@@ -41,13 +41,13 @@ pub(crate) enum GroundingQuery {
     },
     Aggregate {
         agg: String,  // "" (top-level), "and" or "or"
-        free_variables: IndexMap<Symbol, String>,  // table name ("" if infinite)
+        free_variables: IndexMap<Symbol, Option<TableName>>,  // None for infinite variables
         infinite_variables: Vec<SortedVar>,
         sub_view: Box<GroundingView>,  // the sub_view has more variables than free_variables
         exclude: Option<bool>
     },
     Union {
-        free_variables: IndexMap<Symbol, String>,  // table name ("" if infinite)
+        free_variables: IndexMap<Symbol, Option<TableName>>,  // None for infinite variables
         sub_queries: Box<Vec<GroundingQuery>>  // the sub-queries are Join and have the same columns
     }
 }
@@ -267,7 +267,7 @@ impl std::fmt::Display for GroundingQuery {
 
                     // group-by is free minus the infinite variables
                     let group_by = free_variables.iter()
-                        .filter( |(_, table_name)| table_name.len() != 0 )
+                        .filter( |(_, table_name)| table_name.is_some() )
                         .map( |(symbol, _)| symbol.to_string())
                         .collect::<Vec<_>>().join(", ");
                     let group_by =
@@ -398,7 +398,7 @@ pub(crate) fn query_for_variable(
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::from([NaturalJoin::Variable(table_name.clone(), symbol.clone())]),
             theta_joins: IndexSet::new() };
-        let free_variables = IndexMap::from([(symbol.clone(), table_name.to_string())]);
+        let free_variables = IndexMap::from([(symbol.clone(), Some(table_name))]);
         create_view(view, free_variables, query, Ids::All, solver)
     } else {  // infinite variable ==> just "x"
         let variables = IndexMap::from([(symbol.clone(), None)]);
@@ -408,7 +408,7 @@ pub(crate) fn query_for_variable(
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::new(),
             theta_joins: IndexSet::new() };
-        let free_variables = IndexMap::from([(symbol.clone(), "".to_string())]);
+        let free_variables = IndexMap::from([(symbol.clone(), None)]);
         create_view(view, free_variables, query, Ids::None, solver)
     }
 }
@@ -613,7 +613,7 @@ pub(crate) fn query_for_compound(
 /// Creates a query over an aggregate view, possibly adding a where clause if exclude is not empty
 pub(crate) fn query_for_aggregate(
     sub_query: &GroundingView,
-    free_variables: &IndexMap<Symbol, String>,
+    free_variables: &IndexMap<Symbol, Option<TableName>>,
     infinite_variables: &Vec<SortedVar>,  // variables being quantified
     agg: &str,  // "and", "or" or ""
     exclude: Option<bool>,
@@ -697,12 +697,17 @@ pub(crate) fn query_for_union(
                     let mut q_variables = IndexMap::new();
                     let natural_join = NaturalJoin::View(table_name.clone(), sub_free_variables.keys().cloned().collect());
                     let mut natural_joins = IndexSet::from([natural_join]);
-                    for (symbol, _) in free_variables.iter() {
+                    for (symbol, sub_table_name) in free_variables.iter() {
                         if let Some(_) = sub_free_variables.get(symbol) {  // the variable is in the sub_view
                             let column = Column{table_name: table_name.clone(), column: symbol.to_string()};
                             q_variables.insert(symbol.clone(), Some(column));
-                        } else {  // create cross-product
-                            todo!()
+                        } else if let Some(table_name) = sub_table_name {  // create cross-product
+                            let column = Column{table_name: table_name.clone(), column: symbol.to_string()};
+                            q_variables.insert(symbol.clone(), Some(column));
+                            let natural_join = NaturalJoin::Variable(table_name.clone(), symbol.clone());
+                            natural_joins.insert(natural_join);
+                        } else {  // infinite variable
+                            q_variables.insert(symbol.clone(), None);
                         }
                     }
 
@@ -726,7 +731,9 @@ pub(crate) fn query_for_union(
             } else { // empty view
                 None
              }
-        }).collect();
+        }).collect::<Vec<_>>();
+
+    if sub_queries.len() == 0 { return Ok(GroundingView::Empty) }
 
     // create the union
     let query = GroundingQuery::Union{ free_variables: free_variables.clone(), sub_queries: Box::new(sub_queries) };
@@ -763,7 +770,7 @@ pub(crate) fn query_for_union(
 
 pub(crate) fn create_view (
     table_name: TableName,
-    free_variables: IndexMap<Symbol, String>,
+    free_variables: IndexMap<Symbol, Option<TableName>>,
     query: GroundingQuery,
     ids: Ids,
     solver: &mut Solver,
@@ -845,7 +852,7 @@ pub(crate) fn create_view (
 impl GroundingView {
 
     /// return the view's variables with their infinity flag
-    pub(crate) fn get_free_variables(&self) -> IndexMap<Symbol, String> {
+    pub(crate) fn get_free_variables(&self) -> IndexMap<Symbol, Option<TableName>> {
         match self {
             GroundingView::Empty => IndexMap::new(),
             GroundingView::View{free_variables,..} => free_variables.clone()
@@ -879,7 +886,7 @@ impl GroundingQuery {
     pub(crate) fn negate(
         &self,
         qual_identifier: &QualIdentifier,  // not
-        free_variables: IndexMap<Symbol, String>,
+        free_variables: IndexMap<Symbol, Option<TableName>>,
         index: TermId,
         view: View,
         ids: &Ids,
