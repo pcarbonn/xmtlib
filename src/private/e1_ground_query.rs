@@ -19,7 +19,7 @@ use crate::private::e2_ground_sql::SQLExpr;
 pub(crate) enum GroundingView {
     Empty,
     View {  // select vars, cond, grounding from view
-        variables: IndexMap<Symbol, bool>,
+        free_variables: IndexMap<Symbol, String>,  // table name ("" if infinite)
         condition: bool,
         ground_view: Either<SQLExpr, TableName>, // Left for SpecConstant, Boolean; Right for view
 
@@ -41,7 +41,7 @@ pub(crate) enum GroundingQuery {
     },
     Aggregate {
         agg: String,  // "" (top-level), "and" or "or"
-        free_variables: IndexMap<Symbol, bool>,  // true if infinite
+        free_variables: IndexMap<Symbol, String>,  // table name ("" if infinite)
         infinite_variables: Vec<SortedVar>,
         sub_view: Box<GroundingView>,  // the sub_view has more variables than free_variables
         exclude: Option<bool>
@@ -92,9 +92,9 @@ impl std::fmt::Debug for GroundingView {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             GroundingView::Empty => write!(f, "SELECT \"true\" AS G WHERE FALSE"),
-            GroundingView::View { variables, condition, ground_view, .. } => {
+            GroundingView::View { free_variables, condition, ground_view, .. } => {
 
-                let vars = variables.iter()
+                let vars = free_variables.iter()
                     .map(|(symbol, _)| symbol.to_string())
                     .collect::<Vec<_>>()
                     .join(", ");
@@ -263,7 +263,7 @@ impl std::fmt::Display for GroundingQuery {
 
                     // group-by is free minus the infinite variables
                     let group_by = free_variables.iter()
-                        .filter( |(_, infinite)| ! *infinite)
+                        .filter( |(_, table_name)| table_name.len() != 0 )
                         .map( |(symbol, _)| symbol.to_string())
                         .collect::<Vec<_>>().join(", ");
                     let group_by =
@@ -365,7 +365,7 @@ pub(crate) fn query_spec_constant(
         theta_joins: IndexSet::new(),
     };
     let view = TableName{base_table: "ignore".to_string(), index: 0};
-    create_view(view, query, Ids::All, solver)
+    create_view(view, IndexMap::new(), query, Ids::All, solver)
 }
 
 
@@ -376,29 +376,31 @@ pub(crate) fn query_for_variable(
     index: usize,
     solver: &mut Solver
 ) -> Result<GroundingView, SolverError> {
-    let (query, ids) = if *base_table != "".to_string() {
+    let view = TableName{base_table: "variable".to_string(), index};
+    if base_table.len() != 0 {
         let table_name = TableName{base_table: base_table.clone(), index};
         let column = Column{table_name: table_name.clone(), column: "G".to_string()};
+        let variables= IndexMap::from([(symbol.clone(), Some(column.clone()))]);
 
-        ( GroundingQuery::Join{
-            variables: IndexMap::from([(symbol.clone(), Some(column.clone()))]),
+        let query = GroundingQuery::Join{
+            variables,
             conditions: vec![],
             grounding: SQLExpr::Variable(symbol.clone()),
-            natural_joins: IndexSet::from([NaturalJoin::Variable(table_name, symbol.clone())]),
-            theta_joins: IndexSet::new() }
-        , Ids::All )
+            natural_joins: IndexSet::from([NaturalJoin::Variable(table_name.clone(), symbol.clone())]),
+            theta_joins: IndexSet::new() };
+        let free_variables = IndexMap::from([(symbol.clone(), table_name.to_string())]);
+        create_view(view, free_variables, query, Ids::All, solver)
     } else {  // infinite variable ==> just "x"
-        ( GroundingQuery::Join{
-            variables: IndexMap::from([(symbol.clone(), None)]),
+        let variables = IndexMap::from([(symbol.clone(), None)]);
+        let query = GroundingQuery::Join{
+            variables,
             conditions: vec![],
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::new(),
-            theta_joins: IndexSet::new() }
-        , Ids::None)
-    };
-
-    let view = TableName{base_table: "variable".to_string(), index};
-    create_view(view, query, ids, solver)
+            theta_joins: IndexSet::new() };
+        let free_variables = IndexMap::from([(symbol.clone(), "".to_string())]);
+        create_view(view, free_variables, query, Ids::None, solver)
+    }
 }
 
 
@@ -424,6 +426,7 @@ pub(crate) fn query_for_compound(
     solver: &mut Solver
 ) -> Result<GroundingView, SolverError> {
 
+    let mut free_variables = IndexMap::new();
     let mut variables: IndexMap<Symbol, Option<Column>> = IndexMap::new();
     let mut conditions= vec![];
     let mut groundings = vec![];
@@ -438,9 +441,10 @@ pub(crate) fn query_for_compound(
             GroundingView::Empty => {
                 return Ok(GroundingView::Empty)
             },
-            GroundingView::View {variables: sub_variables, condition: sub_condition,
+            GroundingView::View {free_variables: sub_free_variables, condition: sub_condition,
                 ground_view, query, ids: sub_ids,..} => {
 
+                free_variables.append(sub_free_variables);
                 ids = max(ids, sub_ids.clone());
 
                 if let GroundingQuery::Join { variables: sub_variables, conditions: sub_conditions,
@@ -507,7 +511,7 @@ pub(crate) fn query_for_compound(
                             natural_joins.append(&mut IndexSet::from([sub_natural_join]));
 
                             // merge the variables
-                            for (symbol, _) in sub_variables.clone() {
+                            for (symbol, _) in sub_free_variables.clone() {
                                 if variables.get(&symbol).is_none() {
                                     let column = Column{table_name: table_name.clone(), column: symbol.to_string()};
                                     variables.insert(symbol.clone(), Some(column));
@@ -592,14 +596,14 @@ pub(crate) fn query_for_compound(
         natural_joins,
         theta_joins,
     };
-    create_view(table_name, query, ids, solver)
+    create_view(table_name, free_variables, query, ids, solver)
 }
 
 
 /// Creates a query over an aggregate view, possibly adding a where clause if exclude is not empty
 pub(crate) fn query_for_aggregate(
     sub_query: &GroundingView,
-    free_variables: &IndexMap<Symbol, bool>,
+    free_variables: &IndexMap<Symbol, String>,
     infinite_variables: &Vec<SortedVar>,  // variables being quantified
     agg: &str,  // "and", "or" or ""
     exclude: Option<bool>,
@@ -632,7 +636,7 @@ pub(crate) fn query_for_aggregate(
                             sub_view: Box::new(*sub_sub_view.clone()),
                             exclude,
                         };
-                        return create_view(table_name, query, ids.clone(), solver)
+                        return create_view(table_name, free_variables.clone(), query, ids.clone(), solver)
                     }
             }
 
@@ -644,7 +648,7 @@ pub(crate) fn query_for_aggregate(
                 exclude,
             };
 
-            create_view(table_name, query, ids.clone(), solver)
+            create_view(table_name, free_variables.clone(), query, ids.clone(), solver)
         }
     }
 }
@@ -655,18 +659,19 @@ pub(crate) fn query_for_aggregate(
 
 pub(crate) fn create_view (
     table_name: TableName,
+    free_variables: IndexMap<Symbol, String>,
     query: GroundingQuery,
     ids: Ids,
     solver: &mut Solver,
 ) -> Result<GroundingView, SolverError> {
     match query {
-        GroundingQuery::Join{ref variables, ref conditions, ref grounding, ..} => {
+        GroundingQuery::Join{ref conditions, ref grounding, ..} => {
 
             match (conditions.len(), grounding) {
                 (0, SQLExpr::Boolean(_))
                 | (0, SQLExpr::Constant(_)) => {  // no need to create a view in DB
                     Ok(GroundingView::View {
-                        variables: IndexMap::new(),
+                        free_variables: IndexMap::new(),
                         condition: false,
                         ground_view: Either::Left(grounding.clone()),
                         query,
@@ -674,13 +679,10 @@ pub(crate) fn create_view (
                     })
                 },
                 _ => {
-                    let variables: IndexMap<Symbol, bool> = variables.iter()
-                        .map( |(symbol, column)| (symbol.clone(), ! column.is_some()))
-                        .collect();
                     let condition = conditions.len() > 0;
 
                     // create the view in the database
-                    let vars = variables.iter()
+                    let vars = free_variables.iter()
                         .map(|(symbol, _)| symbol.to_string())
                         .collect::<Vec<_>>()
                         .join(", ");
@@ -691,7 +693,7 @@ pub(crate) fn create_view (
                     solver.conn.execute(&sql, ())?;
 
                     Ok(GroundingView::View{
-                        variables,
+                        free_variables,
                         condition,
                         ground_view: Either::Right(table_name),
                         query,
@@ -699,13 +701,13 @@ pub(crate) fn create_view (
                 }
             }
         },
-        GroundingQuery::Aggregate { ref free_variables, .. } => {
+        GroundingQuery::Aggregate { .. } => {
 
             let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS {query}");
             solver.conn.execute(&sql, ())?;
 
            Ok(GroundingView::View {
-                variables: free_variables.clone(),
+                free_variables,
                 condition: false,
                 ground_view: Either::Right(table_name),
                 query,
@@ -719,10 +721,10 @@ pub(crate) fn create_view (
 impl GroundingView {
 
     /// return the view's variables with their infinity flag
-    pub(crate) fn get_variables(&self) -> IndexMap<Symbol, bool> {
+    pub(crate) fn get_free_variables(&self) -> IndexMap<Symbol, String> {
         match self {
             GroundingView::Empty => IndexMap::new(),
-            GroundingView::View{variables,..} => variables.clone()
+            GroundingView::View{free_variables,..} => free_variables.clone()
         }
     }
 
@@ -742,7 +744,8 @@ impl GroundingView {
     ) -> Result<GroundingView, SolverError> {
         match self {
             GroundingView::Empty => Ok(self.clone()),
-            GroundingView::View{query, ids, ..} => query.negate(qual_identifier, index, view, ids, solver)
+            GroundingView::View{free_variables, query, ids, ..} =>
+                query.negate(qual_identifier, free_variables.clone(), index, view, ids, solver)
         }
     }
 }
@@ -752,6 +755,7 @@ impl GroundingQuery {
     pub(crate) fn negate(
         &self,
         qual_identifier: &QualIdentifier,  // not
+        free_variables: IndexMap<Symbol, String>,
         index: TermId,
         view: View,
         ids: &Ids,
@@ -780,9 +784,9 @@ impl GroundingQuery {
                             natural_joins: natural_joins.clone(),
                             theta_joins: theta_joins.clone()};
                         let view = TableName{base_table: qual_identifier.to_string(), index};
-                        create_view(view, query, ids.clone(), solver)
+                        create_view(view, free_variables, query, ids.clone(), solver)
                     }
-            GroundingQuery::Aggregate { agg, free_variables, infinite_variables, sub_view, exclude } => {
+            GroundingQuery::Aggregate { agg, infinite_variables, sub_view, exclude, .. } => {
                 let query = GroundingQuery::Aggregate {
                     agg : if agg == "or" { "and".to_string() } else { "or".to_string() },
                     free_variables: free_variables.clone(),
@@ -791,7 +795,7 @@ impl GroundingQuery {
                     exclude: if let Some(bool) = exclude { Some(! bool) } else { *exclude }
                 };
                 let view = TableName{base_table: qual_identifier.to_string(), index};
-                create_view(view, query, ids.clone(), solver)
+                create_view(view, free_variables, query, ids.clone(), solver)
             },
         }
     }

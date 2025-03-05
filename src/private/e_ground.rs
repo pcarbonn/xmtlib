@@ -199,7 +199,7 @@ pub(crate) fn ground_term_(
                 Grounding::Boolean { tu: _, uf: sub_uf, g: sub_g } => {
 
                     // free_variables = query.variables \ variables
-                    let mut free_variables = sub_g.get_variables().clone();
+                    let mut free_variables = sub_g.get_free_variables().clone();
                     for SortedVar(symbol, _) in variables {
                         free_variables.shift_remove(symbol);
                     }
@@ -253,7 +253,7 @@ pub(crate) fn ground_term_(
                 Grounding::Boolean { tu: sub_tu, uf: _, g: sub_g } => {
 
                     // free_variables = query.variables \ variables
-                    let mut free_variables = sub_g.get_variables().clone();
+                    let mut free_variables = sub_g.get_free_variables().clone();
                     for SortedVar(symbol, _) in variables {
                         free_variables.shift_remove(symbol);
                     }
@@ -378,12 +378,16 @@ fn ground_compound(
                     // return uf, tu, g with grounding G replaced by not(G)
                     match groundings.get(0) {
                         Some(Grounding::Boolean { tu, uf, g }) => {
-                            // switch uf and tu and negate the groundings
-                            let new_tu = uf.negate(qual_identifier, index, View::UF, solver)?;
-                            let new_uf = tu.negate(qual_identifier, index, View::TU, solver)?;
-                            let new_g = g.negate(qual_identifier, index, View::G, solver)?;
+                            if let GroundingView::View { .. } = g {
+                                // switch uf and tu and negate the groundings
+                                let new_tu = uf.negate(qual_identifier, index, View::UF, solver)?;
+                                let new_uf = tu.negate(qual_identifier, index, View::TU, solver)?;
+                                let new_g = g.negate(qual_identifier, index, View::G, solver)?;
 
-                            Ok(Grounding::Boolean{tu: new_tu, uf: new_uf, g: new_g})
+                                Ok(Grounding::Boolean{tu: new_tu, uf: new_uf, g: new_g})
+                            } else {  // empty
+                                Ok(Grounding::Boolean{tu: GroundingView::Empty, uf:  GroundingView::Empty, g:  GroundingView::Empty})
+                            }
                         },
                         Some(Grounding::NonBoolean(_))
                         | None => Err(InternalError(85896566))
