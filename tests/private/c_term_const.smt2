@@ -61,10 +61,10 @@ Groundings:
     UF: SELECT apply("q", "green") AS G
     G : SELECT apply("q", "green") AS G
  - (or (q red) (q green)):
-    TU: SELECT or_(apply("q", "red"), apply("q", "green")) AS G
+    TU: SELECT or_aggregate(G) as G from (SELECT q_3.G AS G FROM q AS q_3 UNION SELECT q_5.G AS G FROM q AS q_5)
     UF: SELECT or_(apply("q", "red"), apply("q", "green")) AS G
     G : SELECT or_(apply("q", "red"), apply("q", "green")) AS G
  - (or (q red) (q red)):
-    TU: SELECT or_(apply("q", "red"), apply("q", "red")) AS G
+    TU: SELECT or_aggregate(G) as G from (SELECT q_3.G AS G FROM q AS q_3 UNION SELECT q_3.G AS G FROM q AS q_3)
     UF: SELECT or_(apply("q", "red"), apply("q", "red")) AS G
     G : SELECT or_(apply("q", "red"), apply("q", "red")) AS G

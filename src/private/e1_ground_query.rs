@@ -868,7 +868,8 @@ impl GroundingView {
 
     pub(crate) fn negate(
         &self,
-        qual_identifier: &QualIdentifier,
+        qual_identifier: &QualIdentifier,  // not
+        ground_view: &Either<SQLExpr, TableName>,
         index: TermId,
         view: View,
         solver: &mut Solver
@@ -876,7 +877,7 @@ impl GroundingView {
         match self {
             GroundingView::Empty => Ok(self.clone()),
             GroundingView::View{free_variables, query, ids, ..} =>
-                query.negate(qual_identifier, free_variables.clone(), index, view, ids, solver)
+                query.negate(qual_identifier, ground_view, free_variables.clone(), index, view, ids, solver)
         }
     }
 }
@@ -886,49 +887,54 @@ impl GroundingQuery {
     pub(crate) fn negate(
         &self,
         qual_identifier: &QualIdentifier,  // not
+        ground_view: &Either<SQLExpr, TableName>,
         free_variables: IndexMap<Symbol, Option<TableName>>,
         index: TermId,
         view: View,
         ids: &Ids,
         solver: &mut Solver
     ) -> Result<GroundingView, SolverError> {
-        match self {
-            GroundingQuery::Join { variables, conditions, grounding,
-                        natural_joins, theta_joins, ..} => {
+        if let Either::Right(TableName{base_table, ..}) = ground_view {
+            match self {
+                GroundingQuery::Join { variables, conditions, grounding,
+                            natural_joins, theta_joins, ..} => {
 
-                        let new_grounding =
-                            if *ids == Ids::All {
-                                if view == View::TU {
-                                    SQLExpr::Boolean(false)  // all ids were true
-                                } else if view == View::UF {
-                                    SQLExpr::Boolean(true)  // all ids were false
+                            let new_grounding =
+                                if *ids == Ids::All {
+                                    if view == View::TU {
+                                        SQLExpr::Boolean(false)  // all ids were true
+                                    } else if view == View::UF {
+                                        SQLExpr::Boolean(true)  // all ids were false
+                                    } else {
+                                        SQLExpr::Predefined(qual_identifier.clone(), Box::new(vec![grounding.clone()]))
+                                    }
                                 } else {
                                     SQLExpr::Predefined(qual_identifier.clone(), Box::new(vec![grounding.clone()]))
-                                }
-                            } else {
-                                SQLExpr::Predefined(qual_identifier.clone(), Box::new(vec![grounding.clone()]))
-                            };
-                        let query = GroundingQuery::Join {
-                            variables: variables.clone(),
-                            conditions: conditions.clone(),
-                            grounding: new_grounding,
-                            natural_joins: natural_joins.clone(),
-                            theta_joins: theta_joins.clone()};
-                        let view = TableName{base_table: qual_identifier.to_string(), index};
-                        create_view(view, free_variables, query, ids.clone(), solver)
-                    }
-            GroundingQuery::Aggregate { agg, infinite_variables, sub_view, exclude, .. } => {
-                let query = GroundingQuery::Aggregate {
-                    agg : if agg == "or" { "and".to_string() } else { "or".to_string() },
-                    free_variables: free_variables.clone(),
-                    infinite_variables: infinite_variables.clone(),
-                    sub_view: Box::new(sub_view.negate(qual_identifier, index, view, solver)?),
-                    exclude: if let Some(bool) = exclude { Some(! bool) } else { *exclude }
-                };
-                let view = TableName{base_table: qual_identifier.to_string(), index};
-                create_view(view, free_variables, query, ids.clone(), solver)
-            },
-            GroundingQuery::Union {..} => unreachable!()
+                                };
+                            let query = GroundingQuery::Join {
+                                variables: variables.clone(),
+                                conditions: conditions.clone(),
+                                grounding: new_grounding,
+                                natural_joins: natural_joins.clone(),
+                                theta_joins: theta_joins.clone()};
+                            let table_name = TableName{base_table: base_table.clone(), index};
+                            create_view(table_name, free_variables, query, ids.clone(), solver)
+                        }
+                GroundingQuery::Aggregate { agg, infinite_variables, sub_view, exclude, .. } => {
+                    let query = GroundingQuery::Aggregate {
+                        agg : if agg == "or" { "and".to_string() } else { "or".to_string() },
+                        free_variables: free_variables.clone(),
+                        infinite_variables: infinite_variables.clone(),
+                        sub_view: Box::new(sub_view.negate(qual_identifier, ground_view, index, view, solver)?),
+                        exclude: if let Some(bool) = exclude { Some(! bool) } else { *exclude }
+                    };
+                    let table_name = TableName{base_table: base_table.clone(), index};
+                    create_view(table_name, free_variables, query, ids.clone(), solver)
+                },
+                GroundingQuery::Union {..} => unreachable!()
+            }
+        } else {  // negate a constant ?
+            todo!()
         }
     }
 

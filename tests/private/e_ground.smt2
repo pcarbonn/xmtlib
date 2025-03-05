@@ -49,7 +49,7 @@ Groundings:
     F: SELECT "true" AS G WHERE FALSE
     G : SELECT "true" AS G
  - (or false false):
-    T: SELECT "true" AS G
+    T: SELECT "true" AS G WHERE FALSE
     F: SELECT "false" AS G
     G : SELECT "false" AS G
  - x: SELECT Bool_4.G AS x, Bool_4.G AS G FROM Bool AS Bool_4

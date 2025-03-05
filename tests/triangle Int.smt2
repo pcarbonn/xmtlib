@@ -81,7 +81,7 @@ Groundings:
     UF: SELECT "x" AS x, "y" AS y, "z" AS z, apply("phi", "x", "y", "z") AS G
     G : SELECT "x" AS x, "y" AS y, "z" AS z, apply("phi", "x", "y", "z") AS G
  - (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z)):
-    TU: SELECT "x" AS x, "y" AS y, "z" AS z, or_(not_(apply("Edge", "x", "y")), not_(apply("Edge", "y", "z")), not_(apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G
+    TU: SELECT x, y, z, or_aggregate(G) as G from (SELECT Edge_3.x AS x, Edge_3.y AS y, "z" AS z, Edge_3.G AS G FROM Edge AS Edge_3 WHERE  Edge_3.x = Edge_3.x AND  Edge_3.y = Edge_3.y UNION SELECT "x" AS x, Edge_6.y AS y, Edge_6.z AS z, Edge_6.G AS G FROM Edge AS Edge_6 WHERE  Edge_6.y = Edge_6.y AND  Edge_6.z = Edge_6.z UNION SELECT Edge_8.x AS x, "y" AS y, Edge_8.z AS z, Edge_8.G AS G FROM Edge AS Edge_8 WHERE  Edge_8.x = Edge_8.x AND  Edge_8.z = Edge_8.z UNION SELECT phi_9.x AS x, phi_9.y AS y, phi_9.z AS z, phi_9.G AS G FROM phi AS phi_9 WHERE  phi_9.x = phi_9.x AND  phi_9.y = phi_9.y AND  phi_9.z = phi_9.z)
     UF: SELECT Edge_TU_2.a_0 AS x, Edge_TU_2.a_1 AS y, Edge_TU_5.a_1 AS z, apply("phi", Edge_TU_2.a_0, Edge_TU_2.a_1, Edge_TU_5.a_1) AS G FROM Edge_TU AS Edge_TU_2 JOIN Edge_TU AS Edge_TU_5 ON Edge_TU_2.a_1 = Edge_TU_5.a_0 JOIN Edge_TU AS Edge_TU_7 ON Edge_TU_2.a_0 = Edge_TU_7.a_0 AND Edge_TU_5.a_1 = Edge_TU_7.a_1
     G : SELECT "x" AS x, "y" AS y, "z" AS z, or_(not_(apply("Edge", "x", "y")), not_(apply("Edge", "y", "z")), not_(apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G
  - (forall ((x Int) (y Int) (z Int)) (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z))):

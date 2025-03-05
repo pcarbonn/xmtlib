@@ -131,7 +131,7 @@ Groundings:
     F: SELECT "false" AS G
     G : SELECT "false" AS G
  - (or (not (r x)) false):
-    TU: SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
+    T: SELECT "true" AS G WHERE FALSE
     UF: SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
     G : SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
  - (forall ((x Bool)) (or (not (r x)) false)):

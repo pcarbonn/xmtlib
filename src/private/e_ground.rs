@@ -360,9 +360,7 @@ fn ground_compound(
 
                 } else if *qual_identifier == solver.or {
 
-                    // todo: union query(qual_identifer, tus).
-                    let variant = Variant::PredefinedBoolean(View::TU);
-                    let tu = query_for_compound(qual_identifier, index, &mut gqs.clone(), &variant, solver)?;
+                    let tu = query_for_union(tus, "or".to_string(), index, solver)?;
 
                     let variant = Variant::PredefinedBoolean(View::UF);
                     let uf = query_for_compound(qual_identifier, index, &mut ufs, &variant, solver)?;
@@ -376,11 +374,11 @@ fn ground_compound(
                     // return uf, tu, g with grounding G replaced by not(G)
                     match groundings.get(0) {
                         Some(Grounding::Boolean { tu, uf, g }) => {
-                            if let GroundingView::View { .. } = g {
+                            if let GroundingView::View { ground_view, .. } = g {
                                 // switch uf and tu and negate the groundings
-                                let new_tu = uf.negate(qual_identifier, index, View::UF, solver)?;
-                                let new_uf = tu.negate(qual_identifier, index, View::TU, solver)?;
-                                let new_g = g.negate(qual_identifier, index, View::G, solver)?;
+                                let new_tu = uf.negate(qual_identifier, ground_view, index, View::UF, solver)?;
+                                let new_uf = tu.negate(qual_identifier, ground_view, index, View::TU, solver)?;
+                                let new_g = g.negate(qual_identifier, ground_view, index, View::G, solver)?;
 
                                 Ok(Grounding::Boolean{tu: new_tu, uf: new_uf, g: new_g})
                             } else {  // empty
