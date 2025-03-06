@@ -194,7 +194,11 @@ impl std::fmt::Display for GroundingQuery {
                                         let this_column = Column{table_name: table_name.clone(), column: symbol.to_string()};
                                         let column = variables.get(symbol).unwrap();
                                         if let Some(column) = column {
-                                            Some(format!(" {this_column} = {column}"))
+                                            if this_column.to_string() != column.to_string() {
+                                                Some(format!(" {this_column} = {column}"))
+                                            } else {
+                                                None
+                                            }
                                         } else {
                                             unreachable!("348595")
                                         }
@@ -900,47 +904,43 @@ impl GroundingQuery {
         ids: &Ids,
         solver: &mut Solver
     ) -> Result<GroundingView, SolverError> {
-        if let Either::Right(TableName{base_table, ..}) = ground_view {
-            match self {
-                GroundingQuery::Join { variables, conditions, grounding,
-                            natural_joins, theta_joins, ..} => {
+        match self {
+            GroundingQuery::Join { variables, conditions, grounding,
+                        natural_joins, theta_joins, ..} => {
 
-                            let new_grounding =
-                                if *ids == Ids::All {
-                                    if view == View::TU {
-                                        SQLExpr::Boolean(false)  // all ids were true
-                                    } else if view == View::UF {
-                                        SQLExpr::Boolean(true)  // all ids were false
-                                    } else {
-                                        SQLExpr::Predefined(qual_identifier.clone(), Box::new(vec![grounding.clone()]))
-                                    }
+                        let new_grounding =
+                            if *ids == Ids::All {
+                                if view == View::TU {
+                                    SQLExpr::Boolean(false)  // all ids were true
+                                } else if view == View::UF {
+                                    SQLExpr::Boolean(true)  // all ids were false
                                 } else {
                                     SQLExpr::Predefined(qual_identifier.clone(), Box::new(vec![grounding.clone()]))
-                                };
-                            let query = GroundingQuery::Join {
-                                variables: variables.clone(),
-                                conditions: conditions.clone(),
-                                grounding: new_grounding,
-                                natural_joins: natural_joins.clone(),
-                                theta_joins: theta_joins.clone()};
-                            let table_name = TableName{base_table: base_table.clone(), index};
-                            create_view(table_name, free_variables, query, ids.clone(), solver)
-                        }
-                GroundingQuery::Aggregate { agg, infinite_variables, sub_view, exclude, .. } => {
-                    let query = GroundingQuery::Aggregate {
-                        agg : if agg == "or" { "and".to_string() } else { "or".to_string() },
-                        free_variables: free_variables.clone(),
-                        infinite_variables: infinite_variables.clone(),
-                        sub_view: Box::new(sub_view.negate(qual_identifier, ground_view, index, view, solver)?),
-                        exclude: if let Some(bool) = exclude { Some(! bool) } else { *exclude }
-                    };
-                    let table_name = TableName{base_table: base_table.clone(), index};
-                    create_view(table_name, free_variables, query, ids.clone(), solver)
-                },
-                GroundingQuery::Union {..} => unreachable!()
-            }
-        } else {  // negate a constant ?
-            todo!()
+                                }
+                            } else {
+                                SQLExpr::Predefined(qual_identifier.clone(), Box::new(vec![grounding.clone()]))
+                            };
+                        let query = GroundingQuery::Join {
+                            variables: variables.clone(),
+                            conditions: conditions.clone(),
+                            grounding: new_grounding,
+                            natural_joins: natural_joins.clone(),
+                            theta_joins: theta_joins.clone()};
+                        let table_name = TableName{base_table: "negate".to_string(), index};
+                        create_view(table_name, free_variables, query, ids.clone(), solver)
+                    }
+            GroundingQuery::Aggregate { agg, infinite_variables, sub_view, exclude, .. } => {
+                let query = GroundingQuery::Aggregate {
+                    agg : if agg == "or" { "and".to_string() } else { "or".to_string() },
+                    free_variables: free_variables.clone(),
+                    infinite_variables: infinite_variables.clone(),
+                    sub_view: Box::new(sub_view.negate(qual_identifier, ground_view, index, view, solver)?),
+                    exclude: if let Some(bool) = exclude { Some(! bool) } else { *exclude }
+                };
+                let table_name = TableName{base_table: "negate".to_string(), index};
+                create_view(table_name, free_variables, query, ids.clone(), solver)
+            },
+            GroundingQuery::Union {..} => unreachable!()
         }
     }
 
