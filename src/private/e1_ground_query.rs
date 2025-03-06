@@ -691,42 +691,51 @@ pub(crate) fn query_for_union(
     let sub_queries = sub_views.iter()
         .filter_map( |sub_view| {
             if let GroundingView::View { free_variables: sub_free_variables, condition: sub_condition,
-                ground_view, ..} = sub_view {
+                ground_view, query, ..} = sub_view {
 
-                if let Either::Right(table_name) = ground_view {
-                    let mut q_variables = IndexMap::new();
-                    let natural_join = NaturalJoin::View(table_name.clone(), sub_free_variables.keys().cloned().collect());
-                    let mut natural_joins = IndexSet::from([natural_join]);
-                    for (symbol, sub_table_name) in free_variables.iter() {
-                        if let Some(_) = sub_free_variables.get(symbol) {  // the variable is in the sub_view
-                            let column = Column{table_name: table_name.clone(), column: symbol.to_string()};
-                            q_variables.insert(symbol.clone(), Some(column));
-                        } else if let Some(table_name) = sub_table_name {  // create cross-product
-                            let column = Column{table_name: table_name.clone(), column: symbol.to_string()};
-                            q_variables.insert(symbol.clone(), Some(column));
-                            let natural_join = NaturalJoin::Variable(table_name.clone(), symbol.clone());
-                            natural_joins.insert(natural_join);
-                        } else {  // infinite variable
-                            q_variables.insert(symbol.clone(), None);
+                match ground_view {
+                    Either::Right(table_name) => {
+                        let mut q_variables = IndexMap::new();
+                        let natural_join = NaturalJoin::View(table_name.clone(), sub_free_variables.keys().cloned().collect());
+                        let mut natural_joins = IndexSet::from([natural_join]);
+                        for (symbol, sub_table_name) in free_variables.iter() {
+                            if let Some(_) = sub_free_variables.get(symbol) {  // the variable is in the sub_view
+                                let column = Column{table_name: table_name.clone(), column: symbol.to_string()};
+                                q_variables.insert(symbol.clone(), Some(column));
+                            } else if let Some(table_name) = sub_table_name {  // create cross-product
+                                let column = Column{table_name: table_name.clone(), column: symbol.to_string()};
+                                q_variables.insert(symbol.clone(), Some(column));
+                                let natural_join = NaturalJoin::Variable(table_name.clone(), symbol.clone());
+                                natural_joins.insert(natural_join);
+                            } else {  // infinite variable
+                                q_variables.insert(symbol.clone(), None);
+                            }
                         }
+
+                        let conditions =
+                            if *sub_condition {
+                                vec![SQLExpr::Value(Column{table_name: table_name.clone(), column: "if_".to_string()})]
+                            } else if condition {
+                                vec![SQLExpr::Boolean(true)]
+                            } else { vec![] };
+
+                        Some(GroundingQuery::Join {
+                            variables: q_variables,
+                            conditions,
+                            grounding: SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()}),
+                            natural_joins,
+                            theta_joins: IndexSet::new()
+                        })
+                    },
+                    Either::Left(grounding) => {
+                        Some(GroundingQuery::Join {
+                            variables: IndexMap::new(),
+                            conditions: vec![],
+                            grounding: grounding.clone(),
+                            natural_joins: IndexSet::new(),
+                            theta_joins: IndexSet::new()
+                        })
                     }
-
-                    let conditions =
-                        if *sub_condition {
-                            vec![SQLExpr::Value(Column{table_name: table_name.clone(), column: "if_".to_string()})]
-                        } else if condition {
-                            vec![SQLExpr::Boolean(true)]
-                        } else { vec![] };
-
-                    Some(GroundingQuery::Join {
-                        variables: q_variables,
-                        conditions,
-                        grounding: SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()}),
-                        natural_joins,
-                        theta_joins: IndexSet::new()
-                    })
-                } else { // a variable ??
-                    unreachable!()
                 }
             } else { // empty view
                 None
@@ -776,40 +785,37 @@ pub(crate) fn create_view (
     solver: &mut Solver,
 ) -> Result<GroundingView, SolverError> {
     match query {
-        GroundingQuery::Join{ref conditions, ref grounding, ..} => {
+        GroundingQuery::Join{ref conditions, ref grounding, ref natural_joins, ref theta_joins, ..} => {
 
-            match (conditions.len(), grounding) {
-                (0, SQLExpr::Boolean(_))
-                | (0, SQLExpr::Constant(_)) => {  // no need to create a view in DB
-                    Ok(GroundingView::View {
-                        free_variables: IndexMap::new(),
-                        condition: false,
-                        ground_view: Either::Left(grounding.clone()),
-                        query,
-                        ids
-                    })
-                },
-                _ => {
-                    let condition = conditions.len() > 0;
+            if natural_joins.len() + theta_joins.len() == 0 {// no need to create a view in DB
+                let debug = query.to_string();
+                Ok(GroundingView::View {
+                    free_variables: IndexMap::new(),
+                    condition: false,
+                    ground_view: Either::Left(grounding.clone()),
+                    query,
+                    ids
+                })
+            } else {
+                let condition = conditions.len() > 0;
 
-                    // create the view in the database
-                    let vars = free_variables.iter()
-                        .map(|(symbol, _)| symbol.to_string())
-                        .collect::<Vec<_>>()
-                        .join(", ");
-                    let vars = if vars == "" { vars } else { vars + ", " };
-                    let if_= if condition { "if_, " } else { "" };
-                    let grounding = "G".to_string();
-                    let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {vars}{if_}{grounding} FROM ({query})");
-                    solver.conn.execute(&sql, ())?;
+                // create the view in the database
+                let vars = free_variables.iter()
+                    .map(|(symbol, _)| symbol.to_string())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                let vars = if vars == "" { vars } else { vars + ", " };
+                let if_= if condition { "if_, " } else { "" };
+                let grounding = "G".to_string();
+                let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {vars}{if_}{grounding} FROM ({query})");
+                solver.conn.execute(&sql, ())?;
 
-                    Ok(GroundingView::View{
-                        free_variables,
-                        condition,
-                        ground_view: Either::Right(table_name),
-                        query,
-                        ids})
-                }
+                Ok(GroundingView::View{
+                    free_variables,
+                    condition,
+                    ground_view: Either::Right(table_name),
+                    query,
+                    ids})
             }
         },
         GroundingQuery::Aggregate { .. } => {
