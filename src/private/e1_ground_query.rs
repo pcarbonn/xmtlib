@@ -695,7 +695,7 @@ pub(crate) fn query_for_union(
     let sub_queries = sub_views.iter()
         .filter_map( |sub_view| {
             if let GroundingView::View { free_variables: sub_free_variables, condition: sub_condition,
-                ground_view, query, ..} = sub_view {
+                ground_view, ..} = sub_view {
 
                 match ground_view {
                     Either::Right(table_name) => {
@@ -732,8 +732,11 @@ pub(crate) fn query_for_union(
                         })
                     },
                     Either::Left(grounding) => {
+                        let q_variables = free_variables.iter()
+                            .map( |(symbol, _)| (symbol.clone(), None))
+                            .collect();
                         Some(GroundingQuery::Join {
-                            variables: IndexMap::new(),
+                            variables: q_variables,
                             conditions: vec![],
                             grounding: grounding.clone(),
                             natural_joins: IndexSet::new(),
@@ -792,9 +795,8 @@ pub(crate) fn create_view (
         GroundingQuery::Join{ref conditions, ref grounding, ref natural_joins, ref theta_joins, ..} => {
 
             if natural_joins.len() + theta_joins.len() == 0 {// no need to create a view in DB
-                let debug = query.to_string();
                 Ok(GroundingView::View {
-                    free_variables: IndexMap::new(),
+                    free_variables,
                     condition: false,
                     ground_view: Either::Left(grounding.clone()),
                     query,
@@ -841,7 +843,7 @@ pub(crate) fn create_view (
             solver.conn.execute(&sql, ())?;
 
             Ok(GroundingView::View {
-                free_variables: free_variables.clone(),
+                free_variables,
                 condition: sub_queries.iter().any( |view| {
                     if let GroundingQuery::Join{conditions, ..} = view {
                         0 < conditions.len()
