@@ -9,8 +9,9 @@ use crate::api::{QualIdentifier, SortedVar, Term};
 use crate::error::SolverError::{self, *};
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionIs, Interpretation};
-use crate::private::e1_ground_query::{TableName, GroundingView, Ids, View, QueryVariant,
-    query_spec_constant, query_for_variable, query_for_compound, query_for_aggregate, query_for_union};
+use crate::private::e1_ground_view::{GroundingView, Ids, View, QueryVariant,
+    query_for_constant, query_for_variable, query_for_compound, query_for_aggregate, query_for_union};
+use crate::private::e2_ground_query::TableName;
 use crate::solver::Solver;
 
 
@@ -161,7 +162,7 @@ pub(crate) fn ground_term_(
         Term::SpecConstant(spec_constant) => {
 
             // a number or string; cannot be Boolean
-            let grounding = query_spec_constant(spec_constant, solver)?;
+            let grounding = query_for_constant(spec_constant, solver)?;
             Ok(Grounding::NonBoolean(grounding))
         },
         Term::XSortedVar(symbol, sort) => {

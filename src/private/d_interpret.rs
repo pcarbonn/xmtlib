@@ -6,7 +6,7 @@ use crate::api::{Identifier, QualIdentifier, XTuple};
 use crate::error::SolverError::{self, InternalError};
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionIs, Interpretation};
-use crate::private::e1_ground_query::Ids;
+use crate::private::e1_ground_view::Ids;
 use crate::solver::Solver;
 
 

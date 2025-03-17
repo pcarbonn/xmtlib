@@ -4,7 +4,8 @@ use indexmap::IndexMap;
 use strum_macros::Display;
 
 use crate::api::{QualIdentifier, SpecConstant, Symbol};
-use crate::private::e1_ground_query::{Column, Ids};
+use crate::private::e1_ground_view::Ids;
+use crate::private::e2_ground_query::Column;
 
 
 ////////////////////// Data structures for grounding queries //////////////////
