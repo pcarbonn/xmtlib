@@ -30,6 +30,7 @@ pub(crate) enum Predefined {
     Or,
     Not,
     Implies,  // binary connective used internally.  "=>" is replaced by a disjunction in `annotate_term`.
+    Eq,
 }
 
 
@@ -138,6 +139,12 @@ impl SQLExpr {
                         } else {
                             format!("implies_({e1}, {e2})")
                         }
+                    },
+                    Predefined::Eq => {
+                        let terms = exprs.iter()
+                            .map(|e| e.show(variables))
+                            .collect::<Vec<_>>().join(", ");
+                        format!("apply(\"=\", {terms})")
                     }
                 }
             }

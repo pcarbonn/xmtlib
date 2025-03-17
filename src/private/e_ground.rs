@@ -388,6 +388,13 @@ fn ground_compound(
                         Some(Grounding::NonBoolean(_))
                         | None => Err(InternalError(85896566))
                     }
+                } else if *qual_identifier == solver.eq {
+                    let variant = QueryVariant::PredefinedBoolean(View::G);
+                    let tu = query_for_compound(qual_identifier, index, &mut gqs, &variant, solver)?;
+                    let uf = query_for_compound(qual_identifier, index, &mut gqs, &variant, solver)?;
+                    let g = query_for_compound(qual_identifier, index, &mut gqs, &variant, solver)?;
+
+                    Ok(Grounding::Boolean{tu, uf, g})
 
                 // "=>"
                 // | "="

@@ -54,6 +54,7 @@ pub struct Solver {
     pub(crate) or: QualIdentifier,
     pub(crate) not: QualIdentifier,
     pub(crate) implies: QualIdentifier,
+    pub(crate) eq: QualIdentifier,
 }
 
 
@@ -142,6 +143,7 @@ impl Default for Solver {
         let or: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("or".to_string())));
         let not: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("not".to_string())));
         let implies: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("=>".to_string())));
+        let eq: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("=".to_string())));
 
         unsafe {
             let cfg = Z3_mk_config();
@@ -157,7 +159,7 @@ impl Default for Solver {
                 // qualified_functions: IndexMap::new(),
                 assertions_to_ground: vec![],
                 groundings: IndexMap::new(),
-                true_, false_, and, or, not, implies
+                true_, false_, and, or, not, implies, eq
             }
         }
 

@@ -605,6 +605,7 @@ pub(crate) fn query_for_compound(
                     "or"  => Predefined::Or,
                     "implies" => Predefined::Implies,
                     "not" => Predefined::Not,
+                    "=" => Predefined::Eq,
                     _ => panic!()
                 };
                 if ids == Ids::All {
