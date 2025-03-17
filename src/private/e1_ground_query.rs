@@ -47,7 +47,6 @@ pub(crate) enum GroundingQuery {
         exclude: Option<bool>
     },
     Union {
-        free_variables: IndexMap<Symbol, Option<TableName>>,  // None for infinite variables
         sub_queries: Box<Vec<GroundingQuery>>  // the sub-queries are Join and have the same columns
     }
 }
@@ -538,8 +537,7 @@ pub(crate) fn query_for_compound(
                                     } else {
                                         None
                                     }
-                                })
-                                .collect();
+                                }).collect();
                             let sub_natural_join = NaturalJoin::View(table_name.clone(), map_variables);
                             natural_joins.append(&mut IndexSet::from([sub_natural_join]));
                         },
@@ -714,9 +712,29 @@ pub(crate) fn query_for_union(
                 ground_view, ..} = sub_view {
 
                 match ground_view {
+                    Either::Left(grounding) => {
+                        let q_variables = free_variables.iter()
+                            .map( |(symbol, _)| (symbol.clone(), None))
+                            .collect();
+                        Some(GroundingQuery::Join {
+                            variables: q_variables,
+                            conditions: vec![],
+                            grounding: grounding.clone(),
+                            natural_joins: IndexSet::new(),
+                            theta_joins: IndexSet::new()
+                        })
+                    },
                     Either::Right(table_name) => {
                         let mut q_variables = IndexMap::new();
-                        let natural_join = NaturalJoin::View(table_name.clone(), sub_free_variables.keys().cloned().collect());
+                        let join_vars = sub_free_variables.iter()
+                            .filter_map( |(symbol, table_name)| {
+                                if table_name.is_some() {
+                                    Some(symbol.clone())
+                                } else {
+                                    None
+                                }
+                            }).collect();
+                        let natural_join = NaturalJoin::View(table_name.clone(), join_vars);
                         let mut natural_joins = IndexSet::from([natural_join]);
                         for (symbol, sub_table_name) in free_variables.iter() {
                             if let Some(_) = sub_free_variables.get(symbol) {  // the variable is in the sub_view
@@ -747,18 +765,6 @@ pub(crate) fn query_for_union(
                             theta_joins: IndexSet::new()
                         })
                     },
-                    Either::Left(grounding) => {
-                        let q_variables = free_variables.iter()
-                            .map( |(symbol, _)| (symbol.clone(), None))
-                            .collect();
-                        Some(GroundingQuery::Join {
-                            variables: q_variables,
-                            conditions: vec![],
-                            grounding: grounding.clone(),
-                            natural_joins: IndexSet::new(),
-                            theta_joins: IndexSet::new()
-                        })
-                    }
                 }
             } else { // empty view
                 None
@@ -773,7 +779,7 @@ pub(crate) fn query_for_union(
     };
 
     // create the union
-    let query = GroundingQuery::Union{ free_variables: free_variables.clone(), sub_queries: Box::new(sub_queries) };
+    let query = GroundingQuery::Union{ sub_queries: Box::new(sub_queries) };
 
     let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS {query}");
     solver.conn.execute(&sql, ())?;
