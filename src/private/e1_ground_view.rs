@@ -546,8 +546,11 @@ impl GroundingView {
         ids: Ids,
         solver: &mut Solver,
     ) -> Result<GroundingView, SolverError> {
+
         match query {
-            GroundingQuery::Join{ref conditions, ref grounding, ref natural_joins, ref theta_joins, ..} => {
+
+            GroundingQuery::Join{ref conditions, ref grounding,
+            ref natural_joins, ref theta_joins, ..} => {
 
                 if natural_joins.len() + theta_joins.len() == 0 {// no need to create a view in DB
                     Ok(GroundingView::View {
@@ -584,13 +587,13 @@ impl GroundingView {
                 let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS {query}");
                 solver.conn.execute(&sql, ())?;
 
-            Ok(GroundingView::View {
-                    free_variables,
-                    condition: false,
-                    ground_view: Either::Right(table_name),
-                    query,
-                    ids: Ids::None
-                })
+                Ok(GroundingView::View {
+                        free_variables,
+                        condition: false,
+                        ground_view: Either::Right(table_name),
+                        query,
+                        ids: Ids::None
+                    })
             },
             GroundingQuery::Union { ref sub_queries, .. } => {
 
