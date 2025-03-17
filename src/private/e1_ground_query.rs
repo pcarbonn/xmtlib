@@ -1,6 +1,7 @@
 // Copyright Pierre Carbonnelle, 2025.
 
 use std::cmp::max;
+use std::fmt::Display;
 
 use indexmap::{IndexMap, IndexSet};
 use itertools::Either;
@@ -73,8 +74,8 @@ pub(crate) struct Column {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct TableName {
-    pub(crate) base_table: String,
-    pub(crate) index: TermId, // to disambiguate
+    pub(crate) base_table: String,  // contains index for views !
+    pub(crate) index: TermId, // to disambiguate interpretation table
 }
 
 
@@ -190,7 +191,7 @@ impl std::fmt::Display for GroundingQuery {
                                 let name = name(table_name);
                                 let on = symbols.iter()
                                     .filter_map( | symbol | {
-                                        let this_column = Column{table_name: table_name.clone(), column: symbol.to_string()};
+                                        let this_column = Column::new(table_name, symbol);
                                         let column = variables.get(symbol).unwrap();
                                         if let Some(column) = column {
                                             if this_column.to_string() != column.to_string() {
@@ -377,7 +378,7 @@ pub(crate) fn query_spec_constant(
         natural_joins: IndexSet::new(),
         theta_joins: IndexSet::new(),
     };
-    let view = TableName{base_table: "ignore".to_string(), index: 0};
+    let view = TableName::new("ignore", 0);
     create_view(view, IndexMap::new(), query, Ids::All, solver)
 }
 
@@ -389,10 +390,10 @@ pub(crate) fn query_for_variable(
     index: usize,
     solver: &mut Solver
 ) -> Result<GroundingView, SolverError> {
-    let view = TableName{base_table: "variable".to_string(), index};
+    let view = TableName::new("variable", index);
     if base_table.len() != 0 {
-        let table_name = TableName{base_table: base_table.clone(), index};
-        let column = Column{table_name: table_name.clone(), column: "G".to_string()};
+        let table_name = TableName::new(base_table, index);
+        let column = Column::new(&table_name, "G");
         let variables= IndexMap::from([(symbol.clone(), Some(column.clone()))]);
 
         let query = GroundingQuery::Join{
@@ -423,7 +424,7 @@ pub(crate) enum View {
 }
 
 /// describes the type of query to create for a compound term
-pub(crate) enum Variant {
+pub(crate) enum QueryVariant {
     Interpretation(TableName, Ids, View),
     Apply,
     Construct(View),
@@ -435,7 +436,7 @@ pub(crate) fn query_for_compound(
     qual_identifier: &QualIdentifier,
     index: TermId,
     sub_queries: &mut Vec<GroundingView>,
-    variant: &Variant,
+    variant: &QueryVariant,
     solver: &mut Solver
 ) -> Result<GroundingView, SolverError> {
 
@@ -467,8 +468,8 @@ pub(crate) fn query_for_compound(
                     // handle the special case of a variable used as an argument to an interpreted function
                     match sub_grounding {
                         SQLExpr::Variable(symbol) => {
-                            if let Variant::Interpretation(table_name, ..) = variant {
-                                let column = Column{table_name: table_name.clone(), column: format!("a_{i}")};
+                            if let QueryVariant::Interpretation(table_name, ..) = variant {
+                                let column = Column::new(table_name, &format!("a_{i}"));
 
                                 //  update the query in progress
                                 variables.insert(symbol.clone(), Some(column.clone()));
@@ -497,17 +498,17 @@ pub(crate) fn query_for_compound(
 
                     // compute the join conditions, for later use
                     match variant {
-                        Variant::Interpretation(table_name, ..) => {
-                            let column = Column{table_name: table_name.clone(), column: format!("a_{i}")};
+                        QueryVariant::Interpretation(table_name, ..) => {
+                            let column = Column::new(table_name, &format!("a_{i}"));
 
                             // adds nothing if sub_ids = All
                             conditions.push(SQLExpr::Equality(sub_ids.clone(), Box::new(sub_grounding.clone()), column.clone()));
                             // adds nothing if sub_ids == None
                             thetas.push((sub_ids.clone(), sub_grounding.clone(), column));
                         },
-                        Variant::Apply
-                        | Variant::Construct(..)
-                        | Variant::PredefinedBoolean(..) => {}
+                        QueryVariant::Apply
+                        | QueryVariant::Construct(..)
+                        | QueryVariant::PredefinedBoolean(..) => {}
                     }
                 } else {  // not a Join --> use the View
                     match ground_view {
@@ -519,16 +520,16 @@ pub(crate) fn query_for_compound(
                             // merge the variables
                             for (symbol, _) in sub_free_variables.clone() {
                                 if variables.get(&symbol).is_none() {
-                                    let column = Column{table_name: table_name.clone(), column: symbol.to_string()};
+                                    let column = Column::new(table_name, &symbol);
                                     variables.insert(symbol.clone(), Some(column));
                                 }
                             }
 
                             if *sub_condition {
-                                let sub_condition = SQLExpr::Value(Column{table_name: table_name.clone(), column: "if_".to_string()});
+                                let sub_condition = SQLExpr::Value(Column::new(table_name,"if_"));
                                 conditions.push(sub_condition);
                             }
-                            groundings.push(SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()}));
+                            groundings.push(SQLExpr::Value(Column::new(table_name, "G")));
 
                             let map_variables = sub_free_variables.iter()
                                 .filter_map( |(symbol, table_name)| {
@@ -567,20 +568,20 @@ pub(crate) fn query_for_compound(
 
     let grounding =
         match variant {
-            Variant::Interpretation(table_name, ids_, view) => {
+            QueryVariant::Interpretation(table_name, ids_, view) => {
                 theta_joins.insert((table_name.clone(), thetas));
                 ids = ids_.clone();  // reflects the grounding column, not if_
                 match (ids_, view) {
                     (Ids::All, View::TU) => SQLExpr::Boolean(true),
                     (Ids::All, View::UF) => SQLExpr::Boolean(false),
-                    _ => SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()})
+                    _ => SQLExpr::Value(Column::new(table_name, "G"))
                 }
             },
-            Variant::Apply => {
+            QueryVariant::Apply => {
                 ids = Ids::None;
                 SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings))
             },
-            Variant::Construct(view) => {
+            QueryVariant::Construct(view) => {
                 // do not change ids.
                 if *qual_identifier == solver.true_ {
                     match view {
@@ -598,7 +599,7 @@ pub(crate) fn query_for_compound(
                     SQLExpr::Construct(qual_identifier.clone(), Box::new(groundings))
                 }
             },
-            Variant::PredefinedBoolean(view) => {
+            QueryVariant::PredefinedBoolean(view) => {
                 let function = match qual_identifier.to_string().as_str() {
                     "and" => Predefined::And,
                     "or"  => Predefined::Or,
@@ -618,7 +619,7 @@ pub(crate) fn query_for_compound(
             }
         };
 
-    let table_name = TableName{base_table: qual_identifier.to_string().clone(), index};
+    let table_name = TableName::new(qual_identifier, index);
     let query = GroundingQuery::Join {
         variables,
         conditions,
@@ -738,10 +739,10 @@ pub(crate) fn query_for_union(
                         let mut natural_joins = IndexSet::from([natural_join]);
                         for (symbol, sub_table_name) in free_variables.iter() {
                             if let Some(_) = sub_free_variables.get(symbol) {  // the variable is in the sub_view
-                                let column = Column{table_name: table_name.clone(), column: symbol.to_string()};
+                                let column = Column::new(table_name, symbol);
                                 q_variables.insert(symbol.clone(), Some(column));
                             } else if let Some(table_name) = sub_table_name {  // create cross-product
-                                let column = Column{table_name: table_name.clone(), column: symbol.to_string()};
+                                let column = Column::new(table_name, symbol);
                                 q_variables.insert(symbol.clone(), Some(column));
                                 let natural_join = NaturalJoin::Variable(table_name.clone(), symbol.clone());
                                 natural_joins.insert(natural_join);
@@ -752,7 +753,7 @@ pub(crate) fn query_for_union(
 
                         let conditions =
                             if *sub_condition {
-                                vec![SQLExpr::Value(Column{table_name: table_name.clone(), column: "if_".to_string()})]
+                                vec![SQLExpr::Value(Column::new(table_name, "if_"))]
                             } else if condition {
                                 vec![SQLExpr::Boolean(true)]
                             } else { vec![] };
@@ -760,7 +761,7 @@ pub(crate) fn query_for_union(
                         Some(GroundingQuery::Join {
                             variables: q_variables,
                             conditions,
-                            grounding: SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()}),
+                            grounding: SQLExpr::Value(Column::new(table_name, "G")),
                             natural_joins,
                             theta_joins: IndexSet::new()
                         })
@@ -968,4 +969,16 @@ impl GroundingQuery {
         }
     }
 
+}
+
+impl TableName {
+    pub(crate) fn new<T: Display + ? Sized>(base_table: &T, index: usize) -> Self {
+        TableName{base_table: base_table.to_string(), index}
+    }
+}
+
+impl Column {
+    fn new<T: Display + ? Sized>(table_name: &TableName, column: &T) -> Self {
+        Column{table_name: table_name.clone(), column: column.to_string()}
+    }
 }

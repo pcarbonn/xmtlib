@@ -66,7 +66,7 @@ pub(crate) fn interpret_pred(
                 columns.append(&mut foreign_keys);
                 let columns = columns.join(", ");
 
-                solver.conn.execute(format!("CREATE TABLE {identifier}_T ({columns})").as_str(), ())?;
+                solver.conn.execute(&format!("CREATE TABLE {identifier}_T ({columns})"), ())?;
 
                 // populate the table
                 let holes = (0..domain.len()).map(|_|"?").collect::<Vec<_>>().join(",");  // "?" n times

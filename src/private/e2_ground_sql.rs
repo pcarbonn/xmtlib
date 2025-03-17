@@ -29,7 +29,7 @@ pub(crate) enum Predefined {
     And,
     Or,
     Not,
-    Implies,
+    Implies,  // binary connective used internally.  "=>" is replaced by a disjunction in `annotate_term`.
 }
 
 
@@ -124,6 +124,7 @@ impl SQLExpr {
                         }
                     },
                     Predefined::Implies => {
+                        assert_eq!(exprs.len(), 2);  // implies is a binary connective used internally
                         let e1 = exprs.first().unwrap().show(variables);
                         let e2 = exprs.get(2).unwrap().show(variables);
                         if e1 == "true" {

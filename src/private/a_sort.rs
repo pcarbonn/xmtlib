@@ -480,9 +480,9 @@ fn create_table(
         conn: &mut Connection
     ) -> Result<(), SolverError> {
 
-        conn.execute(format!("CREATE TABLE {table} (G TEXT PRIMARY KEY)").as_str(), ())?;
+        conn.execute(&format!("CREATE TABLE {table} (G TEXT PRIMARY KEY)"), ())?;
 
-        let mut stmt = conn.prepare(format!("INSERT INTO {table} (G) VALUES (?)").as_str())?;
+        let mut stmt = conn.prepare(&format!("INSERT INTO {table} (G) VALUES (?)"))?;
         for value in values {
             stmt.execute(params![value])?;
         }
@@ -554,7 +554,7 @@ fn create_table(
             }
         }
         let create = format!("CREATE TABLE {table} AS {}", selects.join( " UNION "));
-        solver.conn.execute(create.as_str(), ())?;
+        solver.conn.execute(&create, ())?;
     }
     Ok(count)
 }
