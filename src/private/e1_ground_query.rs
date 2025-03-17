@@ -686,8 +686,6 @@ pub(crate) fn query_for_union(
             free_variables.append(&mut sub_free_variables.clone());
             condition |= sub_condition;
             ids = max(ids, sub_ids);
-        } else {
-            return Ok(GroundingView::Empty)
         }
     }
 
@@ -751,9 +749,13 @@ pub(crate) fn query_for_union(
 
     if sub_queries.len() == 0 { return Ok(GroundingView::Empty) }
 
+    let table_name = TableName{base_table: "union".to_string(), index};
+    if sub_queries.len() == 1 {
+        return create_view(table_name, free_variables, sub_queries.first().unwrap().clone(), ids.clone(), solver)
+    };
+
     // create the union
     let query = GroundingQuery::Union{ free_variables: free_variables.clone(), sub_queries: Box::new(sub_queries) };
-    let table_name = TableName{base_table: "union".to_string(), index};
 
     let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS {query}");
     solver.conn.execute(&sql, ())?;
