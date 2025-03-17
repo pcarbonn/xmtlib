@@ -1,6 +1,7 @@
 // Copyright Pierre Carbonnelle, 2025.
 
 use indexmap::IndexMap;
+use strum_macros::Display;
 
 use crate::api::{QualIdentifier, SpecConstant, Symbol};
 use crate::private::e1_ground_query::{Column, Ids};
@@ -16,11 +17,19 @@ pub(crate) enum SQLExpr {
     Variable(Symbol),
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
     Construct(QualIdentifier, Box<Vec<SQLExpr>>),  // constructor
-    Predefined(QualIdentifier, Box<Vec<SQLExpr>>),
+    Predefined(Predefined, Box<Vec<SQLExpr>>),
     // Only in GroundingQuery.groundings
     Value(Column),  // in an interpretation table.
     //  Only in GroundingQuery.conditions
     Equality(Ids, Box<SQLExpr>, Column),  // c_i, i.e., `is_id(expr) or expr=col`.
+}
+
+#[derive(Debug, Display, Clone, PartialEq, Eq, Hash)]
+pub(crate) enum Predefined {
+    And,
+    Or,
+    Not,
+    Implies,
 }
 
 
@@ -80,56 +89,55 @@ impl SQLExpr {
             SQLExpr::Construct(qual_identifier, exprs) => {
                 sql_for("construct2", qual_identifier.to_string(), exprs, variables)
             },
-            SQLExpr::Predefined(qual_identifier, exprs) => {
-                let function = qual_identifier.to_string();
-                // try to simplify
-                if ["and", "or"].contains(&function.as_str()) {
-                    let exprs =
-                        exprs.iter().cloned().filter_map( |e| {  // try to simplify
-                            match e {
-                                SQLExpr::Boolean(b) => {
-                                    if function == "and" && b { None }
-                                    else if function == "or" && !b { None }
-                                    else { Some(e.show(variables)) }
-                                },
-                                _ => Some(e.show(variables))
-                            }
-                        }).collect::<Vec<_>>();
-                    if exprs.len() == 0 {
-                        if function == "and" { "\"true\"".to_string() } else { "\"false\"".to_string()}
-                    } else if exprs.len() == 1 {
-                        exprs.first().unwrap().to_string()
-                    } else {
-                        format!("{function}_({})", exprs.join(", "))
+            SQLExpr::Predefined(function, exprs) => {
+                let name = function.to_string().to_lowercase();
+                match function {
+                    Predefined::And
+                    | Predefined::Or => {
+                        let exprs =
+                            exprs.iter().cloned().filter_map( |e| {  // try to simplify
+                                match e {
+                                    SQLExpr::Boolean(b) => {
+                                        if name == "and" && b { None }
+                                        else if name == "or" && !b { None }
+                                        else { Some(e.show(variables)) }
+                                    },
+                                    _ => Some(e.show(variables))
+                                }
+                            }).collect::<Vec<_>>();
+                        if exprs.len() == 0 {
+                            if name == "and" { "\"true\"".to_string() } else { "\"false\"".to_string()}
+                        } else if exprs.len() == 1 {
+                            exprs.first().unwrap().to_string()
+                        } else {
+                            format!("{name}_({})", exprs.join(", "))
+                        }
+                    },
+                    Predefined::Not => {
+                        let expr = exprs.first().unwrap().show(variables);
+                        if expr == "true" {
+                            "false".to_string()
+                        } else if expr == "false" {
+                            "true".to_string()
+                        } else {
+                            format!("not_({expr})")
+                        }
+                    },
+                    Predefined::Implies => {
+                        let e1 = exprs.first().unwrap().show(variables);
+                        let e2 = exprs.get(2).unwrap().show(variables);
+                        if e1 == "true" {
+                            e2
+                        } else if e1 == "false" {
+                            "true".to_string()
+                        } else if e2 == "true" {
+                            "true".to_string()
+                        } else if e2 == "false" {
+                            format!("not_({e1})")
+                        } else {
+                            format!("implies_({e1}, {e2})")
+                        }
                     }
-                } else if function == "not" {
-                    let expr = exprs.first().unwrap().show(variables);
-                    if expr == "true" {
-                        "false".to_string()
-                    } else if expr == "false" {
-                        "true".to_string()
-                    } else {
-                        format!("not_({expr})")
-                    }
-                } else if function == "implies" {
-                    let e1 = exprs.first().unwrap().show(variables);
-                    let e2 = exprs.get(2).unwrap().show(variables);
-                    if e1 == "true" {
-                        e2
-                    } else if e1 == "false" {
-                        "true".to_string()
-                    } else if e2 == "true" {
-                        "true".to_string()
-                    } else if e2 == "false" {
-                        format!("not_({e1})")
-                    } else {
-                        format!("implies_({e1}, {e2})")
-                    }
-                } else {
-                    let terms = exprs.iter()
-                        .map(|e| e.show(variables))
-                        .collect::<Vec<_>>().join(", ");
-                    format!("{function}({terms})")
                 }
             }
             SQLExpr::Value(column) => column.to_string(),
