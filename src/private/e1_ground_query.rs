@@ -516,13 +516,6 @@ pub(crate) fn query_for_compound(
                             groundings.push(constant.clone()),
 
                         Either::Right(table_name) => {
-                            if *sub_condition {
-                                let sub_condition = SQLExpr::Value(Column{table_name: table_name.clone(), column: "if_".to_string()});
-                                conditions.push(sub_condition);
-                            }
-                            groundings.push(SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()}));
-                            let sub_natural_join = NaturalJoin::View(table_name.clone(), vec![]);
-                            natural_joins.append(&mut IndexSet::from([sub_natural_join]));
 
                             // merge the variables
                             for (symbol, _) in sub_free_variables.clone() {
@@ -531,6 +524,24 @@ pub(crate) fn query_for_compound(
                                     variables.insert(symbol.clone(), Some(column));
                                 }
                             }
+
+                            if *sub_condition {
+                                let sub_condition = SQLExpr::Value(Column{table_name: table_name.clone(), column: "if_".to_string()});
+                                conditions.push(sub_condition);
+                            }
+                            groundings.push(SQLExpr::Value(Column{table_name: table_name.clone(), column: "G".to_string()}));
+
+                            let map_variables = sub_free_variables.iter()
+                                .filter_map( |(symbol, table_name)| {
+                                    if table_name.is_some() {
+                                        Some(symbol.clone())
+                                    } else {
+                                        None
+                                    }
+                                })
+                                .collect();
+                            let sub_natural_join = NaturalJoin::View(table_name.clone(), map_variables);
+                            natural_joins.append(&mut IndexSet::from([sub_natural_join]));
                         },
                     }
                 }
