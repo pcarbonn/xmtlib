@@ -1,17 +1,17 @@
 (set-option :backend none)
-(assert (= 2 2))
+(assert (= 2 2 2))
 (x-ground)
 (x-debug solver groundings)
 -------------------------
 
 
 (push)
-(assert (= 2 2))
+(assert (= 2 2 2))
 (pop)
-(assert (= 2 2))
+(assert true)
 Groundings:
  - 2: SELECT "2" AS G
- - (= 2 2):
-    T: SELECT apply("=", "2", "2") AS G
-    F: SELECT apply("=", "2", "2") AS G
-    G : SELECT apply("=", "2", "2") AS G
+ - (= 2 2 2):
+    T: SELECT eq_("2", "2", "2") AS G
+    F: SELECT eq_("2", "2", "2") AS G
+    G : SELECT eq_("2", "2", "2") AS G

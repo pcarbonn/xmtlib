@@ -972,13 +972,17 @@ impl GroundingQuery {
 
 }
 
+
 impl TableName {
+    #[inline]
     pub(crate) fn new<T: Display + ? Sized>(base_table: &T, index: usize) -> Self {
         TableName{base_table: base_table.to_string(), index}
     }
 }
 
+
 impl Column {
+    #[inline]
     fn new<T: Display + ? Sized>(table_name: &TableName, column: &T) -> Self {
         Column{table_name: table_name.clone(), column: column.to_string()}
     }

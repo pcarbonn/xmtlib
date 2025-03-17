@@ -144,7 +144,7 @@ impl SQLExpr {
                         let terms = exprs.iter()
                             .map(|e| e.show(variables))
                             .collect::<Vec<_>>().join(", ");
-                        format!("apply(\"=\", {terms})")
+                        format!("eq_({terms})")
                     }
                 }
             }

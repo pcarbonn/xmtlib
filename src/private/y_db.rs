@@ -158,6 +158,60 @@ pub(crate) fn init_db(
         },
     )?;
 
+    // create function "is_id"
+    conn.create_scalar_function(
+        "is_id",
+        1,                     // Number of arguments the function takes
+        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,                  // Deterministic (same input gives same output)
+        |ctx| {                // The function logic
+            let a1 = ctx.get::<String>(0)?;
+            Ok(! a1.starts_with("("))
+        },
+    )?;
+
+    // create function "eq_"
+    conn.create_scalar_function(
+        "eq_",
+        -1,                     // Number of arguments the function takes
+        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,                  // Deterministic (same input gives same output)
+        |ctx| {                // The function logic
+            let args = get_args(ctx)?;
+            if args.len() == 2 {  // most frequent case
+                if args[0] == args[1] {  // they might not be ids !
+                    Ok("true".to_string())
+                } else if is_id(&args[0]) && is_id(&args[1]) {
+                    Ok("false".to_string())
+                } else {
+                    Ok(format!("(= {})", args.join(" ")))
+                }
+            } else {
+                // if two ids are different, return false
+                // otherwise, if all are ids, return true
+                // else return the equality
+                let mut last_id: Option<&String> = None;
+                let mut all_ids = true;
+                for arg in &args {
+                    if is_id(arg) {
+                        if let Some(last_id) = last_id {
+                            if *last_id != *arg {
+                                return Ok("false".to_string())
+                            }
+                        } else {
+                            last_id = Some(arg)
+                        }
+                    } else {
+                        all_ids = false;
+                    }
+                }
+                if all_ids {
+                    Ok("true".to_string())
+                } else {
+                    Ok(format!("(= {})", args.join(" ")))
+                }
+            }
+        },
+    )?;
+
     conn.create_aggregate_function(
         "and_aggregate",
         1,
@@ -255,8 +309,6 @@ impl Aggregate<OrState, String> for OrState {
     }
 }
 
-// todo isid
-
 
 /// get the symbol and args from the context
 fn get_symbol_args (ctx: &Context) -> Result<(String, Vec<String>), Error> {
@@ -281,3 +333,29 @@ fn get_symbol_args (ctx: &Context) -> Result<(String, Vec<String>), Error> {
     Ok((symbol, args))
 }
 
+/// get the args from the context
+fn get_args (ctx: &Context) -> Result<Vec<String>, Error> {
+    let args: Vec<String> = (0..ctx.len())
+        .map(|i| {
+            let value = ctx.get_raw(i);
+            match value {
+                rusqlite::types::ValueRef::Null =>
+                    Err(Error::InvalidFunctionParameterType(i, value.data_type())),
+                rusqlite::types::ValueRef::Integer(i) =>
+                    Ok(i.to_string()),
+                rusqlite::types::ValueRef::Real(r) =>
+                    Ok(r.to_string()),
+                rusqlite::types::ValueRef::Text(_) =>
+                    FromSql::column_result(value)
+                        .map_err(|_| Error::InvalidFunctionParameterType(i, value.data_type())),
+                rusqlite::types::ValueRef::Blob(_) =>
+                    Err(Error::InvalidFunctionParameterType(i, value.data_type())),
+            }
+        }).collect::<Result<_, Error>>()?;     // Collect results or propagate errors
+    Ok(args)
+}
+
+#[inline]
+fn is_id(value: &str) -> bool {
+    ! value.starts_with("(")
+}
