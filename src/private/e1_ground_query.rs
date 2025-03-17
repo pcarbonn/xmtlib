@@ -749,7 +749,7 @@ pub(crate) fn query_for_union(
 
     if sub_queries.len() == 0 { return Ok(GroundingView::Empty) }
 
-    let table_name = TableName{base_table: "union".to_string(), index};
+    let table_name = TableName{base_table: format!("union_{index}"), index: 0};
     if sub_queries.len() == 1 {
         return create_view(table_name, free_variables, sub_queries.first().unwrap().clone(), ids.clone(), solver)
     };
@@ -770,7 +770,7 @@ pub(crate) fn query_for_union(
     };
 
     // create the aggregate
-    let table_name = TableName{base_table: "agg_union".to_string(), index};
+    let table_name = TableName{base_table: format!("agg_union_{index}"), index: 0};
     let query = GroundingQuery::Aggregate {
         agg: agg.to_string(),
         free_variables: free_variables.clone(),
@@ -930,7 +930,7 @@ impl GroundingQuery {
                             grounding: new_grounding,
                             natural_joins: natural_joins.clone(),
                             theta_joins: theta_joins.clone()};
-                        let table_name = TableName{base_table: "negate".to_string(), index};
+                        let table_name = TableName{base_table: format!("negate_{index}"), index: 0};
                         create_view(table_name, free_variables, query, ids.clone(), solver)
                     }
             GroundingQuery::Aggregate { agg, infinite_variables, sub_view, exclude, .. } => {
@@ -941,7 +941,7 @@ impl GroundingQuery {
                     sub_view: Box::new(sub_view.negate(qual_identifier, ground_view, index, view, solver)?),
                     exclude: if let Some(bool) = exclude { Some(! bool) } else { *exclude }
                 };
-                let table_name = TableName{base_table: "negate".to_string(), index};
+                let table_name = TableName{base_table: format!("negate_{index}"), index: 0};
                 create_view(table_name, free_variables, query, ids.clone(), solver)
             },
             GroundingQuery::Union {..} => unreachable!()
