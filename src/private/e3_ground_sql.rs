@@ -4,7 +4,7 @@ use indexmap::IndexMap;
 use strum_macros::Display;
 
 use crate::api::{QualIdentifier, SpecConstant, Symbol};
-use crate::private::e1_ground_view::Ids;
+use crate::private::e1_ground_view::{View, Ids};
 use crate::private::e2_ground_query::Column;
 
 
@@ -23,6 +23,8 @@ pub(crate) enum SQLExpr {
     Value(Column),  // in an interpretation table.
     //  Only in GroundingQuery.conditions
     Mapping(Ids, Box<SQLExpr>, Column),  // c_i, i.e., `is_id(expr) or expr=col`.
+    // Only in where clause
+    Chainable(String, Box<Vec<(Ids, SQLExpr)>>, View)  // comparisons
 }
 
 #[derive(Debug, Display, Clone, PartialEq, Eq, Hash)]
@@ -183,6 +185,34 @@ impl SQLExpr {
                     }
                 }
             },
+            SQLExpr::Chainable(op, args, view) => {
+                if *view == View::G {
+                    "".to_string()
+                } else {
+                    args.iter().zip(args.iter().skip(1))
+                        .filter_map(|((a_id, a), (b_id, b))| {
+                            // NOT is_id(a) OR NOT is_id(b) OR a op b
+                            let a = a.show(variables, theta);
+                            let b = b.show(variables, theta);
+                            let comp = match view {
+                                View::UF => format!("NOT {a} {op} {b}"),
+                                View::TU => format!("{a} {op} {b}"),
+                                View::G => unreachable!()
+                            };
+                            match (a_id, b_id) {
+                                (Ids::All, Ids::All) =>
+                                    Some(format!("{comp}")),
+                                (Ids::Some, Ids::All) =>
+                                    Some(format!("(NOT is_id({a}) OR {comp})")),
+                                (Ids::All, Ids::Some) =>
+                                    Some(format!("(NOT is_id({b}) OR {comp})")),
+                                (Ids::Some, Ids::Some) =>
+                                    Some(format!("(NOT is_id({a}) OR NOT is_id({b}) OR {comp})")),
+                                _ => None,
+                            }
+                        }).collect::<Vec<_>>().join( if *view == View::UF { " OR " } else { " AND " })
+                }
+            }
         }
     }
 }

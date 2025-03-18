@@ -102,6 +102,7 @@ pub(crate) fn query_for_constant(
         grounding: SQLExpr::Constant(spec_constant.clone()),
         natural_joins: IndexSet::new(),
         theta_joins: IndexSet::new(),
+        where_: vec![]
     };
     let view = TableName::new("ignore", 0);
     GroundingView::new(view, IndexMap::new(), query, Ids::All, solver)
@@ -126,7 +127,8 @@ pub(crate) fn query_for_variable(
             conditions: vec![],
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::from([NaturalJoin::Variable(table_name.clone(), symbol.clone())]),
-            theta_joins: IndexSet::new() };
+            theta_joins: IndexSet::new(),
+            where_: vec![] };
         let free_variables = IndexMap::from([(symbol.clone(), Some(table_name))]);
         GroundingView::new(view, free_variables, query, Ids::All, solver)
     } else {  // infinite variable ==> just "x"
@@ -136,14 +138,15 @@ pub(crate) fn query_for_variable(
             conditions: vec![],
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::new(),
-            theta_joins: IndexSet::new() };
+            theta_joins: IndexSet::new(),
+            where_: vec![] };
         let free_variables = IndexMap::from([(symbol.clone(), None)]);
         GroundingView::new(view, free_variables, query, Ids::None, solver)
     }
 }
 
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum View {
     TU, UF, G,
 }
@@ -172,7 +175,9 @@ pub(crate) fn query_for_compound(
     let mut natural_joins = IndexSet::new();
     let mut theta_joins = IndexSet::new();
     let mut thetas = vec![];
+    let mut where_ = vec![];
     let mut ids: Ids = Ids::All;
+    let mut ids_ = vec![];
 
     for (i, sub_q) in sub_queries.iter_mut().enumerate() {
 
@@ -188,7 +193,7 @@ pub(crate) fn query_for_compound(
 
                 if let GroundingQuery::Join { variables: sub_variables, conditions: sub_conditions,
                     grounding: sub_grounding, natural_joins: sub_natural_joins,
-                    theta_joins: sub_theta_joins, .. } = query {
+                    theta_joins: sub_theta_joins, where_: sub_where_,.. } = query {
 
                     // handle the special case of a variable used as an argument to an interpreted function
                     match sub_grounding {
@@ -212,8 +217,10 @@ pub(crate) fn query_for_compound(
 
                     conditions.append(sub_conditions);
                     groundings.push(sub_grounding.clone());
+                    ids_.push(sub_ids.clone());
                     natural_joins.append(sub_natural_joins);
                     theta_joins.append(sub_theta_joins);
+                    where_.append(sub_where_);
 
                     // merge the variables
                     for (symbol, column) in sub_variables.clone() {
@@ -335,6 +342,13 @@ pub(crate) fn query_for_compound(
                     "=" => Predefined::Eq,
                     _ => panic!()
                 };
+
+                let ops = ids_.iter().cloned().zip(groundings.iter().cloned()).collect();
+                match function {
+                    Predefined::Eq => where_.push(SQLExpr::Chainable("=".to_string(), Box::new(ops), view.clone())),
+                    _ => {}
+                };
+
                 if ids == Ids::All {
                     match view {
                         View::TU => SQLExpr::Boolean(true),
@@ -354,6 +368,7 @@ pub(crate) fn query_for_compound(
         grounding,
         natural_joins,
         theta_joins,
+        where_
     };
     GroundingView::new(table_name, free_variables, query, ids, solver)
 }
@@ -450,7 +465,8 @@ pub(crate) fn query_for_union(
                             conditions: vec![],
                             grounding: grounding.clone(),
                             natural_joins: IndexSet::new(),
-                            theta_joins: IndexSet::new()
+                            theta_joins: IndexSet::new(),
+                            where_: vec![]
                         })
                     },
                     Either::Right(table_name) => {
@@ -491,7 +507,8 @@ pub(crate) fn query_for_union(
                             conditions,
                             grounding: SQLExpr::Value(Column::new(table_name, "G")),
                             natural_joins,
-                            theta_joins: IndexSet::new()
+                            theta_joins: IndexSet::new(),
+                            where_: vec![]
                         })
                     },
                 }

@@ -25,6 +25,7 @@ pub(crate) enum GroundingQuery {
         grounding: SQLExpr,
         natural_joins: IndexSet<NaturalJoin>,
         theta_joins: IndexSet<ThetaJoin>,
+        where_: Vec<SQLExpr>,  // where clause for comparisons
     },
     Aggregate {
         agg: String,  // "" (top-level), "and" or "or"
@@ -73,13 +74,14 @@ impl std::fmt::Display for GroundingQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             GroundingQuery::Join{variables, conditions, grounding,
-            natural_joins, theta_joins, ..} => {
+            natural_joins, theta_joins, where_,..} => {
 
                 // SELECT {variables.0} AS {variables.1},
                 //        {condition} AS if_,  -- if condition
                 //        {grounding} AS G,
                 //   FROM {natural joins}
                 //   JOIN {theta_joins}
+                //  WHERE {where_}
 
                 let variables_ = variables.iter()
                     .map(|(symbol, column)| {
@@ -171,21 +173,35 @@ impl std::fmt::Display for GroundingQuery {
 
                 // naturals + thetas + empty
                 let tables = [naturals, thetas].concat();
+                let mut first_where = "".to_string();
                 let tables =
                     if tables.len() == 0 {
                         "".to_string()
                     } else if tables.len() == 1 {
-                        let mut tables = format!(" FROM {}", tables.join(" JOIN "));
-                        if tables.contains(" ON ") {
-                            // replace the only " ON " by " WHERE "
-                            tables = tables.replace(" ON ", " WHERE ");
+                        let tables = format!(" FROM {}", tables.join(" JOIN "));  // only one !
+                        if let Some((before, after)) = tables.split_once(" ON ") {
+                            first_where = after.to_string();
+                            before.to_string()
+                        } else {
+                            tables
                         }
-                        tables
                     } else {
                         format!(" FROM {}", tables.join(" JOIN "))
                     };
 
-                write!(f, "SELECT {variables_}{condition}{grounding_}{tables}")
+                let second_where =
+                    if where_.len() == 1 {
+                        where_.iter()
+                            .map(|e| e.show(&variables, true))
+                            .collect::<Vec<_>>().join("")  // no join, because only one where clause
+                    } else {
+                        "".to_string()  // todo: join by AND (or OR for UF view ?!)
+                    };
+
+                let where_ = first_where + &second_where;
+                let where_ = if where_ == "" { where_ } else { format!(" WHERE {where_}") };
+
+                write!(f, "SELECT {variables_}{condition}{grounding_}{tables}{where_}")
             }
             GroundingQuery::Aggregate { agg, free_variables, infinite_variables, sub_view, exclude } => {
                 if let GroundingView::View { condition, ..} = &**sub_view {
@@ -300,7 +316,7 @@ impl GroundingQuery {
     ) -> Result<GroundingView, SolverError> {
         match self {
             GroundingQuery::Join { variables, conditions, grounding,
-            natural_joins, theta_joins, ..} => {
+            natural_joins, theta_joins, where_, ..} => {
 
                 let new_grounding =
                     if *ids == Ids::All {
@@ -319,7 +335,8 @@ impl GroundingQuery {
                     conditions: conditions.clone(),
                     grounding: new_grounding,
                     natural_joins: natural_joins.clone(),
-                    theta_joins: theta_joins.clone()};
+                    theta_joins: theta_joins.clone(),
+                    where_: where_.clone()};
                 let table_name = TableName{base_table: format!("negate_{index}"), index: 0};
                 GroundingView::new(table_name, free_variables, query, ids.clone(), solver)
             }
