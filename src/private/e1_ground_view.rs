@@ -57,7 +57,7 @@ impl std::fmt::Debug for GroundingView {
                 let vars = if vars == "" { vars } else { vars + ", " };
                 let if_= if *condition { "if_, " } else { "" };
                 let g_v = match ground_view {
-                    Either::Left(c) => format!("{}", c.show(&IndexMap::new())),
+                    Either::Left(c) => format!("{}", c.show(&IndexMap::new(), false)),
                     Either::Right(view) => format!("G from {view}")
                 };
                 write!(f,"SELECT {vars}{if_}{g_v}")
@@ -201,7 +201,8 @@ pub(crate) fn query_for_compound(
                                 // sub-query has no conditions
                                 groundings.push(sub_grounding.clone());
                                 // do not push to natural_joins
-                                thetas.push((sub_ids.clone(), sub_grounding.clone(), column));
+                                let if_ = SQLExpr::Mapping(sub_ids.clone(), Box::new(sub_grounding.clone()), column);
+                                thetas.push(if_);
 
                                 continue  // to the next sub-query
                             }
@@ -226,10 +227,11 @@ pub(crate) fn query_for_compound(
                         QueryVariant::Interpretation(table_name, ..) => {
                             let column = Column::new(table_name, &format!("a_{i}"));
 
+                            let if_ = SQLExpr::Mapping(sub_ids.clone(), Box::new(sub_grounding.clone()), column.clone());
                             // adds nothing if sub_ids = All
-                            conditions.push(SQLExpr::Equality(sub_ids.clone(), Box::new(sub_grounding.clone()), column.clone()));
+                            conditions.push(if_.clone());
                             // adds nothing if sub_ids == None
-                            thetas.push((sub_ids.clone(), sub_grounding.clone(), column));
+                            thetas.push(if_);
                         },
                         QueryVariant::Apply
                         | QueryVariant::Construct(..)

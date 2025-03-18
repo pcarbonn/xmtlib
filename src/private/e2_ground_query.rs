@@ -48,7 +48,7 @@ pub(crate) enum NaturalJoin {
 
 
 /// indexed table name + mapping of (gated) expressions to value column
-pub(crate) type ThetaJoin = (TableName, Vec<(Ids, SQLExpr, Column)>);
+pub(crate) type ThetaJoin = (TableName, Vec<SQLExpr>);
 
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -95,7 +95,7 @@ impl std::fmt::Display for GroundingQuery {
 
                 // condition
                 let condition = conditions.iter()
-                    .map( |e| { e.show(&variables)})  // can be empty !
+                    .map( |e| { e.show(&variables, false)})  // can be empty !
                     .filter( |c| c != "")
                     .map ( |c| format!("({c})"))
                     .collect::<Vec<_>>();
@@ -109,7 +109,7 @@ impl std::fmt::Display for GroundingQuery {
                     };
 
                 // grounding
-                let grounding_ = grounding.show(&variables);
+                let grounding_ = grounding.show(&variables, false);
                 let grounding_ = format!("{grounding_} AS G");
 
                 // natural joins
@@ -134,10 +134,10 @@ impl std::fmt::Display for GroundingQuery {
                                 let name = name(table_name);
                                 let on = symbols.iter()
                                     .filter_map( | symbol | {
-                                        let this_column = Column::new(table_name, symbol);
+                                        let this_column = Column::new(table_name, symbol).to_string();
                                         let column = variables.get(symbol).unwrap();
                                         if let Some(column) = column {
-                                            if this_column.to_string() != column.to_string() {
+                                            if this_column != column.to_string() {
                                                 Some(format!(" {this_column} = {column}"))
                                             } else {
                                                 None
@@ -156,24 +156,12 @@ impl std::fmt::Display for GroundingQuery {
                 let thetas = theta_joins.iter()
                     .map( | (table_name, mapping) | {
                         let on = mapping.iter()
-                            .filter_map( | (ids, e, col) | {
-                                let value = e.show(&variables);
-                                if col.to_string() == value {
+                            .filter_map( | expr | {
+                                let theta = expr.show(variables, true);
+                                if theta.len() == 0 {
                                     None
                                 } else {
-                                    match ids {
-                                        Ids::All =>
-                                            Some(format!("{value} = {col}")),
-                                        Ids::Some =>
-                                            Some(format!("(NOT(is_id({value})) OR {value} = {col})")),
-                                        Ids::None =>
-                                            if let SQLExpr::Variable(_) = e {
-                                                if value != col.to_string() {
-                                                    Some(format!("{value} = {col}"))
-                                                } else { None}
-
-                                            } else { None },
-                                    }
+                                    Some(theta)
                                 }
                             }).collect::<Vec<_>>().join(" AND ");
                         let on = if on == "" { on } else { format!(" ON {on}")};
