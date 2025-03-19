@@ -189,6 +189,7 @@ impl std::fmt::Display for GroundingQuery {
                         format!(" FROM {}", tables.join(" JOIN "))
                     };
 
+                // LINK src/doc.md#_Equality
                 let second_where =
                     if where_.len() == 1 {
                         where_.iter()

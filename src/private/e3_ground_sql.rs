@@ -145,6 +145,7 @@ impl SQLExpr {
                             format!("implies_({e1}, {e2})")
                         }
                     },
+                    // LINK src/doc.md#_Equality
                     Predefined::Eq => {
                         let terms = exprs.iter()
                             .map(|e| e.show(variables, theta))
@@ -186,6 +187,7 @@ impl SQLExpr {
                 }
             },
             SQLExpr::Chainable(op, args, view) => {
+                // LINK src/doc.md#_Equality
                 if *view == View::G {
                     "".to_string()
                 } else {

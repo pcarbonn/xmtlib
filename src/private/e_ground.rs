@@ -390,6 +390,7 @@ fn ground_compound(
                         | None => Err(InternalError(85896566))
                     }
                 } else if *qual_identifier == solver.eq {
+                    // LINK src/doc.md#_Equality
                     let variant = QueryVariant::PredefinedBoolean(View::TU);
                     let tu = query_for_compound(qual_identifier, index, &mut gqs, &variant, solver)?;
                     let variant = QueryVariant::PredefinedBoolean(View::UF);

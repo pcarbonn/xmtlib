@@ -334,6 +334,7 @@ pub(crate) fn query_for_compound(
                 }
             },
             QueryVariant::PredefinedBoolean(view) => {
+                // LINK src/doc.md#_Equality
                 let function = match qual_identifier.to_string().as_str() {
                     "and" => Predefined::And,
                     "or"  => Predefined::Or,

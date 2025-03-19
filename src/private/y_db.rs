@@ -170,7 +170,7 @@ pub(crate) fn init_db(
     )?;
 
     // create function "eq_"
-    conn.create_scalar_function(
+    conn.create_scalar_function(  // LINK src/doc.md#_Equality
         "eq_",
         -1,                     // Number of arguments the function takes
         FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,                  // Deterministic (same input gives same output)
