@@ -97,7 +97,7 @@ impl std::fmt::Display for GroundingQuery {
 
                 // condition
                 let condition = conditions.iter()
-                    .map( |e| { e.show(&variables, false)})  // can be empty !
+                    .map( |e| { e.to_sql(&variables, false)})  // can be empty !
                     .filter( |c| c != "")
                     .map ( |c| format!("({c})"))
                     .collect::<Vec<_>>();
@@ -111,7 +111,7 @@ impl std::fmt::Display for GroundingQuery {
                     };
 
                 // grounding
-                let grounding_ = grounding.show(&variables, false);
+                let grounding_ = grounding.to_sql(&variables, false);
                 let grounding_ = format!("{grounding_} AS G");
 
                 // natural joins
@@ -159,7 +159,7 @@ impl std::fmt::Display for GroundingQuery {
                     .map( | (table_name, mapping) | {
                         let on = mapping.iter()
                             .filter_map( | expr | {
-                                let theta = expr.show(variables, true);
+                                let theta = expr.to_sql(variables, true);
                                 if theta.len() == 0 {
                                     None
                                 } else {
@@ -193,7 +193,7 @@ impl std::fmt::Display for GroundingQuery {
                 let second_where =
                     if where_.len() == 1 {
                         where_.iter()
-                            .map(|e| e.show(&variables, true))
+                            .map(|e| e.to_sql(&variables, true))
                             .collect::<Vec<_>>().join("")  // no join, because only one where clause
                     } else {
                         "".to_string()  // todo: join by AND (or OR for UF view ?!)

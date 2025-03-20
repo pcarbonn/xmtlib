@@ -42,7 +42,7 @@ pub(crate) enum Predefined {
 
 impl SQLExpr {
     // it can return an empty string !
-    pub(crate) fn show(
+    pub(crate) fn to_sql(
         &self,
         variables: &IndexMap<Symbol, Option<Column>>,
         theta: bool  // true for theta join, false for condition or grounding
@@ -64,7 +64,7 @@ impl SQLExpr {
                     format!("\"{function}\"")
                 } else {
                     let terms = exprs.iter()
-                        .map(|e| e.show(variables, theta))
+                        .map(|e| e.to_sql(variables, theta))
                         .collect::<Vec<_>>().join(", ");
                     format!("{application}(\"{function}\", {terms})")
                 }
@@ -101,14 +101,14 @@ impl SQLExpr {
                     Predefined::And
                     | Predefined::Or => {
                         let exprs =
-                            exprs.iter().cloned().filter_map( |(ids, e)| {  // try to simplify
+                            exprs.iter().cloned().filter_map( |(_, e)| {  // try to simplify
                                 match e {
                                     SQLExpr::Boolean(b) => {
                                         if name == "and" && b { None }
                                         else if name == "or" && !b { None }
-                                        else { Some(e.show(variables, theta)) }
+                                        else { Some(e.to_sql(variables, theta)) }
                                     },
-                                    _ => Some(e.show(variables, theta))
+                                    _ => Some(e.to_sql(variables, theta))
                                 }
                             }).collect::<Vec<_>>();
                         if exprs.len() == 0 {
@@ -120,7 +120,7 @@ impl SQLExpr {
                         }
                     },
                     Predefined::Not => {
-                        let expr = exprs.first().unwrap().1.show(variables, theta);
+                        let expr = exprs.first().unwrap().1.to_sql(variables, theta);
                         if expr == "true" {
                             "false".to_string()
                         } else if expr == "false" {
@@ -131,8 +131,8 @@ impl SQLExpr {
                     },
                     Predefined::Implies => {
                         assert_eq!(exprs.len(), 2);  // implies is a binary connective used internally
-                        let e1 = exprs.first().unwrap().1.show(variables, theta);
-                        let e2 = exprs.get(2).unwrap().1.show(variables, theta);
+                        let e1 = exprs.first().unwrap().1.to_sql(variables, theta);
+                        let e2 = exprs.get(2).unwrap().1.to_sql(variables, theta);
                         if e1 == "true" {
                             e2
                         } else if e1 == "false" {
@@ -148,7 +148,7 @@ impl SQLExpr {
                     // LINK src/doc.md#_Equality
                     Predefined::Eq => {
                         let terms = exprs.iter()
-                            .map(|(ids, e)| e.show(variables, theta))
+                            .map(|(_, e)| e.to_sql(variables, theta))
                             .collect::<Vec<_>>().join(", ");
                         format!("eq_({terms})")
                     }
@@ -156,7 +156,7 @@ impl SQLExpr {
             }
             SQLExpr::Value(column) => column.to_string(),
             SQLExpr::Mapping(ids, expr, column) => {
-                let value = expr.show(variables, theta);
+                let value = expr.to_sql(variables, theta);
                 let column = column.to_string();
 
                 if value == column {
@@ -194,8 +194,8 @@ impl SQLExpr {
                     args.iter().zip(args.iter().skip(1))
                         .filter_map(|((a_id, a), (b_id, b))| {
                             // NOT is_id(a) OR NOT is_id(b) OR a op b
-                            let a = a.show(variables, theta);
-                            let b = b.show(variables, theta);
+                            let a = a.to_sql(variables, theta);
+                            let b = b.to_sql(variables, theta);
                             let comp = match view {
                                 View::UF => format!("NOT {a} {op} {b}"),
                                 View::TU => format!("{a} {op} {b}"),
