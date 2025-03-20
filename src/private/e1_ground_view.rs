@@ -199,7 +199,7 @@ pub(crate) fn query_for_compound(
 
                 if let GroundingQuery::Join { variables: sub_variables, conditions: sub_conditions,
                     grounding: sub_grounding, natural_joins: sub_natural_joins,
-                    theta_joins: sub_theta_joins, where_: sub_where_,.. } = query {
+                    theta_joins: sub_theta_joins, .. } = query {
 
                     // handle the special case of a variable used as an argument to an interpreted function
                     match sub_grounding {
@@ -353,6 +353,7 @@ pub(crate) fn query_for_compound(
             },
             QueryVariant::PredefinedBoolean(new_view) => {
                 // LINK src/doc.md#_Equality
+                view = Some(new_view.clone());
                 let function = match qual_identifier.to_string().as_str() {
                     "and" => Predefined::And,
                     "or"  => Predefined::Or,
@@ -363,13 +364,7 @@ pub(crate) fn query_for_compound(
                 };
 
                 let ops: Vec<_> = ids_.iter().cloned().zip(groundings.iter().cloned()).collect();
-                match function {
-                    Predefined::Eq => {
-                        view = Some(new_view.clone());
-                        where_ = Some(SQLExpr::Predefined(Predefined::Eq, Box::new(ops.clone())))
-                    },
-                    _ => {}
-                };
+                where_ = Some(SQLExpr::Predefined(function.clone(), Box::new(ops.clone())));
 
                 if ids == Ids::All {
                     match new_view {
