@@ -25,7 +25,7 @@ pub(crate) enum GroundingQuery {
         grounding: SQLExpr,
         natural_joins: IndexSet<NaturalJoin>,  // joins of grounding sub-queries
         theta_joins: IndexSet<ThetaJoin>,  // joins with interpretation tables
-        where_: Vec<SQLExpr>,  // where clause for comparisons
+        where_: Option<SQLExpr>,  // where clause for comparisons
         view: Option<View>,  // Only for non-variable boolean
     },
     Aggregate {
@@ -192,12 +192,10 @@ impl std::fmt::Display for GroundingQuery {
 
                 // LINK src/doc.md#_Equality
                 let second_where =
-                    if where_.len() == 1 {
-                        where_.iter()
-                            .map(|e| e.to_sql(&variables, &SQLVariant::Theta(view.clone())))
-                            .collect::<Vec<_>>().join("")  // no join, because only one where clause
+                    if let Some(where_) = where_ {
+                        where_.to_sql(&variables, &SQLVariant::Theta(view.clone()))
                     } else {
-                        "".to_string()  // todo: join by AND (or OR for UF view ?!)
+                        "".to_string()
                     };
 
                 let where_ = first_where + &second_where;

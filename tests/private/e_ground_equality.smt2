@@ -44,6 +44,6 @@ Groundings:
     F: SELECT "false" AS G WHERE TRUE
     G : SELECT not_(eq_("3", "3")) AS G
  - (= (= 2 2) (not (= 3 3))):
-    T: SELECT "true" AS G
+    T: SELECT "true" AS G WHERE TRUE = FALSE
     F: SELECT "false" AS G WHERE NOT (TRUE = FALSE)
     G : SELECT eq_(eq_("2", "2"), not_(eq_("3", "3"))) AS G
