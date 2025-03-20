@@ -102,7 +102,8 @@ pub(crate) fn query_for_constant(
         grounding: SQLExpr::Constant(spec_constant.clone()),
         natural_joins: IndexSet::new(),
         theta_joins: IndexSet::new(),
-        where_: vec![]
+        where_: vec![],
+        view: None
     };
     let view = TableName::new("ignore", 0);
     GroundingView::new(view, IndexMap::new(), query, Ids::All, solver)
@@ -128,7 +129,9 @@ pub(crate) fn query_for_variable(
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::from([NaturalJoin::Variable(table_name.clone(), symbol.clone())]),
             theta_joins: IndexSet::new(),
-            where_: vec![] };
+            where_: vec![],
+            view: None
+        };
         let free_variables = IndexMap::from([(symbol.clone(), Some(table_name))]);
         GroundingView::new(view, free_variables, query, Ids::All, solver)
     } else {  // infinite variable ==> just "x"
@@ -139,7 +142,9 @@ pub(crate) fn query_for_variable(
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::new(),
             theta_joins: IndexSet::new(),
-            where_: vec![] };
+            where_: vec![],
+            view: None
+        };
         let free_variables = IndexMap::from([(symbol.clone(), None)]);
         GroundingView::new(view, free_variables, query, Ids::None, solver)
     }
@@ -178,6 +183,7 @@ pub(crate) fn query_for_compound(
     let mut where_ = vec![];
     let mut ids: Ids = Ids::All;
     let mut ids_ = vec![];
+    let mut view = None;  // default value
 
     for (i, sub_q) in sub_queries.iter_mut().enumerate() {
 
@@ -302,10 +308,11 @@ pub(crate) fn query_for_compound(
 
     let grounding =
         match variant {
-            QueryVariant::Interpretation(table_name, ids_, view) => {
+            QueryVariant::Interpretation(table_name, ids_, new_view) => {
                 theta_joins.insert((table_name.clone(), thetas));
                 ids = ids_.clone();  // reflects the grounding column, not if_
-                match (ids_, view) {
+                view = Some(new_view.clone());
+                match (ids_, new_view) {
                     (Ids::All, View::TU) => SQLExpr::Boolean(true),
                     (Ids::All, View::UF) => SQLExpr::Boolean(false),
                     _ => SQLExpr::Value(Column::new(table_name, "G"))
@@ -315,16 +322,18 @@ pub(crate) fn query_for_compound(
                 ids = Ids::None;
                 SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings))
             },
-            QueryVariant::Construct(view) => {
+            QueryVariant::Construct(new_view) => {
                 // do not change ids.
                 if *qual_identifier == solver.true_ {
-                    match view {
+                    view = Some(new_view.clone());
+                    match new_view {
                         View::TU => SQLExpr::Boolean(true),
                         View::UF => return Ok(GroundingView::Empty),
                         View::G => SQLExpr::Boolean(true),
                     }
                 } else if *qual_identifier == solver.false_ {
-                    match view {
+                    view = Some(new_view.clone());
+                    match new_view {
                         View::TU => return Ok(GroundingView::Empty),
                         View::UF => SQLExpr::Boolean(false),
                         View::G => SQLExpr::Boolean(false),
@@ -333,7 +342,7 @@ pub(crate) fn query_for_compound(
                     SQLExpr::Construct(qual_identifier.clone(), Box::new(groundings))
                 }
             },
-            QueryVariant::PredefinedBoolean(view) => {
+            QueryVariant::PredefinedBoolean(new_view) => {
                 // LINK src/doc.md#_Equality
                 let function = match qual_identifier.to_string().as_str() {
                     "and" => Predefined::And,
@@ -346,12 +355,15 @@ pub(crate) fn query_for_compound(
 
                 let ops: Vec<_> = ids_.iter().cloned().zip(groundings.iter().cloned()).collect();
                 match function {
-                    Predefined::Eq => where_.push(SQLExpr::Chainable("=".to_string(), Box::new(ops.clone()), view.clone())),
+                    Predefined::Eq => {
+                        view = Some(new_view.clone());
+                        where_.push(SQLExpr::Chainable("=".to_string(), Box::new(ops.clone())))
+                    },
                     _ => {}
                 };
 
                 if ids == Ids::All {
-                    match view {
+                    match new_view {
                         View::TU => SQLExpr::Boolean(true),
                         View::UF => SQLExpr::Boolean(false),
                         View::G  => SQLExpr::Predefined(function, Box::new(ops)),
@@ -369,7 +381,8 @@ pub(crate) fn query_for_compound(
         grounding,
         natural_joins,
         theta_joins,
-        where_
+        where_,
+        view
     };
     GroundingView::new(table_name, free_variables, query, ids, solver)
 }
@@ -467,7 +480,8 @@ pub(crate) fn query_for_union(
                             grounding: grounding.clone(),
                             natural_joins: IndexSet::new(),
                             theta_joins: IndexSet::new(),
-                            where_: vec![]
+                            where_: vec![],
+                            view: None
                         })
                     },
                     Either::Right(table_name) => {
@@ -509,7 +523,8 @@ pub(crate) fn query_for_union(
                             grounding: SQLExpr::Value(Column::new(table_name, "G")),
                             natural_joins,
                             theta_joins: IndexSet::new(),
-                            where_: vec![]
+                            where_: vec![],
+                            view: None
                         })
                     },
                 }

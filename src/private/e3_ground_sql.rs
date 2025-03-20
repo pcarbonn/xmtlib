@@ -24,7 +24,7 @@ pub(crate) enum SQLExpr {
     //  Only in GroundingQuery.conditions
     Mapping(Ids, Box<SQLExpr>, Column),  // c_i, i.e., `is_id(expr) or expr=col`.
     // Only in where clause
-    Chainable(String, Box<Vec<(Ids, SQLExpr)>>, View)  // comparisons
+    Chainable(String, Box<Vec<(Ids, SQLExpr)>>)  // comparisons
 }
 
 #[derive(Debug, Display, Clone, PartialEq, Eq, Hash)]
@@ -36,10 +36,16 @@ pub(crate) enum Predefined {
     Eq,
 }
 
+
+// const UNARY: [Predefined; 1] = [Predefined::Not];
+// const ASSOCIATIVE: [Predefined; 2] = [Predefined::And, Predefined::Or];
+// const CHAINABLE: [Predefined; 1] = [Predefined::Eq];
+
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum SQLVariant {
     Normal,
-    Theta
+    Theta(Option<View>)
 }
 
 ///////////////////////////  Display //////////////////////////////////////////
@@ -166,7 +172,7 @@ impl SQLExpr {
 
                 if value == column {
                     "".to_string()
-                } else if let SQLVariant::Theta = variant {
+                } else if let SQLVariant::Theta(_) = variant {
                     match ids {
                         Ids::All =>
                              format!("{value} = {column}"),
@@ -191,33 +197,37 @@ impl SQLExpr {
                     }
                 }
             },
-            SQLExpr::Chainable(op, args, view) => {
+            SQLExpr::Chainable(op, args) => {
                 // LINK src/doc.md#_Equality
-                if *view == View::G {
-                    "".to_string()
+                if let SQLVariant::Theta(Some(view)) = variant {
+                    if let View::G = view {
+                        "".to_string()
+                    } else {
+                        args.iter().zip(args.iter().skip(1))
+                            .filter_map(|((a_id, a), (b_id, b))| {
+                                // NOT is_id(a) OR NOT is_id(b) OR a op b
+                                let a = a.to_sql(variables, variant);
+                                let b = b.to_sql(variables, variant);
+                                let comp = match view {
+                                    View::UF => format!("NOT {a} {op} {b}"),
+                                    View::TU => format!("{a} {op} {b}"),
+                                    View::G => unreachable!()
+                                };
+                                match (a_id, b_id) {
+                                    (Ids::All, Ids::All) =>
+                                        Some(format!("{comp}")),
+                                    (Ids::Some, Ids::All) =>
+                                        Some(format!("(NOT is_id({a}) OR {comp})")),
+                                    (Ids::All, Ids::Some) =>
+                                        Some(format!("(NOT is_id({b}) OR {comp})")),
+                                    (Ids::Some, Ids::Some) =>
+                                        Some(format!("(NOT is_id({a}) OR NOT is_id({b}) OR {comp})")),
+                                    _ => None,
+                                }
+                            }).collect::<Vec<_>>().join( if *view == View::UF { " OR " } else { " AND " })
+                    }
                 } else {
-                    args.iter().zip(args.iter().skip(1))
-                        .filter_map(|((a_id, a), (b_id, b))| {
-                            // NOT is_id(a) OR NOT is_id(b) OR a op b
-                            let a = a.to_sql(variables, variant);
-                            let b = b.to_sql(variables, variant);
-                            let comp = match view {
-                                View::UF => format!("NOT {a} {op} {b}"),
-                                View::TU => format!("{a} {op} {b}"),
-                                View::G => unreachable!()
-                            };
-                            match (a_id, b_id) {
-                                (Ids::All, Ids::All) =>
-                                    Some(format!("{comp}")),
-                                (Ids::Some, Ids::All) =>
-                                    Some(format!("(NOT is_id({a}) OR {comp})")),
-                                (Ids::All, Ids::Some) =>
-                                    Some(format!("(NOT is_id({b}) OR {comp})")),
-                                (Ids::Some, Ids::Some) =>
-                                    Some(format!("(NOT is_id({a}) OR NOT is_id({b}) OR {comp})")),
-                                _ => None,
-                            }
-                        }).collect::<Vec<_>>().join( if *view == View::UF { " OR " } else { " AND " })
+                    unreachable!()
                 }
             }
         }

@@ -26,6 +26,7 @@ pub(crate) enum GroundingQuery {
         natural_joins: IndexSet<NaturalJoin>,
         theta_joins: IndexSet<ThetaJoin>,
         where_: Vec<SQLExpr>,  // where clause for comparisons
+        view: Option<View>,  // Only for non-variable boolean
     },
     Aggregate {
         agg: String,  // "" (top-level), "and" or "or"
@@ -74,7 +75,7 @@ impl std::fmt::Display for GroundingQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             GroundingQuery::Join{variables, conditions, grounding,
-            natural_joins, theta_joins, where_,..} => {
+            natural_joins, theta_joins, where_, view,..} => {
 
                 // SELECT {variables.0} AS {variables.1},
                 //        {condition} AS if_,  -- if condition
@@ -159,7 +160,7 @@ impl std::fmt::Display for GroundingQuery {
                     .map( | (table_name, mapping) | {
                         let on = mapping.iter()
                             .filter_map( | expr | {
-                                let theta = expr.to_sql(variables, &SQLVariant::Theta);
+                                let theta = expr.to_sql(variables, &SQLVariant::Theta(view.clone()));
                                 if theta.len() == 0 {
                                     None
                                 } else {
@@ -193,7 +194,7 @@ impl std::fmt::Display for GroundingQuery {
                 let second_where =
                     if where_.len() == 1 {
                         where_.iter()
-                            .map(|e| e.to_sql(&variables, &SQLVariant::Theta))
+                            .map(|e| e.to_sql(&variables, &SQLVariant::Theta(view.clone())))
                             .collect::<Vec<_>>().join("")  // no join, because only one where clause
                     } else {
                         "".to_string()  // todo: join by AND (or OR for UF view ?!)
@@ -337,7 +338,9 @@ impl GroundingQuery {
                     grounding: new_grounding,
                     natural_joins: natural_joins.clone(),
                     theta_joins: theta_joins.clone(),
-                    where_: where_.clone()};
+                    where_: where_.clone(),
+                    view: Some(view.clone())
+                };
                 let table_name = TableName{base_table: format!("negate_{index}"), index: 0};
                 GroundingView::new(table_name, free_variables, query, ids.clone(), solver)
             }
