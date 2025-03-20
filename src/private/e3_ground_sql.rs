@@ -36,6 +36,11 @@ pub(crate) enum Predefined {
     Eq,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum SQLVariant {
+    Normal,
+    Theta
+}
 
 ///////////////////////////  Display //////////////////////////////////////////
 
@@ -45,7 +50,7 @@ impl SQLExpr {
     pub(crate) fn to_sql(
         &self,
         variables: &IndexMap<Symbol, Option<Column>>,
-        theta: bool  // true for theta join, false for condition or grounding
+        variant: &SQLVariant
     ) -> String {
 
             /// Helper: use either "apply" or "construct2", according to the first argument.
@@ -58,13 +63,13 @@ impl SQLExpr {
                 function: String,
                 exprs: &Box<Vec<SQLExpr>>,
                 variables: &IndexMap<Symbol, Option<Column>>,
-                theta: bool
+                variant: &SQLVariant
             ) -> String {
                 if exprs.len() == 0 {
                     format!("\"{function}\"")
                 } else {
                     let terms = exprs.iter()
-                        .map(|e| e.to_sql(variables, theta))
+                        .map(|e| e.to_sql(variables, variant))
                         .collect::<Vec<_>>().join(", ");
                     format!("{application}(\"{function}\", {terms})")
                 }
@@ -90,10 +95,10 @@ impl SQLExpr {
                 }
             },
             SQLExpr::Apply(qual_identifier, exprs) => {
-                sql_for("apply", qual_identifier.to_string(), exprs, variables, theta)
+                sql_for("apply", qual_identifier.to_string(), exprs, variables, variant)
             },
             SQLExpr::Construct(qual_identifier, exprs) => {
-                sql_for("construct2", qual_identifier.to_string(), exprs, variables, theta)
+                sql_for("construct2", qual_identifier.to_string(), exprs, variables, variant)
             },
             SQLExpr::Predefined(function, exprs) => {
                 let name = function.to_string().to_lowercase();
@@ -106,9 +111,9 @@ impl SQLExpr {
                                     SQLExpr::Boolean(b) => {
                                         if name == "and" && b { None }
                                         else if name == "or" && !b { None }
-                                        else { Some(e.to_sql(variables, theta)) }
+                                        else { Some(e.to_sql(variables, variant)) }
                                     },
-                                    _ => Some(e.to_sql(variables, theta))
+                                    _ => Some(e.to_sql(variables, variant))
                                 }
                             }).collect::<Vec<_>>();
                         if exprs.len() == 0 {
@@ -120,7 +125,7 @@ impl SQLExpr {
                         }
                     },
                     Predefined::Not => {
-                        let expr = exprs.first().unwrap().1.to_sql(variables, theta);
+                        let expr = exprs.first().unwrap().1.to_sql(variables, variant);
                         if expr == "true" {
                             "false".to_string()
                         } else if expr == "false" {
@@ -131,8 +136,8 @@ impl SQLExpr {
                     },
                     Predefined::Implies => {
                         assert_eq!(exprs.len(), 2);  // implies is a binary connective used internally
-                        let e1 = exprs.first().unwrap().1.to_sql(variables, theta);
-                        let e2 = exprs.get(2).unwrap().1.to_sql(variables, theta);
+                        let e1 = exprs.first().unwrap().1.to_sql(variables, variant);
+                        let e2 = exprs.get(2).unwrap().1.to_sql(variables, variant);
                         if e1 == "true" {
                             e2
                         } else if e1 == "false" {
@@ -148,7 +153,7 @@ impl SQLExpr {
                     // LINK src/doc.md#_Equality
                     Predefined::Eq => {
                         let terms = exprs.iter()
-                            .map(|(_, e)| e.to_sql(variables, theta))
+                            .map(|(_, e)| e.to_sql(variables, variant))
                             .collect::<Vec<_>>().join(", ");
                         format!("eq_({terms})")
                     }
@@ -156,12 +161,12 @@ impl SQLExpr {
             }
             SQLExpr::Value(column) => column.to_string(),
             SQLExpr::Mapping(ids, expr, column) => {
-                let value = expr.to_sql(variables, theta);
+                let value = expr.to_sql(variables, variant);
                 let column = column.to_string();
 
                 if value == column {
                     "".to_string()
-                } else if theta {
+                } else if let SQLVariant::Theta = variant {
                     match ids {
                         Ids::All =>
                              format!("{value} = {column}"),
@@ -194,8 +199,8 @@ impl SQLExpr {
                     args.iter().zip(args.iter().skip(1))
                         .filter_map(|((a_id, a), (b_id, b))| {
                             // NOT is_id(a) OR NOT is_id(b) OR a op b
-                            let a = a.to_sql(variables, theta);
-                            let b = b.to_sql(variables, theta);
+                            let a = a.to_sql(variables, variant);
+                            let b = b.to_sql(variables, variant);
                             let comp = match view {
                                 View::UF => format!("NOT {a} {op} {b}"),
                                 View::TU => format!("{a} {op} {b}"),
