@@ -89,13 +89,21 @@ impl SQLExpr {
             SQLExpr::Predefined(function, exprs) => {
                 if UNARY.contains(function) {
                     // NOT
-                    let expr = exprs.first().unwrap().1.to_sql(variables, variant);
-                    if expr == "true" {
-                        "false".to_string()
-                    } else if expr == "false" {
-                        "true".to_string()
-                    } else {
-                        format!("not_({expr})")
+                    match variant {
+                        SQLVariant::Theta(_) => {
+                            let expr = exprs.first().unwrap().1.to_sql(variables, variant);
+                            if expr == "TRUE" {
+                                "FALSE".to_string()
+                            } else if expr == "FALSE" {
+                                "TRUE".to_string()
+                            } else {
+                                format!("NOT({expr})")
+                            }
+                        }
+                        _ => {
+                            let expr = exprs.first().unwrap().1.to_sql(variables, variant);
+                            format!("not_({expr})")
+                        }
                     }
                 } else if ASSOCIATIVE.contains(function) {
                     // AND, OR
@@ -160,26 +168,45 @@ impl SQLExpr {
                                     }
                                 }).collect::<Vec<_>>().join(" AND ")
                         }
+                        (Predefined::Eq, SQLVariant::Theta(None)) => {
+                            let res = exprs.iter().zip(exprs.iter().skip(1))
+                                .filter_map(|((_, a), (_, b))| {
+                                    // a op b
+                                    let a = a.to_sql(variables, &SQLVariant::Theta(None));
+                                    let b = b.to_sql(variables, &SQLVariant::Theta(None));
+                                    let comp = format!("{a} {function} {b}");
+                                    if a == b {
+                                        None
+                                    } else {
+                                        Some(comp)
+                                    }
+                                }).collect::<Vec<_>>().join(" AND ");
+                                if res.len() == 0 {
+                                    "TRUE".to_string()
+                                } else {
+                                    format!("({res})")
+                                }
+                        }
                         (Predefined::Eq, SQLVariant::Theta(Some(View::G))) => {
                             "".to_string()
                         }
                         (Predefined::Eq, SQLVariant::Theta(Some(view))) => {
-                            exprs.iter().zip(exprs.iter().skip(1))
+                            let res = exprs.iter().zip(exprs.iter().skip(1))
                                 .filter_map(|((a_id, a), (b_id, b))| {
                                     // NOT is_id(a) OR NOT is_id(b) OR a op b
-                                    let a = a.to_sql(variables, variant);
-                                    let b = b.to_sql(variables, variant);
+                                    let a = a.to_sql(variables, &SQLVariant::Theta(None));
+                                    let b = b.to_sql(variables, &SQLVariant::Theta(None));
                                     let comp = match view {
-                                        View::UF => format!("NOT {a} {function} {b}"),
+                                        View::UF => format!("NOT ({a} {function} {b})"),
                                         View::TU => format!("{a} {function} {b}"),
                                         View::G => unreachable!()
                                     };
-                                    if a == b && *view != View::UF {
+                                    if a == b {
                                         None
                                     } else {
                                         match (a_id, b_id) {
                                             (Ids::All, Ids::All) =>
-                                                Some(format!("{comp}")),
+                                                Some(comp),
                                             (Ids::Some, Ids::All) =>
                                                 Some(format!("(NOT is_id({a}) OR {comp})")),
                                             (Ids::All, Ids::Some) =>
@@ -189,7 +216,14 @@ impl SQLExpr {
                                             _ => None,
                                         }
                                     }
-                                }).collect::<Vec<_>>().join( if *view == View::UF { " OR " } else { " AND " })
+                                }).collect::<Vec<_>>().join( if *view == View::UF { " OR " } else { " AND " });
+                            if res.len() == 0 && *view == View::UF {
+                                "FALSE".to_string()
+                            } else if res.len() == 0 {
+                                "TRUE".to_string()
+                            } else {
+                                res
+                            }
                         }
                         _ => unreachable!()
                     }

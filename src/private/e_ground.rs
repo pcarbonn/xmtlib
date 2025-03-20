@@ -393,8 +393,10 @@ fn ground_compound(
                     // LINK src/doc.md#_Equality
                     let variant = QueryVariant::PredefinedBoolean(View::TU);
                     let tu = query_for_compound(qual_identifier, index, &mut gqs, &variant, solver)?;
+
                     let variant = QueryVariant::PredefinedBoolean(View::UF);
                     let uf = query_for_compound(qual_identifier, index, &mut gqs, &variant, solver)?;
+
                     let variant = QueryVariant::PredefinedBoolean(View::G);
                     let g = query_for_compound(qual_identifier, index, &mut gqs, &variant, solver)?;
 
