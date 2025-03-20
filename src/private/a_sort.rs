@@ -155,29 +155,6 @@ pub(crate) fn create_parametric_sort(
     solver: &mut Solver
 ) -> Result<(), SolverError> {
 
-    // Helper function that returns true if the sort is recursive.
-    // This function is recursive.
-    fn recursive_sort(
-        sort: &Sort,
-        declaring: &IndexSet<Symbol>
-    ) -> bool {
-        match sort {
-            Sort::Sort(Identifier::Simple(symb)) => {
-                if declaring.contains(symb) { return true }
-            },
-            Sort::Parametric(Identifier::Simple(symb), sorts) => {
-                if declaring.contains(symb) { return true }
-
-                for sort in sorts {
-                    if recursive_sort(sort, declaring) { return true }
-                }
-            },
-            Sort::Sort(Identifier::Indexed(..))
-            | Sort::Parametric(Identifier::Indexed(..), _) => ()
-        }
-        return false
-    }
-
     let mut recursive = false;
     for constructor_dec in constructor_decs {
         for SelectorDec(_, sort) in &constructor_dec.1 {
@@ -195,6 +172,30 @@ pub(crate) fn create_parametric_sort(
         solver.parametric_sorts.insert(symb.clone(), value);
     }
     Ok(())
+}
+
+
+// Returns true if the sort is recursive.
+// This function is recursive.
+fn recursive_sort(
+    sort: &Sort,
+    declaring: &IndexSet<Symbol>
+) -> bool {
+    match sort {
+        Sort::Sort(Identifier::Simple(symb)) => {
+            if declaring.contains(symb) { return true }
+        },
+        Sort::Parametric(Identifier::Simple(symb), sorts) => {
+            if declaring.contains(symb) { return true }
+
+            for sort in sorts {
+                if recursive_sort(sort, declaring) { return true }
+            }
+        },
+        Sort::Sort(Identifier::Indexed(..))
+        | Sort::Parametric(Identifier::Indexed(..), _) => ()
+    }
+    return false
 }
 
 
@@ -242,19 +243,6 @@ pub(crate) fn instantiate_parent_sort(
     solver: &mut Solver,
 ) -> Result<TypeInterpretation, SolverError> {
 
-    // Helper function
-    fn mapping(
-        variables: Vec<Symbol>,
-        values: &Vec<Sort>
-    ) -> IndexMap<Sort, Sort> {
-        let old_variables: Vec<Sort> = variables.iter()
-            .map(|s| { Sort::Sort(Identifier::Simple(s.clone()))})
-            .collect();
-        old_variables.into_iter()
-            .zip(values.iter().cloned())
-            .collect()
-    } // end helper function
-
     if let Some(sort_object) = solver.sorts.get(parent_sort) {
         // already instantiated
         match sort_object {
@@ -297,7 +285,7 @@ pub(crate) fn instantiate_parent_sort(
 
                             // build substitution map : Sort -> Sort
                             // X->Color, Y->Color
-                            let subs = mapping(variables, parameters);
+                            let subs = sort_mapping(variables, parameters);
 
                             // instantiate constructors
                             let mut grounding = TypeInterpretation::Normal;
@@ -323,7 +311,7 @@ pub(crate) fn instantiate_parent_sort(
                             // parent_decl: (define-sort MyPair (T) (Pair T T))
 
                             // substitute to get new sort
-                            let subs = mapping(variables, parameters); // T->Color
+                            let subs = sort_mapping(variables, parameters); // T->Color
                             let (new_g, new_sort) = substitute_in_sort(&definiendum, &subs, declaring, solver)?; // (Pair Color Color)
 
                             // get the name of the table
@@ -359,6 +347,20 @@ pub(crate) fn instantiate_parent_sort(
                 }
             },
         }}
+}
+
+
+/// Creates a mapping from Sort-variables to Sort
+fn sort_mapping(
+    variables: Vec<Symbol>,  // a variable representing a sort
+    values: &Vec<Sort>
+) -> IndexMap<Sort, Sort> {
+    let old_variables: Vec<Sort> = variables.iter()
+        .map(|s| { Sort::Sort(Identifier::Simple(s.clone()))})
+        .collect();
+    old_variables.into_iter()
+        .zip(values.iter().cloned())
+        .collect()
 }
 
 
@@ -473,22 +475,6 @@ fn create_table(
     }
     count = nullary.len();
 
-    // helper function
-    fn create_core_table(
-        table: &str,  // contains the nullary constructors
-        values: Vec<String>,
-        conn: &mut Connection
-    ) -> Result<(), SolverError> {
-
-        conn.execute(&format!("CREATE TABLE {table} (G TEXT PRIMARY KEY)"), ())?;
-
-        let mut stmt = conn.prepare(&format!("INSERT INTO {table} (G) VALUES (?)"))?;
-        for value in values {
-            stmt.execute(params![value])?;
-        }
-        Ok(())
-    } // end helper function
-
     if column_names.len() == 0 {  // nullary constructors only
 
         create_core_table(table, nullary, &mut solver.conn)?;
@@ -514,7 +500,7 @@ fn create_table(
             let ConstructorDec(constructor, selectors) = constructor_decl;
             if selectors.len() != 0 {  // otherwise, already in core table
 
-                // compute the list of tables and column mapping
+                // compute the list of tables and column sort_mapping
                 let mut tables = Vec::with_capacity(selectors.len()); // [Color, Color]
                 let mut columns = IndexMap::with_capacity(column_names.len());  // {first->T1.G, second->T2.G}; the value can be NULL
                 for column_name in &column_names {
@@ -559,4 +545,18 @@ fn create_table(
     Ok(count)
 }
 
+/// creates a table in the DB containing the nullary constructors
+fn create_core_table(
+    table: &str,
+    values: Vec<String>,
+    conn: &mut Connection
+) -> Result<(), SolverError> {
 
+    conn.execute(&format!("CREATE TABLE {table} (G TEXT PRIMARY KEY)"), ())?;
+
+    let mut stmt = conn.prepare(&format!("INSERT INTO {table} (G) VALUES (?)"))?;
+    for value in values {
+        stmt.execute(params![value])?;
+    }
+    Ok(())
+}

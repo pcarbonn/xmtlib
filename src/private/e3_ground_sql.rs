@@ -60,28 +60,6 @@ impl SQLExpr {
         variant: &SQLVariant
     ) -> String {
 
-            /// Helper: use either "apply" or "construct2", according to the first argument.
-            /// See description of these functions in y_db module.
-            ///
-            /// Arguments:
-            /// * application: either "apply" or "construct2"
-            fn sql_for(
-                application: &str,
-                function: String,
-                exprs: &Box<Vec<SQLExpr>>,
-                variables: &IndexMap<Symbol, Option<Column>>,
-                variant: &SQLVariant
-            ) -> String {
-                if exprs.len() == 0 {
-                    format!("\"{function}\"")
-                } else {
-                    let terms = exprs.iter()
-                        .map(|e| e.to_sql(variables, variant))
-                        .collect::<Vec<_>>().join(", ");
-                    format!("{application}(\"{function}\", {terms})")
-                }
-            }  // end helper
-
         match self {
             SQLExpr::Boolean(value) => format!("\"{value}\""),
             SQLExpr::Constant(spec_constant) => {
@@ -234,5 +212,29 @@ impl SQLExpr {
                 }
             }
         }
+    }
+}
+
+
+
+/// Use either "apply" or "construct2", according to the first argument.
+/// See description of these functions in y_db module.
+///
+/// Arguments:
+/// * application: either "apply" or "construct2"
+fn sql_for(
+    application: &str,
+    function: String,
+    exprs: &Box<Vec<SQLExpr>>,
+    variables: &IndexMap<Symbol, Option<Column>>,
+    variant: &SQLVariant
+) -> String {
+    if exprs.len() == 0 {
+        format!("\"{function}\"")
+    } else {
+        let terms = exprs.iter()
+            .map(|e| e.to_sql(variables, variant))
+            .collect::<Vec<_>>().join(", ");
+        format!("{application}(\"{function}\", {terms})")
     }
 }

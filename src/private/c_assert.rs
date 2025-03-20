@@ -41,37 +41,6 @@ pub(crate) fn annotate_term(
     solver: &Solver
 ) -> Result<Term, SolverError> {
 
-        // Helper function to avoid code duplication.
-        // `variables` is updated with the `sorted_vars`.
-        //
-        // The first element of the result is the subset of `variables` with an infinite domain;
-        // The second element of the result is the annotated term with the updated variables;
-        // The third element of the result is the subset of `variables` with finite domain.
-        fn process_quantification (
-            sorted_vars: &Vec<SortedVar>,
-            term: &Box<Term>,
-            variables: &mut IndexMap<Symbol, Option<SortedVar>>,
-            solver: &Solver
-        ) -> Result<Term, SolverError> {
-
-            let mut new_variables = variables.clone();
-            for SortedVar(symbol, sort) in sorted_vars {
-                match solver.sorts.get(sort) {
-                    Some(SortObject::Normal{..}) => {
-                        new_variables.insert(symbol.clone(), Some(SortedVar(symbol.clone(), sort.clone())));
-                    },
-                    Some(SortObject::Infinite)
-                    | Some(SortObject::Recursive)
-                    | Some(SortObject::Unknown) => {
-                        new_variables.insert(symbol.clone(), None);
-                    },
-                    None => return Err(InternalError(2486645)),
-                }
-            };
-            let new_term = annotate_term(term, &mut new_variables, solver)?;
-            Ok(new_term)
-        }  // end helper function
-
     match term {
         Term::SpecConstant(_) => Ok(term.clone()),
 
@@ -237,3 +206,33 @@ pub(crate) fn annotate_term(
     }
 }
 
+
+/// Process a quantification
+///
+/// The first element of the result is the subset of `variables` with an infinite domain;
+/// The second element of the result is the annotated term with the updated variables;
+/// The third element of the result is the subset of `variables` with finite domain.
+fn process_quantification (
+    sorted_vars: &Vec<SortedVar>,
+    term: &Box<Term>,
+    variables: &mut IndexMap<Symbol, Option<SortedVar>>,
+    solver: &Solver
+) -> Result<Term, SolverError> {
+
+    let mut new_variables = variables.clone();
+    for SortedVar(symbol, sort) in sorted_vars {
+        match solver.sorts.get(sort) {
+            Some(SortObject::Normal{..}) => {
+                new_variables.insert(symbol.clone(), Some(SortedVar(symbol.clone(), sort.clone())));
+            },
+            Some(SortObject::Infinite)
+            | Some(SortObject::Recursive)
+            | Some(SortObject::Unknown) => {
+                new_variables.insert(symbol.clone(), None);
+            },
+            None => return Err(InternalError(2486645)),
+        }
+    };
+    let new_term = annotate_term(term, &mut new_variables, solver)?;
+    Ok(new_term)
+}
