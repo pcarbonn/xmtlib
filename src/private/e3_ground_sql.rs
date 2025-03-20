@@ -1,7 +1,6 @@
 // Copyright Pierre Carbonnelle, 2025.
 
 use indexmap::IndexMap;
-use strum_macros::Display;
 
 use crate::api::{QualIdentifier, SpecConstant, Symbol};
 use crate::private::e1_ground_view::{View, Ids};
@@ -24,15 +23,20 @@ pub(crate) enum SQLExpr {
     //  Only in GroundingQuery.conditions
     Mapping(Ids, Box<SQLExpr>, Column),  // c_i, i.e., `is_id(expr) or expr=col`.
     // Only in where clause
-    Chainable(String, Box<Vec<(Ids, SQLExpr)>>)  // comparisons
+    Chainable(Predefined, Box<Vec<(Ids, SQLExpr)>>)  // comparisons
 }
 
-#[derive(Debug, Display, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, strum_macros::Display, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum Predefined {
+    #[strum(to_string = "AND")]
     And,
+    #[strum(to_string = "OR")]
     Or,
+    #[strum(to_string = "NOT")]
     Not,
+    #[strum(to_string = "???")]
     Implies,  // binary connective used internally.  "=>" is replaced by a disjunction in `annotate_term`.
+    #[strum(to_string = "=")]
     Eq,
 }
 
