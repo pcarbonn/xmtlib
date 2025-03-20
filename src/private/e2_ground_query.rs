@@ -326,10 +326,10 @@ impl GroundingQuery {
                         } else if view == View::UF {
                             SQLExpr::Boolean(true)  // all ids were false
                         } else {
-                            SQLExpr::Predefined(Predefined::Not, Box::new(vec![grounding.clone()]))
+                            SQLExpr::Predefined(Predefined::Not, Box::new(vec![(ids.clone(), grounding.clone())]))
                         }
                     } else {
-                        SQLExpr::Predefined(Predefined::Not, Box::new(vec![grounding.clone()]))
+                        SQLExpr::Predefined(Predefined::Not, Box::new(vec![(ids.clone(), grounding.clone())]))
                     };
                 let query = GroundingQuery::Join {
                     variables: variables.clone(),

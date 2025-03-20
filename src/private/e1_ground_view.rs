@@ -344,9 +344,9 @@ pub(crate) fn query_for_compound(
                     _ => panic!()
                 };
 
-                let ops = ids_.iter().cloned().zip(groundings.iter().cloned()).collect();
+                let ops: Vec<_> = ids_.iter().cloned().zip(groundings.iter().cloned()).collect();
                 match function {
-                    Predefined::Eq => where_.push(SQLExpr::Chainable("=".to_string(), Box::new(ops), view.clone())),
+                    Predefined::Eq => where_.push(SQLExpr::Chainable("=".to_string(), Box::new(ops.clone()), view.clone())),
                     _ => {}
                 };
 
@@ -354,10 +354,10 @@ pub(crate) fn query_for_compound(
                     match view {
                         View::TU => SQLExpr::Boolean(true),
                         View::UF => SQLExpr::Boolean(false),
-                        View::G  => SQLExpr::Predefined(function, Box::new(groundings)),
+                        View::G  => SQLExpr::Predefined(function, Box::new(ops)),
                     }
                 } else {
-                    SQLExpr::Predefined(function, Box::new(groundings))
+                    SQLExpr::Predefined(function, Box::new(ops))
                 }
             }
         };

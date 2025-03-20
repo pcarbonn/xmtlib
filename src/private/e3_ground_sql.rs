@@ -18,7 +18,7 @@ pub(crate) enum SQLExpr {
     Variable(Symbol),
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
     Construct(QualIdentifier, Box<Vec<SQLExpr>>),  // constructor
-    Predefined(Predefined, Box<Vec<SQLExpr>>),
+    Predefined(Predefined, Box<Vec<(Ids, SQLExpr)>>),
     // Only in GroundingQuery.groundings
     Value(Column),  // in an interpretation table.
     //  Only in GroundingQuery.conditions
@@ -101,7 +101,7 @@ impl SQLExpr {
                     Predefined::And
                     | Predefined::Or => {
                         let exprs =
-                            exprs.iter().cloned().filter_map( |e| {  // try to simplify
+                            exprs.iter().cloned().filter_map( |(ids, e)| {  // try to simplify
                                 match e {
                                     SQLExpr::Boolean(b) => {
                                         if name == "and" && b { None }
@@ -120,7 +120,7 @@ impl SQLExpr {
                         }
                     },
                     Predefined::Not => {
-                        let expr = exprs.first().unwrap().show(variables, theta);
+                        let expr = exprs.first().unwrap().1.show(variables, theta);
                         if expr == "true" {
                             "false".to_string()
                         } else if expr == "false" {
@@ -131,8 +131,8 @@ impl SQLExpr {
                     },
                     Predefined::Implies => {
                         assert_eq!(exprs.len(), 2);  // implies is a binary connective used internally
-                        let e1 = exprs.first().unwrap().show(variables, theta);
-                        let e2 = exprs.get(2).unwrap().show(variables, theta);
+                        let e1 = exprs.first().unwrap().1.show(variables, theta);
+                        let e2 = exprs.get(2).unwrap().1.show(variables, theta);
                         if e1 == "true" {
                             e2
                         } else if e1 == "false" {
@@ -148,7 +148,7 @@ impl SQLExpr {
                     // LINK src/doc.md#_Equality
                     Predefined::Eq => {
                         let terms = exprs.iter()
-                            .map(|e| e.show(variables, theta))
+                            .map(|(ids, e)| e.show(variables, theta))
                             .collect::<Vec<_>>().join(", ");
                         format!("eq_({terms})")
                     }
