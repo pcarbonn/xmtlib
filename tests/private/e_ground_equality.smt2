@@ -17,14 +17,14 @@
 Groundings:
  - 2: SELECT "2" AS G
  - (= 2 2 2):
-    T: SELECT "true" AS G WHERE "2" = "2" AND "2" = "2"
+    T: SELECT "true" AS G
     F: SELECT "false" AS G WHERE NOT "2" = "2" OR NOT "2" = "2"
     G : SELECT eq_("2", "2", "2") AS G
  - (= 2 2):
-    T: SELECT "true" AS G WHERE "2" = "2"
+    T: SELECT "true" AS G
     F: SELECT "false" AS G WHERE NOT "2" = "2"
     G : SELECT eq_("2", "2") AS G
  - (not (= 2 2)):
     T: SELECT "true" AS G WHERE NOT "2" = "2"
-    F: SELECT "false" AS G WHERE "2" = "2"
+    F: SELECT "false" AS G
     G : SELECT not_(eq_("2", "2")) AS G

@@ -357,7 +357,7 @@ pub(crate) fn query_for_compound(
                 match function {
                     Predefined::Eq => {
                         view = Some(new_view.clone());
-                        where_.push(SQLExpr::Chainable(Predefined::Eq, Box::new(ops.clone())))
+                        where_.push(SQLExpr::Predefined(Predefined::Eq, Box::new(ops.clone())))
                     },
                     _ => {}
                 };

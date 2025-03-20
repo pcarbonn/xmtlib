@@ -22,8 +22,6 @@ pub(crate) enum SQLExpr {
     Value(Column),  // in an interpretation table.
     //  Only in GroundingQuery.conditions
     Mapping(Ids, Box<SQLExpr>, Column),  // c_i, i.e., `is_id(expr) or expr=col`.
-    // Only in where clause
-    Chainable(Predefined, Box<Vec<(Ids, SQLExpr)>>)  // comparisons
 }
 
 #[derive(Debug, strum_macros::Display, Clone, PartialEq, Eq, Hash)]
@@ -41,9 +39,9 @@ pub(crate) enum Predefined {
 }
 
 
-// const UNARY: [Predefined; 1] = [Predefined::Not];
-// const ASSOCIATIVE: [Predefined; 2] = [Predefined::And, Predefined::Or];
-// const CHAINABLE: [Predefined; 1] = [Predefined::Eq];
+const UNARY: [Predefined; 1] = [Predefined::Not];
+const ASSOCIATIVE: [Predefined; 2] = [Predefined::And, Predefined::Or];
+const CHAINABLE: [Predefined; 1] = [Predefined::Eq];
 
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -111,61 +109,95 @@ impl SQLExpr {
                 sql_for("construct2", qual_identifier.to_string(), exprs, variables, variant)
             },
             SQLExpr::Predefined(function, exprs) => {
-                let name = function.to_string().to_lowercase();
-                match function {
-                    Predefined::And
-                    | Predefined::Or => {
-                        let exprs =
-                            exprs.iter().cloned().filter_map( |(_, e)| {  // try to simplify
-                                match e {
-                                    SQLExpr::Boolean(b) => {
-                                        if name == "and" && b { None }
-                                        else if name == "or" && !b { None }
-                                        else { Some(e.to_sql(variables, variant)) }
-                                    },
-                                    _ => Some(e.to_sql(variables, variant))
-                                }
-                            }).collect::<Vec<_>>();
-                        if exprs.len() == 0 {
-                            if name == "and" { "\"true\"".to_string() } else { "\"false\"".to_string()}
-                        } else if exprs.len() == 1 {
-                            exprs.first().unwrap().to_string()
-                        } else {
-                            format!("{name}_({})", exprs.join(", "))
+                if UNARY.contains(function) {
+                    // NOT
+                    let expr = exprs.first().unwrap().1.to_sql(variables, variant);
+                    if expr == "true" {
+                        "false".to_string()
+                    } else if expr == "false" {
+                        "true".to_string()
+                    } else {
+                        format!("not_({expr})")
+                    }
+                } else if ASSOCIATIVE.contains(function) {
+                    // AND, OR
+                    let name = function.to_string().to_lowercase();
+                    let exprs =
+                        exprs.iter().cloned().filter_map( |(_, e)| {  // try to simplify
+                            match e {
+                                SQLExpr::Boolean(b) => {
+                                    if name == "and" && b { None }
+                                    else if name == "or" && !b { None }
+                                    else { Some(e.to_sql(variables, variant)) }
+                                },
+                                _ => Some(e.to_sql(variables, variant))
+                            }
+                        }).collect::<Vec<_>>();
+                    if exprs.len() == 0 {
+                        if name == "and" { "\"true\"".to_string() } else { "\"false\"".to_string()}
+                    } else if exprs.len() == 1 {
+                        exprs.first().unwrap().to_string()
+                    } else {
+                        format!("{name}_({})", exprs.join(", "))
+                    }
+                } else if CHAINABLE.contains(function) {
+                    // Eq
+                    match (function, variant) {
+                        // LINK src/doc.md#_Equality
+                        (Predefined::Eq, SQLVariant::Normal) => {
+                            let terms = exprs.iter()
+                                .map(|(_, e)| e.to_sql(variables, variant))
+                                .collect::<Vec<_>>().join(", ");
+                            format!("eq_({terms})")
+                        },
+                        (Predefined::Eq, SQLVariant::Theta(Some(View::G))) => {
+                            "".to_string()
                         }
-                    },
-                    Predefined::Not => {
-                        let expr = exprs.first().unwrap().1.to_sql(variables, variant);
-                        if expr == "true" {
-                            "false".to_string()
-                        } else if expr == "false" {
-                            "true".to_string()
-                        } else {
-                            format!("not_({expr})")
+                        (Predefined::Eq, SQLVariant::Theta(Some(view))) => {
+                            exprs.iter().zip(exprs.iter().skip(1))
+                                .filter_map(|((a_id, a), (b_id, b))| {
+                                    // NOT is_id(a) OR NOT is_id(b) OR a op b
+                                    let a = a.to_sql(variables, variant);
+                                    let b = b.to_sql(variables, variant);
+                                    let comp = match view {
+                                        View::UF => format!("NOT {a} {function} {b}"),
+                                        View::TU => format!("{a} {function} {b}"),
+                                        View::G => unreachable!()
+                                    };
+                                    if a == b && *view != View::UF{
+                                        None
+                                    } else {
+                                        match (a_id, b_id) {
+                                            (Ids::All, Ids::All) =>
+                                                Some(format!("{comp}")),
+                                            (Ids::Some, Ids::All) =>
+                                                Some(format!("(NOT is_id({a}) OR {comp})")),
+                                            (Ids::All, Ids::Some) =>
+                                                Some(format!("(NOT is_id({b}) OR {comp})")),
+                                            (Ids::Some, Ids::Some) =>
+                                                Some(format!("(NOT is_id({a}) OR NOT is_id({b}) OR {comp})")),
+                                            _ => None,
+                                        }
+                                    }
+                                }).collect::<Vec<_>>().join( if *view == View::UF { " OR " } else { " AND " })
                         }
-                    },
-                    Predefined::Implies => {
-                        assert_eq!(exprs.len(), 2);  // implies is a binary connective used internally
-                        let e1 = exprs.first().unwrap().1.to_sql(variables, variant);
-                        let e2 = exprs.get(2).unwrap().1.to_sql(variables, variant);
-                        if e1 == "true" {
-                            e2
-                        } else if e1 == "false" {
-                            "true".to_string()
-                        } else if e2 == "true" {
-                            "true".to_string()
-                        } else if e2 == "false" {
-                            format!("not_({e1})")
-                        } else {
-                            format!("implies_({e1}, {e2})")
-                        }
-                    },
-                    // LINK src/doc.md#_Equality
-                    Predefined::Eq => {
-                        let terms = exprs.iter()
-                            .map(|(_, e)| e.to_sql(variables, variant))
-                            .collect::<Vec<_>>().join(", ");
-                        format!("eq_({terms})")
+                        _ => unreachable!()
+                    }
+                } else {
+                    // Implies
+                    assert_eq!(exprs.len(), 2);  // implies is a binary connective used internally
+                    let e1 = exprs.first().unwrap().1.to_sql(variables, variant);
+                    let e2 = exprs.get(2).unwrap().1.to_sql(variables, variant);
+                    if e1 == "true" {
+                        e2
+                    } else if e1 == "false" {
+                        "true".to_string()
+                    } else if e2 == "true" {
+                        "true".to_string()
+                    } else if e2 == "false" {
+                        format!("not_({e1})")
+                    } else {
+                        format!("implies_({e1}, {e2})")
                     }
                 }
             }
@@ -201,39 +233,6 @@ impl SQLExpr {
                     }
                 }
             },
-            SQLExpr::Chainable(op, args) => {
-                // LINK src/doc.md#_Equality
-                if let SQLVariant::Theta(Some(view)) = variant {
-                    if let View::G = view {
-                        "".to_string()
-                    } else {
-                        args.iter().zip(args.iter().skip(1))
-                            .filter_map(|((a_id, a), (b_id, b))| {
-                                // NOT is_id(a) OR NOT is_id(b) OR a op b
-                                let a = a.to_sql(variables, variant);
-                                let b = b.to_sql(variables, variant);
-                                let comp = match view {
-                                    View::UF => format!("NOT {a} {op} {b}"),
-                                    View::TU => format!("{a} {op} {b}"),
-                                    View::G => unreachable!()
-                                };
-                                match (a_id, b_id) {
-                                    (Ids::All, Ids::All) =>
-                                        Some(format!("{comp}")),
-                                    (Ids::Some, Ids::All) =>
-                                        Some(format!("(NOT is_id({a}) OR {comp})")),
-                                    (Ids::All, Ids::Some) =>
-                                        Some(format!("(NOT is_id({b}) OR {comp})")),
-                                    (Ids::Some, Ids::Some) =>
-                                        Some(format!("(NOT is_id({a}) OR NOT is_id({b}) OR {comp})")),
-                                    _ => None,
-                                }
-                            }).collect::<Vec<_>>().join( if *view == View::UF { " OR " } else { " AND " })
-                    }
-                } else {
-                    unreachable!()
-                }
-            }
         }
     }
 }
