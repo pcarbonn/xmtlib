@@ -223,42 +223,26 @@ impl SQLExpr {
                                     }
                                 }).collect::<Vec<_>>().join(" AND ")
                         }
-                        (Predefined::Eq, SQLVariant::Theta(None)) => {
-                            // (a op b) AND (b op c) AND (c op d)
-                            let res = exprs.iter().zip(exprs.iter().skip(1))
-                                .filter_map(|((_, a), (_, b))| {
-                                    // a op b
-                                    let a = a.to_sql(variables, &SQLVariant::Theta(None));
-                                    let b = b.to_sql(variables, &SQLVariant::Theta(None));
-                                    let comp = format!("{a} {function} {b}");
-                                    if a == b {
-                                        None
-                                    } else {
-                                        Some(comp)
-                                    }
-                                }).collect::<Vec<_>>().join(" AND ");
-                                if res.len() == 0 {
-                                    "TRUE".to_string()
-                                } else {
-                                    format!("({res})")
-                                }
-                        }
                         (Predefined::Eq, SQLVariant::Theta(Some(View::G))) => {
                             "".to_string()
                         }
-                        (Predefined::Eq, SQLVariant::Theta(Some(view))) => {
-                            // (NOT is_id(a) OR NOT is_id(b) OR a op* b) AND (NOT is_id(b) OR NOT is_id(c) OR b op* c) ...
+                        (Predefined::Eq, SQLVariant::Theta(view)) => {
+                            // if view is None: (a op b) AND (b op c) AND (c op d)
+                            // otherwise: (NOT is_id(a) OR NOT is_id(b) OR a op* b) AND (NOT is_id(b) OR NOT is_id(c) OR b op* c) ...
                             let res = exprs.iter().zip(exprs.iter().skip(1))
                                 .filter_map(|((a_id, a), (b_id, b))| {
                                     let a = a.to_sql(variables, &SQLVariant::Theta(None));
                                     let b = b.to_sql(variables, &SQLVariant::Theta(None));
                                     let comp = match view {
-                                        View::UF => format!("NOT ({a} {function} {b})"),
-                                        View::TU => format!("{a} {function} {b}"),
-                                        View::G => unreachable!()
+                                        Some(View::UF) => format!("NOT ({a} {function} {b})"),
+                                        Some(View::TU) => format!("{a} {function} {b}"),
+                                        Some(View::G) => unreachable!(),
+                                        None => format!("{a} {function} {b}")
                                     };
                                     if a == b {
                                         None
+                                    } else if view.is_none() {
+                                        Some(comp)
                                     } else {
                                         match (a_id, b_id) {
                                             (Ids::All, Ids::All) =>
@@ -272,8 +256,8 @@ impl SQLExpr {
                                             _ => None,
                                         }
                                     }
-                                }).collect::<Vec<_>>().join( if *view == View::UF { " OR " } else { " AND " });
-                            if res.len() == 0 && *view == View::UF {
+                                }).collect::<Vec<_>>().join( if *view == Some(View::UF) { " OR " } else { " AND " });
+                            if res.len() == 0 && *view == Some(View::UF) {
                                 "FALSE".to_string()
                             } else if res.len() == 0 {
                                 "TRUE".to_string()
