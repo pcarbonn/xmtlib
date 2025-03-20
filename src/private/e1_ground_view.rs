@@ -204,7 +204,7 @@ pub(crate) fn query_for_compound(
                     // handle the special case of a variable used as an argument to an interpreted function
                     match sub_grounding {
                         SQLExpr::Variable(symbol) => {
-                            if let QueryVariant::Interpretation(table_name, ..) = variant {
+                            if let QueryVariant::Interpretation(table_name, interp_ids,..) = variant {
                                 let column = Column::new(table_name, &format!("a_{i}"));
 
                                 //  update the query in progress
@@ -212,7 +212,12 @@ pub(crate) fn query_for_compound(
                                 // sub-query has no conditions
                                 groundings.push(sub_grounding.clone());
                                 // do not push to natural_joins
-                                let if_ = SQLExpr::Mapping(sub_ids.clone(), Box::new(sub_grounding.clone()), column);
+                                // push `sub_grounding = column` to thetas
+                                let if_ = SQLExpr::Predefined(
+                                    Predefined::Eq,
+                                    Box::new(vec![(sub_ids.clone(), sub_grounding.clone()),
+                                                  (interp_ids.clone(), SQLExpr::Value(column))
+                                    ]));
                                 thetas.push(if_);
 
                                 continue  // to the next sub-query
@@ -237,10 +242,15 @@ pub(crate) fn query_for_compound(
 
                     // compute the join conditions, for later use
                     match variant {
-                        QueryVariant::Interpretation(table_name, ..) => {
+                        QueryVariant::Interpretation(table_name, interp_ids,..) => {
                             let column = Column::new(table_name, &format!("a_{i}"));
 
-                            let if_ = SQLExpr::Mapping(sub_ids.clone(), Box::new(sub_grounding.clone()), column.clone());
+                            // push `sub_grounding = column` to conditions and thetas
+                            let if_ = SQLExpr::Predefined(
+                                Predefined::Eq,
+                                Box::new(vec![(sub_ids.clone(), sub_grounding.clone()),
+                                              (interp_ids.clone(), SQLExpr::Value(column))
+                                ]));
                             // adds nothing if sub_ids = All
                             conditions.push(if_.clone());
                             // adds nothing if sub_ids == None

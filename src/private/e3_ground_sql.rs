@@ -1,6 +1,7 @@
 // Copyright Pierre Carbonnelle, 2025.
 
 use indexmap::IndexMap;
+use std::cmp::max;
 
 use crate::api::{QualIdentifier, SpecConstant, Symbol};
 use crate::private::e1_ground_view::{View, Ids};
@@ -15,13 +16,10 @@ pub(crate) enum SQLExpr {
     Boolean(bool),
     Constant(SpecConstant),
     Variable(Symbol),
+    Value(Column),  // in an interpretation table.
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
     Construct(QualIdentifier, Box<Vec<SQLExpr>>),  // constructor
     Predefined(Predefined, Box<Vec<(Ids, SQLExpr)>>),
-    // Only in GroundingQuery.groundings
-    Value(Column),  // in an interpretation table.
-    //  Only in GroundingQuery.conditions
-    Mapping(Ids, Box<SQLExpr>, Column),  // c_i, i.e., `is_id(expr) or expr=col`.
 }
 
 #[derive(Debug, strum_macros::Display, Clone, PartialEq, Eq, Hash)]
@@ -47,6 +45,7 @@ const CHAINABLE: [Predefined; 1] = [Predefined::Eq];
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum SQLVariant {
     Normal,
+    Mapping,
     Theta(Option<View>)
 }
 
@@ -102,6 +101,7 @@ impl SQLExpr {
                     format!("\"{symbol}\"")
                 }
             },
+            SQLExpr::Value(column) => column.to_string(),
             SQLExpr::Apply(qual_identifier, exprs) => {
                 sql_for("apply", qual_identifier.to_string(), exprs, variables, variant)
             },
@@ -145,11 +145,43 @@ impl SQLExpr {
                     match (function, variant) {
                         // LINK src/doc.md#_Equality
                         (Predefined::Eq, SQLVariant::Normal) => {
+                            let mut ids = Ids::All;
                             let terms = exprs.iter()
-                                .map(|(_, e)| e.to_sql(variables, variant))
-                                .collect::<Vec<_>>().join(", ");
-                            format!("eq_({terms})")
+                                .map(|(ids_, e)| {
+                                    ids = max(ids.clone(), ids_.clone());
+                                    e.to_sql(variables, variant)
+                                }).collect::<Vec<_>>().join(", ");
+                            if ids == Ids::None {
+                                format!("apply(\"=\",{terms})")
+                            } else {
+                                format!("eq_({terms})")
+                            }
                         },
+                        (Predefined::Eq, SQLVariant::Mapping) => {
+                            exprs.iter().zip(exprs.iter().skip(1))
+                                .filter_map(|((ids_a, a_), (_, b_))| {
+                                    // a op b
+                                    let a = a_.to_sql(variables, variant);
+                                    let b = b_.to_sql(variables, variant);
+                                    if a == b {
+                                        None
+                                    } else {
+                                        match ids_a {
+                                            Ids::All =>
+                                                 Some(format!("{a} = {b}")),
+                                            Ids::Some =>
+                                                 Some(format!("(NOT is_id({a}) OR {a} = {b})")),
+                                            Ids::None =>
+                                                if let SQLExpr::Variable(_) = *a_ {  // an infinite variable mapped to an interpretation
+                                                    // Variable + Ids::None describe an infinite variable
+                                                    Some(format!("{a} = {b}"))
+                                                } else {
+                                                    None
+                                                },
+                                        }
+                                    }
+                                }).collect::<Vec<_>>().join(" AND ")
+                        }
                         (Predefined::Eq, SQLVariant::Theta(Some(View::G))) => {
                             "".to_string()
                         }
@@ -164,7 +196,7 @@ impl SQLExpr {
                                         View::TU => format!("{a} {function} {b}"),
                                         View::G => unreachable!()
                                     };
-                                    if a == b && *view != View::UF{
+                                    if a == b && *view != View::UF {
                                         None
                                     } else {
                                         match (a_id, b_id) {
@@ -201,38 +233,6 @@ impl SQLExpr {
                     }
                 }
             }
-            SQLExpr::Value(column) => column.to_string(),
-            SQLExpr::Mapping(ids, expr, column) => {
-                let value = expr.to_sql(variables, variant);
-                let column = column.to_string();
-
-                if value == column {
-                    "".to_string()
-                } else if let SQLVariant::Theta(_) = variant {
-                    match ids {
-                        Ids::All =>
-                             format!("{value} = {column}"),
-                        Ids::Some =>
-                             format!("(NOT is_id({value}) OR {value} = {column})"),
-                        Ids::None =>
-                            if let SQLExpr::Variable(_) = **expr {  // an infinite variable mapped to an interpretation
-                                // Variable + Ids::None describe an infinite variable
-                                format!("{value} = {column}")
-                            } else {
-                                "".to_string()
-                            },
-                    }
-                } else {
-                    match ids {
-                        Ids::All =>
-                             "".to_string(),
-                        Ids::Some =>
-                             format!("or_(is_id({value}), apply(\"=\",{value}, {column}))"),
-                        Ids::None =>
-                             format!("apply(\"=\",{value}, {column})"),
-                    }
-                }
-            },
         }
     }
 }

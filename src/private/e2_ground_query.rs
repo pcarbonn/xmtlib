@@ -23,8 +23,8 @@ pub(crate) enum GroundingQuery {
         variables: IndexMap<Symbol, Option<Column>>,
         conditions: Vec<SQLExpr>,  // vector of non-empty SQL expressions
         grounding: SQLExpr,
-        natural_joins: IndexSet<NaturalJoin>,
-        theta_joins: IndexSet<ThetaJoin>,
+        natural_joins: IndexSet<NaturalJoin>,  // joins of grounding sub-queries
+        theta_joins: IndexSet<ThetaJoin>,  // joins with interpretation tables
         where_: Vec<SQLExpr>,  // where clause for comparisons
         view: Option<View>,  // Only for non-variable boolean
     },
@@ -160,7 +160,7 @@ impl std::fmt::Display for GroundingQuery {
                     .map( | (table_name, mapping) | {
                         let on = mapping.iter()
                             .filter_map( | expr | {
-                                let theta = expr.to_sql(variables, &SQLVariant::Theta(view.clone()));
+                                let theta = expr.to_sql(variables, &SQLVariant::Mapping);
                                 if theta.len() == 0 {
                                     None
                                 } else {
