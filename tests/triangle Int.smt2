@@ -56,36 +56,36 @@ Groundings:
     UF: SELECT "x" AS x, "y" AS y, apply("Edge", "x", "y") AS G
     G : SELECT "x" AS x, "y" AS y, apply("Edge", "x", "y") AS G
  - (not (Edge x y)):
-    TU: SELECT "x" AS x, "y" AS y, not_(apply("Edge", "x", "y")) AS G
+    TU: SELECT "x" AS x, "y" AS y, apply("not", apply("Edge", "x", "y")) AS G
     F: SELECT Edge_TU_2.a_0 AS x, Edge_TU_2.a_1 AS y, "false" AS G FROM Edge_TU AS Edge_TU_2
-    G : SELECT "x" AS x, "y" AS y, not_(apply("Edge", "x", "y")) AS G
+    G : SELECT "x" AS x, "y" AS y, apply("not", apply("Edge", "x", "y")) AS G
  - z: SELECT "z" AS z, "z" AS G
  - (Edge y z):
     T: SELECT Edge_TU_5.a_0 AS y, Edge_TU_5.a_1 AS z, "true" AS G FROM Edge_TU AS Edge_TU_5
     UF: SELECT "y" AS y, "z" AS z, apply("Edge", "y", "z") AS G
     G : SELECT "y" AS y, "z" AS z, apply("Edge", "y", "z") AS G
  - (not (Edge y z)):
-    TU: SELECT "y" AS y, "z" AS z, not_(apply("Edge", "y", "z")) AS G
+    TU: SELECT "y" AS y, "z" AS z, apply("not", apply("Edge", "y", "z")) AS G
     F: SELECT Edge_TU_5.a_0 AS y, Edge_TU_5.a_1 AS z, "false" AS G FROM Edge_TU AS Edge_TU_5
-    G : SELECT "y" AS y, "z" AS z, not_(apply("Edge", "y", "z")) AS G
+    G : SELECT "y" AS y, "z" AS z, apply("not", apply("Edge", "y", "z")) AS G
  - (Edge x z):
     T: SELECT Edge_TU_7.a_0 AS x, Edge_TU_7.a_1 AS z, "true" AS G FROM Edge_TU AS Edge_TU_7
     UF: SELECT "x" AS x, "z" AS z, apply("Edge", "x", "z") AS G
     G : SELECT "x" AS x, "z" AS z, apply("Edge", "x", "z") AS G
  - (not (Edge x z)):
-    TU: SELECT "x" AS x, "z" AS z, not_(apply("Edge", "x", "z")) AS G
+    TU: SELECT "x" AS x, "z" AS z, apply("not", apply("Edge", "x", "z")) AS G
     F: SELECT Edge_TU_7.a_0 AS x, Edge_TU_7.a_1 AS z, "false" AS G FROM Edge_TU AS Edge_TU_7
-    G : SELECT "x" AS x, "z" AS z, not_(apply("Edge", "x", "z")) AS G
+    G : SELECT "x" AS x, "z" AS z, apply("not", apply("Edge", "x", "z")) AS G
  - (phi x y z):
     TU: SELECT "x" AS x, "y" AS y, "z" AS z, apply("phi", "x", "y", "z") AS G
     UF: SELECT "x" AS x, "y" AS y, "z" AS z, apply("phi", "x", "y", "z") AS G
     G : SELECT "x" AS x, "y" AS y, "z" AS z, apply("phi", "x", "y", "z") AS G
  - (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z)):
-    TU: SELECT x, y, z, or_aggregate(G) as G from (SELECT "x" AS x, "y" AS y, "z" AS z, not_(apply("Edge", "x", "y")) AS G UNION SELECT "x" AS x, "y" AS y, "z" AS z, not_(apply("Edge", "y", "z")) AS G UNION SELECT "x" AS x, "y" AS y, "z" AS z, not_(apply("Edge", "x", "z")) AS G UNION SELECT "x" AS x, "y" AS y, "z" AS z, apply("phi", "x", "y", "z") AS G)
+    TU: SELECT x, y, z, or_aggregate(G) as G from (SELECT "x" AS x, "y" AS y, "z" AS z, apply("not", apply("Edge", "x", "y")) AS G UNION SELECT "x" AS x, "y" AS y, "z" AS z, apply("not", apply("Edge", "y", "z")) AS G UNION SELECT "x" AS x, "y" AS y, "z" AS z, apply("not", apply("Edge", "x", "z")) AS G UNION SELECT "x" AS x, "y" AS y, "z" AS z, apply("phi", "x", "y", "z") AS G)
     UF: SELECT Edge_TU_2.a_0 AS x, Edge_TU_2.a_1 AS y, Edge_TU_5.a_1 AS z, apply("phi", Edge_TU_2.a_0, Edge_TU_2.a_1, Edge_TU_5.a_1) AS G FROM Edge_TU AS Edge_TU_2 JOIN Edge_TU AS Edge_TU_5 ON Edge_TU_2.a_1 = Edge_TU_5.a_0 JOIN Edge_TU AS Edge_TU_7 ON Edge_TU_2.a_0 = Edge_TU_7.a_0 AND Edge_TU_5.a_1 = Edge_TU_7.a_1
-    G : SELECT "x" AS x, "y" AS y, "z" AS z, or_(not_(apply("Edge", "x", "y")), not_(apply("Edge", "y", "z")), not_(apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G
+    G : SELECT "x" AS x, "y" AS y, "z" AS z, apply("or", apply("not", apply("Edge", "x", "y")), apply("not", apply("Edge", "y", "z")), apply("not", apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G
  - (forall ((x Int) (y Int) (z Int)) (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z))):
-    TU: SELECT "(forall ((x Int) (y Int) (z Int)) " || and_aggregate(G) || ")" as G from (SELECT "x" AS x, "y" AS y, "z" AS z, or_(not_(apply("Edge", "x", "y")), not_(apply("Edge", "y", "z")), not_(apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G) HAVING "(forall ((x Int) (y Int) (z Int)) " || and_aggregate(G) || ")" <> "false"
+    TU: SELECT "(forall ((x Int) (y Int) (z Int)) " || and_aggregate(G) || ")" as G from (SELECT "x" AS x, "y" AS y, "z" AS z, apply("or", apply("not", apply("Edge", "x", "y")), apply("not", apply("Edge", "y", "z")), apply("not", apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G) HAVING "(forall ((x Int) (y Int) (z Int)) " || and_aggregate(G) || ")" <> "false"
     UF: SELECT "(forall ((x Int) (y Int) (z Int)) " || G || ")" as G from (SELECT Edge_TU_2.a_0 AS x, Edge_TU_2.a_1 AS y, Edge_TU_5.a_1 AS z, apply("phi", Edge_TU_2.a_0, Edge_TU_2.a_1, Edge_TU_5.a_1) AS G FROM Edge_TU AS Edge_TU_2 JOIN Edge_TU AS Edge_TU_5 ON Edge_TU_2.a_1 = Edge_TU_5.a_0 JOIN Edge_TU AS Edge_TU_7 ON Edge_TU_2.a_0 = Edge_TU_7.a_0 AND Edge_TU_5.a_1 = Edge_TU_7.a_1)
-    G : SELECT "(forall ((x Int) (y Int) (z Int)) " || and_aggregate(G) || ")" as G from (SELECT "x" AS x, "y" AS y, "z" AS z, or_(not_(apply("Edge", "x", "y")), not_(apply("Edge", "y", "z")), not_(apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G)
+    G : SELECT "(forall ((x Int) (y Int) (z Int)) " || and_aggregate(G) || ")" as G from (SELECT "x" AS x, "y" AS y, "z" AS z, apply("or", apply("not", apply("Edge", "x", "y")), apply("not", apply("Edge", "y", "z")), apply("not", apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G)
 (check-sat)

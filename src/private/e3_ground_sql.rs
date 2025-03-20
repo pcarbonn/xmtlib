@@ -108,8 +108,13 @@ impl SQLExpr {
                             }
                         }
                         _ => {
-                            let expr = exprs.first().unwrap().1.to_sql(variables, variant);
-                            format!("not_({expr})")
+                            let (id, e) = exprs.first().unwrap();
+                            let expr = e.to_sql(variables, variant);
+                            if id == &Ids::None {
+                                format!("apply(\"not\", {expr})")
+                            } else {
+                                format!("not_({expr})")
+                            }
                         }
                     }
                 } else if ASSOCIATIVE.contains(function) {
@@ -117,8 +122,11 @@ impl SQLExpr {
                     match variant {
                         SQLVariant::Normal => {
                             let name = function.to_string().to_lowercase();
+                            let mut ids = Ids::All;
                             let exprs =
-                                exprs.iter().cloned().filter_map( |(_, e)| {  // try to simplify
+                                exprs.iter().cloned().filter_map( |(id, e)| {
+                                    ids = max(ids.clone(), id.clone());
+                                    // try to simplify
                                     match e {
                                         SQLExpr::Boolean(b) => {
                                             if name == "and" && b { None }
@@ -133,7 +141,11 @@ impl SQLExpr {
                             } else if exprs.len() == 1 {
                                 exprs.first().unwrap().to_string()
                             } else {
-                                format!("{name}_({})", exprs.join(", "))
+                                if ids == Ids::None {
+                                    format!("apply(\"{name}\", {})", exprs.join(", "))
+                                } else {
+                                    format!("{name}_({})", exprs.join(", "))
+                                }
                             }
                         }
                         SQLVariant::Mapping => unreachable!(),

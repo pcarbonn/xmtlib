@@ -119,23 +119,23 @@ Groundings:
     UF: SELECT or_aggregate(G) as G from (SELECT Bool_12.G AS x, apply("r", Bool_12.G) AS G FROM Bool AS Bool_12) HAVING or_aggregate(G) <> "true"
     G : SELECT or_aggregate(G) as G from (SELECT Bool_12.G AS x, apply("r", Bool_12.G) AS G FROM Bool AS Bool_12)
  - (not (exists ((x Bool)) (r x))):
-    TU: SELECT and_aggregate(G) as G from (SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12) HAVING and_aggregate(G) <> "false"
-    UF: SELECT and_aggregate(G) as G from (SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12)
-    G : SELECT and_aggregate(G) as G from (SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12)
+    TU: SELECT and_aggregate(G) as G from (SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12) HAVING and_aggregate(G) <> "false"
+    UF: SELECT and_aggregate(G) as G from (SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12)
+    G : SELECT and_aggregate(G) as G from (SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12)
  - (not (r x)):
-    TU: SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
-    UF: SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
-    G : SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
+    TU: SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
+    UF: SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
+    G : SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
  - false:
     T: SELECT "true" AS G WHERE FALSE
     F: SELECT "false" AS G
     G : SELECT "false" AS G
  - (or (not (r x)) false):
     TU: SELECT negate_16.x AS x, negate_16.G AS G FROM negate_16
-    UF: SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
-    G : SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
+    UF: SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
+    G : SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12
  - (forall ((x Bool)) (or (not (r x)) false)):
-    TU: SELECT and_aggregate(G) as G from (SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12) HAVING and_aggregate(G) <> "false"
-    UF: SELECT G as G from (SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12)
-    G : SELECT and_aggregate(G) as G from (SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12)
-CREATE VIEW negate_16 AS SELECT x, G FROM (SELECT Bool_12.G AS x, not_(apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12)
+    TU: SELECT and_aggregate(G) as G from (SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12) HAVING and_aggregate(G) <> "false"
+    UF: SELECT G as G from (SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12)
+    G : SELECT and_aggregate(G) as G from (SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12)
+CREATE VIEW negate_16 AS SELECT x, G FROM (SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12)
