@@ -57,7 +57,7 @@ impl std::fmt::Debug for GroundingView {
                 let vars = if vars == "" { vars } else { vars + ", " };
                 let if_= if *condition { "if_, " } else { "" };
                 let g_v = match ground_view {
-                    Either::Left(c) => format!("{}", c.to_sql(&IndexMap::new(), &SQLVariant::Normal)),
+                    Either::Left(c) => format!("{}", c.to_sql(&IndexMap::new(), &SQLVariant::Field)),
                     Either::Right(view) => format!("G from {view}")
                 };
                 write!(f,"SELECT {vars}{if_}{g_v}")

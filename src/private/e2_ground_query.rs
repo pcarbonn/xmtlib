@@ -98,7 +98,7 @@ impl std::fmt::Display for GroundingQuery {
 
                 // condition
                 let condition = conditions.iter()
-                    .map( |e| { e.to_sql(&variables, &SQLVariant::Normal)})  // can be empty !
+                    .map( |e| { e.to_sql(&variables, &SQLVariant::Field)})  // can be empty !
                     .filter( |c| c != "")
                     .map ( |c| format!("({c})"))
                     .collect::<Vec<_>>();
@@ -112,7 +112,7 @@ impl std::fmt::Display for GroundingQuery {
                     };
 
                 // grounding
-                let grounding_ = grounding.to_sql(&variables, &SQLVariant::Normal);
+                let grounding_ = grounding.to_sql(&variables, &SQLVariant::Field);
                 let grounding_ = format!("{grounding_} AS G");
 
                 // natural joins
@@ -160,7 +160,7 @@ impl std::fmt::Display for GroundingQuery {
                     .map( | (table_name, mapping) | {
                         let on = mapping.iter()
                             .filter_map( | expr | {
-                                let theta = expr.to_sql(variables, &SQLVariant::Mapping);
+                                let theta = expr.to_sql(variables, &SQLVariant::Join);
                                 if theta.len() == 0 {
                                     None
                                 } else {
@@ -193,7 +193,7 @@ impl std::fmt::Display for GroundingQuery {
                 // LINK src/doc.md#_Equality
                 let second_where =
                     if let Some(where_) = where_ {
-                        where_.to_sql(&variables, &SQLVariant::Theta(view.clone()))
+                        where_.to_sql(&variables, &SQLVariant::Where(view.clone()))
                     } else {
                         "".to_string()
                     };
