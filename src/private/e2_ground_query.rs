@@ -8,7 +8,7 @@ use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 
 use crate::private::e1_ground_view::{GroundingView, Ids, View};
-use crate::private::e3_ground_sql::{SQLExpr, SQLVariant, Predefined};
+use crate::private::e3_ground_sql::{SQLExpr, SQLPosition, Predefined};
 
 
 
@@ -98,7 +98,7 @@ impl std::fmt::Display for GroundingQuery {
 
                 // condition
                 let condition = conditions.iter()
-                    .map( |e| { e.to_sql(&variables, &SQLVariant::Field)})  // can be empty !
+                    .map( |e| { e.to_sql(&variables, &SQLPosition::Field)})  // can be empty !
                     .filter( |c| c != "")
                     .map ( |c| format!("({c})"))
                     .collect::<Vec<_>>();
@@ -112,7 +112,7 @@ impl std::fmt::Display for GroundingQuery {
                     };
 
                 // grounding
-                let grounding_ = grounding.to_sql(&variables, &SQLVariant::Field);
+                let grounding_ = grounding.to_sql(&variables, &SQLPosition::Field);
                 let grounding_ = format!("{grounding_} AS G");
 
                 // natural joins
@@ -160,7 +160,7 @@ impl std::fmt::Display for GroundingQuery {
                     .map( | (table_name, mapping) | {
                         let on = mapping.iter()
                             .filter_map( | expr | {
-                                let theta = expr.to_sql(variables, &SQLVariant::Join);
+                                let theta = expr.to_sql(variables, &SQLPosition::Join);
                                 if theta.len() == 0 {
                                     None
                                 } else {
@@ -193,7 +193,7 @@ impl std::fmt::Display for GroundingQuery {
                 // LINK src/doc.md#_Equality
                 let second_where =
                     if let Some(where_) = where_ {
-                        where_.to_sql(&variables, &SQLVariant::Where(view.clone()))
+                        where_.to_sql(&variables, &SQLPosition::Where(view.clone()))
                     } else {
                         "".to_string()
                     };

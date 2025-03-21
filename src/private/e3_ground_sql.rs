@@ -43,7 +43,7 @@ const CHAINABLE: [Predefined; 1] = [Predefined::Eq];
 
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) enum SQLVariant {
+pub(crate) enum SQLPosition {
     Field,              // in a grounding field
     Join,               // in a join condition
     Where(Option<View>) // in a where clause
@@ -58,25 +58,27 @@ impl SQLExpr {
     pub(crate) fn to_sql(
         &self,
         variables: &IndexMap<Symbol, Option<Column>>,
-        variant: &SQLVariant
+        variant: &SQLPosition
     ) -> String {
 
         match self {
             SQLExpr::Boolean(value) => {
                 match variant {
-                    SQLVariant::Where(_) => {
+                    SQLPosition::Field
+                    | SQLPosition::Join =>  format!("\"{value}\""),
+                    SQLPosition::Where(_) => {
                         (if *value { "TRUE" } else { "FALSE" }).to_string()
                     }
-                    _ => format!("\"{value}\"")
                 }
             },
             SQLExpr::Constant(spec_constant) => {
-                match spec_constant {
-                    SpecConstant::Numeral(s) => format!("\"{s}\""),
-                    SpecConstant::Decimal(s) => format!("\"{s}\""),
-                    SpecConstant::Hexadecimal(s) => format!("\"{s}\""),
-                    SpecConstant::Binary(s) => format!("\"{s}\""),
-                    SpecConstant::String(s) => format!("\"{s}\""),
+                match (variant, spec_constant) {
+                    (SQLPosition::Join, _) => unreachable!(),
+                    (_, SpecConstant::Numeral(s)) => format!("\"{s}\""),
+                    (_, SpecConstant::Decimal(s)) => format!("\"{s}\""),
+                    (_, SpecConstant::Hexadecimal(s)) => format!("\"{s}\""),
+                    (_, SpecConstant::Binary(s)) => format!("\"{s}\""),
+                    (_, SpecConstant::String(s)) => format!("\"{s}\""),
                 }
             },
             SQLExpr::Variable(symbol) => {
@@ -98,8 +100,8 @@ impl SQLExpr {
                 if UNARY.contains(function) {
                     // NOT
                     match variant {
-                        SQLVariant::Where(Some(View::G)) => "".to_string(),
-                        SQLVariant::Where(_) => {
+                        SQLPosition::Where(Some(View::G)) => "".to_string(),
+                        SQLPosition::Where(_) => {
                             let expr = exprs.first().unwrap().1.to_sql(variables, variant);
                             if expr == "TRUE" {
                                 "FALSE".to_string()
@@ -122,7 +124,7 @@ impl SQLExpr {
                 } else if ASSOCIATIVE.contains(function) {
                     // AND, OR
                     match variant {
-                        SQLVariant::Field => {
+                        SQLPosition::Field => {
                             let name = function.to_string().to_lowercase();
                             let mut ids = Ids::All;
                             let exprs =
@@ -150,9 +152,9 @@ impl SQLExpr {
                                 }
                             }
                         }
-                        SQLVariant::Join => unreachable!(),
-                        SQLVariant::Where(Some(View::G)) => "".to_string(),
-                        SQLVariant::Where(view) => {
+                        SQLPosition::Join => unreachable!(),
+                        SQLPosition::Where(Some(View::G)) => "".to_string(),
+                        SQLPosition::Where(view) => {
                             // if view is None: (a op b ...)
                             // else: NOT is_id(b) ... OR NOT? (a op b ...)
                             let mut is_ids = vec![];
@@ -161,10 +163,10 @@ impl SQLExpr {
                                 match id {
                                     Ids::All => {
                                         // don't push to ids
-                                        args.push(e.to_sql(variables, &SQLVariant::Where(None)))
+                                        args.push(e.to_sql(variables, &SQLPosition::Where(None)))
                                     }
                                     Ids::Some => {
-                                        let e = e.to_sql(variables, &SQLVariant::Where(None));
+                                        let e = e.to_sql(variables, &SQLPosition::Where(None));
                                         is_ids.push(format!("NOT is_id({e})"));
                                         args.push(e)
                                     }
@@ -197,7 +199,7 @@ impl SQLExpr {
                     // Eq
                     match (function, variant) {
                         // LINK src/doc.md#_Equality
-                        (Predefined::Eq, SQLVariant::Field) => {
+                        (Predefined::Eq, SQLPosition::Field) => {
                             let mut ids = Ids::All;
                             let terms = exprs.iter()
                                 .map(|(ids_, e)| {
@@ -206,11 +208,15 @@ impl SQLExpr {
                                 }).collect::<Vec<_>>().join(", ");
                             if ids == Ids::None {
                                 format!("apply(\"=\",{terms})")
-                            } else {
+                            } else if ids == Ids::Some{
                                 format!("eq_({terms})")
+                            } else {
+                                let equal = exprs.iter().zip(exprs.iter().skip(1))
+                                    .all(|((_, a), (_, b))| *a == *b);
+                                (if equal { "\"true\"" } else { "eq_({terms})" }).to_string()
                             }
                         },
-                        (Predefined::Eq, SQLVariant::Join) => {
+                        (Predefined::Eq, SQLPosition::Join) => {
                             exprs.iter().zip(exprs.iter().skip(1))
                                 .filter_map(|((ids_a, a_), (_, b_))| {
                                     // a op b
@@ -235,14 +241,14 @@ impl SQLExpr {
                                     }
                                 }).collect::<Vec<_>>().join(" AND ")
                         }
-                        (Predefined::Eq, SQLVariant::Where(Some(View::G))) => "".to_string(),
-                        (Predefined::Eq, SQLVariant::Where(view)) => {
+                        (Predefined::Eq, SQLPosition::Where(Some(View::G))) => "".to_string(),
+                        (Predefined::Eq, SQLPosition::Where(view)) => {
                             // if view is None: (a op b) AND (b op c) AND (c op d)
                             // otherwise: (NOT is_id(a) OR NOT is_id(b) OR a op* b) AND (NOT is_id(b) OR NOT is_id(c) OR b op* c) ...
                             let res = exprs.iter().zip(exprs.iter().skip(1))
                                 .filter_map(|((a_id, a), (b_id, b))| {
-                                    let a = a.to_sql(variables, &SQLVariant::Where(None));
-                                    let b = b.to_sql(variables, &SQLVariant::Where(None));
+                                    let a = a.to_sql(variables, &SQLPosition::Where(None));
+                                    let b = b.to_sql(variables, &SQLPosition::Where(None));
                                     let comp = match view {
                                         Some(View::UF) => format!("NOT ({a} {function} {b})"),
                                         Some(View::TU) => format!("{a} {function} {b}"),
@@ -311,7 +317,7 @@ fn sql_for(
     function: String,
     exprs: &Box<Vec<SQLExpr>>,
     variables: &IndexMap<Symbol, Option<Column>>,
-    variant: &SQLVariant
+    variant: &SQLPosition
 ) -> String {
     if exprs.len() == 0 {
         format!("\"{function}\"")

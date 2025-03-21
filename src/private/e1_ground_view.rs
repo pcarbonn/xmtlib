@@ -10,7 +10,7 @@ use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 
 use crate::private::e2_ground_query::{GroundingQuery, NaturalJoin, TableName, Column};
-use crate::private::e3_ground_sql::{SQLExpr, SQLVariant, Predefined};
+use crate::private::e3_ground_sql::{SQLExpr, SQLPosition, Predefined};
 
 
 ////////////////////// Data structures for grounding views ////////////////////
@@ -57,7 +57,7 @@ impl std::fmt::Debug for GroundingView {
                 let vars = if vars == "" { vars } else { vars + ", " };
                 let if_= if *condition { "if_, " } else { "" };
                 let g_v = match ground_view {
-                    Either::Left(c) => format!("{}", c.to_sql(&IndexMap::new(), &SQLVariant::Field)),
+                    Either::Left(c) => format!("{}", c.to_sql(&IndexMap::new(), &SQLPosition::Field)),
                     Either::Right(view) => format!("G from {view}")
                 };
                 write!(f,"SELECT {vars}{if_}{g_v}")

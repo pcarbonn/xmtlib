@@ -25,25 +25,25 @@ Groundings:
  - (= 2 2 2):
     T: SELECT "true" AS G WHERE TRUE
     F: SELECT "false" AS G WHERE FALSE
-    G : SELECT eq_("2", "2", "2") AS G
+    G : SELECT "true" AS G
  - (= 2 2):
     T: SELECT "true" AS G WHERE TRUE
     F: SELECT "false" AS G WHERE FALSE
-    G : SELECT eq_("2", "2") AS G
+    G : SELECT "true" AS G
  - (not (= 2 2)):
     T: SELECT "true" AS G WHERE FALSE
     F: SELECT "false" AS G WHERE TRUE
-    G : SELECT not_(eq_("2", "2")) AS G
+    G : SELECT not_("true") AS G
  - 3: SELECT "3" AS G
  - (= 3 3):
     T: SELECT "true" AS G WHERE TRUE
     F: SELECT "false" AS G WHERE FALSE
-    G : SELECT eq_("3", "3") AS G
+    G : SELECT "true" AS G
  - (not (= 3 3)):
     T: SELECT "true" AS G WHERE FALSE
     F: SELECT "false" AS G WHERE TRUE
-    G : SELECT not_(eq_("3", "3")) AS G
+    G : SELECT not_("true") AS G
  - (= (= 2 2) (not (= 3 3))):
     T: SELECT "true" AS G WHERE TRUE = FALSE
     F: SELECT "false" AS G WHERE NOT (TRUE = FALSE)
-    G : SELECT eq_(eq_("2", "2"), not_(eq_("3", "3"))) AS G
+    G : SELECT eq_({terms}) AS G
