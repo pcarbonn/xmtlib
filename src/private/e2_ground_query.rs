@@ -193,7 +193,7 @@ impl std::fmt::Display for GroundingQuery {
                 // LINK src/doc.md#_Equality
                 let second_where =
                     if let Some(where_) = where_ {
-                        where_.to_sql(&variables, &SQLPosition::Where(view.clone()))
+                        where_.to_sql(&variables, &SQLPosition::Where(view.clone().unwrap(), true))
                     } else {
                         "".to_string()
                     };

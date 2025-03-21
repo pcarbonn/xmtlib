@@ -44,9 +44,31 @@ const CHAINABLE: [Predefined; 1] = [Predefined::Eq];
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum SQLPosition {
+    // SQL expression that evaluates to an SMT-Lib value, for the full expression syntax
     Field,              // in a grounding field
+    // SQL expression that evaluats to an SQL boolean, for mapping expressions only
     Join,               // in a join condition
-    Where(Option<View>) // in a where clause
+
+    // SQL expression for (boolean) where clauses, in particular for equality and comparison expressions.
+    //
+    // Selects rows where the value of the expression is TRUE or undefined (for TU view),
+    //      or FALSE or undefined (for UF),
+    // or evaluates to "" (for G).
+    //
+    // If top level: add a disjunction with `NOT is_id(t_i)`
+    //      => top rows having a non-id argument are irrelevant
+    //      => Ids::None sub-expressions are irrelevant
+    //
+    // sub-expressions:
+    //  Boolean: translated to `TRUE` or `FALSE` or `""`, depending on `view` and `value`
+    //  Constant: unreachable
+    //  Variable: translated to `column="true"` (or "false")
+    //  Value: translated to `column="true"` (or "false")
+    //  Apply: "" if top-level, otherwise unreachable because Ids::None.
+    //      Thus, nested `Apply` and `Construct` sub-expressions are unreachable by Where
+    //  Predefined: use corresponding SQL operators on <Where> boolean values (the view is inverted by negation)
+    //      and on <SMT> non-boolean values
+    Where(View, bool)  // true for top-level
 }
 
 
@@ -66,14 +88,20 @@ impl SQLExpr {
                 match variant {
                     SQLPosition::Field
                     | SQLPosition::Join =>  format!("\"{value}\""),
-                    SQLPosition::Where(_) => {
+
+                    SQLPosition::Where(View::G, _) => "".to_string(),
+                    SQLPosition::Where(View::TU, _) => {
                         (if *value { "TRUE" } else { "FALSE" }).to_string()
+                    }
+                    SQLPosition::Where(View::UF, _) => {
+                        (if *value { "FALSE" } else { "TRUE" }).to_string()
                     }
                 }
             },
             SQLExpr::Constant(spec_constant) => {
                 match (variant, spec_constant) {
                     (SQLPosition::Join, _) => unreachable!(),
+                    (SQLPosition::Where(..), _) => unreachable!(),
                     (_, SpecConstant::Numeral(s)) => format!("\"{s}\""),
                     (_, SpecConstant::Decimal(s)) => format!("\"{s}\""),
                     (_, SpecConstant::Hexadecimal(s)) => format!("\"{s}\""),
@@ -84,14 +112,37 @@ impl SQLExpr {
             SQLExpr::Variable(symbol) => {
                 let column = variables.get(symbol).unwrap();
                 if let Some(column) = column {
-                    column.to_string()
+                    match variant {
+                        // Where => column is boolean
+                        SQLPosition::Where(View::G, _) => "".to_string(),
+                        SQLPosition::Where(_, true) => "".to_string(), // no use to add where clause for top-level variable
+                        SQLPosition::Where(View::TU, false) => format!("{column} = \"true\""),
+                        SQLPosition::Where(View::UF, false) => format!("{column} = \"false\""),
+
+                        SQLPosition::Field | SQLPosition::Join => column.to_string()
+                    }
                 } else {
                     format!("\"{symbol}\"")
                 }
             },
-            SQLExpr::Value(column) => column.to_string(),
+            SQLExpr::Value(column) =>
+                match variant {
+                    // Where => column is boolean
+                    SQLPosition::Where(View::G, _) => "".to_string(),
+                    SQLPosition::Where(_, true) => "".to_string(), // no use to add where clause for top-level variable
+                    SQLPosition::Where(View::TU, false) => format!("{column} = \"true\""),
+                    SQLPosition::Where(View::UF, false) => format!("{column} = \"false\""),
+
+                    SQLPosition::Field | SQLPosition::Join => column.to_string()
+                },
             SQLExpr::Apply(qual_identifier, exprs) => {
-                sql_for("apply", qual_identifier.to_string(), exprs, variables, variant)
+                let sub_variant = SQLPosition::Field;
+                let expr = sql_for("apply", qual_identifier.to_string(), exprs, variables, &sub_variant);
+                match variant {
+                    SQLPosition::Field | SQLPosition::Join => expr,
+                    SQLPosition::Where(_, true) => "".to_string(),  // because it is Ids::None
+                    SQLPosition::Where(_, false) => unreachable!()
+                }
             },
             SQLExpr::Construct(qual_identifier, exprs) => {
                 sql_for("construct2", qual_identifier.to_string(), exprs, variables, variant)
@@ -100,17 +151,15 @@ impl SQLExpr {
                 if UNARY.contains(function) {
                     // NOT
                     match variant {
-                        SQLPosition::Where(Some(View::G)) => "".to_string(),
-                        SQLPosition::Where(_) => {
-                            let expr = exprs.first().unwrap().1.to_sql(variables, variant);
-                            if expr == "TRUE" {
-                                "FALSE".to_string()
-                            } else if expr == "FALSE" {
-                                "TRUE".to_string()
-                            } else {
-                                format!("NOT({expr})")
-                            }
-                        }
+                        SQLPosition::Where(View::G, _) => "".to_string(),
+                        SQLPosition::Where(View::TU, top) => {
+                            let sub_variant = SQLPosition::Where(View::UF, *top);
+                            exprs.first().unwrap().1.to_sql(variables, &sub_variant)
+                        },
+                        SQLPosition::Where(View::UF, top) => {
+                            let sub_variant = SQLPosition::Where(View::TU, *top);
+                            exprs.first().unwrap().1.to_sql(variables, &sub_variant)
+                        },
                         _ => {
                             let (id, e) = exprs.first().unwrap();
                             let expr = e.to_sql(variables, variant);
@@ -153,9 +202,9 @@ impl SQLExpr {
                             }
                         }
                         SQLPosition::Join => unreachable!(),
-                        SQLPosition::Where(Some(View::G)) => "".to_string(),
-                        SQLPosition::Where(view) => {
-                            // if view is None: (a op b ...)
+                        SQLPosition::Where(View::G, _) => "".to_string(),
+                        SQLPosition::Where(view, top) => {
+                            // if view is not top: (a op b ...)
                             // else: NOT is_id(b) ... OR NOT? (a op b ...)
                             let mut is_ids = vec![];
                             let mut args = vec![];
@@ -163,31 +212,37 @@ impl SQLExpr {
                                 match id {
                                     Ids::All => {
                                         // don't push to ids
-                                        args.push(e.to_sql(variables, &SQLPosition::Where(None)))
+                                        args.push(e.to_sql(variables, &SQLPosition::Where(view.clone(), false)))
                                     }
                                     Ids::Some => {
-                                        let e = e.to_sql(variables, &SQLPosition::Where(None));
+                                        let e = e.to_sql(variables, &SQLPosition::Where(view.clone(), false));
                                         is_ids.push(format!("NOT is_id({e})"));
                                         args.push(e)
                                     }
                                     Ids::None => {}
                                 }
                             };
+                            let op = match (function.clone(), view) {
+                                (Predefined::And, View::TU) => " AND ",
+                                (Predefined::And, View::UF) => " OR ",
+                                (Predefined::Or, View::TU) => " OR ",
+                                (Predefined::Or, View::UF) => " AND ",
+                                _ => unreachable!()
+                            };
+                            // simplify args for `op`
                             let args = args.iter().cloned()
                                 .filter_map( |e|
-                                    if *function == Predefined::And && e == "TRUE" { None }
-                                    else if *function == Predefined::Or && e == "FALSE" { None }
+                                    if op == " AND " && e == "TRUE" { None }
+                                    else if op == " OR " && e == "FALSE" { None }
                                     else { Some(e) })
                                 .collect::<Vec<_>>();
                             if args.len() == 0 {
                                 "".to_string()
                             } else {
                                 let is_ids = is_ids.join(" OR ");
-                                let op = if *function == Predefined::And {" AND " } else {" OR "};
                                 let args = args.join(op);
-                                let args = if *view == Some(View::UF) { format!("(NOT ({args}))") } else { args };
 
-                                if view.is_none() || is_ids.len() == 0 {
+                                if ! top || is_ids.len() == 0 {
                                     format!("({args})")
                                 } else {
                                     format!("({is_ids} OR {args})")
@@ -200,20 +255,22 @@ impl SQLExpr {
                     match (function, variant) {
                         // LINK src/doc.md#_Equality
                         (Predefined::Eq, SQLPosition::Field) => {
-                            let mut ids = Ids::All;
-                            let terms = exprs.iter()
-                                .map(|(ids_, e)| {
-                                    ids = max(ids.clone(), ids_.clone());
-                                    e.to_sql(variables, variant)
-                                }).collect::<Vec<_>>().join(", ");
-                            if ids == Ids::None {
-                                format!("apply(\"=\",{terms})")
-                            } else if ids == Ids::Some{
-                                format!("eq_({terms})")
-                            } else {
-                                let equal = exprs.iter().zip(exprs.iter().skip(1))
+                            let equal = exprs.iter().zip(exprs.iter().skip(1))
                                     .all(|((_, a), (_, b))| *a == *b);
-                                (if equal { "\"true\"" } else { "eq_({terms})" }).to_string()
+                            if equal {
+                                "\"true\"".to_string()
+                            } else {
+                                let mut ids = Ids::All;
+                                let terms = exprs.iter()
+                                    .map(|(ids_, e)| {
+                                        ids = max(ids.clone(), ids_.clone());
+                                        e.to_sql(variables, variant)
+                                    }).collect::<Vec<_>>().join(", ");
+                                if ids == Ids::None {
+                                    format!("apply(\"=\",{terms})")
+                                } else {
+                                    format!("eq_({terms})")
+                                }
                             }
                         },
                         (Predefined::Eq, SQLPosition::Join) => {
@@ -241,23 +298,22 @@ impl SQLExpr {
                                     }
                                 }).collect::<Vec<_>>().join(" AND ")
                         }
-                        (Predefined::Eq, SQLPosition::Where(Some(View::G))) => "".to_string(),
-                        (Predefined::Eq, SQLPosition::Where(view)) => {
-                            // if view is None: (a op b) AND (b op c) AND (c op d)
+                        (Predefined::Eq, SQLPosition::Where(View::G, _)) => "".to_string(),
+                        (Predefined::Eq, SQLPosition::Where(view, top)) => {
+                            // if not top: (a op b) AND (b op c) AND (c op d)
                             // otherwise: (NOT is_id(a) OR NOT is_id(b) OR a op* b) AND (NOT is_id(b) OR NOT is_id(c) OR b op* c) ...
                             let res = exprs.iter().zip(exprs.iter().skip(1))
                                 .filter_map(|((a_id, a), (b_id, b))| {
-                                    let a = a.to_sql(variables, &SQLPosition::Where(None));
-                                    let b = b.to_sql(variables, &SQLPosition::Where(None));
+                                    let a = a.to_sql(variables, &SQLPosition::Field);
+                                    let b = b.to_sql(variables, &SQLPosition::Field);
                                     let comp = match view {
-                                        Some(View::UF) => format!("NOT ({a} {function} {b})"),
-                                        Some(View::TU) => format!("{a} {function} {b}"),
-                                        Some(View::G) => unreachable!(),
-                                        None => format!("{a} {function} {b}")
+                                        View::TU => format!("{a} {function} {b}"),
+                                        View::UF => format!("NOT ({a} {function} {b})"),
+                                        View::G => unreachable!(),
                                     };
                                     if a == b {
                                         None
-                                    } else if view.is_none() {
+                                    } else if ! top {
                                         Some(comp)
                                     } else {
                                         match (a_id, b_id) {
@@ -272,8 +328,8 @@ impl SQLExpr {
                                             _ => None,
                                         }
                                     }
-                                }).collect::<Vec<_>>().join( if *view == Some(View::UF) { " OR " } else { " AND " });
-                            if res.len() == 0 && *view == Some(View::UF) {
+                                }).collect::<Vec<_>>().join( if *view == View::UF { " OR " } else { " AND " });
+                            if res.len() == 0 && *view == View::UF {
                                 "FALSE".to_string()
                             } else if res.len() == 0 {
                                 "TRUE".to_string()
