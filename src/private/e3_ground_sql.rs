@@ -112,7 +112,7 @@ impl SQLExpr {
                         _ => {
                             let (id, e) = exprs.first().unwrap();
                             let expr = e.to_sql(variables, variant);
-                            if id == &Ids::None {
+                            if *id == Ids::None {
                                 format!("apply(\"not\", {expr})")
                             } else {
                                 format!("not_({expr})")

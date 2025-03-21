@@ -204,7 +204,7 @@ impl std::fmt::Display for GroundingQuery {
                 write!(f, "SELECT {variables_}{condition}{grounding_}{tables}{where_}")
             }
             GroundingQuery::Aggregate { agg, free_variables, infinite_variables, sub_view, exclude } => {
-                if let GroundingView::View { condition, ..} = &**sub_view {
+                if let GroundingView::View { condition, ..} = **sub_view {
                     // SELECT {free_variables},
                     //        "(forall ({infinite_vars}) " || and_aggregate(implies_(if_, G)) || ")" AS G
                     //   FROM {sub_view}
