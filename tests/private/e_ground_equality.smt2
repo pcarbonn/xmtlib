@@ -12,6 +12,7 @@
 (push)
 (assert (= 2 2 2))
 (pop)
+(assert true)
 (push)
 (assert (not (= 2 2)))
 (pop)
@@ -23,27 +24,27 @@
 Groundings:
  - 2: SELECT "2" AS G
  - (= 2 2 2):
-    T: SELECT "true" AS G WHERE TRUE
-    F: SELECT "false" AS G WHERE FALSE
+    T: SELECT "true" AS G
+    F: SELECT "true" AS G
     G : SELECT "true" AS G
  - (= 2 2):
-    T: SELECT "true" AS G WHERE TRUE
-    F: SELECT "false" AS G WHERE FALSE
+    T: SELECT "true" AS G
+    F: SELECT "true" AS G
     G : SELECT "true" AS G
  - (not (= 2 2)):
-    T: SELECT "true" AS G WHERE FALSE
-    F: SELECT "false" AS G WHERE TRUE
+    T: SELECT "true" AS G
+    F: SELECT "false" AS G
     G : SELECT not_("true") AS G
  - 3: SELECT "3" AS G
  - (= 3 3):
-    T: SELECT "true" AS G WHERE TRUE
-    F: SELECT "false" AS G WHERE FALSE
+    T: SELECT "true" AS G
+    F: SELECT "true" AS G
     G : SELECT "true" AS G
  - (not (= 3 3)):
-    T: SELECT "true" AS G WHERE FALSE
-    F: SELECT "false" AS G WHERE TRUE
+    T: SELECT "true" AS G
+    F: SELECT "false" AS G
     G : SELECT not_("true") AS G
  - (= (= 2 2) (not (= 3 3))):
-    T: SELECT "true" AS G WHERE "true" = not_("true")
-    F: SELECT "false" AS G WHERE NOT ("true" = not_("true"))
+    T: SELECT eq_("true", not_("true")) AS G
+    F: SELECT eq_("true", not_("true")) AS G
     G : SELECT eq_("true", not_("true")) AS G

@@ -8,7 +8,7 @@ For example, // LINK src/doc.md#_Equality
 
 The documented topics are listed below:
 
-## // ANCHOR _Equality
+## // LINK src/doc.md#_Equality
 
 The G grounding of a (chained) equality $t_0=t_1\ldots=t_i$ is $\prod_{\bar x| (\bigwedge_i \underline{t_i^G})  | \bigwedge_i t_i=t_{i+1}} (\bowtie_i t_i^G )$.
 

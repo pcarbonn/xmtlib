@@ -25,7 +25,6 @@ pub(crate) enum GroundingQuery {
         grounding: SQLExpr,
         natural_joins: IndexSet<NaturalJoin>,  // joins of grounding sub-queries
         theta_joins: IndexSet<ThetaJoin>,  // joins with interpretation tables
-        where_: Option<SQLExpr>,  // where clause for comparisons
         view: Option<View>,  // Only for non-variable boolean
     },
     Aggregate {
@@ -75,7 +74,7 @@ impl std::fmt::Display for GroundingQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             GroundingQuery::Join{variables, conditions, grounding,
-            natural_joins, theta_joins, where_, view,..} => {
+            natural_joins, theta_joins, ..} => {
 
                 // SELECT {variables.0} AS {variables.1},
                 //        {condition} AS if_,  -- if condition
@@ -174,14 +173,14 @@ impl std::fmt::Display for GroundingQuery {
 
                 // naturals + thetas + empty
                 let tables = [naturals, thetas].concat();
-                let mut first_where = "".to_string();
+                let mut where_ = "".to_string();
                 let tables =
                     if tables.len() == 0 {
                         "".to_string()
                     } else if tables.len() == 1 {
                         let tables = format!(" FROM {}", tables.join(" JOIN "));  // only one !
                         if let Some((before, after)) = tables.split_once(" ON ") {
-                            first_where = after.to_string();
+                            where_ = after.to_string();
                             before.to_string()
                         } else {
                             tables
@@ -190,15 +189,6 @@ impl std::fmt::Display for GroundingQuery {
                         format!(" FROM {}", tables.join(" JOIN "))
                     };
 
-                // LINK src/doc.md#_Equality
-                let second_where =
-                    if let Some(where_) = where_ {
-                        where_.to_sql(&variables, &SQLPosition::Where(view.clone().unwrap(), true))
-                    } else {
-                        "".to_string()
-                    };
-
-                let where_ = first_where + &second_where;
                 let where_ = if where_ == "" { where_ } else { format!(" WHERE {where_}") };
 
                 write!(f, "SELECT {variables_}{condition}{grounding_}{tables}{where_}")
@@ -316,7 +306,7 @@ impl GroundingQuery {
     ) -> Result<GroundingView, SolverError> {
         match self {
             GroundingQuery::Join { variables, conditions, grounding,
-            natural_joins, theta_joins, where_, ..} => {
+            natural_joins, theta_joins, ..} => {
 
                 let new_grounding =
                     if *ids == Ids::All {
@@ -336,7 +326,6 @@ impl GroundingQuery {
                     grounding: new_grounding,
                     natural_joins: natural_joins.clone(),
                     theta_joins: theta_joins.clone(),
-                    where_: where_.clone(),
                     view: Some(view.clone())
                 };
                 let table_name = TableName{base_table: format!("negate_{index}"), index: 0};

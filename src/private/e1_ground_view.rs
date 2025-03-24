@@ -102,7 +102,6 @@ pub(crate) fn query_for_constant(
         grounding: SQLExpr::Constant(spec_constant.clone()),
         natural_joins: IndexSet::new(),
         theta_joins: IndexSet::new(),
-        where_: None,
         view: None
     };
     let view = TableName::new("ignore", 0);
@@ -129,7 +128,6 @@ pub(crate) fn query_for_variable(
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::from([NaturalJoin::Variable(table_name.clone(), symbol.clone())]),
             theta_joins: IndexSet::new(),
-            where_: None,
             view: None
         };
         let free_variables = IndexMap::from([(symbol.clone(), Some(table_name))]);
@@ -142,7 +140,6 @@ pub(crate) fn query_for_variable(
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::new(),
             theta_joins: IndexSet::new(),
-            where_: None,
             view: None
         };
         let free_variables = IndexMap::from([(symbol.clone(), None)]);
@@ -180,7 +177,6 @@ pub(crate) fn query_for_compound(
     let mut natural_joins = IndexSet::new();
     let mut theta_joins = IndexSet::new();
     let mut thetas = vec![];
-    let mut where_ = None;
     let mut ids: Ids = Ids::All;
     let mut ids_ = vec![];
     let mut view = None;  // default value
@@ -364,17 +360,8 @@ pub(crate) fn query_for_compound(
                 };
 
                 let ops: Vec<_> = ids_.iter().cloned().zip(groundings.iter().cloned()).collect();
-                where_ = Some(SQLExpr::Predefined(function.clone(), Box::new(ops.clone())));
 
-                if ids == Ids::All {
-                    match new_view {
-                        View::TU => SQLExpr::Boolean(true),
-                        View::UF => SQLExpr::Boolean(false),
-                        View::G  => SQLExpr::Predefined(function, Box::new(ops)),
-                    }
-                } else {
-                    SQLExpr::Predefined(function, Box::new(ops))
-                }
+                SQLExpr::Predefined(function, Box::new(ops))
             }
         };
 
@@ -385,7 +372,6 @@ pub(crate) fn query_for_compound(
         grounding,
         natural_joins,
         theta_joins,
-        where_,
         view
     };
     GroundingView::new(table_name, free_variables, query, ids, solver)
@@ -484,7 +470,6 @@ pub(crate) fn query_for_union(
                             grounding: grounding.clone(),
                             natural_joins: IndexSet::new(),
                             theta_joins: IndexSet::new(),
-                            where_: None,
                             view: None
                         })
                     },
@@ -527,7 +512,6 @@ pub(crate) fn query_for_union(
                             grounding: SQLExpr::Value(Column::new(table_name, "G")),
                             natural_joins,
                             theta_joins: IndexSet::new(),
-                            where_: None,
                             view: None
                         })
                     },
