@@ -26,6 +26,7 @@ pub(crate) enum GroundingQuery {
         natural_joins: IndexSet<NaturalJoin>,  // joins of grounding sub-queries
         theta_joins: IndexSet<ThetaJoin>,  // joins with interpretation tables
         view: Option<View>,  // Only for non-variable boolean
+        precise: bool,  // true if the (boolean) grounding only has values consistent with the view (e.g., no "false" in TU view)
     },
     Aggregate {
         agg: String,  // "" (top-level), "and" or "or"
@@ -306,7 +307,7 @@ impl GroundingQuery {
     ) -> Result<GroundingView, SolverError> {
         match self {
             GroundingQuery::Join { variables, conditions, grounding,
-            natural_joins, theta_joins, ..} => {
+            natural_joins, theta_joins, precise, ..} => {
 
                 let new_grounding =
                     if *ids == Ids::All {
@@ -326,7 +327,8 @@ impl GroundingQuery {
                     grounding: new_grounding,
                     natural_joins: natural_joins.clone(),
                     theta_joins: theta_joins.clone(),
-                    view: Some(view.clone())
+                    view: Some(view.clone()),
+                    precise: *precise
                 };
                 let table_name = TableName{base_table: format!("negate_{index}"), index: 0};
                 GroundingView::new(table_name, free_variables, query, ids.clone(), solver)

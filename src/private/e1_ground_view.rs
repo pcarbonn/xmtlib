@@ -48,7 +48,7 @@ impl std::fmt::Debug for GroundingView {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             GroundingView::Empty => write!(f, "SELECT \"true\" AS G WHERE FALSE"),
-            GroundingView::View { free_variables, condition, ground_view, .. } => {
+            GroundingView::View { free_variables, condition, ground_view, query, ids, .. } => {
 
                 let vars = free_variables.iter()
                     .map(|(symbol, _)| symbol.to_string())
@@ -60,7 +60,22 @@ impl std::fmt::Debug for GroundingView {
                     Either::Left(c) => format!("{}", c.to_sql(&IndexMap::new(), &SQLPosition::Field)),
                     Either::Right(view) => format!("G from {view}")
                 };
-                write!(f,"SELECT {vars}{if_}{g_v}")
+                // make the view precise if the query is not
+                let where_ = if let GroundingQuery::Join{view: Some(view), precise, ..} = query {
+                    if ! *precise {
+                        let is_id = match ids {
+                            Ids::Some => format!("NOT is_id({g_v}) OR "),
+                            Ids::All
+                            | Ids::None => "".to_string(),
+                        };
+                        match view {
+                            View::TU => format!(" WHERE {is_id}{g_v} = \"true\""),
+                            View::UF => format!(" WHERE {is_id}{g_v} = \"false\""),
+                            View::G => "".to_string()
+                        }
+                    } else { "".to_string() }
+                } else { "".to_string() };
+                write!(f,"SELECT {vars}{if_}{g_v}{where_}")
             }
         }
     }
@@ -102,7 +117,8 @@ pub(crate) fn query_for_constant(
         grounding: SQLExpr::Constant(spec_constant.clone()),
         natural_joins: IndexSet::new(),
         theta_joins: IndexSet::new(),
-        view: None
+        view: None,
+        precise: true
     };
     let view = TableName::new("ignore", 0);
     GroundingView::new(view, IndexMap::new(), query, Ids::All, solver)
@@ -128,7 +144,8 @@ pub(crate) fn query_for_variable(
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::from([NaturalJoin::Variable(table_name.clone(), symbol.clone())]),
             theta_joins: IndexSet::new(),
-            view: None
+            view: None,
+            precise: false  // imprecise for boolean variable !
         };
         let free_variables = IndexMap::from([(symbol.clone(), Some(table_name))]);
         GroundingView::new(view, free_variables, query, Ids::All, solver)
@@ -140,7 +157,8 @@ pub(crate) fn query_for_variable(
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::new(),
             theta_joins: IndexSet::new(),
-            view: None
+            view: None,
+            precise: true  // cannot be boolean
         };
         let free_variables = IndexMap::from([(symbol.clone(), None)]);
         GroundingView::new(view, free_variables, query, Ids::None, solver)
@@ -180,6 +198,7 @@ pub(crate) fn query_for_compound(
     let mut ids: Ids = Ids::All;
     let mut ids_ = vec![];
     let mut view = None;  // default value
+    let mut precise = true;
 
     for (i, sub_q) in sub_queries.iter_mut().enumerate() {
 
@@ -195,7 +214,7 @@ pub(crate) fn query_for_compound(
 
                 if let GroundingQuery::Join { variables: sub_variables, conditions: sub_conditions,
                     grounding: sub_grounding, natural_joins: sub_natural_joins,
-                    theta_joins: sub_theta_joins, .. } = query {
+                    theta_joins: sub_theta_joins, precise: sub_precise,.. } = query {
 
                     // handle the special case of a variable used as an argument to an interpreted function
                     match sub_grounding {
@@ -227,6 +246,7 @@ pub(crate) fn query_for_compound(
                     ids_.push(sub_ids.clone());
                     natural_joins.append(sub_natural_joins);
                     theta_joins.append(sub_theta_joins);
+                    precise &= *sub_precise;
 
                     // merge the variables
                     for (symbol, column) in sub_variables.clone() {
@@ -350,6 +370,7 @@ pub(crate) fn query_for_compound(
             QueryVariant::PredefinedBoolean(new_view) => {
                 // LINK src/doc.md#_Equality
                 view = Some(new_view.clone());
+                precise = false;
                 let function = match qual_identifier.to_string().as_str() {
                     "and" => Predefined::And,
                     "or"  => Predefined::Or,
@@ -372,7 +393,8 @@ pub(crate) fn query_for_compound(
         grounding,
         natural_joins,
         theta_joins,
-        view
+        view,
+        precise
     };
     GroundingView::new(table_name, free_variables, query, ids, solver)
 }
@@ -470,7 +492,8 @@ pub(crate) fn query_for_union(
                             grounding: grounding.clone(),
                             natural_joins: IndexSet::new(),
                             theta_joins: IndexSet::new(),
-                            view: None
+                            view: None,
+                            precise: false
                         })
                     },
                     Either::Right(table_name) => {
@@ -512,7 +535,8 @@ pub(crate) fn query_for_union(
                             grounding: SQLExpr::Value(Column::new(table_name, "G")),
                             natural_joins,
                             theta_joins: IndexSet::new(),
-                            view: None
+                            view: None,
+                            precise: false  // todo ?
                         })
                     },
                 }

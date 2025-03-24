@@ -46,7 +46,7 @@ const CHAINABLE: [Predefined; 1] = [Predefined::Eq];
 pub(crate) enum SQLPosition {
     // SQL expression that evaluates to an SMT-Lib value, for the full expression syntax
     Field,              // in a grounding field
-    // SQL expression that evaluats to an SQL boolean, for mapping expressions only
+    // SQL expression that evaluates to an SQL boolean, for mapping expressions only
     Join,               // in a join condition
 }
 
