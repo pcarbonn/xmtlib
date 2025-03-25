@@ -15,9 +15,19 @@
 (x-interpret-pred same (red red) (green green))
 (assert (exists ((x Color)) (same x x) ))
 (assert (exists ((x Color)) (exists ((y Color)) (same x y) )))
+
+; constructor
+(declare-datatype Hue ( ( hue (first Color) (second Color) ) ))
+(declare-fun dim (Hue) Bool)
+(x-interpret-pred dim ((hue red red)))
+(assert (exists ((x Hue)) (dim x) ))
+
 (x-ground)
 (x-debug db bright_TU)
 (x-debug db bright_G)
+(x-debug db Color)
+(x-debug db Hue)
+(x-debug db Dim_T)
 (x-debug db-view Agg_1_UF)
 (x-debug solver functions)
 (x-debug solver groundings)
@@ -34,6 +44,10 @@
 (x-interpret-pred same (red red) (green green))
 
 
+(declare-datatype Hue ((hue (first Color) (second Color))))
+(declare-fun dim (Hue) Bool)
+(x-interpret-pred dim ((hue red red)))
+
 (push)
 (assert p)
 (pop)
@@ -46,6 +60,9 @@
 (pop)
 (push)
 (assert (exists ((x Color)) (exists ((y Color)) (same x y))))
+(pop)
+(push)
+(assert (exists ((x Hue)) (dim x)))
 (pop)
  TABLE: bright_TU
 ┌───────┬────────┐
@@ -61,6 +78,32 @@
 ├─────────┼─────────┤
 │ "red"   │ "true"  │
 └─────────┴─────────┘
+ TABLE: Color
+┌─────────┐
+│ G       │
+├─────────┤
+│ "red"   │
+├─────────┤
+│ "green" │
+└─────────┘
+ TABLE: Hue
+┌─────────────┬─────────┬─────────┬──────────────────────┐
+│ constructor │ first   │ second  │ G                    │
+├─────────────┼─────────┼─────────┼──────────────────────┤
+│ "hue"       │ "red"   │ "red"   │ " (hue red red)"     │
+├─────────────┼─────────┼─────────┼──────────────────────┤
+│ "hue"       │ "red"   │ "green" │ " (hue red green)"   │
+├─────────────┼─────────┼─────────┼──────────────────────┤
+│ "hue"       │ "green" │ "red"   │ " (hue green red)"   │
+├─────────────┼─────────┼─────────┼──────────────────────┤
+│ "hue"       │ "green" │ "green" │ " (hue green green)" │
+└─────────────┴─────────┴─────────┴──────────────────────┘
+ TABLE: Dim_T
+┌──────────────────┐
+│ a_0              │
+├──────────────────┤
+│ " (hue red red)" │
+└──────────────────┘
 CREATE VIEW Agg_1_UF AS SELECT or_aggregate(G) as G from (SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2) HAVING or_aggregate(G) <> "true"
 Functions:
  - true: Constructed
@@ -86,6 +129,7 @@ Functions:
  - p: Boolean (p_TU Complete, p_UF Complete, p_G Complete)
  - bright: Boolean (bright_TU Complete, bright_UF Complete, bright_G Complete)
  - same: Boolean (same_TU Complete, same_UF Complete, same_G Complete)
+ - dim: Boolean (dim_TU Complete, dim_UF Complete, dim_G Complete)
 Groundings:
  - p:
     T: SELECT "true" AS G FROM p_TU AS p_TU
@@ -121,3 +165,12 @@ Groundings:
     TU: SELECT or_aggregate(G) as G from (SELECT same_TU_7.a_0 AS x, same_TU_7.a_1 AS y, "true" AS G FROM same_TU AS same_TU_7)
     UF: SELECT or_aggregate(G) as G from (SELECT same_G_7.a_0 AS x, same_G_7.a_1 AS y, same_G_7.G AS G FROM same_G AS same_G_7) HAVING or_aggregate(G) <> "true"
     G : SELECT or_aggregate(G) as G from (SELECT same_G_7.a_0 AS x, same_G_7.a_1 AS y, same_G_7.G AS G FROM same_G AS same_G_7)
+ - x: SELECT Hue_10.G AS x, Hue_10.G AS G FROM Hue AS Hue_10
+ - (dim x):
+    T: SELECT dim_TU_11.a_0 AS x, "true" AS G FROM dim_TU AS dim_TU_11
+    F: SELECT dim_UF_11.a_0 AS x, "false" AS G FROM dim_UF AS dim_UF_11
+    G : SELECT dim_G_11.a_0 AS x, dim_G_11.G AS G FROM dim_G AS dim_G_11
+ - (exists ((x Hue)) (dim x)):
+    TU: SELECT or_aggregate(G) as G from (SELECT dim_TU_11.a_0 AS x, "true" AS G FROM dim_TU AS dim_TU_11)
+    UF: SELECT or_aggregate(G) as G from (SELECT dim_G_11.a_0 AS x, dim_G_11.G AS G FROM dim_G AS dim_G_11) HAVING or_aggregate(G) <> "true"
+    G : SELECT or_aggregate(G) as G from (SELECT dim_G_11.a_0 AS x, dim_G_11.G AS G FROM dim_G AS dim_G_11)

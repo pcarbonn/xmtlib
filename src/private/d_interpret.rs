@@ -2,7 +2,7 @@
 
 use rusqlite::params_from_iter;
 
-use crate::api::{Identifier, QualIdentifier, XTuple};
+use crate::api::{Identifier, QualIdentifier, XTuple, Term};
 use crate::error::SolverError::{self, InternalError};
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionIs, Interpretation};
@@ -72,10 +72,11 @@ pub(crate) fn interpret_pred(
                 let holes = (0..domain.len()).map(|_|"?").collect::<Vec<_>>().join(",");  // "?" n times
                 let stmt = format!("INSERT INTO {identifier}_T VALUES ({holes})");
                 let mut stmt = solver.conn.prepare(&stmt)?;
-                // NOTE now
                 for XTuple(tuple) in &tuples {
                     if tuple.len() == domain.len() {
-                        let tuples_t = tuple.iter().map(|t| t.to_string() );  //todo: construct !
+                        let tuples_t = tuple.iter()
+                            .map(|t| construct(t) )
+                            .collect::<Result<Vec<_>, SolverError>>()?;
                         stmt.execute(params_from_iter(tuples_t))?;
                     } else {
                         return Err(SolverError::ExprError("Incorrect tuple length".to_string(), None))
@@ -160,7 +161,7 @@ pub(crate) fn interpret_pred_0(
     tuples: Vec<XTuple>,
     command: String,
     solver: &mut Solver,
- ) -> Result<String, SolverError> {
+) -> Result<String, SolverError> {
 
     let table_tu = Interpretation::Table{name: format!("{qual_identifier}_TU"), ids: Ids::All};
     let table_uf = Interpretation::Table{name: format!("{qual_identifier}_UF"), ids: Ids::All};
@@ -192,4 +193,26 @@ pub(crate) fn interpret_pred_0(
     let function_is = FunctionIs::BooleanInterpreted { table_tu, table_uf, table_g };
     solver.functions.insert(qual_identifier.clone(), function_is);
     Ok(command)
- }
+}
+
+/// Returns the string representation of the id.
+/// Constructor applications are preceded by a space, e.g. ` (cons 0 nil)`
+pub(crate) fn construct(id: &Term) -> Result<String, SolverError> {
+    match id {
+        Term::SpecConstant(_) => Ok(id.to_string()),
+        Term::Identifier(_) => Ok(id.to_string()),
+        Term::Application(qual_identifier, terms) => {
+            let new_terms = terms.iter()
+                .map( |t| construct(t))
+                .collect::<Result<Vec<_>, SolverError>>()?.join(" ");
+            Ok(format!(" ({qual_identifier} {new_terms})"))
+        },
+        Term::Let(_, _)
+        | Term::Forall(_, _)
+        | Term::Exists(_, _)
+        | Term::Match(_, _)
+        | Term::Annotation(_, _)
+        | Term::XSortedVar(_, _) =>
+            Err(SolverError::ExprError("Invalid id in interpretation".to_string(), None))
+    }
+}

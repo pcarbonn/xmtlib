@@ -539,8 +539,17 @@ fn create_table(
                 selects.push(format!("SELECT \"{constructor}\" AS constructor, {projection}, {g} FROM {joins}"))
             }
         }
-        let create = format!("CREATE TABLE {table} AS {}", selects.join( " UNION "));
+        let columns = column_names.iter()
+            .map( |name| format!("{name} TEXT"))
+            .collect::<Vec<_>>().join(", ");
+        let create = format!("CREATE TABLE {table} (constructor TEXT, {columns}, G TEXT PRIMARY KEY)");
         solver.conn.execute(&create, ())?;
+
+        let columns = column_names.iter()
+            .map( |name| name.to_string())
+            .collect::<Vec<_>>().join(", ");
+        let insert = format!("INSERT INTO {table} (constructor, {columns}, G) {}", selects.join( " UNION "));
+        solver.conn.execute(&insert, ())?;
     }
     Ok(count)
 }
