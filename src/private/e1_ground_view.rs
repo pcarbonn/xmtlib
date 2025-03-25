@@ -10,7 +10,7 @@ use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 
 use crate::private::e2_ground_query::{GroundingQuery, NaturalJoin, TableName, Column};
-use crate::private::e3_ground_sql::{Mapping, SQLExpr, SQLPosition, Predefined};
+use crate::private::e3_ground_sql::{Mapping, SQLExpr, Predefined};
 
 
 ////////////////////// Data structures for grounding views ////////////////////
@@ -57,7 +57,7 @@ impl std::fmt::Debug for GroundingView {
                 let vars = if vars == "" { vars } else { vars + ", " };
                 let if_= if *condition { "if_, " } else { "" };
                 let g_v = match ground_view {
-                    Either::Left(c) => format!("{}", c.to_sql(&IndexMap::new(), &SQLPosition::Field)),
+                    Either::Left(c) => format!("{}", c.to_sql(&IndexMap::new())),
                     Either::Right(view) => format!("G from {view}")
                 };
                 // make the view precise if the query is not
@@ -219,7 +219,7 @@ pub(crate) fn query_for_compound(
                     // handle the special case of a variable used as an argument to an interpreted function
                     match sub_grounding {
                         SQLExpr::Variable(symbol) => {
-                            if let QueryVariant::Interpretation(table_name, interp_ids,..) = variant {
+                            if let QueryVariant::Interpretation(table_name, ..) = variant {
                                 let column = Column::new(table_name, &format!("a_{i}"));
 
                                 //  update the query in progress
@@ -253,7 +253,7 @@ pub(crate) fn query_for_compound(
 
                     // compute the join conditions, for later use
                     match variant {
-                        QueryVariant::Interpretation(table_name, interp_ids,..) => {
+                        QueryVariant::Interpretation(table_name, ..) => {
                             let column = Column::new(table_name, &format!("a_{i}"));
 
                             // push `sub_grounding = column` to conditions and thetas

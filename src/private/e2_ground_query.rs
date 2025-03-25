@@ -9,7 +9,7 @@ use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 
 use crate::private::e1_ground_view::{GroundingView, Ids, View};
-use crate::private::e3_ground_sql::{Mapping, SQLExpr, SQLPosition, Predefined};
+use crate::private::e3_ground_sql::{Mapping, SQLExpr, Predefined};
 
 
 
@@ -22,7 +22,7 @@ pub(crate) enum GroundingQuery {
     Join {
         /// maps variables to None if its domain is infinite or to a Column in a Type or Interpretation table.
         variables: IndexMap<Symbol, Option<Column>>,
-        conditions: Vec<Either<Mapping, SQLExpr>>,  // vector of non-empty SQL expressions
+        conditions: Vec<Either<Mapping, SQLExpr>>,  // vector of mapping
         grounding: SQLExpr,
         natural_joins: IndexSet<NaturalJoin>,  // joins of grounding sub-queries
         theta_joins: IndexSet<ThetaJoin>,  // joins with interpretation tables
@@ -102,7 +102,7 @@ impl std::fmt::Display for GroundingQuery {
                     .map( |e| {
                         match e {
                             Left(mapping) => mapping.to_if(&variables),
-                            Right(e) => e.to_sql(&variables, &SQLPosition::Field)
+                            Right(e) => e.to_sql(&variables)
                         }
                     }).filter( |c| c != "")
                     .map ( |c| format!("({c})"))
@@ -117,7 +117,7 @@ impl std::fmt::Display for GroundingQuery {
                     };
 
                 // grounding
-                let grounding_ = grounding.to_sql(&variables, &SQLPosition::Field);
+                let grounding_ = grounding.to_sql(&variables);
                 let grounding_ = format!("{grounding_} AS G");
 
                 // natural joins
