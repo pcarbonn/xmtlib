@@ -270,6 +270,93 @@ pub(crate) fn init_db(
         },
     )?;
 
+    conn.create_scalar_function(
+        "compare_",
+        -1,
+        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,
+        |ctx| {
+            // split args into strs, ints, reals values
+            // raise error if both ints and reals
+            // compare ints and return false if incorrect
+            // compare reals and return false if incorrect
+            // return true if no strs
+            // return apply to all args
+            let operator: String = ctx.get(0)?;
+
+            // split args into strs, ints, reals values
+            // raise error if both ints and reals
+            let mut args = vec![];
+            let mut strs = vec![];
+            let mut ints = vec![];
+            let mut reals = vec![];
+            for i in 1..ctx.len() {
+                let value = ctx.get_raw(i);
+                match value {
+                    rusqlite::types::ValueRef::Null =>
+                        return Err(Error::InvalidFunctionParameterType(i, value.data_type())),
+                    rusqlite::types::ValueRef::Integer(val) => {
+                        if 0 < reals.len() {
+                            return Err(Error::InvalidFunctionParameterType(i, value.data_type()))
+                        }
+                        args.push(val.to_string());
+                        ints.push(val);
+                    }
+                    rusqlite::types::ValueRef::Real(val) => {
+                        if 0 < ints.len() {
+                            return Err(Error::InvalidFunctionParameterType(i, value.data_type()))
+                        }
+                        args.push(val.to_string());
+                        reals.push(val);
+                    }
+                    rusqlite::types::ValueRef::Text(_) => {
+                        let val = ctx.get::<String>(i)?;
+                        args.push(val.clone());
+                        strs.push(val);
+                    }
+                    rusqlite::types::ValueRef::Blob(_) =>
+                        return Err(Error::InvalidFunctionParameterType(i, value.data_type())),
+                }
+            }
+
+            // compare ints and return false if incorrect
+            for (a, b) in ints.iter().zip(ints.iter().skip(1)) {
+                let result = match operator.as_str() {
+                    "<" => a < b,
+                    "<=" => a <= b,
+                    "distinct" => a != b,  // todo: this is an incomplete test
+                    ">" => a > b,
+                    ">=" => a >= b,
+                    _ => return Err(Error::InvalidParameterName(operator))
+                };
+                if ! result {
+                    return Ok("false".to_string())
+                }
+            }
+
+            // compare reals and return false if incorrect
+            for (a, b) in reals.iter().zip(reals.iter().skip(1)) {
+                let result = match operator.as_str() {
+                    "<" => a < b,
+                    "<=" => a <= b,
+                    "distinct" => a != b,  // todo: this is an incomplete test
+                    ">" => a > b,
+                    ">=" => a >= b,
+                    _ => return Err(Error::InvalidParameterName(operator))
+                };
+                if ! result {
+                    return Ok("false".to_string())
+                }
+            }
+
+            // return true if no strs
+            // else return apply to all args
+            if strs.len() == 0 {
+                Ok("true".to_string())
+            } else {
+                Ok(format!("({} {})", operator, args.join(" ")))
+            }
+        })?;
+
     conn.create_aggregate_function(
         "and_aggregate",
         1,

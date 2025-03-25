@@ -38,12 +38,29 @@ pub(crate) enum Predefined {
     Implies,
     #[strum(to_string = "=")]
     Eq,
+    #[strum(to_string = "<")]
+    Less,
+    #[strum(to_string = "<=")]
+    LE,
+    #[strum(to_string = ">=")]
+    GE,
+    #[strum(to_string = ">")]
+    Greater,
+    #[strum(to_string = "distinct")]
+    Distinct,
 }
 
 
 const UNARY: [Predefined; 1] = [Predefined::Not];
 const ASSOCIATIVE: [Predefined; 2] = [Predefined::And, Predefined::Or];
-const CHAINABLE: [Predefined; 1] = [Predefined::Eq];
+const CHAINABLE: [Predefined; 5] = [
+    Predefined::Eq,
+    Predefined::Less,
+    Predefined::LE,
+    Predefined::GE,
+    Predefined::Greater
+    ];
+const PAIRWISE: [Predefined; 1] = [ Predefined::Distinct ];
 
 
 ///////////////////////////  Display //////////////////////////////////////////
@@ -168,7 +185,10 @@ impl SQLExpr {
                         }
                     }
                 } else if CHAINABLE.contains(function) {
-                    // Eq
+                    // Eq, comparisons
+                    let strings = exprs.iter()
+                        .map( |(_, e)| e.to_sql(variables))
+                        .collect::<Vec<_>>().join(", ");
                     match function {
                         // LINK src/doc.md#_Equality
                         Predefined::Eq => {
@@ -190,6 +210,10 @@ impl SQLExpr {
                                 }
                             }
                         },
+                        Predefined::Less    => format!("compare_(\"<\", {strings})"),
+                        Predefined::LE      => format!("compare_(\"<=\", {strings})"),
+                        Predefined::GE      => format!("compare_(\">=\", {strings})"),
+                        Predefined::Greater => format!("compare_(\">\", {strings})"),
                         _ => unreachable!()
                     }
                 } else {

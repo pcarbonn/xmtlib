@@ -409,7 +409,25 @@ fn ground_compound(
                 // | ">="
                 // | ">" => todo!(),
                 } else {
-                    Err(InternalError(58994512))
+                    match qual_identifier.to_string().as_str() {
+                        "<"
+                        | "<="
+                        | ">="
+                        | ">"
+                        | "distinct" => {
+                            let variant = QueryVariant::PredefinedBoolean(ViewType::TU);
+                            let tu = query_for_compound(qual_identifier, index, &mut gqs, &variant, solver)?;
+
+                            let variant = QueryVariant::PredefinedBoolean(ViewType::UF);
+                            let uf = query_for_compound(qual_identifier, index, &mut gqs, &variant, solver)?;
+
+                            let variant = QueryVariant::PredefinedBoolean(ViewType::G);
+                            let g = query_for_compound(qual_identifier, index, &mut gqs, &variant, solver)?;
+
+                            Ok(Grounding::Boolean{tu, uf, g})
+                        }
+                        _ => Err(InternalError(58994512))
+                    }
                 }
             } else {  // not boolean
                 // predefined non-boolean function

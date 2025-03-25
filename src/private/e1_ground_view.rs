@@ -364,11 +364,16 @@ pub(crate) fn query_for_compound(
                 view_type = Some(new_view.clone());
                 precise = false;
                 let function = match qual_identifier.to_string().as_str() {
-                    "and" => Predefined::And,
-                    "or"  => Predefined::Or,
-                    "implies" => Predefined::Implies,
-                    "not" => Predefined::Not,
-                    "=" => Predefined::Eq,
+                    "and"       => Predefined::And,
+                    "or"        => Predefined::Or,
+                    "implies"   => Predefined::Implies,
+                    "not"       => Predefined::Not,
+                    "="         => Predefined::Eq,
+                    "<"         => Predefined::Less,
+                    "<="        => Predefined::LE,
+                    ">="        => Predefined::GE,
+                    ">"         => Predefined::Greater,
+                    "distinct"  => Predefined::Distinct,
                     _ => panic!()
                 };
 
