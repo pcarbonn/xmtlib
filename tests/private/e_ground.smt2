@@ -57,9 +57,9 @@ Groundings:
     F: SELECT "false" AS G
     G : SELECT "false" AS G
  - (is_true true):
-    T: SELECT (eq_("true", is_true_TU_4.a_0)) AS if_, "true" AS G FROM is_true_TU AS is_true_TU_4 WHERE "true" = is_true_TU_4.a_0
+    T: SELECT "true" AS G FROM is_true_TU AS is_true_TU_4 WHERE "true" = is_true_TU_4.a_0
     F: SELECT "true" AS G WHERE FALSE
-    G : SELECT (eq_("true", is_true_G_4.a_0)) AS if_, is_true_G_4.G AS G FROM is_true_G AS is_true_G_4 WHERE "true" = is_true_G_4.a_0
+    G : SELECT is_true_G_4.G AS G FROM is_true_G AS is_true_G_4 WHERE "true" = is_true_G_4.a_0
  - x: SELECT Bool_5.G AS x, Bool_5.G AS G FROM Bool AS Bool_5
  - (is_true x):
     T: SELECT is_true_TU_6.a_0 AS x, "true" AS G FROM is_true_TU AS is_true_TU_6

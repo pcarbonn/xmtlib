@@ -2,13 +2,14 @@
 
 use std::fmt::Display;
 use indexmap::{IndexMap, IndexSet};
+use itertools::Either::{self, Left, Right};
 
 use crate::api::{SortedVar, Symbol};
 use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 
 use crate::private::e1_ground_view::{GroundingView, Ids, View};
-use crate::private::e3_ground_sql::{SQLExpr, SQLPosition, Predefined};
+use crate::private::e3_ground_sql::{Mapping, SQLExpr, SQLPosition, Predefined};
 
 
 
@@ -21,7 +22,7 @@ pub(crate) enum GroundingQuery {
     Join {
         /// maps variables to None if its domain is infinite or to a Column in a Type or Interpretation table.
         variables: IndexMap<Symbol, Option<Column>>,
-        conditions: Vec<SQLExpr>,  // vector of non-empty SQL expressions
+        conditions: Vec<Either<Mapping, SQLExpr>>,  // vector of non-empty SQL expressions
         grounding: SQLExpr,
         natural_joins: IndexSet<NaturalJoin>,  // joins of grounding sub-queries
         theta_joins: IndexSet<ThetaJoin>,  // joins with interpretation tables
@@ -50,7 +51,7 @@ pub(crate) enum NaturalJoin {
 
 
 /// indexed table name + mapping of (gated) expressions to value column
-pub(crate) type ThetaJoin = (TableName, Vec<SQLExpr>);
+pub(crate) type ThetaJoin = (TableName, Vec<Mapping>);
 
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -98,8 +99,12 @@ impl std::fmt::Display for GroundingQuery {
 
                 // condition
                 let condition = conditions.iter()
-                    .map( |e| { e.to_sql(&variables, &SQLPosition::Field)})  // can be empty !
-                    .filter( |c| c != "")
+                    .map( |e| {
+                        match e {
+                            Left(mapping) => mapping.to_if(&variables),
+                            Right(e) => e.to_sql(&variables, &SQLPosition::Field)
+                        }
+                    }).filter( |c| c != "")
                     .map ( |c| format!("({c})"))
                     .collect::<Vec<_>>();
                 let condition =
@@ -160,7 +165,7 @@ impl std::fmt::Display for GroundingQuery {
                     .map( | (table_name, mapping) | {
                         let on = mapping.iter()
                             .filter_map( | expr | {
-                                let theta = expr.to_sql(variables, &SQLPosition::Join);
+                                let theta = expr.to_join(variables);
                                 if theta.len() == 0 {
                                     None
                                 } else {

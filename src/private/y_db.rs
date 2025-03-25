@@ -162,12 +162,70 @@ pub(crate) fn init_db(
     conn.create_scalar_function(
         "is_id",
         1,                     // Number of arguments the function takes
-        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,                  // Deterministic (same input gives same output)
+        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC, // Deterministic (same input gives same output)
         |ctx| {                // The function logic
             let a1 = ctx.get::<String>(0)?;
             Ok(! a1.starts_with("("))
         },
     )?;
+
+    // create function "if_"  : is_id(a1) OR a1 == a2
+    conn.create_scalar_function(
+        "if_",
+        2,
+        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,
+        |ctx| {
+            let value = ctx.get_raw(0);
+            match value {
+                rusqlite::types::ValueRef::Null =>
+                    Err(Error::InvalidFunctionParameterType(0, value.data_type())),
+                rusqlite::types::ValueRef::Integer(_) =>
+                    Ok(true),
+                rusqlite::types::ValueRef::Real(_) =>
+                    Ok(true),
+                rusqlite::types::ValueRef::Text(_) => {
+                    let value = ctx.get::<String>(1)?;
+                    if ! value.starts_with("(") {  // an id
+                        Ok(true)
+                    } else {
+                        let col = ctx.get::<String>(1)?;
+                        Ok(value == col)
+                    }
+                },
+                rusqlite::types::ValueRef::Blob(_) =>
+                    Err(Error::InvalidFunctionParameterType(0, value.data_type())),
+            }
+        })?;
+
+    // create function "join_"  : NOT is_id(a1) OR a1 == a2
+    conn.create_scalar_function(
+        "join_",
+        2,
+        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,
+        |ctx| {
+            let value = ctx.get_raw(0);
+            match value {
+                rusqlite::types::ValueRef::Null =>
+                    Err(Error::InvalidFunctionParameterType(0, value.data_type())),
+                rusqlite::types::ValueRef::Integer(col) =>{
+                    Ok(value == rusqlite::types::ValueRef::Integer(col))
+                },
+                rusqlite::types::ValueRef::Real(col) => {
+                    Ok(value == rusqlite::types::ValueRef::Real(col))
+                },
+                rusqlite::types::ValueRef::Text(_) => {
+                    let value = ctx.get::<String>(1)?;
+                    if value.starts_with("(") {  // not an id
+                        Ok(true)
+                    } else {
+                        let col = ctx.get::<String>(1)?;
+                        Ok(value == col)
+                    }
+                }
+                rusqlite::types::ValueRef::Blob(_) =>
+                    Err(Error::InvalidFunctionParameterType(0, value.data_type())),
+            }
+        })?;
 
     // create function "eq_"
     conn.create_scalar_function(  // LINK src/doc.md#_Equality

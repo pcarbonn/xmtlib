@@ -12,6 +12,10 @@ use crate::private::e2_ground_query::Column;
 
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub(crate) struct Mapping (pub Ids, pub SQLExpr, pub Column);
+
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum SQLExpr {
     Boolean(bool),
     Constant(SpecConstant),
@@ -52,6 +56,45 @@ pub(crate) enum SQLPosition {
 
 
 ///////////////////////////  Display //////////////////////////////////////////
+
+
+impl Mapping {
+
+    pub(crate) fn to_if(&self, variables: &IndexMap<Symbol, Option<Column>>) -> String {
+        let exp = self.1.to_sql(variables, &SQLPosition::Field);
+        let col = self.2.to_string();
+        if exp == col {
+            "".to_string()
+        } else {
+            match self.0 {
+                Ids::All => "".to_string(),
+                Ids::Some => format!("if_({}, {})", exp, col),  // is_id(exp) or exp = col
+                Ids::None => format!("apply(\"=\",{}, {})", exp, col)
+            }
+        }
+    }
+
+    pub(crate) fn to_join(&self, variables: &IndexMap<Symbol, Option<Column>>) -> String {
+        let exp = self.1.to_sql(variables, &SQLPosition::Field);
+        let col = self.2.to_string();
+        if exp == col {
+            "".to_string()
+        } else {
+            match self.0 {
+                Ids::All => format!("{} = {}", exp, col),
+                Ids::Some => format!("join_({}, {})", exp, col),  // NOT is_id(exp) or exp = col
+                Ids::None => {
+                    if let SQLExpr::Variable(_) = self.1 {  // an infinite variable mapped to an interpretation
+                        // Variable + Ids::None describe an infinite variable
+                        format!("{exp} = {col}")
+                    } else {
+                        "".to_string()
+                    }
+                }
+            }
+        }
+    }
+}
 
 
 impl SQLExpr {

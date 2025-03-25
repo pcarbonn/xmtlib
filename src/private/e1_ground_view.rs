@@ -3,14 +3,14 @@
 use std::cmp::max;
 
 use indexmap::{IndexMap, IndexSet};
-use itertools::Either;
+use itertools::Either::{self, Left, Right};
 
 use crate::api::{QualIdentifier, SortedVar, SpecConstant, Symbol};
 use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 
 use crate::private::e2_ground_query::{GroundingQuery, NaturalJoin, TableName, Column};
-use crate::private::e3_ground_sql::{SQLExpr, SQLPosition, Predefined};
+use crate::private::e3_ground_sql::{Mapping, SQLExpr, SQLPosition, Predefined};
 
 
 ////////////////////// Data structures for grounding views ////////////////////
@@ -228,11 +228,7 @@ pub(crate) fn query_for_compound(
                                 groundings.push(sub_grounding.clone());
                                 // do not push to natural_joins
                                 // push `sub_grounding = column` to thetas
-                                let if_ = SQLExpr::Predefined(
-                                    Predefined::Eq,
-                                    Box::new(vec![(sub_ids.clone(), sub_grounding.clone()),
-                                                  (interp_ids.clone(), SQLExpr::Value(column))
-                                    ]));
+                                let if_ = Mapping(sub_ids.clone(), sub_grounding.clone(), column);
                                 thetas.push(if_);
 
                                 continue  // to the next sub-query
@@ -261,13 +257,9 @@ pub(crate) fn query_for_compound(
                             let column = Column::new(table_name, &format!("a_{i}"));
 
                             // push `sub_grounding = column` to conditions and thetas
-                            let if_ = SQLExpr::Predefined(
-                                Predefined::Eq,
-                                Box::new(vec![(sub_ids.clone(), sub_grounding.clone()),
-                                              (interp_ids.clone(), SQLExpr::Value(column))
-                                ]));
+                            let if_ = Mapping(sub_ids.clone(), sub_grounding.clone(), column);
                             // adds nothing if sub_ids = All
-                            conditions.push(if_.clone());
+                            conditions.push(Left(if_.clone()));
                             // adds nothing if sub_ids == None
                             thetas.push(if_);
                         },
@@ -291,7 +283,7 @@ pub(crate) fn query_for_compound(
                             }
 
                             if *sub_condition {
-                                let sub_condition = SQLExpr::Value(Column::new(table_name,"if_"));
+                                let sub_condition = Right(SQLExpr::Value(Column::new(table_name,"if_")));
                                 conditions.push(sub_condition);
                             }
                             groundings.push(SQLExpr::Value(Column::new(table_name, "G")));
@@ -524,9 +516,7 @@ pub(crate) fn query_for_union(
 
                         let conditions =
                             if *sub_condition {
-                                vec![SQLExpr::Value(Column::new(table_name, "if_"))]
-                            } else if condition {
-                                vec![SQLExpr::Boolean(true)]
+                                vec![Right(SQLExpr::Value(Column::new(table_name, "if_")))]
                             } else { vec![] };
 
                         Some(GroundingQuery::Join {
