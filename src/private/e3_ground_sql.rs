@@ -123,8 +123,8 @@ impl SQLExpr {
 
             SQLExpr::Constant(spec_constant) => {
                 match spec_constant {
-                    SpecConstant::Numeral(s) => format!("\"{s}\""),
-                    SpecConstant::Decimal(s) => format!("\"{s}\""),
+                    SpecConstant::Numeral(s) => format!("{s}"),
+                    SpecConstant::Decimal(s) => format!("{s}"),
                     SpecConstant::Hexadecimal(s) => format!("\"{s}\""),
                     SpecConstant::Binary(s) => format!("\"{s}\""),
                     SpecConstant::String(s) => format!("\"{s}\""),

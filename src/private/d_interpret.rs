@@ -72,6 +72,7 @@ pub(crate) fn interpret_pred(
                 let holes = (0..domain.len()).map(|_|"?").collect::<Vec<_>>().join(",");  // "?" n times
                 let stmt = format!("INSERT INTO {identifier}_T VALUES ({holes})");
                 let mut stmt = solver.conn.prepare(&stmt)?;
+                // NOTE now
                 for XTuple(tuple) in &tuples {
                     if tuple.len() == domain.len() {
                         let tuples_t = tuple.iter().map(|t| t.to_string() );  //todo: construct !

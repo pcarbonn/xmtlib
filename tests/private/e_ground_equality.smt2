@@ -28,7 +28,7 @@
 (pop)
 (assert false)
 Groundings:
- - 2: SELECT "2" AS G
+ - 2: SELECT 2 AS G
  - (= 2 2 2):
     T: SELECT "true" AS G
     F: SELECT "true" AS G
@@ -41,7 +41,7 @@ Groundings:
     T: SELECT "true" AS G
     F: SELECT "false" AS G
     G : SELECT not_("true") AS G
- - 3: SELECT "3" AS G
+ - 3: SELECT 3 AS G
  - (= 3 3):
     T: SELECT "true" AS G
     F: SELECT "true" AS G
