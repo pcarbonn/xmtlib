@@ -34,8 +34,8 @@ pub(crate) enum Predefined {
     Or,
     #[strum(to_string = "NOT")]
     Not,
-    #[strum(to_string = "???")]
-    Implies,  // binary connective used internally.  "=>" is replaced by a disjunction in `annotate_term`.
+    #[strum(to_string = "???")]  // `Implies` is a binary connective used internally.  Use `implies_` instead of string.
+    Implies,
     #[strum(to_string = "=")]
     Eq,
 }
@@ -51,35 +51,41 @@ const CHAINABLE: [Predefined; 1] = [Predefined::Eq];
 
 impl Mapping {
 
-    pub(crate) fn to_if(&self, variables: &IndexMap<Symbol, Option<Column>>) -> String {
+    pub(crate) fn to_if(
+        &self,
+        variables: &IndexMap<Symbol, Option<Column>>
+    ) -> Option<String> {
         let exp = self.1.to_sql(variables);
         let col = self.2.to_string();
         if exp == col {
-            "".to_string()
+            None
         } else {
             match self.0 {
-                Ids::All => "".to_string(),
-                Ids::Some => format!("if_({}, {})", exp, col),  // is_id(exp) or exp = col
-                Ids::None => format!("apply(\"=\",{}, {})", exp, col)
+                Ids::All => None,
+                Ids::Some => Some(format!("if_({}, {})", exp, col)),  // is_id(exp) or exp = col
+                Ids::None => Some(format!("apply(\"=\",{}, {})", exp, col))
             }
         }
     }
 
-    pub(crate) fn to_join(&self, variables: &IndexMap<Symbol, Option<Column>>) -> String {
+    pub(crate) fn to_join(
+        &self,
+        variables: &IndexMap<Symbol, Option<Column>>
+    ) -> Option<String> {
         let exp = self.1.to_sql(variables);
         let col = self.2.to_string();
         if exp == col {
-            "".to_string()
+            None
         } else {
             match self.0 {
-                Ids::All => format!("{} = {}", exp, col),
-                Ids::Some => format!("join_({}, {})", exp, col),  // NOT is_id(exp) or exp = col
+                Ids::All => Some(format!("{} = {}", exp, col)),
+                Ids::Some => Some(format!("join_({}, {})", exp, col)),  // NOT is_id(exp) or exp = col
                 Ids::None => {
                     if let SQLExpr::Variable(_) = self.1 {  // an infinite variable mapped to an interpretation
                         // Variable + Ids::None describe an infinite variable
-                        format!("{exp} = {col}")
+                        Some(format!("{exp} = {col}"))
                     } else {
-                        "".to_string()
+                        None
                     }
                 }
             }

@@ -22,7 +22,7 @@ pub(crate) enum GroundingQuery {
     Join {
         /// maps variables to None if its domain is infinite or to a Column in a Type or Interpretation table.
         variables: IndexMap<Symbol, Option<Column>>,
-        conditions: Vec<Either<Mapping, SQLExpr>>,  // vector of mapping
+        conditions: Vec<Either<Mapping, TableName>>,  // vector of mapping or `if_` column of a table
         grounding: SQLExpr,
         natural_joins: IndexSet<NaturalJoin>,  // joins of grounding sub-queries
         theta_joins: IndexSet<ThetaJoin>,  // joins with interpretation tables
@@ -99,14 +99,12 @@ impl std::fmt::Display for GroundingQuery {
 
                 // condition
                 let condition = conditions.iter()
-                    .map( |e| {
+                    .filter_map( |e| {
                         match e {
                             Left(mapping) => mapping.to_if(&variables),
-                            Right(e) => e.to_sql(&variables)
+                            Right(table) => Some(format!("{table}.if_"))
                         }
-                    }).filter( |c| c != "")
-                    .map ( |c| format!("({c})"))
-                    .collect::<Vec<_>>();
+                    }).collect::<Vec<_>>();
                 let condition =
                     if condition.len() == 0 {
                         "".to_string()
@@ -164,14 +162,8 @@ impl std::fmt::Display for GroundingQuery {
                 let thetas = theta_joins.iter()
                     .map( | (table_name, mapping) | {
                         let on = mapping.iter()
-                            .filter_map( | expr | {
-                                let theta = expr.to_join(variables);
-                                if theta.len() == 0 {
-                                    None
-                                } else {
-                                    Some(theta)
-                                }
-                            }).collect::<Vec<_>>().join(" AND ");
+                            .filter_map( | expr | expr.to_join(variables))
+                            .collect::<Vec<_>>().join(" AND ");
                         let on = if on == "" { on } else { format!(" ON {on}")};
 
                         format!("{} AS {table_name}{on}", table_name.base_table)

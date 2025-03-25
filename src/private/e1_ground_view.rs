@@ -61,6 +61,7 @@ impl std::fmt::Debug for GroundingView {
                     Either::Right(view) => format!("G from {view}")
                 };
                 // make the view precise if the query is not
+                // todo perf: is this usefull ?
                 let where_ = if let GroundingQuery::Join{view: Some(view), precise, ..} = query {
                     if ! *precise {
                         let is_id = match ids {
@@ -283,8 +284,7 @@ pub(crate) fn query_for_compound(
                             }
 
                             if *sub_condition {
-                                let sub_condition = Right(SQLExpr::Value(Column::new(table_name,"if_")));
-                                conditions.push(sub_condition);
+                                conditions.push(Right(table_name.clone()));
                             }
                             groundings.push(SQLExpr::Value(Column::new(table_name, "G")));
 
@@ -516,7 +516,7 @@ pub(crate) fn query_for_union(
 
                         let conditions =
                             if *sub_condition {
-                                vec![Right(SQLExpr::Value(Column::new(table_name, "if_")))]
+                                vec![Right(table_name.clone())]
                             } else { vec![] };
 
                         Some(GroundingQuery::Join {
