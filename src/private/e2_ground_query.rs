@@ -8,7 +8,7 @@ use crate::api::{SortedVar, Symbol};
 use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 
-use crate::private::e1_ground_view::{GroundingView, Ids, View};
+use crate::private::e1_ground_view::{GroundingView, Ids, ViewType};
 use crate::private::e3_ground_sql::{Mapping, SQLExpr, Predefined};
 
 
@@ -26,7 +26,8 @@ pub(crate) enum GroundingQuery {
         grounding: SQLExpr,
         natural_joins: IndexSet<NaturalJoin>,  // joins of grounding sub-queries
         theta_joins: IndexSet<ThetaJoin>,  // joins with interpretation tables
-        view: Option<View>,  // Only for non-variable boolean
+
+        view_type: Option<ViewType>,  // Only for non-variable boolean
         precise: bool,  // true if the (boolean) grounding only has values consistent with the view (e.g., no "false" in TU view)
     },
     Aggregate {
@@ -46,7 +47,7 @@ pub(crate) enum GroundingQuery {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum NaturalJoin {
     Variable(TableName, Symbol),  // natural join with a table interpreting a variable
-    View(TableName, Vec<Symbol>),  // natural join with a table interpreting, e.g., a quantification
+    ViewType(TableName, Vec<Symbol>),  // natural join with a table interpreting, e.g., a quantification
 }
 
 
@@ -136,7 +137,7 @@ impl std::fmt::Display for GroundingQuery {
                                 // a variable table never has join conditions
                                 name(table_name)
                             },
-                            NaturalJoin::View(table_name, symbols) => {
+                            NaturalJoin::ViewType(table_name, symbols) => {
                                 let name = name(table_name);
                                 let on = symbols.iter()
                                     .filter_map( | symbol | {
@@ -192,7 +193,7 @@ impl std::fmt::Display for GroundingQuery {
                 write!(f, "SELECT {variables_}{condition}{grounding_}{tables}{where_}")
             }
             GroundingQuery::Aggregate { agg, free_variables, infinite_variables, sub_view, exclude } => {
-                if let GroundingView::View { condition, ..} = **sub_view {
+                if let GroundingView::ViewType { condition, ..} = **sub_view {
                     // SELECT {free_variables},
                     //        "(forall ({infinite_vars}) " || and_aggregate(implies_(if_, G)) || ")" AS G
                     //   FROM {sub_view}
@@ -298,7 +299,7 @@ impl GroundingQuery {
         &self,
         free_variables: IndexMap<Symbol, Option<TableName>>,
         index: TermId,
-        view: View,
+        view_type: ViewType,
         ids: &Ids,
         solver: &mut Solver
     ) -> Result<GroundingView, SolverError> {
@@ -308,9 +309,9 @@ impl GroundingQuery {
 
                 let new_grounding =
                     if *ids == Ids::All {
-                        if view == View::TU {
+                        if view_type == ViewType::TU {
                             SQLExpr::Boolean(false)  // all ids were true
-                        } else if view == View::UF {
+                        } else if view_type == ViewType::UF {
                             SQLExpr::Boolean(true)  // all ids were false
                         } else {
                             SQLExpr::Predefined(Predefined::Not, Box::new(vec![(ids.clone(), grounding.clone())]))
@@ -324,7 +325,7 @@ impl GroundingQuery {
                     grounding: new_grounding,
                     natural_joins: natural_joins.clone(),
                     theta_joins: theta_joins.clone(),
-                    view: Some(view.clone()),
+                    view_type: Some(view_type.clone()),
                     precise: *precise
                 };
                 let table_name = TableName{base_table: format!("negate_{index}"), index: 0};
@@ -335,7 +336,7 @@ impl GroundingQuery {
                     agg : if agg == "or" { "and".to_string() } else { "or".to_string() },
                     free_variables: free_variables.clone(),
                     infinite_variables: infinite_variables.clone(),
-                    sub_view: Box::new(sub_view.negate(index, view, solver)?),
+                    sub_view: Box::new(sub_view.negate(index, view_type, solver)?),
                     exclude: if let Some(bool) = exclude { Some(! bool) } else { *exclude }
                 };
                 let table_name = TableName{base_table: format!("negate_{index}"), index: 0};

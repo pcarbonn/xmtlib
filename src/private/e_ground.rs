@@ -9,7 +9,7 @@ use crate::api::{QualIdentifier, SortedVar, Term};
 use crate::error::SolverError::{self, *};
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionIs, Interpretation};
-use crate::private::e1_ground_view::{GroundingView, Ids, View, QueryVariant,
+use crate::private::e1_ground_view::{GroundingView, Ids, ViewType, QueryVariant,
     query_for_constant, query_for_variable, query_for_compound, query_for_aggregate, query_for_union};
 use crate::private::e2_ground_query::TableName;
 use crate::solver::Solver;
@@ -332,7 +332,7 @@ fn ground_compound(
         Some(f) => f,
         None => {
             // custom (non-boolean) constructor.  todo: this should not happen once constructors are declared
-            let variant = QueryVariant::Construct(View::G);
+            let variant = QueryVariant::Construct(ViewType::G);
             let grounding_query = query_for_compound(qual_identifier, index, &mut vec![], &variant, solver)?;
             return Ok(Grounding::NonBoolean(grounding_query));
         }
@@ -349,12 +349,12 @@ fn ground_compound(
 
                 if * qual_identifier == solver.and {
 
-                    let variant = QueryVariant::PredefinedBoolean(View::TU);
+                    let variant = QueryVariant::PredefinedBoolean(ViewType::TU);
                     let tu = query_for_compound(qual_identifier, index, &mut tus, &variant, solver)?;
 
                     let uf = query_for_union(ufs, "and".to_string(), index, solver)?;
 
-                    let variant = QueryVariant::PredefinedBoolean(View::G);
+                    let variant = QueryVariant::PredefinedBoolean(ViewType::G);
                     let g = query_for_compound(qual_identifier, index, &mut gqs, &variant, solver)?;
 
                     Ok(Grounding::Boolean{tu, uf, g})
@@ -363,10 +363,10 @@ fn ground_compound(
 
                     let tu = query_for_union(tus, "or".to_string(), index, solver)?;
 
-                    let variant = QueryVariant::PredefinedBoolean(View::UF);
+                    let variant = QueryVariant::PredefinedBoolean(ViewType::UF);
                     let uf = query_for_compound(qual_identifier, index, &mut ufs, &variant, solver)?;
 
-                    let variant = QueryVariant::PredefinedBoolean(View::G);
+                    let variant = QueryVariant::PredefinedBoolean(ViewType::G);
                     let g = query_for_compound(qual_identifier, index, &mut gqs, &variant, solver)?;
 
                     Ok(Grounding::Boolean{tu, uf, g})
@@ -375,11 +375,11 @@ fn ground_compound(
                     // return uf, tu, g with grounding G replaced by not(G)
                     match groundings.get(0) {
                         Some(Grounding::Boolean { tu, uf, g }) => {
-                            if let GroundingView::View { .. } = g {
+                            if let GroundingView::ViewType { .. } = g {
                                 // switch uf and tu and negate the groundings
-                                let new_tu = uf.negate(index, View::UF, solver)?;
-                                let new_uf = tu.negate(index, View::TU, solver)?;
-                                let new_g = g.negate(index, View::G, solver)?;
+                                let new_tu = uf.negate(index, ViewType::UF, solver)?;
+                                let new_uf = tu.negate(index, ViewType::TU, solver)?;
+                                let new_g = g.negate(index, ViewType::G, solver)?;
 
                                 Ok(Grounding::Boolean{tu: new_tu, uf: new_uf, g: new_g})
                             } else {  // empty
@@ -391,13 +391,13 @@ fn ground_compound(
                     }
                 } else if *qual_identifier == solver.eq {
                     // LINK src/doc.md#_Equality
-                    let variant = QueryVariant::PredefinedBoolean(View::TU);
+                    let variant = QueryVariant::PredefinedBoolean(ViewType::TU);
                     let tu = query_for_compound(qual_identifier, index, &mut gqs, &variant, solver)?;
 
-                    let variant = QueryVariant::PredefinedBoolean(View::UF);
+                    let variant = QueryVariant::PredefinedBoolean(ViewType::UF);
                     let uf = query_for_compound(qual_identifier, index, &mut gqs, &variant, solver)?;
 
-                    let variant = QueryVariant::PredefinedBoolean(View::G);
+                    let variant = QueryVariant::PredefinedBoolean(ViewType::G);
                     let g = query_for_compound(qual_identifier, index, &mut gqs, &variant, solver)?;
 
                     Ok(Grounding::Boolean{tu, uf, g})
@@ -419,15 +419,15 @@ fn ground_compound(
         FunctionIs::Constructed => {
             if *qual_identifier == solver.true_
             || *qual_identifier == solver.false_ {  // boolean
-                let variant = QueryVariant::Construct(View::TU);
+                let variant = QueryVariant::Construct(ViewType::TU);
                 let tu = query_for_compound(qual_identifier, index, &mut vec![], &variant, solver)?;
-                let variant = QueryVariant::Construct(View::UF);
+                let variant = QueryVariant::Construct(ViewType::UF);
                 let uf = query_for_compound(qual_identifier, index, &mut vec![], &variant, solver)?;
-                let variant = QueryVariant::Construct(View::G);
+                let variant = QueryVariant::Construct(ViewType::G);
                 let g = query_for_compound(qual_identifier, index, &mut vec![], &variant, solver)?;
                 Ok(Grounding::Boolean{tu, uf, g})
             } else {
-                let variant = QueryVariant::Construct(View::G);
+                let variant = QueryVariant::Construct(ViewType::G);
                 let grounding_query = query_for_compound(qual_identifier, index, &mut gqs, &variant, solver)?;
                 Ok(Grounding::NonBoolean(grounding_query))
             }
@@ -455,15 +455,15 @@ fn ground_compound(
 
             let mut new_queries = vec![];
 
-            for ((table, mut groundings), view)
+            for ((table, mut groundings), view_type)
             in [table_tu.clone(), table_uf.clone(), table_g.clone()].iter()
                 .zip([tus, ufs, gqs.to_vec()])
-                .zip([View::TU, View::UF, View::G]) {
+                .zip([ViewType::TU, ViewType::UF, ViewType::G]) {
 
                 let variant = match table {
                     Interpretation::Table{name, ids} => {
                         let table_name = TableName::new(name, index);
-                        QueryVariant::Interpretation(table_name, ids.clone(), view)
+                        QueryVariant::Interpretation(table_name, ids.clone(), view_type)
                     },
                     Interpretation::Infinite => QueryVariant::Apply
                 };
