@@ -375,7 +375,7 @@ fn ground_compound(
                     // return uf, tu, g with grounding G replaced by not(G)
                     match groundings.get(0) {
                         Some(Grounding::Boolean { tu, uf, g }) => {
-                            if let GroundingView::ViewType { .. } = g {
+                            if let GroundingView::View { .. } = g {
                                 // switch uf and tu and negate the groundings
                                 let new_tu = uf.negate(index, ViewType::UF, solver)?;
                                 let new_uf = tu.negate(index, ViewType::TU, solver)?;

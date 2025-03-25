@@ -20,7 +20,7 @@ use crate::private::e3_ground_sql::{Mapping, SQLExpr, Predefined};
 #[derive(Clone, PartialEq, Eq)]
 pub(crate) enum GroundingView {
     Empty,
-    ViewType {  // select vars, cond, grounding (from view)
+    View {  // select vars, cond, grounding (from view)
         free_variables: IndexMap<Symbol, Option<TableName>>,  // None for infinite variables, sort interpretation table otherwise
         condition: bool,
         grounding: Either<SQLExpr, TableName>, // Left for SpecConstant, Boolean without table. Right for grounding field in table.
@@ -48,7 +48,7 @@ impl std::fmt::Debug for GroundingView {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             GroundingView::Empty => write!(f, "SELECT \"true\" AS G WHERE FALSE"),
-            GroundingView::ViewType { free_variables, condition, grounding, query, ids, .. } => {
+            GroundingView::View { free_variables, condition, grounding, query, ids, .. } => {
 
                 let vars = free_variables.iter()
                     .map(|(symbol, _)| symbol.to_string())
@@ -88,7 +88,7 @@ impl std::fmt::Display for GroundingView {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             GroundingView::Empty => write!(f, "SELECT \"true\" AS G WHERE FALSE"),
-            GroundingView::ViewType { query, .. } => write!(f, "{query}")
+            GroundingView::View { query, .. } => write!(f, "{query}")
         }
     }
 }
@@ -207,7 +207,7 @@ pub(crate) fn query_for_compound(
             GroundingView::Empty => {
                 return Ok(GroundingView::Empty)
             },
-            GroundingView::ViewType {free_variables: sub_free_variables, condition: sub_condition,
+            GroundingView::View {free_variables: sub_free_variables, condition: sub_condition,
                 grounding, query, ids: sub_ids,..} => {
 
                 free_variables.append(sub_free_variables);
@@ -412,7 +412,7 @@ pub(crate) fn query_for_aggregate(
         GroundingView::Empty => {
             Ok(GroundingView::Empty)
         },
-        GroundingView::ViewType{query, ids,..} => {
+        GroundingView::View{query, ids,..} => {
             // if the query is an aggregate, try to have only one aggregate
             if let GroundingQuery::Aggregate {
                 agg: sub_agg,
@@ -463,7 +463,7 @@ pub(crate) fn query_for_union(
     let mut condition = false;
     let mut ids = Ids::All;
     for sub_view in sub_views.clone() {
-        if let GroundingView::ViewType { free_variables: sub_free_variables,
+        if let GroundingView::View { free_variables: sub_free_variables,
             condition: sub_condition, ids: sub_ids, .. } = sub_view {
 
             free_variables.append(&mut sub_free_variables.clone());
@@ -475,7 +475,7 @@ pub(crate) fn query_for_union(
     // build the sub-queries
     let sub_queries = sub_views.iter()
         .filter_map( |sub_view| {
-            if let GroundingView::ViewType { free_variables: sub_free_variables, condition: sub_condition,
+            if let GroundingView::View { free_variables: sub_free_variables, condition: sub_condition,
                 grounding, ..} = sub_view {
 
                 match grounding {
@@ -554,7 +554,7 @@ pub(crate) fn query_for_union(
     solver.conn.execute(&sql, ())?;
 
     // create the sub_view
-    let sub_view = GroundingView::ViewType {
+    let sub_view = GroundingView::View {
         free_variables: free_variables.clone(),
         condition: condition,
         grounding: Either::Right(table_name),
@@ -595,7 +595,7 @@ impl GroundingView {
             ref natural_joins, ref theta_joins, ..} => {
 
                 if natural_joins.len() + theta_joins.len() == 0 {// no need to create a view in DB
-                    Ok(GroundingView::ViewType {
+                    Ok(GroundingView::View {
                         free_variables,
                         condition: false,
                         grounding: Either::Left(grounding.clone()),
@@ -616,7 +616,7 @@ impl GroundingView {
                     let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {vars}{if_}{grounding} FROM ({query})");
                     solver.conn.execute(&sql, ())?;
 
-                    Ok(GroundingView::ViewType{
+                    Ok(GroundingView::View{
                         free_variables,
                         condition,
                         grounding: Either::Right(table_name),
@@ -629,7 +629,7 @@ impl GroundingView {
                 let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS {query}");
                 solver.conn.execute(&sql, ())?;
 
-                Ok(GroundingView::ViewType {
+                Ok(GroundingView::View {
                         free_variables,
                         condition: false,
                         grounding: Either::Right(table_name),
@@ -642,7 +642,7 @@ impl GroundingView {
                 let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS {query}");
                 solver.conn.execute(&sql, ())?;
 
-                Ok(GroundingView::ViewType {
+                Ok(GroundingView::View {
                     free_variables,
                     condition: sub_queries.iter().any( |view| {
                         if let GroundingQuery::Join{conditions, ..} = view {
@@ -664,14 +664,14 @@ impl GroundingView {
     pub(crate) fn get_free_variables(&self) -> IndexMap<Symbol, Option<TableName>> {
         match self {
             GroundingView::Empty => IndexMap::new(),
-            GroundingView::ViewType{free_variables,..} => free_variables.clone()
+            GroundingView::View{free_variables,..} => free_variables.clone()
         }
     }
 
     pub(crate) fn get_ids(&self) -> Ids {
         match self {
             GroundingView::Empty => Ids::All,
-            GroundingView::ViewType{ids, ..} => ids.clone()
+            GroundingView::View{ids, ..} => ids.clone()
         }
     }
 
@@ -683,7 +683,7 @@ impl GroundingView {
     ) -> Result<GroundingView, SolverError> {
         match self {
             GroundingView::Empty => Ok(self.clone()),
-            GroundingView::ViewType{free_variables, query, ids, ..} =>
+            GroundingView::View{free_variables, query, ids, ..} =>
                 query.negate(free_variables.clone(), index, view_type, ids, solver)
         }
     }
