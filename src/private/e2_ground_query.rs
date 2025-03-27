@@ -174,25 +174,21 @@ impl std::fmt::Display for GroundingQuery {
 
                 // naturals + thetas + empty
                 let tables = [naturals, thetas].concat();
-                let mut where_ = "".to_string();
                 let tables =
                     if tables.len() == 0 {
                         "".to_string()
                     } else if tables.len() == 1 {
-                        let tables = format!(" FROM {}", tables.join(" JOIN "));  // only one !
-                        if let Some((before, after)) = tables.split_once(" ON ") {
-                            where_ = after.to_string();
-                            before.to_string()
-                        } else {
-                            tables
+                        let mut tables = format!(" FROM {}", tables.join(" JOIN "));  // only one !
+                        if tables.contains(" ON ") {
+                            // replace the only " ON " by " WHERE "
+                            tables = tables.replace(" ON ", " WHERE ");
                         }
+                        tables
                     } else {
                         format!(" FROM {}", tables.join(" JOIN "))
                     };
 
-                let where_ = if where_ == "" { where_ } else { format!(" WHERE {where_}") };
-
-                write!(f, "SELECT {variables_}{condition}{grounding_}{tables}{where_}")
+                write!(f, "SELECT {variables_}{condition}{grounding_}{tables}")
             }
             GroundingQuery::Aggregate { agg, free_variables, infinite_variables, sub_view, .. } => {
                 if let GroundingView::View { condition, ..} = **sub_view {
