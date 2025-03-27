@@ -111,7 +111,6 @@ pub(crate) fn query_for_constant(
         grounding: SQLExpr::Constant(spec_constant.clone()),
         natural_joins: IndexSet::new(),
         theta_joins: IndexSet::new(),
-        view_type: None,
         precise: true
     };
     let view = TableName::new("ignore", 0);
@@ -138,7 +137,6 @@ pub(crate) fn query_for_variable(
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::from([NaturalJoin::Variable(table_name.clone(), symbol.clone())]),
             theta_joins: IndexSet::new(),
-            view_type: None,
             precise: false  // imprecise for boolean variable !
         };
         let free_variables = IndexMap::from([(symbol.clone(), Some(table_name))]);
@@ -151,7 +149,6 @@ pub(crate) fn query_for_variable(
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::new(),
             theta_joins: IndexSet::new(),
-            view_type: None,
             precise: true  // cannot be boolean
         };
         let free_variables = IndexMap::from([(symbol.clone(), None)]);
@@ -167,10 +164,10 @@ pub(crate) enum ViewType {
 
 /// describes the type of query to create for a compound term
 pub(crate) enum QueryVariant {
-    Interpretation(TableName, Ids, ViewType),
+    Interpretation(TableName, Ids),
     Apply,
-    Construct(ViewType),
-    PredefinedBoolean(ViewType)
+    Construct,
+    PredefinedBoolean
 }
 
 /// Creates a query for a compound term, according to `variant`.
@@ -192,7 +189,6 @@ pub(crate) fn query_for_compound(
     let mut thetas = vec![];
     let mut ids: Ids = Ids::All;
     let mut ids_ = vec![];
-    let mut view_type = None;  // default value
     let mut precise = true;
 
     for (i, sub_q) in sub_queries.iter_mut().enumerate() {
@@ -259,8 +255,8 @@ pub(crate) fn query_for_compound(
                             thetas.push(if_);
                         },
                         QueryVariant::Apply
-                        | QueryVariant::Construct(..)
-                        | QueryVariant::PredefinedBoolean(..) => {}
+                        | QueryVariant::Construct
+                        | QueryVariant::PredefinedBoolean => {}
                     }
                 } else {  // not a Join --> use the ViewType
                     match grounding {
@@ -319,13 +315,12 @@ pub(crate) fn query_for_compound(
 
     let grounding =
         match variant {
-            QueryVariant::Interpretation(table_name, ids_, new_view_type) => {
+            QueryVariant::Interpretation(table_name, ids_) => {
                 theta_joins.insert((table_name.clone(), thetas));
                 ids = ids_.clone();  // reflects the grounding column, not if_
-                view_type = Some(new_view_type.clone());
-                match (ids_, new_view_type) {
-                    (Ids::All, ViewType::TU) => SQLExpr::Boolean(true),
-                    (Ids::All, ViewType::UF) => SQLExpr::Boolean(false),
+                match (ids_, exclude) {
+                    (Ids::All, Some(false)) => SQLExpr::Boolean(true),  // TU view
+                    (Ids::All, Some(true)) => SQLExpr::Boolean(false),  // UF view
                     _ => SQLExpr::Value(Column::new(table_name, "G"))
                 }
             },
@@ -333,29 +328,26 @@ pub(crate) fn query_for_compound(
                 ids = Ids::None;
                 SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings))
             },
-            QueryVariant::Construct(new_view_type) => {
+            QueryVariant::Construct => {
                 // do not change ids.
                 if *qual_identifier == solver.true_ {
-                    view_type = Some(new_view_type.clone());
-                    match new_view_type {
-                        ViewType::TU => SQLExpr::Boolean(true),
-                        ViewType::UF => return Ok(GroundingView::Empty),
-                        ViewType::G => SQLExpr::Boolean(true),
+                    match exclude {
+                        Some(false) => SQLExpr::Boolean(true),  // TU view
+                        Some(true) => return Ok(GroundingView::Empty), // UF view
+                        None => SQLExpr::Boolean(true),  // G view
                     }
                 } else if *qual_identifier == solver.false_ {
-                    view_type = Some(new_view_type.clone());
-                    match new_view_type {
-                        ViewType::TU => return Ok(GroundingView::Empty),
-                        ViewType::UF => SQLExpr::Boolean(false),
-                        ViewType::G => SQLExpr::Boolean(false),
+                    match exclude {
+                        Some(false) => return Ok(GroundingView::Empty),  // TU view
+                        Some(true) => SQLExpr::Boolean(false),  // UF view
+                        None => SQLExpr::Boolean(false),  // G view
                     }
                 } else {  // non-boolean
                     SQLExpr::Construct(qual_identifier.clone(), Box::new(groundings))
                 }
             },
-            QueryVariant::PredefinedBoolean(new_view) => {
+            QueryVariant::PredefinedBoolean => {
                 // LINK src/doc.md#_Equality
-                view_type = Some(new_view.clone());
                 let function = match qual_identifier.to_string().as_str() {
                     "and"       => Predefined::And,
                     "or"        => Predefined::Or,
@@ -390,7 +382,6 @@ pub(crate) fn query_for_compound(
         grounding,
         natural_joins,
         theta_joins,
-        view_type,
         precise
     };
     let exclude = if precise { None } else { exclude };
@@ -491,7 +482,6 @@ pub(crate) fn query_for_union(
                             grounding: grounding.clone(),
                             natural_joins: IndexSet::new(),
                             theta_joins: IndexSet::new(),
-                            view_type: None,
                             precise: true
                         })
                     },
@@ -533,7 +523,6 @@ pub(crate) fn query_for_union(
                             grounding: SQLExpr::Value(Column::new(table_name, "G")),
                             natural_joins,
                             theta_joins: IndexSet::new(),
-                            view_type: None,
                             precise: true  // because it is based on a view
                         })
                     },

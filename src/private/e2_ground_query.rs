@@ -27,7 +27,6 @@ pub(crate) enum GroundingQuery {
         natural_joins: IndexSet<NaturalJoin>,  // joins of grounding sub-queries
         theta_joins: IndexSet<ThetaJoin>,  // joins with interpretation tables
 
-        view_type: Option<ViewType>,  // Only for non-variable boolean
         precise: bool,  // true if the (boolean) grounding only has values consistent with the view (e.g., no "false" in TU view)
     },
     Aggregate {
@@ -337,7 +336,6 @@ impl GroundingQuery {
                     grounding: new_grounding,
                     natural_joins: natural_joins.clone(),
                     theta_joins: theta_joins.clone(),
-                    view_type: Some(view_type.clone()),
                     precise: *precise
                 };
                 let table_name = TableName{base_table: format!("negate_{index}"), index: 0};
