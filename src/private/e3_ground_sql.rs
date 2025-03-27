@@ -28,26 +28,18 @@ pub(crate) enum SQLExpr {
 
 #[derive(Debug, strum_macros::Display, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum Predefined {
-    #[strum(to_string = "AND")]
-    And,
-    #[strum(to_string = "OR")]
-    Or,
-    #[strum(to_string = "NOT")]
-    Not,
-    #[strum(to_string = "???")]  // `Implies` is a binary connective used internally.  Use `implies_` instead of string.
-    Implies,
-    #[strum(to_string = "=")]
-    Eq,
-    #[strum(to_string = "<")]
-    Less,
-    #[strum(to_string = "<=")]
-    LE,
-    #[strum(to_string = ">=")]
-    GE,
-    #[strum(to_string = ">")]
-    Greater,
-    #[strum(to_string = "distinct")]
-    Distinct,
+
+    #[strum(to_string = "AND")] And,
+    #[strum(to_string = "OR" )] Or,
+    #[strum(to_string = "NOT")] Not,
+    // `Implies` is a binary connective used internally.  Use `implies_` instead of string.
+    #[strum(to_string = "???")] Implies,
+    #[strum(to_string = "="  )] Eq,
+    #[strum(to_string = "<"  )] Less,
+    #[strum(to_string = "<=" )] LE,
+    #[strum(to_string = ">=" )] GE,
+    #[strum(to_string = ">"  )] Greater,
+    #[strum(to_string = "distinct")] Distinct,
 }
 
 
@@ -185,38 +177,62 @@ impl SQLExpr {
                         }
                     }
                 } else if CHAINABLE.contains(function) {
+                    // LINK src/doc.md#_Equality
                     // Eq, comparisons
-                    let strings = exprs.iter()
-                        .map( |(_, e)| e.to_sql(variables))
-                        .collect::<Vec<_>>().join(", ");
+
+                    let mut ids = Ids::All;
+                    let terms = exprs.iter()
+                        .map(|(ids_, e)| {
+                            ids = max(ids.clone(), ids_.clone());
+                            e.to_sql(variables)
+                        }).collect::<Vec<_>>().join(", ");
+
+                    // simplify
                     match function {
-                        // LINK src/doc.md#_Equality
                         Predefined::Eq => {
                             let equal = exprs.iter().zip(exprs.iter().skip(1))
                                     .all(|((_, a), (_, b))| *a == *b);
                             if equal {
-                                "\"true\"".to_string()
-                            } else {
-                                let mut ids = Ids::All;
-                                let terms = exprs.iter()
-                                    .map(|(ids_, e)| {
-                                        ids = max(ids.clone(), ids_.clone());
-                                        e.to_sql(variables)
-                                    }).collect::<Vec<_>>().join(", ");
-                                if ids == Ids::None {
-                                    format!("apply(\"=\",{terms})")
-                                } else {
-                                    format!("eq_({terms})")
-                                }
+                                return "\"true\"".to_string()
                             }
-                        },
-                        Predefined::Less    => format!("compare_(\"<\", {strings})"),
-                        Predefined::LE      => format!("compare_(\"<=\", {strings})"),
-                        Predefined::GE      => format!("compare_(\">=\", {strings})"),
-                        Predefined::Greater => format!("compare_(\">\", {strings})"),
-                        _ => unreachable!()
+                        }
+                        _ => {}
                     }
-                } else {
+
+                    if ids == Ids::None {
+                        match function {
+                            Predefined::Eq      => format!("apply(\"=\", {terms})"),
+                            Predefined::Less    => format!("apply(\"<\", {terms})"),
+                            Predefined::LE      => format!("apply(\"<=\", {terms})"),
+                            Predefined::GE      => format!("apply(\">=\", {terms})"),
+                            Predefined::Greater => format!("apply(\">\", {terms})"),
+                            _ => unreachable!()
+                        }
+                    } else {
+                        match function {
+                            Predefined::Eq      => format!("eq_({terms})"),
+                            Predefined::Less    => format!("compare_(\"<\", {terms})"),
+                            Predefined::LE      => format!("compare_(\"<=\", {terms})"),
+                            Predefined::GE      => format!("compare_(\">=\", {terms})"),
+                            Predefined::Greater => format!("compare_(\">\", {terms})"),
+                            _ => unreachable!()
+                        }
+                    }
+                } else if PAIRWISE.contains(function) {
+
+                    let mut ids = Ids::All;
+                    let terms = exprs.iter()
+                        .map(|(ids_, e)| {
+                            ids = max(ids.clone(), ids_.clone());
+                            e.to_sql(variables)
+                        }).collect::<Vec<_>>().join(", ");
+
+                    if ids == Ids::None {
+                        format!("compare_(\"distinct\", {terms})")
+                    } else {
+                        format!("apply(\"distinct\", {terms})")
+                    }
+                } else if *function == Predefined::Implies {
                     // Implies
                     assert_eq!(exprs.len(), 2);  // implies is a binary connective used internally
                     let e1 = exprs.first().unwrap().1.to_sql(variables);
@@ -232,6 +248,8 @@ impl SQLExpr {
                     } else {
                         format!("implies_({e1}, {e2})")
                     }
+                } else {
+                    unreachable!()
                 }
             }
         }

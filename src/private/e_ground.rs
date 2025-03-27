@@ -404,12 +404,6 @@ fn ground_compound(
 
                     Ok(Grounding::Boolean{tu, uf, g})
 
-                // "=>"
-                // | "="
-                // | "<="
-                // | "<"
-                // | ">="
-                // | ">" => todo!(),
                 } else {
                     match qual_identifier.to_string().as_str() {
                         "<"

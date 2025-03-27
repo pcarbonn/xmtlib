@@ -48,7 +48,6 @@ pub struct Solver {
     pub(crate) groundings: IndexMap<Term, Grounding>,
 
     // pre-defined functions  (can't use `const`` because of String)
-    pub(crate) true_: QualIdentifier,
     pub(crate) false_: QualIdentifier,
     pub(crate) and: QualIdentifier,
     pub(crate) or: QualIdentifier,
