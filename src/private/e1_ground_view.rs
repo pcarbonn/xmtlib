@@ -186,6 +186,7 @@ pub(crate) fn query_for_compound(
     index: TermId,
     sub_queries: &mut Vec<GroundingView>,
     variant: &QueryVariant,
+    exclude: Option<bool>,
     solver: &mut Solver
 ) -> Result<GroundingView, SolverError> {
 
@@ -459,6 +460,7 @@ pub(crate) fn query_for_aggregate(
 
 pub(crate) fn query_for_union(
     sub_views: Vec<GroundingView>,
+    exclude: Option<bool>,
     agg: String,
     index: TermId,
     solver: &mut Solver
