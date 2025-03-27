@@ -220,9 +220,22 @@ peg::parser!{
             / _ "(" _ "!" term:term() attributes:(attribute() ++ __) _ ")"
               { Term::Annotation(Box::new(term), attributes)}
 
+        rule xid() -> Term  // an id
+            = spec_constant:spec_constant()
+              { Term::SpecConstant(spec_constant) }
+
+            / qual_identifier:qual_identifier()
+              { Term::Identifier(qual_identifier) }
+
+            / _ "("
+              qual_identifier:qual_identifier()
+              terms:( xid() ++ __ )
+              _ ")"
+              { Term::Application(qual_identifier, terms) }
+
         rule xtuple() -> XTuple
             = _ "("
-              terms: ( term() ** __ )
+              terms: ( xid() ** __ )
               _ ")"
               { XTuple(terms) }
 
@@ -289,6 +302,7 @@ peg::parser!{
                       / define_sort()
                       / set_option()
                       / xinterpret_pred()
+                      / xinterpret_fun()
                       / xdebug()
                       / xground()
                       / verbatim())
@@ -296,7 +310,8 @@ peg::parser!{
             { command }
 
         rule assert() -> Command
-            = _ "assert" term:term()
+            = _ "assert"
+              __ term:term()
             { Assert(term) }
 
         rule check_sat() -> Command
@@ -304,12 +319,14 @@ peg::parser!{
             { CheckSat }
 
         rule declare_const() -> Command
-            = _ "declare-const" symbol:symbol() sort:sort()
+            = _ "declare-const"
+              __ symbol:symbol()
+              sort:sort()
             { DeclareConst(symbol, sort) }
 
         rule declare_datatype() -> Command
             = _ "declare-datatype"
-              s:symbol()
+              __ s:symbol()
               decl:datatype_dec()
             { DeclareDatatype(s, decl) }
 
@@ -323,18 +340,19 @@ peg::parser!{
 
         rule declare_fun() -> Command
             = _ "declare-fun"
-              symbol:symbol()
+              __ symbol:symbol()
               _ "(" domain:(sort() ** __) _ ")"
               co_domain:sort()
             { DeclareFun(symbol, domain, co_domain) }
 
         rule declare_sort() -> Command
-            = _ "declare-sort" symbol:symbol() numeral:numeral()
+            = _ "declare-sort"
+              __ symbol:symbol() numeral:numeral()
             { DeclareSort(symbol, numeral) }
 
         rule define_sort() -> Command
             = _ "define-sort"
-              symbol:symbol()
+              __ symbol:symbol()
               _ "("
               variables:(symbol() ** _)
               _ ")"
@@ -350,10 +368,26 @@ peg::parser!{
               _ tuples: ( xtuple() ** _ )
               { XInterpretPred(identifier, tuples) }
 
+        rule ftuple() -> (XTuple, Term)
+            = _ "("
+              _ tuple: xtuple()
+              _ term: term()
+              _ ")"
+            { (tuple, term) }
+
+        rule xinterpret_fun() -> Command
+            = _ "x-interpret-fun"
+              __ identifier: identifier()
+              _ "("
+              _  tuples: (ftuple() ** _)
+              _ ")"
+              _ else_: term()
+              { XInterpretFun(identifier, tuples, else_) }
+
         rule xdebug() -> Command
             = _ "x-debug"
               __ typ:simple_symbol()
-              __ object:simple_symbol()
+              object:simple_symbol()
               { XDebug (typ, object) }
 
         rule xground() -> Command

@@ -421,6 +421,7 @@ pub enum Command {
     XDebug(String, String),
     XGround,
     XInterpretPred(Identifier, Vec<XTuple>),
+    XInterpretFun(Identifier, Vec<(XTuple, Term)>, Term),
     Verbatim(String),
 }
 impl Display for Command {
@@ -479,6 +480,12 @@ impl Display for Command {
             // Self::Simplify(m0) => write!(f, "(simplify {})", m0),
 
             Self::XInterpretPred(s1, s2 ) => write!(f, "(x-interpret-pred {s1} {})", s2.iter().format(" ")),
+            Self::XInterpretFun(s1, s2, s3 ) => {
+                let tuples = s2.iter()
+                    .map(|(args, value)| format!("({args} {value})"))
+                    .collect::<Vec<_>>().join(" ");
+                write!(f, "(x-interpret-fun {s1} ( {tuples} ) {s3})")
+            },
             Self::XDebug(s1, s2) => write!(f, "(x-debug {s1} {s2})"),
             Self::XGround => write!(f, "(x-ground)"),
             Self::Verbatim(s) => write!(f, "{s}"),

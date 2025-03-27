@@ -195,6 +195,17 @@ pub(crate) fn interpret_pred_0(
     Ok(command)
 }
 
+pub(crate) fn interpret_fun(
+    identifier: Identifier,
+    tuples: Vec<(XTuple, Term)>,
+    else_: Term,
+    command: String,
+    solver: &mut Solver,
+)-> Result<String, SolverError> {
+
+    Ok(command)
+}
+
 /// Returns the string representation of the id.
 /// Constructor applications are preceded by a space, e.g. ` (cons 0 nil)`
 pub(crate) fn construct(id: &Term) -> Result<String, SolverError> {

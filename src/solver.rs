@@ -13,7 +13,7 @@ use crate::grammar::parse;
 use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, ParametricObject, SortObject};
 use crate::private::b_fun::{declare_fun, FunctionIs};
 use crate::private::c_assert::assert_;
-use crate::private::d_interpret::interpret_pred;
+use crate::private::d_interpret::{interpret_pred, interpret_fun};
 use crate::private::e_ground::{ground, Grounding};
 use crate::private::y_db::init_db;
 
@@ -232,6 +232,9 @@ impl Solver {
 
                 Command::XInterpretPred(identifier, tuples) =>
                     yield_!(interpret_pred(identifier, tuples, command, self)),
+
+                Command::XInterpretFun(identifier, tuples, else_) =>
+                    yield_!(interpret_fun(identifier, tuples, else_, command, self)),
 
                 Command::SetOption(option) =>
                     yield_!(self.set_option(option, command)),
