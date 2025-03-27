@@ -35,10 +35,14 @@ pub(crate) enum GroundingQuery {
         free_variables: IndexMap<Symbol, Option<TableName>>,  // None for infinite variables
         infinite_variables: Vec<SortedVar>,
         sub_view: Box<GroundingView>,  // the sub_view has more variables than free_variables
-        exclude: Option<bool>
+        exclude: Option<bool>,
+
+        // precise: always false
     },
     Union {
-        sub_queries: Box<Vec<GroundingQuery>>  // the sub-queries are Join and have the same columns
+        sub_queries: Box<Vec<GroundingQuery>>,  // the sub-queries are Join and have the same columns
+
+        precise: bool  // true if the (boolean) grounding only has values consistent with the view (e.g., no "false" in TU view)
     }
 }
 
@@ -192,7 +196,7 @@ impl std::fmt::Display for GroundingQuery {
 
                 write!(f, "SELECT {variables_}{condition}{grounding_}{tables}{where_}")
             }
-            GroundingQuery::Aggregate { agg, free_variables, infinite_variables, sub_view, exclude } => {
+            GroundingQuery::Aggregate { agg, free_variables, infinite_variables, sub_view, exclude, .. } => {
                 if let GroundingView::View { condition, ..} = **sub_view {
                     // SELECT {free_variables},
                     //        "(forall ({infinite_vars}) " || and_aggregate(implies_(if_, G)) || ")" AS G
@@ -294,6 +298,15 @@ impl std::fmt::Display for Column {
 
 
 impl GroundingQuery {
+    pub(crate) fn is_precise(&self) -> bool {
+        match self {
+            GroundingQuery::Join{ precise, ..}
+            | GroundingQuery::Union { precise, ..} =>
+                *precise,
+            GroundingQuery::Aggregate {..} => false
+        }
+    }
+
 
     pub(crate) fn negate(
         &self,

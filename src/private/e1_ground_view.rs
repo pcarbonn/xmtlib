@@ -362,7 +362,6 @@ pub(crate) fn query_for_compound(
             QueryVariant::PredefinedBoolean(new_view) => {
                 // LINK src/doc.md#_Equality
                 view_type = Some(new_view.clone());
-                precise = false;
                 let function = match qual_identifier.to_string().as_str() {
                     "and"       => Predefined::And,
                     "or"        => Predefined::Or,
@@ -375,6 +374,13 @@ pub(crate) fn query_for_compound(
                     ">"         => Predefined::Greater,
                     "distinct"  => Predefined::Distinct,
                     _ => panic!()
+                };
+                if ! [  Predefined::And,
+                        Predefined::Or,
+                        Predefined::Implies,
+                        Predefined::Not
+                     ].contains(&function) {
+                    precise = false
                 };
 
                 let ops: Vec<_> = ids_.iter().cloned().zip(groundings.iter().cloned()).collect();
@@ -418,7 +424,7 @@ pub(crate) fn query_for_aggregate(
                 agg: sub_agg,
                 infinite_variables: sub_infinite_variables,
                 sub_view: sub_sub_view,
-                exclude: sub_exclude , ..}
+                exclude: sub_exclude, ..}
                 = query {
                     if agg == sub_agg
                     && (sub_exclude.is_none() || exclude == *sub_exclude)  {
@@ -431,7 +437,7 @@ pub(crate) fn query_for_aggregate(
                             free_variables: free_variables.clone(),
                             infinite_variables: infinite_variables.clone(),
                             sub_view: Box::new(*sub_sub_view.clone()),
-                            exclude,
+                            exclude
                         };
                         return GroundingView::new(table_name, free_variables.clone(), query, ids.clone(), solver)
                     }
@@ -442,7 +448,7 @@ pub(crate) fn query_for_aggregate(
                 free_variables: free_variables.clone(),
                 infinite_variables: infinite_variables.clone(),
                 sub_view: Box::new(sub_query.clone()),
-                exclude,
+                exclude
             };
 
             GroundingView::new(table_name, free_variables.clone(), query, ids.clone(), solver)
@@ -462,13 +468,15 @@ pub(crate) fn query_for_union(
     let mut free_variables = IndexMap::new();
     let mut condition = false;
     let mut ids = Ids::All;
+    let mut precise = true;
     for sub_view in sub_views.clone() {
         if let GroundingView::View { free_variables: sub_free_variables,
-            condition: sub_condition, ids: sub_ids, .. } = sub_view {
+            condition: sub_condition, ids: sub_ids, query, .. } = sub_view {
 
             free_variables.append(&mut sub_free_variables.clone());
             condition |= sub_condition;
             ids = max(ids, sub_ids);
+            precise &= query.is_precise();
         }
     }
 
@@ -480,6 +488,7 @@ pub(crate) fn query_for_union(
 
                 match grounding {
                     Either::Left(grounding) => {
+                        // boolean
                         let q_variables = free_variables.iter()
                             .map( |(symbol, _)| (symbol.clone(), None))
                             .collect();
@@ -490,10 +499,11 @@ pub(crate) fn query_for_union(
                             natural_joins: IndexSet::new(),
                             theta_joins: IndexSet::new(),
                             view_type: None,
-                            precise: false
+                            precise: true
                         })
                     },
                     Either::Right(table_name) => {
+                        // add the cross-product of missing variables
                         let mut q_variables = IndexMap::new();
                         let join_vars = sub_free_variables.iter()
                             .filter_map( |(symbol, table_name)| {
@@ -531,7 +541,7 @@ pub(crate) fn query_for_union(
                             natural_joins,
                             theta_joins: IndexSet::new(),
                             view_type: None,
-                            precise: false  // todo ?
+                            precise: true  // because it is based on a view
                         })
                     },
                 }
@@ -548,7 +558,7 @@ pub(crate) fn query_for_union(
     };
 
     // create the union
-    let query = GroundingQuery::Union{ sub_queries: Box::new(sub_queries) };
+    let query = GroundingQuery::Union{ sub_queries: Box::new(sub_queries), precise };
 
     let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS {query}");
     solver.conn.execute(&sql, ())?;
