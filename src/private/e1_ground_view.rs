@@ -1,5 +1,6 @@
 // Copyright Pierre Carbonnelle, 2025.
 
+use regex::Regex;
 use std::cmp::max;
 
 use indexmap::{IndexMap, IndexSet};
@@ -377,7 +378,11 @@ pub(crate) fn query_for_compound(
             }
         };
 
-    let table_name = TableName::new(qual_identifier, index);
+    // sanitize the name
+    let re = Regex::new(r"[\+\-/\*=\%\?\!\.\$\&\^<>@]").unwrap();
+    let name = qual_identifier.to_string();
+    let name = re.replace_all(&name, "");
+    let table_name = TableName::new(&name, index);
     let query = GroundingQuery::Join {
         variables,
         conditions,

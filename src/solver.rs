@@ -297,8 +297,8 @@ impl Solver {
                                                 let co_domain = co_domain.to_string();
                                                 yield_!(Ok(format!(" - {symbol}: {domain} -> {co_domain} ({boolean})")))
                                             },
-                                            // FunctionIs::NonBooleanInterpreted{table_g} =>
-                                            //     yield_!(Ok(format!(" - {symbol}: Non Boolean ({table_g})"))),
+                                            FunctionIs::NonBooleanInterpreted{table_g} =>
+                                                yield_!(Ok(format!(" - {symbol}: Non Boolean ({table_g})"))),
                                             FunctionIs::BooleanInterpreted{table_tu, table_uf, table_g} =>
                                                 yield_!(Ok(format!(" - {symbol}: Boolean ({table_tu}, {table_uf}, {table_g})"))),
                                         }
@@ -382,7 +382,7 @@ impl Solver {
                     (":backend", AttributeValue::Symbol(Symbol(value))) => {
                         match value.as_str() {
                             "none" => self.backend = Backend::NoDriver,
-                            "z3" => {
+                            "Z3" => {
                                 unsafe {
                                     let cfg = Z3_mk_config();
                                     let ctx = Z3_mk_context(cfg);

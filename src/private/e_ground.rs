@@ -469,7 +469,7 @@ fn ground_compound(
 
             let mut new_queries = vec![];
 
-            for ((table, mut groundings), view_type)
+            for ((table, groundings), view_type)
             in [table_tu.clone(), table_uf.clone(), table_g.clone()].iter()
                 .zip([tus, ufs, gqs.to_vec()])
                 .zip([ViewType::TU, ViewType::UF, ViewType::G]) {
@@ -486,12 +486,23 @@ fn ground_compound(
                     },
                     Interpretation::Infinite => QueryVariant::Apply
                 };
-                let new_query = query_for_compound(qual_identifier, index, &mut groundings, &variant, exclude, solver)?;
-                new_queries.push(new_query);
+                let new_view = query_for_compound(qual_identifier, index, &groundings, &variant, exclude, solver)?;
+                new_queries.push(new_view);
             };
 
             Ok(Grounding::Boolean{tu: new_queries[0].clone(), uf: new_queries[1].clone(), g: new_queries[2].clone()})
         },
+        FunctionIs::NonBooleanInterpreted { table_g } => {
+            let variant = match table_g {
+                Interpretation::Table{name, ids} => {
+                    let table_name = TableName::new(name, index);
+                    QueryVariant::Interpretation(table_name, ids.clone())
+                },
+                Interpretation::Infinite => QueryVariant::Apply
+            };
+            let new_view = query_for_compound(qual_identifier, index, &gqs, &variant, None, solver)?;
+            Ok(Grounding::NonBoolean(new_view))
+        }
     }
 }
 

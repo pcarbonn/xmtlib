@@ -19,7 +19,7 @@ pub(crate) enum FunctionIs {
     Predefined{boolean: Option<bool>},  // None for `ite` --> need special code
     Constructed,
     Calculated{signature: (Vec<Sort>, Sort, bool)},  // signature used to create table, when later interpreted
-    //NonBooleanInterpreted{ table_g: Interpretation},
+    NonBooleanInterpreted{ table_g: Interpretation},
     BooleanInterpreted{table_tu: Interpretation, table_uf: Interpretation, table_g: Interpretation}
 }
 
@@ -46,8 +46,8 @@ impl Display for FunctionIs {
                 write!(f, "Constructed"),
             Self::Calculated{signature} =>
                 write!(f, "Calculated({:?})", signature),
-            // Self::NonBooleanInterpreted{table_g} =>
-            //     write!(f, "NonBooleanInterpreted ({})", table_g),
+            Self::NonBooleanInterpreted{table_g} =>
+                write!(f, "NonBooleanInterpreted ({})", table_g),
             Self::BooleanInterpreted{table_tu, table_uf, table_g} =>
                 write!(f, "BooleanInterpreted ({}, {}, {})", table_tu, table_uf, table_g),
         }
