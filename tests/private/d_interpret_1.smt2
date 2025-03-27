@@ -104,7 +104,7 @@
 ├──────────────────┤
 │ " (hue red red)" │
 └──────────────────┘
-CREATE VIEW Agg_1_UF AS SELECT or_aggregate(G) as G from (SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2) HAVING or_aggregate(G) <> "true"
+CREATE VIEW Agg_1_UF AS SELECT or_aggregate(G) as G from (SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2)
 Functions:
  - true: Constructed
  - false: Constructed
@@ -142,7 +142,7 @@ Groundings:
     G : SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2
  - (exists ((x Color)) (bright x)):
     TU: SELECT or_aggregate(G) as G from (SELECT bright_TU_2.a_0 AS x, "true" AS G FROM bright_TU AS bright_TU_2)
-    UF: SELECT or_aggregate(G) as G from (SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2) HAVING or_aggregate(G) <> "true"
+    UF: SELECT or_aggregate(G) as G from (SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2)
     G : SELECT or_aggregate(G) as G from (SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2)
  - (same x x):
     T: SELECT same_TU_4.a_1 AS x, "true" AS G FROM same_TU AS same_TU_4 WHERE same_TU_4.a_1 = same_TU_4.a_0
@@ -150,7 +150,7 @@ Groundings:
     G : SELECT same_G_4.a_1 AS x, same_G_4.G AS G FROM same_G AS same_G_4 WHERE same_G_4.a_1 = same_G_4.a_0
  - (exists ((x Color)) (same x x)):
     TU: SELECT or_aggregate(G) as G from (SELECT same_TU_4.a_1 AS x, "true" AS G FROM same_TU AS same_TU_4 WHERE same_TU_4.a_1 = same_TU_4.a_0)
-    UF: SELECT or_aggregate(G) as G from (SELECT same_G_4.a_1 AS x, same_G_4.G AS G FROM same_G AS same_G_4 WHERE same_G_4.a_1 = same_G_4.a_0) HAVING or_aggregate(G) <> "true"
+    UF: SELECT or_aggregate(G) as G from (SELECT same_G_4.a_1 AS x, same_G_4.G AS G FROM same_G AS same_G_4 WHERE same_G_4.a_1 = same_G_4.a_0)
     G : SELECT or_aggregate(G) as G from (SELECT same_G_4.a_1 AS x, same_G_4.G AS G FROM same_G AS same_G_4 WHERE same_G_4.a_1 = same_G_4.a_0)
  - y: SELECT Color_6.G AS y, Color_6.G AS G FROM Color AS Color_6
  - (same x y):
@@ -159,11 +159,11 @@ Groundings:
     G : SELECT same_G_7.a_0 AS x, same_G_7.a_1 AS y, same_G_7.G AS G FROM same_G AS same_G_7
  - (exists ((y Color)) (same x y)):
     TU: SELECT x, or_aggregate(G) as G from (SELECT same_TU_7.a_0 AS x, same_TU_7.a_1 AS y, "true" AS G FROM same_TU AS same_TU_7) GROUP BY x
-    UF: SELECT x, or_aggregate(G) as G from (SELECT same_G_7.a_0 AS x, same_G_7.a_1 AS y, same_G_7.G AS G FROM same_G AS same_G_7) GROUP BY x HAVING or_aggregate(G) <> "true"
+    UF: SELECT x, or_aggregate(G) as G from (SELECT same_G_7.a_0 AS x, same_G_7.a_1 AS y, same_G_7.G AS G FROM same_G AS same_G_7) GROUP BY x
     G : SELECT x, or_aggregate(G) as G from (SELECT same_G_7.a_0 AS x, same_G_7.a_1 AS y, same_G_7.G AS G FROM same_G AS same_G_7) GROUP BY x
  - (exists ((x Color)) (exists ((y Color)) (same x y))):
     TU: SELECT or_aggregate(G) as G from (SELECT same_TU_7.a_0 AS x, same_TU_7.a_1 AS y, "true" AS G FROM same_TU AS same_TU_7)
-    UF: SELECT or_aggregate(G) as G from (SELECT same_G_7.a_0 AS x, same_G_7.a_1 AS y, same_G_7.G AS G FROM same_G AS same_G_7) HAVING or_aggregate(G) <> "true"
+    UF: SELECT or_aggregate(G) as G from (SELECT same_G_7.a_0 AS x, same_G_7.a_1 AS y, same_G_7.G AS G FROM same_G AS same_G_7)
     G : SELECT or_aggregate(G) as G from (SELECT same_G_7.a_0 AS x, same_G_7.a_1 AS y, same_G_7.G AS G FROM same_G AS same_G_7)
  - x: SELECT Hue_10.G AS x, Hue_10.G AS G FROM Hue AS Hue_10
  - (dim x):
@@ -172,5 +172,5 @@ Groundings:
     G : SELECT dim_G_11.a_0 AS x, dim_G_11.G AS G FROM dim_G AS dim_G_11
  - (exists ((x Hue)) (dim x)):
     TU: SELECT or_aggregate(G) as G from (SELECT dim_TU_11.a_0 AS x, "true" AS G FROM dim_TU AS dim_TU_11)
-    UF: SELECT or_aggregate(G) as G from (SELECT dim_G_11.a_0 AS x, dim_G_11.G AS G FROM dim_G AS dim_G_11) HAVING or_aggregate(G) <> "true"
+    UF: SELECT or_aggregate(G) as G from (SELECT dim_G_11.a_0 AS x, dim_G_11.G AS G FROM dim_G AS dim_G_11)
     G : SELECT or_aggregate(G) as G from (SELECT dim_G_11.a_0 AS x, dim_G_11.G AS G FROM dim_G AS dim_G_11)

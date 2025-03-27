@@ -20,10 +20,11 @@ use crate::private::e3_ground_sql::{Mapping, SQLExpr, Predefined};
 #[derive(Clone, PartialEq, Eq)]
 pub(crate) enum GroundingView {
     Empty,
-    View {  // select vars, cond, grounding (from view)
+    View {  // SELECT vars, cond, grounding (from view) WHERE val <> exclude
         free_variables: IndexMap<Symbol, Option<TableName>>,  // None for infinite variables, sort interpretation table otherwise
         condition: bool,
         grounding: Either<SQLExpr, TableName>, // Left for SpecConstant, Boolean without table. Right for grounding field in table.
+        exclude: Option<bool>, // e.g., "false" in TU view
 
         query: GroundingQuery,  // the underlying query
         ids: Ids,  // describes the groundings only.  Beware that the query may have conditions.
@@ -48,7 +49,7 @@ impl std::fmt::Debug for GroundingView {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             GroundingView::Empty => write!(f, "SELECT \"true\" AS G WHERE FALSE"),
-            GroundingView::View { free_variables, condition, grounding, query, ids, .. } => {
+            GroundingView::View { free_variables, condition, grounding, exclude, .. } => {
 
                 let vars = free_variables.iter()
                     .map(|(symbol, _)| symbol.to_string())
@@ -62,20 +63,12 @@ impl std::fmt::Debug for GroundingView {
                 };
                 // make the view precise if the query is not
                 // todo perf: is this usefull ?
-                let where_ = if let GroundingQuery::Join{view_type: Some(view_type), precise, ..} = query {
-                    if ! *precise {
-                        let is_id = match ids {
-                            Ids::Some => format!("NOT is_id({g_v}) OR "),
-                            Ids::All
-                            | Ids::None => "".to_string(),
-                        };
-                        match view_type {
-                            ViewType::TU => format!(" WHERE {is_id}{g_v} = \"true\""),
-                            ViewType::UF => format!(" WHERE {is_id}{g_v} = \"false\""),
-                            ViewType::G => "".to_string()
-                        }
-                    } else { "".to_string() }
-                } else { "".to_string() };
+                let where_ = match exclude {
+                    Some(true) => format!("WHERE {g_v} <> \"true\""),
+                    Some(false) => format!("WHERE {g_v} <> \"false\""),
+                    None => "".to_string(),
+                };
+
                 write!(f,"SELECT {vars}{if_}{g_v}{where_}")
             }
         }
@@ -122,7 +115,7 @@ pub(crate) fn query_for_constant(
         precise: true
     };
     let view = TableName::new("ignore", 0);
-    GroundingView::new(view, IndexMap::new(), query, Ids::All, solver)
+    GroundingView::new(view, IndexMap::new(), query, None, Ids::All, solver)
 }
 
 
@@ -149,7 +142,7 @@ pub(crate) fn query_for_variable(
             precise: false  // imprecise for boolean variable !
         };
         let free_variables = IndexMap::from([(symbol.clone(), Some(table_name))]);
-        GroundingView::new(view, free_variables, query, Ids::All, solver)
+        GroundingView::new(view, free_variables, query, None, Ids::All, solver) // todo perf: exclude for boolean
     } else {  // infinite variable ==> just "x"
         let variables = IndexMap::from([(symbol.clone(), None)]);
         let query = GroundingQuery::Join{
@@ -162,7 +155,7 @@ pub(crate) fn query_for_variable(
             precise: true  // cannot be boolean
         };
         let free_variables = IndexMap::from([(symbol.clone(), None)]);
-        GroundingView::new(view, free_variables, query, Ids::None, solver)
+        GroundingView::new(view, free_variables, query, None, Ids::None, solver)
     }
 }
 
@@ -400,7 +393,8 @@ pub(crate) fn query_for_compound(
         view_type,
         precise
     };
-    GroundingView::new(table_name, free_variables, query, ids, solver)
+    let exclude = if precise { None } else { exclude };
+    GroundingView::new(table_name, free_variables, query, exclude, ids, solver)
 }
 
 
@@ -424,11 +418,9 @@ pub(crate) fn query_for_aggregate(
             if let GroundingQuery::Aggregate {
                 agg: sub_agg,
                 infinite_variables: sub_infinite_variables,
-                sub_view: sub_sub_view,
-                exclude: sub_exclude, ..}
+                sub_view: sub_sub_view, ..}
                 = query {
-                    if agg == sub_agg
-                    && (sub_exclude.is_none() || exclude == *sub_exclude)  {
+                    if agg == sub_agg  {
                         // it's possible to by pass the sub-aggregate
                         let mut infinite_variables = infinite_variables.clone();
                         infinite_variables.extend(sub_infinite_variables.iter().cloned());
@@ -438,9 +430,8 @@ pub(crate) fn query_for_aggregate(
                             free_variables: free_variables.clone(),
                             infinite_variables: infinite_variables.clone(),
                             sub_view: Box::new(*sub_sub_view.clone()),
-                            exclude
                         };
-                        return GroundingView::new(table_name, free_variables.clone(), query, ids.clone(), solver)
+                        return GroundingView::new(table_name, free_variables.clone(), query, exclude, ids.clone(), solver)
                     }
             }
 
@@ -449,10 +440,9 @@ pub(crate) fn query_for_aggregate(
                 free_variables: free_variables.clone(),
                 infinite_variables: infinite_variables.clone(),
                 sub_view: Box::new(sub_query.clone()),
-                exclude
             };
 
-            GroundingView::new(table_name, free_variables.clone(), query, ids.clone(), solver)
+            GroundingView::new(table_name, free_variables.clone(), query, exclude, ids.clone(), solver)
         }
     }
 }
@@ -481,6 +471,7 @@ pub(crate) fn query_for_union(
             precise &= query.is_precise();
         }
     }
+    let exclude = if precise { None } else { exclude };
 
     // build the sub-queries
     let sub_queries = sub_views.iter()
@@ -556,7 +547,7 @@ pub(crate) fn query_for_union(
 
     let table_name = TableName{base_table: format!("union_{index}"), index: 0};
     if sub_queries.len() == 1 {
-        return GroundingView::new(table_name, free_variables, sub_queries.first().unwrap().clone(), ids.clone(), solver)
+        return GroundingView::new(table_name, free_variables, sub_queries.first().unwrap().clone(), exclude, ids.clone(), solver)
     };
 
     // create the union
@@ -571,6 +562,7 @@ pub(crate) fn query_for_union(
         condition: condition,
         grounding: Either::Right(table_name),
         query,
+        exclude,
         ids: ids.clone()
     };
 
@@ -581,10 +573,9 @@ pub(crate) fn query_for_union(
         free_variables: free_variables.clone(),
         infinite_variables: vec![],
         sub_view: Box::new(sub_view),
-        exclude: None,
     };
 
-    GroundingView::new(table_name, free_variables, query, ids.clone(), solver)
+    GroundingView::new(table_name, free_variables, query, exclude, ids.clone(), solver)
 }
 
 
@@ -597,6 +588,7 @@ impl GroundingView {
         table_name: TableName,
         free_variables: IndexMap<Symbol, Option<TableName>>,
         query: GroundingQuery,
+        exclude: Option<bool>,
         ids: Ids,
         solver: &mut Solver,
     ) -> Result<GroundingView, SolverError> {
@@ -612,6 +604,7 @@ impl GroundingView {
                         condition: false,
                         grounding: Either::Left(grounding.clone()),
                         query,
+                        exclude,
                         ids
                     })
                 } else {
@@ -633,6 +626,7 @@ impl GroundingView {
                         condition,
                         grounding: Either::Right(table_name),
                         query,
+                        exclude,
                         ids})
                 }
             },
@@ -646,6 +640,7 @@ impl GroundingView {
                         condition: false,
                         grounding: Either::Right(table_name),
                         query,
+                        exclude,
                         ids: Ids::None
                     })
             },
@@ -665,6 +660,7 @@ impl GroundingView {
                     }),
                     grounding: Either::Right(table_name),
                     query,
+                    exclude,
                     ids
                 })
 
@@ -695,8 +691,8 @@ impl GroundingView {
     ) -> Result<GroundingView, SolverError> {
         match self {
             GroundingView::Empty => Ok(self.clone()),
-            GroundingView::View{free_variables, query, ids, ..} =>
-                query.negate(free_variables.clone(), index, view_type, ids, solver)
+            GroundingView::View{free_variables, query, exclude, ids, ..} =>
+                query.negate(free_variables.clone(), index, view_type, *exclude, ids, solver)
         }
     }
 }

@@ -14,7 +14,6 @@
 (push)
 (assert (= 2 2 2))
 (pop)
-(assert true)
 (push)
 (assert (not (= 2 2)))
 (pop)

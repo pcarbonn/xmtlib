@@ -35,7 +35,6 @@ pub(crate) enum GroundingQuery {
         free_variables: IndexMap<Symbol, Option<TableName>>,  // None for infinite variables
         infinite_variables: Vec<SortedVar>,
         sub_view: Box<GroundingView>,  // the sub_view has more variables than free_variables
-        exclude: Option<bool>,
 
         // precise: always false
     },
@@ -196,13 +195,12 @@ impl std::fmt::Display for GroundingQuery {
 
                 write!(f, "SELECT {variables_}{condition}{grounding_}{tables}{where_}")
             }
-            GroundingQuery::Aggregate { agg, free_variables, infinite_variables, sub_view, exclude, .. } => {
+            GroundingQuery::Aggregate { agg, free_variables, infinite_variables, sub_view, .. } => {
                 if let GroundingView::View { condition, ..} = **sub_view {
                     // SELECT {free_variables},
                     //        "(forall ({infinite_vars}) " || and_aggregate(implies_(if_, G)) || ")" AS G
                     //   FROM {sub_view}
                     //  GROUP BY {free_variables*}
-                    // HAVING {G} <> "{exclude}"
 
                     let free = free_variables.iter()
                         .map( |(symbol, _)| symbol.to_string() )
@@ -253,14 +251,7 @@ impl std::fmt::Display for GroundingQuery {
                             }
                         };
 
-                    let having =
-                        if let Some(bool) = exclude {
-                            format!(" HAVING {grounding} <> \"{bool}\"")
-                        } else {
-                            "".to_string()
-                        };
-
-                    write!(f, "SELECT {free}{grounding} as G from ({sub_view}){group_by}{having}")
+                    write!(f, "SELECT {free}{grounding} as G from ({sub_view}){group_by}")
                 } else {  // empty view
                     write!(f, "{}", sub_view)
                 }
@@ -313,12 +304,20 @@ impl GroundingQuery {
         free_variables: IndexMap<Symbol, Option<TableName>>,
         index: TermId,
         view_type: ViewType,
+        exclude: Option<bool>,
         ids: &Ids,
         solver: &mut Solver
     ) -> Result<GroundingView, SolverError> {
+
+        let exclude = match exclude {
+            None => None,
+            Some(true) => Some(false),
+            Some(false) => Some(true),
+        };
+
         match self {
             GroundingQuery::Join { variables, conditions, grounding,
-            natural_joins, theta_joins, precise, ..} => {
+            natural_joins, theta_joins, precise,..} => {
 
                 let new_grounding =
                     if *ids == Ids::All {
@@ -342,18 +341,17 @@ impl GroundingQuery {
                     precise: *precise
                 };
                 let table_name = TableName{base_table: format!("negate_{index}"), index: 0};
-                GroundingView::new(table_name, free_variables, query, ids.clone(), solver)
+                GroundingView::new(table_name, free_variables, query, exclude, ids.clone(), solver)
             }
-            GroundingQuery::Aggregate { agg, infinite_variables, sub_view, exclude, .. } => {
+            GroundingQuery::Aggregate { agg, infinite_variables, sub_view, .. } => {
                 let query = GroundingQuery::Aggregate {
-                    agg : if agg == "or" { "and".to_string() } else { "or".to_string() },
+                    agg : (if agg == "or" { "and" } else { "or" }).to_string(),
                     free_variables: free_variables.clone(),
                     infinite_variables: infinite_variables.clone(),
-                    sub_view: Box::new(sub_view.negate(index, view_type, solver)?),
-                    exclude: if let Some(bool) = exclude { Some(! bool) } else { *exclude }
+                    sub_view: Box::new(sub_view.negate(index, view_type, solver)?)
                 };
                 let table_name = TableName{base_table: format!("negate_{index}"), index: 0};
-                GroundingView::new(table_name, free_variables, query, ids.clone(), solver)
+                GroundingView::new(table_name, free_variables, query, exclude, ids.clone(), solver)
             },
             GroundingQuery::Union {..} => unreachable!()
         }

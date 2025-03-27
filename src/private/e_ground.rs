@@ -110,10 +110,12 @@ fn execute_query(
         match row {
             Err(e) => return Err(SolverError::from(e)),
             Ok(row) => {
-                let assert = format!("(assert {})", row);
-                res.push(assert);
-                if row == "false" {
-                    break
+                if row != "true" {
+                    let assert = format!("(assert {})", row);
+                    res.push(assert);
+                    if row == "false" {
+                        break
+                    }
                 }
             }
         }

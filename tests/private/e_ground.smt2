@@ -67,7 +67,7 @@ Groundings:
     G : SELECT is_true_G_6.a_0 AS x, is_true_G_6.G AS G FROM is_true_G AS is_true_G_6
  - (exists ((x Bool)) (is_true x)):
     TU: SELECT or_aggregate(G) as G from (SELECT is_true_TU_6.a_0 AS x, "true" AS G FROM is_true_TU AS is_true_TU_6)
-    UF: SELECT or_aggregate(G) as G from (SELECT is_true_G_6.a_0 AS x, is_true_G_6.G AS G FROM is_true_G AS is_true_G_6) HAVING or_aggregate(G) <> "true"
+    UF: SELECT or_aggregate(G) as G from (SELECT is_true_G_6.a_0 AS x, is_true_G_6.G AS G FROM is_true_G AS is_true_G_6)
     G : SELECT or_aggregate(G) as G from (SELECT is_true_G_6.a_0 AS x, is_true_G_6.G AS G FROM is_true_G AS is_true_G_6)
  - (is_true (exists ((x Bool)) (is_true x))):
     T: SELECT "true" AS G FROM Agg_5_TU JOIN is_true_TU AS is_true_TU_8

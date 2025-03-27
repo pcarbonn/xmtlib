@@ -77,5 +77,5 @@ Groundings:
     G : SELECT dim_G_1.a_0 AS x, dim_G_1.G AS G FROM dim_G AS dim_G_1
  - (exists ((x Hue)) (dim x)):
     TU: SELECT or_aggregate(G) as G from (SELECT dim_TU_1.a_0 AS x, "true" AS G FROM dim_TU AS dim_TU_1)
-    UF: SELECT or_aggregate(G) as G from (SELECT dim_G_1.a_0 AS x, dim_G_1.G AS G FROM dim_G AS dim_G_1) HAVING or_aggregate(G) <> "true"
+    UF: SELECT or_aggregate(G) as G from (SELECT dim_G_1.a_0 AS x, dim_G_1.G AS G FROM dim_G AS dim_G_1)
     G : SELECT or_aggregate(G) as G from (SELECT dim_G_1.a_0 AS x, dim_G_1.G AS G FROM dim_G AS dim_G_1)
