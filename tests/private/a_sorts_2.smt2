@@ -15,6 +15,7 @@
 (define-sort MyPair () (Pair A B))
 (x-debug solver parametric_sorts)
 (x-debug solver sorts)
+(x_debug db TreeInt)
 (check-sat)
 -------------------------
 

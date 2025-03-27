@@ -13,9 +13,10 @@ use xmtlib::solver::Solver;
 #[test] fn test_c_term_const()  { test_file(Path::new("tests/private/c_term_const.smt2")) }
 #[test] fn test_c_term_quant()  { test_file(Path::new("tests/private/c_term_quant.smt2")) }
 #[test] fn test_d_interpret_1() { test_file(Path::new("tests/private/d_interpret_1.smt2")) }
+#[test] fn test_e_ground_comparison()   { test_file(Path::new("tests/private/e_ground_comparison.smt2")) }
+#[test] fn test_e_ground_comound()      { test_file(Path::new("tests/private/e_ground_compound.smt2")) }
+#[test] fn test_e_ground_equality()     { test_file(Path::new("tests/private/e_ground_equality.smt2")) }
 #[test] fn test_e_ground()      { test_file(Path::new("tests/private/e_ground.smt2")) }
-#[test] fn test_e_ground_equality()      { test_file(Path::new("tests/private/e_ground_equality.smt2")) }
-#[test] fn test_e_ground_comparison()      { test_file(Path::new("tests/private/e_ground_comparison.smt2")) }
 
 #[test] fn test_empty()         { test_file(Path::new("tests/empty.smt2")) }
 #[test] fn test_sandbox()       { test_file(Path::new("tests/sandbox.smt2")) }

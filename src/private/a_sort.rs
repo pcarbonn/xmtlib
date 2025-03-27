@@ -462,14 +462,19 @@ fn create_table(
     // 1st pass: collect nullary constructors and selectors
     // in ((white ) (pair (first Color) (second Color)))
     let mut nullary: Vec<String> = vec![]; // white
-    let mut column_names: IndexSet<String> = IndexSet::new();  // first, second
+    let mut column_names: IndexMap<String, String> = IndexMap::new();  // first: Text, second: Int
     for constructor_decl in constructor_decls {
         let ConstructorDec(constructor, selectors) = constructor_decl;
         if selectors.len() == 0 {
             nullary.push(constructor.0.clone())
         } else {
-            for SelectorDec(selector, _) in selectors {
-                column_names.insert(selector.0.clone());
+            for SelectorDec(selector, sort) in selectors {
+                let type_ = match sort.to_string().as_str() {
+                    "Int" => "INTEGER",
+                    "Real" => "REAL",
+                    _ => "TEXT"
+                };
+                column_names.insert(selector.0.clone(), type_.to_string());
             }
         }
     }
@@ -488,7 +493,7 @@ fn create_table(
             create_core_table(&core, nullary, &mut solver.conn)?;
 
             //  "NULL as first, NULL as second"
-            let projection = column_names.iter().map(|n| format!("NULL AS {n}")).collect::<Vec<_>>().join(", ");
+            let projection = column_names.iter().map(|(n, _)| format!("NULL AS {n}")).collect::<Vec<_>>().join(", ");
 
             // the first select is "SELECT NULL as constructor, NULL as first, NULL as second, Color_core.G as G from Color_core"
             selects.push(format!("SELECT NULL as constructor, {projection}, {core}.G AS G from {core}"));
@@ -503,7 +508,7 @@ fn create_table(
                 // compute the list of tables and column sort_mapping
                 let mut tables = Vec::with_capacity(selectors.len()); // [Color, Color]
                 let mut columns = IndexMap::with_capacity(column_names.len());  // {first->T1.G, second->T2.G}; the value can be NULL
-                for column_name in &column_names {
+                for (column_name, _) in &column_names {
                     columns.insert(column_name, "NULL".to_string());
                 }
                 let mut row_product = 1;
@@ -540,13 +545,13 @@ fn create_table(
             }
         }
         let columns = column_names.iter()
-            .map( |name| format!("{name} TEXT"))
+            .map( |(name, type_)| format!("{name} {type_}"))
             .collect::<Vec<_>>().join(", ");
         let create = format!("CREATE TABLE {table} (constructor TEXT, {columns}, G TEXT PRIMARY KEY)");
         solver.conn.execute(&create, ())?;
 
         let columns = column_names.iter()
-            .map( |name| name.to_string())
+            .map( |(name, _)| name.to_string())
             .collect::<Vec<_>>().join(", ");
         let insert = format!("INSERT INTO {table} (constructor, {columns}, G) {}", selects.join( " UNION "));
         solver.conn.execute(&insert, ())?;

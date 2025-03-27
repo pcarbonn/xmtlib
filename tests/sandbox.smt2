@@ -8,7 +8,7 @@
 (x-ground)
 (x-debug db Color)
 (x-debug db Hue)
-(x-debug db Dim_T)
+(x-debug db dim_T)
 (x-debug solver functions)
 (x-debug solver groundings)
 -------------------------
@@ -41,7 +41,7 @@
 ├─────────────┼─────────┼─────────┼──────────────────────┤
 │ "hue"       │ "green" │ "green" │ " (hue green green)" │
 └─────────────┴─────────┴─────────┴──────────────────────┘
- TABLE: Dim_T
+ TABLE: dim_T
 ┌──────────────────┐
 │ a_0              │
 ├──────────────────┤
