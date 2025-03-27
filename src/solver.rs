@@ -46,14 +46,6 @@ pub struct Solver {
     pub(crate) assertions_to_ground: Vec<(String, Term)>,
     // a mapping from a term to a composable representation of its grounding
     pub(crate) groundings: IndexMap<Term, Grounding>,
-
-    // pre-defined functions  (can't use `const`` because of String)
-    pub(crate) false_: QualIdentifier,
-    pub(crate) and: QualIdentifier,
-    pub(crate) or: QualIdentifier,
-    pub(crate) not: QualIdentifier,
-    pub(crate) implies: QualIdentifier,
-    pub(crate) eq: QualIdentifier,
 }
 
 
@@ -136,14 +128,6 @@ impl Default for Solver {
                 FunctionIs::Predefined{ boolean: Some(false) });
         };
 
-        let true_: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("true".to_string())));
-        let false_: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("false".to_string())));
-        let and: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("and".to_string())));
-        let or: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("or".to_string())));
-        let not: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("not".to_string())));
-        let implies: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("=>".to_string())));
-        let eq: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("=".to_string())));
-
         unsafe {
             let cfg = Z3_mk_config();
             let ctx = Z3_mk_context(cfg);
@@ -158,7 +142,6 @@ impl Default for Solver {
                 // qualified_functions: IndexMap::new(),
                 assertions_to_ground: vec![],
                 groundings: IndexMap::new(),
-                true_, false_, and, or, not, implies, eq
             }
         }
 

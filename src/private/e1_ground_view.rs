@@ -330,20 +330,16 @@ pub(crate) fn query_for_compound(
             },
             QueryVariant::Construct => {
                 // do not change ids.
-                if *qual_identifier == solver.true_ {
-                    match exclude {
-                        Some(false) => SQLExpr::Boolean(true),  // TU view
-                        Some(true) => return Ok(GroundingView::Empty), // UF view
-                        None => SQLExpr::Boolean(true),  // G view
-                    }
-                } else if *qual_identifier == solver.false_ {
-                    match exclude {
-                        Some(false) => return Ok(GroundingView::Empty),  // TU view
-                        Some(true) => SQLExpr::Boolean(false),  // UF view
-                        None => SQLExpr::Boolean(false),  // G view
-                    }
-                } else {  // non-boolean
-                    SQLExpr::Construct(qual_identifier.clone(), Box::new(groundings))
+                match (qual_identifier.to_string().as_str(), exclude) {
+                    ("true", Some(false)) => SQLExpr::Boolean(true),  // TU view
+                    ("true", Some(true)) => return Ok(GroundingView::Empty), // UF view
+                    ("true", None) => SQLExpr::Boolean(true),  // G view
+
+                    ("false", Some(false)) => return Ok(GroundingView::Empty),  // TU view
+                    ("false", Some(true)) => SQLExpr::Boolean(false),  // UF view
+                    ("false", None) => SQLExpr::Boolean(false),  // G view
+
+                    _ => SQLExpr::Construct(qual_identifier.clone(), Box::new(groundings))
                 }
             },
             QueryVariant::PredefinedBoolean => {
