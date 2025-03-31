@@ -167,7 +167,7 @@ fn interpret_pred_0(
 pub(crate) fn interpret_fun(
     identifier: Identifier,
     tuples: Vec<(XTuple, Term)>,
-    else_: Term,
+    else_: Option<Term>,
     command: String,
     solver: &mut Solver,
 )-> Result<String, SolverError> {
@@ -191,13 +191,17 @@ pub(crate) fn interpret_fun(
             if ! *boolean {
                 if domain.len() == 0 {  // constant
 
-                    let value = if tuples.len() == 1 { &tuples[0].1 }  // (x-interpret-fun c (() 1) 1)
-                        else { &else_ };  // (x-interpret-fun c () 1)
-                    let (value, ids) = if let Ok(value) = construct(value) {
-                        (value, Ids::All)
-                    } else {
-                        (value.to_string(), Ids::None)
-                    };
+                    let value =
+                        if tuples.len() == 0 {  // (x-interpret-fun c () 1)
+                            else_.ok_or(SolverError::ExprError("no values".to_string(), None))
+                        } else if tuples.len() == 1 {   // (x-interpret-fun c (() 1) 1)
+                            Ok(tuples[0].1.clone())
+                        } else { Err(SolverError::ExprError("too many tuples".to_string(), None)) }?;
+                    let (value, ids) = if let Ok(value) = construct(&value) {
+                            (value, Ids::All)
+                        } else {
+                            (value.to_string(), Ids::None)
+                        };
 
                     let sql = format!("CREATE VIEW IF NOT EXISTS {qual_identifier}_G AS SELECT \"{value}\" as G");
                     solver.conn.execute(&sql, ())?;
@@ -252,6 +256,8 @@ pub(crate) fn interpret_fun(
                         solver.functions.insert(qual_identifier, function_is);
                     } else {  // incomplete interpretation
                         // create G table
+                        let else_ = else_
+                            . ok_or(SolverError::ExprError("Missing an `else` value".to_string(), None));
                         todo!()
                     }
                 }

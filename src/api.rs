@@ -421,7 +421,7 @@ pub enum Command {
     XDebug(String, String),
     XGround,
     XInterpretPred(Identifier, Vec<XTuple>),
-    XInterpretFun(Identifier, Vec<(XTuple, Term)>, Term),
+    XInterpretFun(Identifier, Vec<(XTuple, Term)>, Option<Term>),
     Verbatim(String),
 }
 impl Display for Command {
@@ -484,7 +484,9 @@ impl Display for Command {
                 let tuples = s2.iter()
                     .map(|(args, value)| format!("({args} {value})"))
                     .collect::<Vec<_>>().join(" ");
-                write!(f, "(x-interpret-fun {s1} ( {tuples} ) {s3})")
+                let else_ = if let Some(else_) = s3 { else_.to_string() }
+                    else { "".to_string() };
+                write!(f, "(x-interpret-fun {s1} ( {tuples} ) {else_})")
             },
             Self::XDebug(s1, s2) => write!(f, "(x-debug {s1} {s2})"),
             Self::XGround => write!(f, "(x-ground)"),

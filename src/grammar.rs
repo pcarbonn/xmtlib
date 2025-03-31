@@ -381,7 +381,7 @@ peg::parser!{
               _ "("
               _  tuples: (ftuple() ** _)
               _ ")"
-              _ else_: term()
+              _ else_: term()?
               { XInterpretFun(identifier, tuples, else_) }
 
         rule xdebug() -> Command
