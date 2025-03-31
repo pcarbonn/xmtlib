@@ -174,7 +174,7 @@ pub(crate) enum QueryVariant {
 pub(crate) fn query_for_compound(
     qual_identifier: &QualIdentifier,
     index: TermId,
-    sub_queries: &mut Vec<GroundingView>,
+    sub_queries: &Vec<GroundingView>,
     variant: &QueryVariant,
     exclude: Option<bool>,
     solver: &mut Solver
@@ -191,7 +191,7 @@ pub(crate) fn query_for_compound(
     let mut ids_ = vec![];
     let mut precise = true;
 
-    for (i, sub_q) in sub_queries.iter_mut().enumerate() {
+    for (i, sub_q) in sub_queries.iter().enumerate() {
 
         match sub_q {
             GroundingView::Empty => {
@@ -200,7 +200,9 @@ pub(crate) fn query_for_compound(
             GroundingView::View {free_variables: sub_free_variables, condition: sub_condition,
                 grounding, query, ids: sub_ids,..} => {
 
-                free_variables.append(sub_free_variables);
+                let to_add = sub_free_variables.iter()
+                    .map(|(k, v)| (k.clone(), v.clone()));
+                free_variables.extend(to_add);
                 ids = max(ids, sub_ids.clone());
 
                 if let GroundingQuery::Join { variables: sub_variables, conditions: sub_conditions,
@@ -228,11 +230,11 @@ pub(crate) fn query_for_compound(
                         _ => {}
                     };
 
-                    conditions.append(sub_conditions);
+                    conditions.extend(sub_conditions.iter().cloned());
                     groundings.push(sub_grounding.clone());
                     ids_.push(sub_ids.clone());
-                    natural_joins.append(sub_natural_joins);
-                    theta_joins.append(sub_theta_joins);
+                    natural_joins.extend(sub_natural_joins.iter().cloned());
+                    theta_joins.extend(sub_theta_joins.iter().cloned());
                     precise &= *sub_precise;
 
                     // merge the variables
@@ -287,7 +289,7 @@ pub(crate) fn query_for_compound(
                                     }
                                 }).collect();
                             let sub_natural_join = NaturalJoin::ViewType(table_name.clone(), map_variables);
-                            natural_joins.append(&mut IndexSet::from([sub_natural_join]));
+                            natural_joins.insert(sub_natural_join.clone());
                         },
                     }
                 }
@@ -296,19 +298,23 @@ pub(crate) fn query_for_compound(
     };
 
     // remove natural_joins of types that are not used in variables
-    let natural_joins = natural_joins.into_iter()
-        .filter( |natural_join| {
+    let natural_joins = natural_joins.iter()
+        .filter_map( |natural_join| {
             match natural_join {
                 NaturalJoin::Variable(table_name, symbol) => {
                     let column = variables.get(symbol).unwrap();
                     if let Some(column) = column {
-                        column.table_name == *table_name  // // otherwise, unused variable
+                        if column.table_name == *table_name  {
+                            Some(natural_join.clone())
+                        } else {
+                            None // otherwise, unused variable
+                        }
                     } else {
                         unreachable!()  // infinite variable.
                     }
                 },
                 NaturalJoin::ViewType(..) => {
-                    true
+                    Some(natural_join.clone())
                 }
             }
         }).collect();
@@ -316,7 +322,7 @@ pub(crate) fn query_for_compound(
     let grounding =
         match variant {
             QueryVariant::Interpretation(table_name, ids_) => {
-                theta_joins.insert((table_name.clone(), thetas));
+                theta_joins.insert((table_name.clone(), thetas.clone()));
                 ids = ids_.clone();  // reflects the grounding column, not if_
                 match (ids_, exclude) {
                     (Ids::All, Some(false)) => SQLExpr::Boolean(true),  // TU view
