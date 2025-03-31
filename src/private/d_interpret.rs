@@ -68,8 +68,8 @@ pub(crate) fn interpret_pred(
                 let sql = format!("CREATE VIEW IF NOT EXISTS {identifier}_TU AS SELECT *, \"true\" as G from {identifier}_T");
                 solver.conn.execute(&sql, ())?;
 
-                let infinite = is_infinite(&domain, &solver);
-                if infinite {
+                let size = size(&domain, &solver);
+                if size == 0 {  // infinite
                     let table_uf = Interpretation::Infinite;
                     let table_g = Interpretation::Infinite;
 
@@ -125,7 +125,7 @@ pub(crate) fn interpret_pred(
 
 
 /// Interpret a predicate of arity 0
-pub(crate) fn interpret_pred_0(
+fn interpret_pred_0(
     qual_identifier: QualIdentifier,
     tuples: Vec<XTuple>,
     command: String,
@@ -189,10 +189,24 @@ pub(crate) fn interpret_fun(
             Err(SolverError::ExprError("Can't interpret a constructor".to_string(), None)),
         FunctionIs::Calculated { signature: (domain, co_domain, boolean) } => {
             if ! *boolean {
-                if domain.len() == 0 {
-                    // special case: arity 0
-                    todo!()
-                    //return interpret_fun_0(qual_identifier, tuples, else_, command, solver);
+                if domain.len() == 0 {  // constant
+
+                    let value = if tuples.len() == 1 { &tuples[0].1 }  // (x-interpret-fun c (() 1) 1)
+                        else { &else_ };  // (x-interpret-fun c () 1)
+                    let (value, ids) = if let Ok(value) = construct(value) {
+                        (value, Ids::All)
+                    } else {
+                        (value.to_string(), Ids::None)
+                    };
+
+                    let sql = format!("CREATE VIEW IF NOT EXISTS {qual_identifier}_G AS SELECT \"{value}\" as G");
+                    solver.conn.execute(&sql, ())?;
+
+                    // create FunctionIs.
+                    let table_g  = Interpretation::Table{name: format!("{qual_identifier}_G"), ids};
+                    let function_is = FunctionIs::NonBooleanInterpreted { table_g };
+                    solver.functions.insert(qual_identifier.clone(), function_is);
+
                 } else {
 
                     let domain = domain.clone();
@@ -211,13 +225,19 @@ pub(crate) fn interpret_fun(
                     let stmt = format!("INSERT INTO {name} VALUES ({holes})");
                     let mut stmt = solver.conn.prepare(&stmt)?;
 
+                    let mut ids = Ids::All;
                     for (XTuple(tuple), term) in &tuples {
                         if tuple.len() == domain.len() {
                             let mut tuples_t = tuple.iter()
                                 .map(|t| construct(t) )
                                 .collect::<Result<Vec<_>, SolverError>>()?;
                             // value is an id or an expression
-                            let value = construct(term).unwrap_or(term.to_string());
+                            let value = if let Ok(value) = construct(term) {
+                                    value
+                                } else {
+                                    ids = Ids::Some;
+                                    term.to_string()
+                                };
                             tuples_t.push(value);
                             stmt.execute(params_from_iter(tuples_t))?;
                         } else {
@@ -227,15 +247,15 @@ pub(crate) fn interpret_fun(
 
                     if size == tuples.len() {
                         // create FunctionIs
-                        let  table_g = Interpretation::Table{name, ids: Ids::All};
+                        let  table_g = Interpretation::Table{name, ids};
                         let function_is = FunctionIs::NonBooleanInterpreted { table_g };
                         solver.functions.insert(qual_identifier, function_is);
-                    } else {
+                    } else {  // incomplete interpretation
                         // create G table
                         todo!()
                     }
                 }
-            } else {
+            } else {  // boolean
                 todo!()
             };
             Ok(command)
@@ -244,28 +264,8 @@ pub(crate) fn interpret_fun(
 }
 
 
-pub(crate) fn is_infinite(
-    domain: &Vec<Sort>,
-    solver: &Solver
-) -> bool {
-    domain.iter()
-        .any( |sort| {
-            let sort_object = solver.sorts.get(sort);
-            if let Some(sort_object) = sort_object {
-                match sort_object {
-                    SortObject::Normal{..} => false,
-                    SortObject::Infinite
-                    | SortObject::Recursive
-                    | SortObject::Unknown => true,
-                }
-            } else {
-                unreachable!("7895162")
-            }
-        })
-}
-
-
-pub(crate) fn size(
+// returns the size of the domain (or 0 if infinite)
+fn size(
     domain: &Vec<Sort>,
     solver: &Solver
 ) -> usize {
@@ -288,7 +288,7 @@ pub(crate) fn size(
 
 /// Create interpretation table in DB, with foreign keys
 /// (boolean if no co_domain)
-pub(crate) fn create_interpretation_table(
+fn create_interpretation_table(
     name: String,
     domain: &Vec<Sort>,
     co_domain: &Option<Sort>,
@@ -343,7 +343,7 @@ pub(crate) fn create_interpretation_table(
 
 /// Returns the string representation of the id.
 /// Constructor applications are preceded by a space, e.g. ` (cons 0 nil)`
-pub(crate) fn construct(id: &Term) -> Result<String, SolverError> {
+fn construct(id: &Term) -> Result<String, SolverError> {
     match id {
         Term::SpecConstant(_) => Ok(id.to_string()),
         Term::Identifier(_) => Ok(id.to_string()),

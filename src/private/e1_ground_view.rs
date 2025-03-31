@@ -188,7 +188,7 @@ pub(crate) fn query_for_compound(
     let mut natural_joins = IndexSet::new();
     let mut theta_joins = IndexSet::new();
     let mut thetas = vec![];
-    let mut ids: Ids = Ids::All;
+    let mut ids = Ids::All;
     let mut ids_ = vec![];
     let mut precise = true;
 
