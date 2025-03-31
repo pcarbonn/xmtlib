@@ -68,6 +68,7 @@ Functions:
  - div: Predefined (false)
  - mod: Predefined (false)
  - abs: Predefined (false)
+ - hue: Constructor
  - dim: Boolean (dim_TU Complete, dim_UF Complete, dim_G Complete)
 Groundings:
  - x: SELECT Hue.G AS x, Hue.G AS G FROM Hue

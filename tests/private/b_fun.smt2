@@ -47,5 +47,6 @@ Functions:
  - abs: Predefined (false)
  - bright: Color -> Bool (true)
  - invert: Color -> Color (false)
+ - pair: Constructor
  - brightest: (Pair Color) -> Color (false)
  - colorOf: Int -> Color (false)

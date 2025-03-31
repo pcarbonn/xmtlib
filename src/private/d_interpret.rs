@@ -47,19 +47,18 @@ pub(crate) fn interpret_pred(
                 create_interpretation_table(format!("{identifier}_T"), &domain, &None, solver)?;
 
                 // populate the table
-                let holes = (0..domain.len()).map(|_|"?").collect::<Vec<_>>().join(",");  // "?" n times
-                let stmt = format!("INSERT INTO {identifier}_T VALUES ({holes})");
-                let mut stmt = solver.conn.prepare(&stmt)?;
+                let mut tuples_strings = vec![];
                 for XTuple(tuple) in &tuples {
                     if tuple.len() == domain.len() {
                         let tuples_t = tuple.iter()
-                            .map(|t| construct(t) )
+                            .map(|t| construct(t, solver) )
                             .collect::<Result<Vec<_>, SolverError>>()?;
-                        stmt.execute(params_from_iter(tuples_t))?;
+                        tuples_strings.push(tuples_t);
                     } else {
                         return Err(SolverError::ExprError("Incorrect tuple length".to_string(), None))
                     }
                 }
+                populate_table(&format!("{identifier}_T"), tuples_strings, solver)?;
 
                 // create TU view
                 let name_tu = format!("{identifier}_TU");
@@ -197,7 +196,7 @@ pub(crate) fn interpret_fun(
                         } else if tuples.len() == 1 {   // (x-interpret-fun c (() 1) 1)
                             Ok(tuples[0].1.clone())
                         } else { Err(SolverError::ExprError("too many tuples".to_string(), None)) }?;
-                    let (value, ids) = if let Ok(value) = construct(&value) {
+                    let (value, ids) = if let Ok(value) = construct(&value, solver) {
                             (value, Ids::All)
                         } else {
                             (value.to_string(), Ids::None)
@@ -222,32 +221,27 @@ pub(crate) fn interpret_fun(
                     create_interpretation_table(name.clone(), &domain, &Some(co_domain), solver)?;
 
                     // populate the table
-                    let holes = (0..(domain.len()+1))  // "?" n+1 times
-                        .map(|_|"?")
-                        .collect::<Vec<_>>()
-                        .join(",");
-                    let stmt = format!("INSERT INTO {name} VALUES ({holes})");
-                    let mut stmt = solver.conn.prepare(&stmt)?;
-
                     let mut ids = Ids::All;
+                    let mut tuples_strings = vec![];
                     for (XTuple(tuple), term) in &tuples {
                         if tuple.len() == domain.len() {
                             let mut tuples_t = tuple.iter()
-                                .map(|t| construct(t) )
+                                .map(|t| construct(t, solver) )
                                 .collect::<Result<Vec<_>, SolverError>>()?;
                             // value is an id or an expression
-                            let value = if let Ok(value) = construct(term) {
+                            let value = if let Ok(value) = construct(term, solver) {
                                     value
                                 } else {
                                     ids = Ids::Some;
                                     term.to_string()
                                 };
                             tuples_t.push(value);
-                            stmt.execute(params_from_iter(tuples_t))?;
+                            tuples_strings.push(tuples_t);
                         } else {
                             return Err(SolverError::ExprError("Incorrect tuple length".to_string(), None))
                         }
                     }
+                    populate_table(&name, tuples_strings, solver)?;
 
                     if size == tuples.len() {
                         // create FunctionIs
@@ -349,15 +343,28 @@ fn create_interpretation_table(
 
 /// Returns the string representation of the id.
 /// Constructor applications are preceded by a space, e.g. ` (cons 0 nil)`
-fn construct(id: &Term) -> Result<String, SolverError> {
+fn construct(id: &Term, solver: &mut Solver) -> Result<String, SolverError> {
     match id {
         Term::SpecConstant(_) => Ok(id.to_string()),
         Term::Identifier(_) => Ok(id.to_string()),
         Term::Application(qual_identifier, terms) => {
-            let new_terms = terms.iter()
-                .map( |t| construct(t))
-                .collect::<Result<Vec<_>, SolverError>>()?.join(" ");
-            Ok(format!(" ({qual_identifier} {new_terms})"))
+            if let Some(f_is) = solver.functions.get(qual_identifier) {
+                match f_is {
+                    FunctionIs::Constructor => {
+                        let new_terms = terms.iter()
+                            .map( |t| construct(t, solver))
+                            .collect::<Result<Vec<_>, SolverError>>()?.join(" ");
+                        Ok(format!(" ({qual_identifier} {new_terms})"))
+                    },
+                    FunctionIs::Predefined { .. }
+                    | FunctionIs::Calculated { .. }
+                    | FunctionIs::NonBooleanInterpreted { .. }
+                    | FunctionIs::BooleanInterpreted { .. } =>
+                        Err(SolverError::ExprError("Not an id".to_string(), None)),
+                }
+            } else {
+                Err(SolverError::ExprError("Unknown symbol".to_string(), None))
+            }
         },
         Term::Let(_, _)
         | Term::Forall(_, _)
@@ -367,4 +374,23 @@ fn construct(id: &Term) -> Result<String, SolverError> {
         | Term::XSortedVar(_, _) =>
             Err(SolverError::ExprError("Invalid id in interpretation".to_string(), None))
     }
+}
+
+fn populate_table(
+    name: &String,
+    tuples_strings: Vec<Vec<String>>,
+    solver: &mut Solver
+) -> Result<(), SolverError> {
+    if let Some(tuple) = tuples_strings.first() {
+        let holes = (0..(tuple.len()))  // "?" n times
+            .map(|_|"?")
+            .collect::<Vec<_>>()
+            .join(",");
+        let stmt = format!("INSERT INTO {name} VALUES ({holes})");
+        let mut stmt = solver.conn.prepare(&stmt)?;
+        for tuples_t in tuples_strings.iter() {
+            stmt.execute(params_from_iter(tuples_t))?;
+        }
+    }
+    Ok(())
 }

@@ -129,6 +129,7 @@ Functions:
  - p: Boolean (p_TU Complete, p_UF Complete, p_G Complete)
  - bright: Boolean (bright_TU Complete, bright_UF Complete, bright_G Complete)
  - same: Boolean (same_TU Complete, same_UF Complete, same_G Complete)
+ - hue: Constructor
  - dim: Boolean (dim_TU Complete, dim_UF Complete, dim_G Complete)
 Groundings:
  - p:

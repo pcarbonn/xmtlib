@@ -9,7 +9,7 @@
 (declare-fun mix (Color Color) Color)
 (x-interpret-fun mix
    ( ((red red) green)
-     ((green green) red)
+     ((green green) (mix green green))
      ((red green) green)
      ((green red) green)
    )
@@ -27,7 +27,7 @@
 (x-interpret-fun c (  ) red)
 
 (declare-fun mix (Color Color) Color)
-(x-interpret-fun mix ( ((red red) green) ((green green) red) ((red green) green) ((green red) green) ) red)
+(x-interpret-fun mix ( ((red red) green) ((green green) (mix green green)) ((red green) green) ((green red) green) ) red)
 
 (push)
 (assert (= c green))
@@ -36,7 +36,7 @@
 (push)
 (assert (exists ((x Color)) (= (mix x x) x)))
 (pop)
-(assert false)
+(assert (= (mix green green) green))
 Functions:
  - true: Constructor
  - false: Constructor
@@ -59,7 +59,7 @@ Functions:
  - mod: Predefined (false)
  - abs: Predefined (false)
  - c: Non Boolean (c_G Complete)
- - mix: Non Boolean (mix_G Complete)
+ - mix: Non Boolean (mix_G Partial)
 Groundings:
  - c: SELECT c_G.G AS G FROM c_G AS c_G
  - green: SELECT "green" AS G
@@ -70,8 +70,8 @@ Groundings:
  - x: SELECT Color_3.G AS x, Color_3.G AS G FROM Color AS Color_3
  - (mix x x): SELECT mix_G_4.a_1 AS x, mix_G_4.G AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_1 = mix_G_4.a_0
  - (= (mix x x) x):
-    T: SELECT mix_G_4.a_1 AS x, eq_(mix_G_4.G, mix_G_4.a_1) AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_1 = mix_G_4.a_0
-    F: SELECT mix_G_4.a_1 AS x, eq_(mix_G_4.G, mix_G_4.a_1) AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_1 = mix_G_4.a_0
+    TU: SELECT mix_G_4.a_1 AS x, eq_(mix_G_4.G, mix_G_4.a_1) AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_1 = mix_G_4.a_0
+    UF: SELECT mix_G_4.a_1 AS x, eq_(mix_G_4.G, mix_G_4.a_1) AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_1 = mix_G_4.a_0
     G : SELECT mix_G_4.a_1 AS x, eq_(mix_G_4.G, mix_G_4.a_1) AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_1 = mix_G_4.a_0
  - (exists ((x Color)) (= (mix x x) x)):
     TU: SELECT or_aggregate(G) as G from (SELECT mix_G_4.a_1 AS x, eq_(mix_G_4.G, mix_G_4.a_1) AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_1 = mix_G_4.a_0)
@@ -79,14 +79,14 @@ Groundings:
     G : SELECT or_aggregate(G) as G from (SELECT mix_G_4.a_1 AS x, eq_(mix_G_4.G, mix_G_4.a_1) AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_1 = mix_G_4.a_0)
 CREATE VIEW c_G AS SELECT "red" as G
  TABLE: mix_g
-┌─────────┬─────────┬─────────┐
-│ a_0     │ a_1     │ G       │
-├─────────┼─────────┼─────────┤
-│ "red"   │ "red"   │ "green" │
-├─────────┼─────────┼─────────┤
-│ "green" │ "green" │ "red"   │
-├─────────┼─────────┼─────────┤
-│ "red"   │ "green" │ "green" │
-├─────────┼─────────┼─────────┤
-│ "green" │ "red"   │ "green" │
-└─────────┴─────────┴─────────┘
+┌─────────┬─────────┬─────────────────────┐
+│ a_0     │ a_1     │ G                   │
+├─────────┼─────────┼─────────────────────┤
+│ "red"   │ "red"   │ "green"             │
+├─────────┼─────────┼─────────────────────┤
+│ "green" │ "green" │ "(mix green green)" │
+├─────────┼─────────┼─────────────────────┤
+│ "red"   │ "green" │ "green"             │
+├─────────┼─────────┼─────────────────────┤
+│ "green" │ "red"   │ "green"             │
+└─────────┴─────────┴─────────────────────┘

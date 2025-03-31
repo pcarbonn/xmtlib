@@ -6,8 +6,9 @@ use indexmap::{IndexMap, IndexSet};
 use itertools::Itertools;
 use rusqlite::{params, Connection};
 
-use crate::api::{ConstructorDec, DatatypeDec, Identifier, Numeral, SelectorDec, Sort, SortDec, Symbol};
+use crate::api::{ConstructorDec, DatatypeDec, Identifier, Numeral, SelectorDec, Sort, SortDec, Symbol, QualIdentifier};
 use crate::{error::SolverError::{self, InternalError}, solver::Solver};
+use crate::private::b_fun::FunctionIs;
 
 #[allow(unused_imports)]
 use debug_print::debug_println as dprintln;
@@ -503,6 +504,10 @@ fn create_table(
         //      from Color as T1 join Color as T2"
         for constructor_decl in constructor_decls { // e.g. (pair (first Color) (second Color))
             let ConstructorDec(constructor, selectors) = constructor_decl;
+
+            let qual_identifier = QualIdentifier::Identifier(Identifier::Simple(constructor.clone()));
+            solver.functions.insert(qual_identifier, FunctionIs::Constructor);
+
             if selectors.len() != 0 {  // otherwise, already in core table
 
                 // compute the list of tables and column sort_mapping
