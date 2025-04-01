@@ -7,7 +7,6 @@
 (assert (forall ((x T)) (not (p x (f a)))))
 (x-ground)
 (x-debug db p_TU)
-(x-debug db-view Agg_0_TU)
 (x-debug solver groundings)
 -------------------------
 
@@ -30,7 +29,6 @@
 ├─────┼─────┼────────┤
 │ "a" │ "a" │ "true" │
 └─────┴─────┴────────┘
-****** Database Error: Query returned no rows
 Groundings:
  - a: SELECT "a" AS G
  - (p a a):

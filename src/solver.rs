@@ -162,7 +162,10 @@ impl Solver {
                     for result in self.execute(commands) {
                         match result {
                             Ok(s) => yield_!(s),
-                            Err(e) => yield_!(format_error(&source, e))
+                            Err(e) => {
+                                yield_!(format_error(&source, e));
+                                break
+                            }
                         }
                     }
                 },
@@ -182,7 +185,11 @@ impl Solver {
         gen!({
             for command in commands {
                 for result in self.execute1(command) {
-                    yield_!(result)
+                    if result.is_err() {
+                        yield_!(result);
+                        break
+                    }
+                    yield_!(result);
                 }
             }
         })

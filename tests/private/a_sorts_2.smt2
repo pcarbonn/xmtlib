@@ -16,7 +16,6 @@
 (x-debug solver parametric_sorts)
 (x-debug solver sorts)
 (x-debug solver functions)
-(x-debug db TreeInt)
 (check-sat)
 
 -------------------------
@@ -66,5 +65,4 @@ Functions:
  - div: Predefined (false)
  - mod: Predefined (false)
  - abs: Predefined (false)
-****** Error: Unknown table
 (check-sat)
