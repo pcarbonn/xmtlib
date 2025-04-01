@@ -26,8 +26,8 @@
 (pop)
 (assert (forall ((x Int) (y Int) (z Int)) (phi 1 2 3)))
 Functions:
- - true: Constructed
- - false: Constructed
+ - true: Constructor
+ - false: Constructor
  - not: Predefined (true)
  - =>: Predefined (true)
  - and: Predefined (true)

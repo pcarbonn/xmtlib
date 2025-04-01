@@ -430,7 +430,7 @@ fn ground_compound(
                 todo!()
             }
         },
-        FunctionIs::Constructed => {
+        FunctionIs::Constructor => {
             if qual_identifier.to_string() == "true"
             || qual_identifier.to_string() == "false" {  // boolean
                 let variant = QueryVariant::Construct;

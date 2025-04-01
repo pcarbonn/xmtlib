@@ -106,8 +106,8 @@
 └──────────────────┘
 CREATE VIEW Agg_1_UF AS SELECT or_aggregate(G) as G from (SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2)
 Functions:
- - true: Constructed
- - false: Constructed
+ - true: Constructor
+ - false: Constructor
  - not: Predefined (true)
  - =>: Predefined (true)
  - and: Predefined (true)

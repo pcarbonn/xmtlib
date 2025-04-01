@@ -8,7 +8,7 @@ use xmtlib::solver::Solver;
 
 
 #[test] fn test_a_sorts_1()     { test_file(Path::new("tests/private/a_sorts_1.smt2")) }
-#[test] fn test_a_sorts_2()     { test_file(Path::new("tests/private/a_sorts_1.smt2")) }
+#[test] fn test_a_sorts_2()     { test_file(Path::new("tests/private/a_sorts_2.smt2")) }
 #[test] fn test_b_fun()         { test_file(Path::new("tests/private/b_fun.smt2")) }
 #[test] fn test_c_term_const()  { test_file(Path::new("tests/private/c_term_const.smt2")) }
 #[test] fn test_c_term_quant()  { test_file(Path::new("tests/private/c_term_quant.smt2")) }

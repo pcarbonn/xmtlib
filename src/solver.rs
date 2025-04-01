@@ -103,7 +103,7 @@ impl Default for Solver {
         // boolean pre-defined functions
         for s in ["true", "false"] {
             functions.insert(function(s),
-                FunctionIs::Constructed);
+                FunctionIs::Constructor);
         }
 
         // boolean pre-defined functions
@@ -287,8 +287,8 @@ impl Solver {
                                                 } else {
                                                     yield_!(Ok(format!(" - {symbol}: Predefined (?)")))
                                                 },
-                                            FunctionIs::Constructed =>
-                                                yield_!(Ok(format!(" - {symbol}: Constructed"))),
+                                            FunctionIs::Constructor =>
+                                                yield_!(Ok(format!(" - {symbol}: Constructor"))),
                                             FunctionIs::Calculated{signature} => {
                                                 let (domain, co_domain, boolean) = signature;
                                                 let domain = domain.iter()

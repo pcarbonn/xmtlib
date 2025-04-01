@@ -38,8 +38,8 @@
 (pop)
 (assert false)
 Functions:
- - true: Constructed
- - false: Constructed
+ - true: Constructor
+ - false: Constructor
  - not: Predefined (true)
  - =>: Predefined (true)
  - and: Predefined (true)

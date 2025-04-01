@@ -32,7 +32,7 @@ pub(crate) fn interpret_pred(
             Err(SolverError::ExprError("Can't re-interpret an interpreted symbol".to_string(), None)),
         FunctionIs::NonBooleanInterpreted { .. } =>
             Err(SolverError::ExprError("Can't re-interpret an interpreted symbol".to_string(), None)),
-        FunctionIs::Constructed { .. } =>
+        FunctionIs::Constructor { .. } =>
             Err(SolverError::ExprError("Can't interpret a constructor".to_string(), None)),
         FunctionIs::Calculated { signature: (domain, _, boolean) } => {
             if ! *boolean {
@@ -185,7 +185,7 @@ pub(crate) fn interpret_fun(
             Err(SolverError::ExprError("Can't re-interpret an interpreted symbol".to_string(), None)),
         FunctionIs::NonBooleanInterpreted { .. } =>
             Err(SolverError::ExprError("Can't re-interpret an interpreted symbol".to_string(), None)),
-        FunctionIs::Constructed { .. } =>
+        FunctionIs::Constructor { .. } =>
             Err(SolverError::ExprError("Can't interpret a constructor".to_string(), None)),
         FunctionIs::Calculated { signature: (domain, co_domain, boolean) } => {
             if ! *boolean {

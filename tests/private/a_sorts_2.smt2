@@ -15,8 +15,10 @@
 (define-sort MyPair () (Pair A B))
 (x-debug solver parametric_sorts)
 (x-debug solver sorts)
-(x_debug db TreeInt)
+(x-debug solver functions)
+(x-debug db TreeInt)
 (check-sat)
+
 -------------------------
 
 (declare-datatypes ((Tree 1) (TreeList 1)) ((par (X) ((node (value X) (children (TreeList X))))) (par (Y) ((empty ) (insert (head (Tree Y)) (tail (TreeList Y)))))))
@@ -43,4 +45,26 @@ Sorts:
  - (unknown) B
  - (unknown) (Pair A B)
  - (unknown) MyPair
+Functions:
+ - true: Constructor
+ - false: Constructor
+ - not: Predefined (true)
+ - =>: Predefined (true)
+ - and: Predefined (true)
+ - or: Predefined (true)
+ - xor: Predefined (true)
+ - =: Predefined (true)
+ - distinct: Predefined (true)
+ - <=: Predefined (true)
+ - <: Predefined (true)
+ - >=: Predefined (true)
+ - >: Predefined (true)
+ - ite: Predefined (?)
+ - +: Predefined (false)
+ - -: Predefined (false)
+ - *: Predefined (false)
+ - div: Predefined (false)
+ - mod: Predefined (false)
+ - abs: Predefined (false)
+****** Error: Unknown table
 (check-sat)
