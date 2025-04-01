@@ -18,9 +18,6 @@
 (declare-fun dim (Hue) Bool)
 (x-interpret-pred dim ((hue red red)))
 
-(push)
-(assert (exists ((x Hue)) (dim x)))
-(pop)
  TABLE: Color
 ┌─────────┐
 │ G       │

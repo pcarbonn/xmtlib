@@ -11,20 +11,8 @@
 
 
 
-(push)
-(assert (= 2 2 2))
-(pop)
-(push)
-(assert (not (= 2 2)))
-(pop)
 (assert false)
-(push)
-(assert (= (= 2 2) (not (= 3 3))))
-(pop)
 (assert false)
-(push)
-(assert (and (= 2 2) (not (= 3 3))))
-(pop)
 (assert false)
 Groundings:
  - 2: SELECT 2 AS G

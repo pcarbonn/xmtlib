@@ -22,24 +22,9 @@
 
 
 
-(push)
-(assert true)
-(pop)
-(push)
 (assert p)
-(pop)
-(assert p)
-(push)
 (assert (q red))
-(pop)
-(assert (q red))
-(push)
 (assert (or (q red) (q green)))
-(pop)
-(assert (or (q red) (q green)))
-(push)
-(assert (or (q red) (q red)))
-(pop)
 (assert (or (q red) (q red)))
 Groundings:
  - true:

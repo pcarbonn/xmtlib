@@ -26,17 +26,8 @@
 
 
 
-(push)
-(assert (forall ((x Node) (y Node) (z Node)) (=> (and (Edge x y) (Edge y z) (Edge x z)) (phi x y z))))
-(pop)
 (assert (phi |1| |2| |3|))
-(push)
-(assert (forall ((x Node)) (Edge x x)))
-(pop)
 (assert false)
-(push)
-(assert (exists ((x Node) (y Node)) (Edge x y)))
-(pop)
 CREATE VIEW Agg_14_UF AS SELECT or_aggregate(G) as G from (SELECT Edge_G_2.a_0 AS x, Edge_G_2.a_1 AS y, Edge_G_2.G AS G FROM Edge_G AS Edge_G_2)
 Groundings:
  - x: SELECT Node.G AS x, Node.G AS G FROM Node

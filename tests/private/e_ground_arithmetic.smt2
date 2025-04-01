@@ -11,20 +11,8 @@
 
 
 
-(push)
-(assert (= 2 (+ 1 (abs 1))))
-(pop)
 (assert (= 2 (+ 1 1)))
-(push)
-(assert (= 2 (- 3 1 1)))
-(pop)
-(push)
-(assert (= 4 (* 2 2 -1)))
-(pop)
 (assert (= 4 (* -1 4)))
-(push)
-(assert (= 1 (mod 3 2)))
-(pop)
 (assert (= 1 (mod 3 2)))
 Groundings:
  - 2: SELECT 2 AS G

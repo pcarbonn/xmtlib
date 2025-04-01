@@ -21,23 +21,8 @@
 (x-interpret-pred is_true (true))
 
 
-(push)
 (assert false)
-(pop)
 (assert false)
-(push)
-(assert (and true true))
-(pop)
-(push)
-(assert (or false false))
-(pop)
-(assert false)
-(push)
-(assert (is_true true))
-(pop)
-(push)
-(assert (not (is_true (exists ((x Bool)) (is_true x)))))
-(pop)
 (assert false)
 Groundings:
  - false:

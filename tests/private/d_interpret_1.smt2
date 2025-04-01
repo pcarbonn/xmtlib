@@ -48,22 +48,7 @@
 (declare-fun dim (Hue) Bool)
 (x-interpret-pred dim ((hue red red)))
 
-(push)
-(assert p)
-(pop)
 (assert false)
-(push)
-(assert (exists ((x Color)) (bright x)))
-(pop)
-(push)
-(assert (exists ((x Color)) (same x x)))
-(pop)
-(push)
-(assert (exists ((x Color)) (exists ((y Color)) (same x y))))
-(pop)
-(push)
-(assert (exists ((x Hue)) (dim x)))
-(pop)
  TABLE: bright_TU
 ┌───────┬────────┐
 │ a_0   │ G      │

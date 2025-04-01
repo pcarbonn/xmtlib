@@ -21,9 +21,6 @@
 (declare-fun phi (Int Int Int) Bool)
 (x-interpret-pred Edge (1 2) (2 3) (1 3))
 
-(push)
-(assert (forall ((x Int) (y Int) (z Int)) (=> (and (Edge x y) (Edge y z) (Edge x z)) (phi x y z))))
-(pop)
 (assert (forall ((x Int) (y Int) (z Int)) (phi 1 2 3)))
 Functions:
  - true: Constructor

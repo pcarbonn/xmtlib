@@ -18,6 +18,7 @@ use crate::private::e_ground::{ground, Grounding};
 use crate::private::y_db::init_db;
 
 
+#[derive(PartialEq)]
 pub enum Backend {
     NoDriver,
     Z3(Z3_context)

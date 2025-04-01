@@ -29,13 +29,7 @@
 (declare-fun mix (Color Color) Color)
 (x-interpret-fun mix ( ((red red) green) ((green green) (mix green green)) ((red green) green) ((green red) green) ) red)
 
-(push)
-(assert (= c green))
-(pop)
 (assert false)
-(push)
-(assert (exists ((x Color)) (= (mix x x) x)))
-(pop)
 (assert (= (mix green green) green))
 Functions:
  - true: Constructor

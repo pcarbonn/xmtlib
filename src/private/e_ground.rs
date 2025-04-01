@@ -12,7 +12,7 @@ use crate::private::b_fun::{FunctionIs, Interpretation};
 use crate::private::e1_ground_view::{GroundingView, Ids, ViewType, QueryVariant,
     query_for_constant, query_for_variable, query_for_compound, query_for_aggregate, query_for_union};
 use crate::private::e2_ground_query::TableName;
-use crate::solver::Solver;
+use crate::solver::{Solver, Backend};
 
 
 /////////////////////  Data structure for Grounding  //////////////////////////
@@ -63,10 +63,12 @@ pub(crate) fn ground(
             .collect::<(Vec<_>, Vec<_>)>();
 
         for (term, command) in terms.iter().zip(commands) {
-            // push and pop, to avoid polluting the SMT state
-            yield_!(solver.exec("(push)"));
-            yield_!(solver.exec(&command));
-            yield_!(solver.exec("(pop)"));
+            if solver.backend != Backend::NoDriver {
+                // push and pop, to avoid polluting the SMT state
+                yield_!(solver.exec("(push)"));
+                yield_!(solver.exec(&command));
+                yield_!(solver.exec("(pop)"));
+            }
 
             match ground_term(&term, true, solver) {
                 Ok(g) => {

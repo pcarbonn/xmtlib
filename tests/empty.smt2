@@ -4,8 +4,5 @@
 -------------------------
 
 
-(push)
-(assert false)
-(pop)
 (assert false)
 (check-sat)

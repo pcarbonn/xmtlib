@@ -16,12 +16,6 @@
 (declare-fun f (T) T)
 
 
-(push)
-(assert (p a a))
-(pop)
-(push)
-(assert (forall ((x T)) (not (p x (f a)))))
-(pop)
 (assert (not (= (f a) a)))
  TABLE: p_TU
 ┌─────┬─────┬────────┐
