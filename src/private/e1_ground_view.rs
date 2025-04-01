@@ -168,7 +168,7 @@ pub(crate) enum QueryVariant {
     Interpretation(TableName, Ids),
     Apply,
     Construct,
-    PredefinedBoolean
+    Predefined
 }
 
 /// Creates a query for a compound term, according to `variant`.
@@ -259,7 +259,7 @@ pub(crate) fn query_for_compound(
                         },
                         QueryVariant::Apply
                         | QueryVariant::Construct
-                        | QueryVariant::PredefinedBoolean => {}
+                        | QueryVariant::Predefined => {}
                     }
                 } else {  // not a Join --> use the ViewType
                     match grounding {
@@ -349,7 +349,7 @@ pub(crate) fn query_for_compound(
                     _ => SQLExpr::Construct(qual_identifier.clone(), Box::new(groundings))
                 }
             },
-            QueryVariant::PredefinedBoolean => {
+            QueryVariant::Predefined => {
                 // LINK src/doc.md#_Equality
                 let function = match qual_identifier.to_string().as_str() {
                     "and"       => Predefined::And,
@@ -362,6 +362,13 @@ pub(crate) fn query_for_compound(
                     ">="        => Predefined::GE,
                     ">"         => Predefined::Greater,
                     "distinct"  => Predefined::Distinct,
+
+                    "+"     => Predefined::Plus,
+                    "-"     => Predefined::Minus,
+                    "*"     => Predefined::Times,
+                    "div"   => Predefined::Div,
+                    "abs"   => Predefined::Abs,
+                    "mod"   => Predefined::Mod,
                     _ => panic!()
                 };
                 if ! [  Predefined::And,

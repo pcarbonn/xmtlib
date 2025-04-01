@@ -357,6 +357,185 @@ pub(crate) fn init_db(
             }
         })?;
 
+    // left_ associative: + - * div
+    conn.create_scalar_function(
+        "left_",
+        -1,
+        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,
+        |ctx| {
+            let operator: String = ctx.get(0)?;
+
+            // split args into strs, ints, reals values
+            // raise error if both ints and reals
+            let mut args = vec![];
+            let mut strs = vec![];
+            let mut ints = vec![];
+            let mut reals = vec![];
+            for i in 1..ctx.len() {
+                let value = ctx.get_raw(i);
+                match value {
+                    rusqlite::types::ValueRef::Null =>
+                        return Err(Error::InvalidFunctionParameterType(i, value.data_type())),
+                    rusqlite::types::ValueRef::Integer(val) => {
+                        if 0 < reals.len() {
+                            return Err(Error::InvalidFunctionParameterType(i, value.data_type()))
+                        }
+                        args.push(val.to_string());
+                        ints.push(val);
+                    }
+                    rusqlite::types::ValueRef::Real(val) => {
+                        if 0 < ints.len() {
+                            return Err(Error::InvalidFunctionParameterType(i, value.data_type()))
+                        }
+                        args.push(val.to_string());
+                        reals.push(val);
+                    }
+                    rusqlite::types::ValueRef::Text(_) => {
+                        let val = ctx.get::<String>(i)?;
+                        args.push(val.clone());
+                        strs.push(val);
+                    }
+                    rusqlite::types::ValueRef::Blob(_) =>
+                        return Err(Error::InvalidFunctionParameterType(i, value.data_type())),
+                }
+            }
+
+            // reduce literals
+            if 0 < ints.len() {
+                match operator.as_str() {
+                    "+" => {
+                        let val = ints.into_iter().sum::<i64>();
+                        if val != 0 { strs.push(val.to_string()) }
+                    },
+                    "-" => {
+                        if let rusqlite::types::ValueRef::Integer(val) = ctx.get_raw(0) {
+                            let mut acc = val;
+                            for i in ints.iter().skip(1) {
+                                acc -= i;
+                            };
+                            if acc != 0 {
+                                strs.insert(0, acc.to_string())
+                            }
+                        } else {
+                            let mut acc = 0;
+                            for i in ints.iter().skip(1) {
+                                acc += i;
+                            };
+                            if acc != 0 {
+                                strs.push(acc.to_string())
+                            }
+                        }
+                    }
+                    "*" => {
+                        let val = ints.into_iter().product::<i64>();
+                        if val != 1 { strs.push(val.to_string()) }
+                    },
+                    "div" => {
+                        if let rusqlite::types::ValueRef::Integer(val) = ctx.get_raw(0) {
+                            let mut acc = val;
+                            for i in ints.iter().skip(1) {
+                                acc /= i;
+                            };
+                            if acc != 1 {
+                                strs.insert(0, acc.to_string())
+                            }
+                        } else {
+                            let mut acc = 1;
+                            for i in ints.iter().skip(1) {
+                                acc *= i;
+                            };
+                            if acc != 1 {
+                                strs.push(acc.to_string())
+                            }
+                        }
+                    }
+                    _ => unreachable!()
+                }
+            }
+
+            if 0 < reals.len() {
+                match operator.as_str() {
+                    "+" => {
+                        let val = reals.into_iter().sum::<f64>();
+                        if val != 0.0 { strs.push(val.to_string()) }
+                    },
+                    "-" => {
+                        if let rusqlite::types::ValueRef::Real(val) = ctx.get_raw(0) {
+                            let mut acc = val;
+                            for i in reals.iter().skip(1) {
+                                acc -= i;
+                            };
+                            if acc != 0.0 {
+                                strs.insert(0, acc.to_string())
+                            }
+                        } else {
+                            let mut acc = 0.0;
+                            for i in reals.iter().skip(1) {
+                                acc += i;
+                            };
+                            if acc != 0.0 {
+                                strs.push(acc.to_string())
+                            }
+                        }
+                    }
+                    "*" => {
+                        let val = reals.into_iter().product::<f64>();
+                        if val != 1.0 { strs.push(val.to_string()) }
+                    },
+                    "div" => {
+                        if let rusqlite::types::ValueRef::Real(val) = ctx.get_raw(0) {
+                            let mut acc = val;
+                            for i in reals.iter().skip(1) {
+                                acc /= i;
+                            };
+                            if acc != 1.0 {
+                                strs.insert(0, acc.to_string())
+                            }
+                        } else {
+                            let mut acc = 1.0;
+                            for i in reals.iter().skip(1) {
+                                acc *= i;
+                            };
+                            if acc != 1.0 {
+                                strs.push(acc.to_string())
+                            }
+                        }
+                    }
+                    _ => unreachable!()
+                }
+            }
+
+            if strs.len() == 1 {
+                Ok(strs.join(" "))
+            } else {
+                Ok(format!("({} {})", operator, strs.join(" ")))
+            }
+        })?;
+
+    // create function "abs_"
+    conn.create_scalar_function(
+        "abs_",
+        1,                     // Number of arguments the function takes
+        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,                  // Deterministic (same input gives same output)
+        |ctx| {                // The function logic
+            let value = ctx.get_raw(0);
+            match value {
+                rusqlite::types::ValueRef::Null =>
+                    return Err(Error::InvalidFunctionParameterType(0, value.data_type())),
+                rusqlite::types::ValueRef::Integer(val) =>
+                    Ok(val.abs().to_string()),
+                rusqlite::types::ValueRef::Real(val) =>
+                    Ok(val.abs().to_string()),
+                rusqlite::types::ValueRef::Text(_) => {
+                    let value = ctx.get::<String>(0)?;
+                    Ok(format!("(abs {})", value))
+                }
+                rusqlite::types::ValueRef::Blob(_) =>
+                    return Err(Error::InvalidFunctionParameterType(0, value.data_type())),
+            }
+        },
+    )?;
+
     conn.create_aggregate_function(
         "and_aggregate",
         1,

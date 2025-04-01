@@ -28,22 +28,31 @@ pub(crate) enum SQLExpr {
 
 #[derive(Debug, strum_macros::Display, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum Predefined {
+    // display is the SMT-lib symbol
 
-    #[strum(to_string = "AND")] And,
-    #[strum(to_string = "OR" )] Or,
-    #[strum(to_string = "NOT")] Not,
+    #[strum(to_string = "and")] And,
+    #[strum(to_string = "or" )] Or,
+    #[strum(to_string = "not")] Not,
     // `Implies` is a binary connective used internally.  Use `implies_` instead of string.
-    #[strum(to_string = "???")] Implies,
+    #[strum(to_string = "=>")] Implies,
     #[strum(to_string = "="  )] Eq,
     #[strum(to_string = "<"  )] Less,
     #[strum(to_string = "<=" )] LE,
     #[strum(to_string = ">=" )] GE,
     #[strum(to_string = ">"  )] Greater,
     #[strum(to_string = "distinct")] Distinct,
+
+    #[strum(to_string = "+"  )] Plus,
+    #[strum(to_string = "-"  )] Minus,
+    #[strum(to_string = "*"  )] Times,
+    #[strum(to_string = "div")] Div,
+    #[strum(to_string = "mod")] Mod,
+    #[strum(to_string = "abs")] Abs,
 }
 
 
-const UNARY: [Predefined; 1] = [Predefined::Not];
+const UNARY: [Predefined; 2] = [Predefined::Not, Predefined::Abs];
+const BINARY: [Predefined; 1] = [Predefined::Mod];
 const ASSOCIATIVE: [Predefined; 2] = [Predefined::And, Predefined::Or];
 const CHAINABLE: [Predefined; 5] = [
     Predefined::Eq,
@@ -53,6 +62,12 @@ const CHAINABLE: [Predefined; 5] = [
     Predefined::Greater
     ];
 const PAIRWISE: [Predefined; 1] = [ Predefined::Distinct ];
+const LEFT_ASSOC: [Predefined; 4] = [
+    Predefined::Plus,
+    Predefined::Minus,
+    Predefined::Times,
+    Predefined::Div,
+];
 
 
 ///////////////////////////  Display //////////////////////////////////////////
@@ -140,17 +155,26 @@ impl SQLExpr {
             },
             SQLExpr::Predefined(function, exprs) => {
                 if UNARY.contains(function) {
-                    // NOT
+                    // NOT, abs
                     let (id, e) = exprs.first().unwrap();
                     let expr = e.to_sql(variables);
                     if *id == Ids::None {
-                        format!("apply(\"not\", {expr})")
-                    } else {
+                        format!("apply(\"{function}\", {expr})")
+                    } else if *function == Predefined::Not {
                         format!("not_({expr})")
+                    } else {
+                        format!("abs_({expr})")
+                    }
+                } else if BINARY.contains(function) {
+                    // mod
+                    if let [(_, a), (_, b)] = &exprs[..] {
+                        format!("apply(\"{function}\", {}, {})", a.to_sql(variables), b.to_sql(variables))
+                    } else {
+                        panic!("incorrect number of arguments for mod")
                     }
                 } else if ASSOCIATIVE.contains(function) {
                     // AND, OR
-                    let name = function.to_string().to_lowercase();
+                    let name = function.to_string();
                     let mut ids = Ids::All;
                     let exprs =
                         exprs.iter().cloned().filter_map( |(id, e)| {
@@ -200,21 +224,14 @@ impl SQLExpr {
                     }
 
                     if ids == Ids::None {
-                        match function {
-                            Predefined::Eq      => format!("apply(\"=\", {terms})"),
-                            Predefined::Less    => format!("apply(\"<\", {terms})"),
-                            Predefined::LE      => format!("apply(\"<=\", {terms})"),
-                            Predefined::GE      => format!("apply(\">=\", {terms})"),
-                            Predefined::Greater => format!("apply(\">\", {terms})"),
-                            _ => unreachable!()
-                        }
+                        format!("apply(\"{function}\", {terms})")
                     } else {
                         match function {
                             Predefined::Eq      => format!("eq_({terms})"),
-                            Predefined::Less    => format!("compare_(\"<\", {terms})"),
-                            Predefined::LE      => format!("compare_(\"<=\", {terms})"),
-                            Predefined::GE      => format!("compare_(\">=\", {terms})"),
-                            Predefined::Greater => format!("compare_(\">\", {terms})"),
+                            Predefined::Less
+                            | Predefined::LE
+                            | Predefined::GE
+                            | Predefined::Greater => format!("compare_(\"{function}\", {terms})"),
                             _ => unreachable!()
                         }
                     }
@@ -231,6 +248,21 @@ impl SQLExpr {
                         format!("compare_(\"distinct\", {terms})")
                     } else {
                         format!("apply(\"distinct\", {terms})")
+                    }
+                } else if LEFT_ASSOC.contains(function) {
+                    // + - * div
+
+                    let mut ids = Ids::All;
+                    let terms = exprs.iter()
+                        .map(|(ids_, e)| {
+                            ids = max(ids.clone(), ids_.clone());
+                            e.to_sql(variables)
+                        }).collect::<Vec<_>>().join(", ");
+
+                    if ids == Ids::None {
+                        format!("apply(\"{function}\", {terms})")
+                    } else {
+                        format!("left_(\"{function}\", {terms})")
                     }
                 } else if *function == Predefined::Implies {
                     // Implies
