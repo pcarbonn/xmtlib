@@ -330,9 +330,16 @@ fn create_interpretation_table(
         columns.push(column("G".to_string(), sort))
     }
 
-    // can't have foreign key on G because it can be undefined
+    // primary key
+    if 0 < domain.len() {
+        let primary_key = format!("PRIMARY KEY ({})",
+            (0..domain.len())
+            .map(|i| format!("a_{i}"))
+            .collect::<Vec<_>>().join(", "));
+        columns.push(primary_key);
+    }
 
-    // todo: primary key
+    // can't have foreign key on G because it can be undefined
     columns.append(&mut foreign_keys);
     let columns = columns.join(", ");
 
