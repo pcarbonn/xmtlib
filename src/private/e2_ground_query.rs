@@ -22,7 +22,7 @@ pub(crate) enum GroundingQuery {
     Join {
         /// maps variables to None if its domain is infinite or to a Column in a Type or Interpretation table.
         variables: IndexMap<Symbol, Option<Column>>,
-        conditions: Vec<Either<Mapping, TableName>>,  // vector of mapping or `if_` column of a table
+        conditions: Vec<Either<Mapping, TableName>>,  // vector of mapping or `if_` column of a table. If TableName is empty, "true".
         grounding: SQLExpr,
         natural_joins: IndexSet<NaturalJoin>,  // joins of grounding sub-queries
         theta_joins: IndexSet<ThetaJoin>,  // joins with interpretation tables
@@ -54,7 +54,7 @@ pub(crate) enum NaturalJoin {
 
 
 /// indexed table name + mapping of (gated) expressions to value column
-pub(crate) type ThetaJoin = (TableName, Vec<Mapping>);
+pub(crate) type ThetaJoin = (bool, TableName, Vec<Mapping>);  // true for LEFT JOIN
 
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -105,7 +105,13 @@ impl std::fmt::Display for GroundingQuery {
                     .filter_map( |e| {
                         match e {
                             Left(mapping) => mapping.to_if(&variables),
-                            Right(table) => Some(format!("{table}.if_"))
+                            Right(table) => {
+                                if table.to_string().is_empty() {
+                                    Some("\"true\"".to_string())
+                                } else {
+                                    Some(format!("{table}.if_"))
+                                }
+                            }
                         }
                     }).collect::<Vec<_>>();
                 let condition =
@@ -172,7 +178,7 @@ impl std::fmt::Display for GroundingQuery {
 
                 // theta joins
                 let thetas = theta_joins.iter().enumerate()
-                    .map( | (i, (table_name, mapping)) | {
+                    .map( | (i, (left, table_name, mapping)) | {
                         let on = mapping.iter()
                             .filter_map( | expr | expr.to_join(variables))
                             .collect::<Vec<_>>().join(" AND ");
@@ -181,7 +187,8 @@ impl std::fmt::Display for GroundingQuery {
                             format!(" {} AS {table_name}", table_name.base_table)
                         } else {
                             let on = if on == "" { on } else { format!(" ON {on}")};
-                            format!(" JOIN {} AS {table_name}{on}", table_name.base_table)
+                            let join = if *left { "LEFT JOIN" } else { "JOIN" };
+                            format!(" {join} {} AS {table_name}{on}", table_name.base_table)
                         }
                     }).collect::<Vec<_>>()
                     .join("");

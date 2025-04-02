@@ -5,7 +5,7 @@ use std::fmt::Display;
 
 use indexmap::IndexSet;
 
-use crate::api::{Sort, Symbol, Identifier, QualIdentifier};
+use crate::api::{Sort, Symbol, Identifier, QualIdentifier, Term};
 use crate::private::a_sort::instantiate_parent_sort;
 use crate::private::e1_ground_view::Ids;
 use crate::{error::SolverError, solver::Solver};
@@ -25,7 +25,7 @@ pub(crate) enum FunctionIs {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum Interpretation {
-    Table{name: String, ids: Ids},
+    Table{name: String, ids: Ids, else_: Option<Option<Term>>},  // None if complete, Some(None) if no `else` value, or Some(Some(value))
     Infinite  // for UF, G of interpreted predicate over infinite domain
 }
 
@@ -47,9 +47,9 @@ impl Display for FunctionIs {
             Self::Calculated{signature} =>
                 write!(f, "Calculated({:?})", signature),
             Self::NonBooleanInterpreted{table_g} =>
-                write!(f, "NonBooleanInterpreted ({})", table_g),
+                write!(f, "NonBooleanInterpreted ({table_g})"),
             Self::BooleanInterpreted{table_tu, table_uf, table_g} =>
-                write!(f, "BooleanInterpreted ({}, {}, {})", table_tu, table_uf, table_g),
+                write!(f, "BooleanInterpreted ({table_tu}, {table_uf}, {table_g})"),
         }
     }
 }
@@ -58,8 +58,15 @@ impl Display for FunctionIs {
 impl Display for Interpretation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Table{name, ids} =>
-                write!(f, "{name} {ids}"),
+            Self::Table{name, ids, else_} => {
+                if let Some(Some(else_)) = else_ {
+                    write!(f, "{name}?{else_} {ids}")
+                } else if let Some(None) = else_ {
+                    write!(f, "{name}?? {ids}")
+                } else {
+                    write!(f, "{name} {ids}")
+                }
+            },
             Self::Infinite {} =>
                 write!(f, "(infinite)"),
         }

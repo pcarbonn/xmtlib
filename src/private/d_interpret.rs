@@ -5,7 +5,7 @@ use unzip_n::unzip_n;
 
 unzip_n!(pub 3);
 
-use crate::api::{Identifier, QualIdentifier, Sort, XTuple, Term};
+use crate::api::{Identifier, QualIdentifier, Sort, XTuple, Term, SpecConstant};
 use crate::error::SolverError::{self, InternalError};
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionIs, Interpretation};
@@ -62,7 +62,7 @@ pub(crate) fn interpret_pred(
 
                 // create TU view
                 let name_tu = format!("{identifier}_TU");
-                let table_tu = Interpretation::Table{name: name_tu.clone(), ids: Ids::All};
+                let table_tu = Interpretation::Table{name: name_tu.clone(), ids: Ids::All, else_: None};
 
                 let sql = format!("CREATE VIEW IF NOT EXISTS {identifier}_TU AS SELECT *, \"true\" as G from {identifier}_T");
                 solver.conn.execute(&sql, ())?;
@@ -78,7 +78,7 @@ pub(crate) fn interpret_pred(
                 } else {
                     // create UF view
                     let name_uf = format!("{identifier}_UF");
-                    let table_uf = Interpretation::Table{name: name_uf.clone(), ids: Ids::All};
+                    let table_uf = Interpretation::Table{name: name_uf.clone(), ids: Ids::All, else_: None};
 
                     // T_1.G as a_1, T as T_1, T_1.G = name.a_1
                     let (columns, joins, thetas) = domain.iter().enumerate()
@@ -106,7 +106,7 @@ pub(crate) fn interpret_pred(
                     solver.conn.execute(&sql, ())?;
 
                     // create G view
-                    let  table_g = Interpretation::Table{name: format!("{identifier}_G"), ids: Ids::All};
+                    let  table_g = Interpretation::Table{name: format!("{identifier}_G"), ids: Ids::All, else_: None};
                     let sql = format!("CREATE VIEW IF NOT EXISTS {identifier}_G AS SELECT * FROM {name_tu} UNION SELECT * FROM {name_uf}");
                     solver.conn.execute(&sql, ())?;
 
@@ -131,9 +131,9 @@ fn interpret_pred_0(
     solver: &mut Solver,
 ) -> Result<String, SolverError> {
 
-    let table_tu = Interpretation::Table{name: format!("{qual_identifier}_TU"), ids: Ids::All};
-    let table_uf = Interpretation::Table{name: format!("{qual_identifier}_UF"), ids: Ids::All};
-    let table_g  = Interpretation::Table{name: format!("{qual_identifier}_G"), ids: Ids::All};
+    let table_tu = Interpretation::Table{name: format!("{qual_identifier}_TU"), ids: Ids::All, else_: None};
+    let table_uf = Interpretation::Table{name: format!("{qual_identifier}_UF"), ids: Ids::All, else_: None};
+    let table_g  = Interpretation::Table{name: format!("{qual_identifier}_G"), ids: Ids::All, else_: None};
 
     if tuples.len() == 0 {  // false
         let sql = format!("CREATE VIEW IF NOT EXISTS {qual_identifier}_TU AS SELECT 'false' as G WHERE false");  // empty table
@@ -192,21 +192,23 @@ pub(crate) fn interpret_fun(
 
                     let value =
                         if tuples.len() == 0 {  // (x-interpret-fun c () 1)
-                            else_.ok_or(SolverError::ExprError("no values".to_string(), None))
+                            else_.clone().ok_or(SolverError::ExprError("no values".to_string(), None))
                         } else if tuples.len() == 1 {   // (x-interpret-fun c (() 1) 1)
                             Ok(tuples[0].1.clone())
-                        } else { Err(SolverError::ExprError("too many tuples".to_string(), None)) }?;
-                    let (value, ids) = if let Ok(value) = construct(&value, solver) {
-                            (value, Ids::All)
                         } else {
-                            (value.to_string(), Ids::None)
-                        };
+                            Err(SolverError::ExprError("too many tuples".to_string(), None))
+                        }?;
+                    let value = match value {
+                        Term::SpecConstant(SpecConstant::Numeral(v)) => v.to_string(),
+                        Term::SpecConstant(SpecConstant::Decimal(v)) => v.to_string(),
+                        _ => format!("\"{}\"", construct(&value, solver)?)
+                    };
 
-                    let sql = format!("CREATE VIEW IF NOT EXISTS {qual_identifier}_G AS SELECT \"{value}\" as G");
+                    let sql = format!("CREATE VIEW IF NOT EXISTS {qual_identifier}_G AS SELECT {value} as G");
                     solver.conn.execute(&sql, ())?;
 
                     // create FunctionIs.
-                    let table_g  = Interpretation::Table{name: format!("{qual_identifier}_G"), ids};
+                    let table_g  = Interpretation::Table{name: format!("{qual_identifier}_G"), ids: Ids::All, else_: None};
                     let function_is = FunctionIs::NonBooleanInterpreted { table_g };
                     solver.functions.insert(qual_identifier.clone(), function_is);
 
@@ -216,8 +218,7 @@ pub(crate) fn interpret_fun(
                     let co_domain = co_domain.clone();
                     let size = size(&domain, &solver);
 
-                    let suffix = if size == tuples.len() { "G" } else { "K" };
-                    let name = format!("{identifier}_{suffix}");
+                    let name = format!("{identifier}_G");
                     create_interpretation_table(name.clone(), &domain, &Some(co_domain), solver)?;
 
                     // populate the table
@@ -228,13 +229,13 @@ pub(crate) fn interpret_fun(
                             let mut tuples_t = tuple.iter()
                                 .map(|t| construct(t, solver) )
                                 .collect::<Result<Vec<_>, SolverError>>()?;
-                            // value is an id or an expression
-                            let value = if let Ok(value) = construct(term, solver) {
-                                    value
-                                } else {
-                                    ids = Ids::Some;
-                                    term.to_string()
-                                };
+                            // value is the identifier or an id
+                            let value = if term.to_string() == "?" {
+                                ids = Ids::Some;
+                                format!("({identifier} {})", tuples_t.join(" "))
+                            } else {
+                                construct(term, solver)?
+                            };
                             tuples_t.push(value);
                             tuples_strings.push(tuples_t);
                         } else {
@@ -243,17 +244,23 @@ pub(crate) fn interpret_fun(
                     }
                     populate_table(&name, tuples_strings, solver)?;
 
-                    if size == tuples.len() {
-                        // create FunctionIs
-                        let  table_g = Interpretation::Table{name, ids};
-                        let function_is = FunctionIs::NonBooleanInterpreted { table_g };
-                        solver.functions.insert(qual_identifier, function_is);
-                    } else {  // incomplete interpretation
-                        // create G table
-                        let else_ = else_
-                            . ok_or(SolverError::ExprError("Missing an `else` value".to_string(), None));
-                        todo!()
-                    }
+                    let table_g = if size == tuples.len() {  // full interpretation
+                        if let Some(_) = else_ {
+                            return Err(SolverError::ExprError("Unnecessary `else` value".to_string(), None))
+                        }
+                        Interpretation::Table{name, ids, else_: None}
+                    } else if let Some(else_) = else_ {  // incomplete interpretation
+                        if else_.to_string() == "?" {
+                            Interpretation::Table{name, ids, else_: Some(None)}
+                        } else {
+                            let _ = construct(&else_, solver)?;  // check that it is an id
+                            Interpretation::Table{name, ids, else_: Some(Some(else_))}
+                        }
+                    } else {
+                        return Err(SolverError::ExprError("Missing `else` value".to_string(), None))
+                    };
+                    let function_is = FunctionIs::NonBooleanInterpreted { table_g };
+                    solver.functions.insert(qual_identifier, function_is);
                 }
             } else {  // boolean
                 todo!()
@@ -353,7 +360,16 @@ fn create_interpretation_table(
 fn construct(id: &Term, solver: &mut Solver) -> Result<String, SolverError> {
     match id {
         Term::SpecConstant(_) => Ok(id.to_string()),
-        Term::Identifier(_) => Ok(id.to_string()),
+        Term::Identifier(qual_identifier) => {
+            if let Some(f_is) = solver.functions.get(qual_identifier) {
+                match f_is {
+                    FunctionIs::Constructor => Ok(id.to_string()),
+                    _ => Err(SolverError::ExprError("Not an id".to_string(), None)),
+                }
+            } else {
+                Err(SolverError::ExprError("Unknown symbol".to_string(), None))
+            }
+        },
         Term::Application(qual_identifier, terms) => {
             if let Some(f_is) = solver.functions.get(qual_identifier) {
                 match f_is {

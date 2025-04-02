@@ -9,11 +9,10 @@
 (declare-fun mix (Color Color) Color)
 (x-interpret-fun mix
    ( ((red red) green)
-     ((green green) (mix green green))
+     ((green green) ?)
      ((red green) green)
      ((green red) green)
-   )
-   red)
+   ))
 (assert (exists ((x Color)) (= (mix x x) x)))
 (x-ground)
 (x-debug solver functions)
@@ -27,7 +26,7 @@
 (x-interpret-fun c (  ) red)
 
 (declare-fun mix (Color Color) Color)
-(x-interpret-fun mix ( ((red red) green) ((green green) (mix green green)) ((red green) green) ((green red) green) ) red)
+(x-interpret-fun mix ( ((red red) green) ((green green) ?) ((red green) green) ((green red) green) ) )
 
 (assert false)
 (assert (= (mix green green) green))

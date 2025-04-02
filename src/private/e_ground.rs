@@ -471,9 +471,9 @@ fn ground_compound(
                     ViewType::G  => None
                 };
                 let variant = match table {
-                    Interpretation::Table{name, ids} => {
+                    Interpretation::Table{name, ids, else_} => {
                         let table_name = TableName::new(name, index);
-                        QueryVariant::Interpretation(table_name, ids.clone())
+                        QueryVariant::Interpretation(table_name, ids.clone(), else_.clone())
                     },
                     Interpretation::Infinite => QueryVariant::Apply
                 };
@@ -485,9 +485,9 @@ fn ground_compound(
         },
         FunctionIs::NonBooleanInterpreted { table_g } => {
             let variant = match table_g {
-                Interpretation::Table{name, ids} => {
+                Interpretation::Table{name, ids, else_} => {
                     let table_name = TableName::new(name, index);
-                    QueryVariant::Interpretation(table_name, ids.clone())
+                    QueryVariant::Interpretation(table_name, ids.clone(), else_.clone())
                 },
                 Interpretation::Infinite => QueryVariant::Apply
             };

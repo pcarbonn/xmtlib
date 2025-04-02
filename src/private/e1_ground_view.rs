@@ -6,7 +6,7 @@ use std::cmp::max;
 use indexmap::{IndexMap, IndexSet};
 use itertools::Either::{self, Left, Right};
 
-use crate::api::{QualIdentifier, SortedVar, SpecConstant, Symbol};
+use crate::api::{QualIdentifier, SortedVar, SpecConstant, Symbol, Term};
 use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 
@@ -165,7 +165,7 @@ pub(crate) enum ViewType {
 
 /// describes the type of query to create for a compound term
 pub(crate) enum QueryVariant {
-    Interpretation(TableName, Ids),
+    Interpretation(TableName, Ids, Option<Option<Term>>),  // None if complete, Some(None) if `else` value is `unknonw`, or Some(Some(value))
     Apply,
     Construct,
     Predefined
@@ -213,19 +213,21 @@ pub(crate) fn query_for_compound(
                     // handle the special case of a variable used as an argument to an interpreted function
                     match sub_grounding {
                         SQLExpr::Variable(symbol) => {
-                            if let QueryVariant::Interpretation(table_name, ..) = variant {
-                                let column = Column::new(table_name, &format!("a_{i}"));
+                            if let QueryVariant::Interpretation(table_name, _, else_) = variant {
+                                if else_.is_none() {  // not a left join
+                                    let column = Column::new(table_name, &format!("a_{i}"));
 
-                                //  update the query in progress
-                                variables.insert(symbol.clone(), Some(column.clone()));
-                                // sub-query has no conditions
-                                groundings.push(sub_grounding.clone());
-                                // do not push to natural_joins
-                                // push `sub_grounding = column` to thetas
-                                let if_ = Mapping(sub_ids.clone(), sub_grounding.clone(), column);
-                                thetas.push(if_);
+                                    //  update the query in progress
+                                    variables.insert(symbol.clone(), Some(column.clone()));
+                                    // sub-query has no conditions
+                                    groundings.push(sub_grounding.clone());
+                                    // do not push to natural_joins
+                                    // push `sub_grounding = column` to thetas
+                                    let if_ = Mapping(sub_ids.clone(), sub_grounding.clone(), column);
+                                    thetas.push(if_);
 
-                                continue  // to the next sub-query
+                                    continue  // to the next sub-query
+                                }
                             }
                         },
                         _ => {}
@@ -252,8 +254,9 @@ pub(crate) fn query_for_compound(
 
                             // push `sub_grounding = column` to conditions and thetas
                             let if_ = Mapping(sub_ids.clone(), sub_grounding.clone(), column);
-                            // adds nothing if sub_ids = All
-                            conditions.push(Left(if_.clone()));
+                            if *sub_ids != Ids::All {
+                                conditions.push(Left(if_.clone()));
+                            }
                             // adds nothing if sub_ids == None
                             thetas.push(if_);
                         },
@@ -279,7 +282,7 @@ pub(crate) fn query_for_compound(
                             if *sub_condition {
                                 conditions.push(Right(table_name.clone()));
                             }
-                            groundings.push(SQLExpr::Value(Column::new(table_name, "G")));
+                            groundings.push(SQLExpr::Value(Column::new(table_name, "G"), None));
 
                             let map_variables = sub_free_variables.iter()
                                 .filter_map( |(symbol, table_name)| {
@@ -322,13 +325,24 @@ pub(crate) fn query_for_compound(
 
     let grounding =
         match variant {
-            QueryVariant::Interpretation(table_name, ids_) => {
-                theta_joins.insert((table_name.clone(), thetas.clone()));
+            QueryVariant::Interpretation(table_name, ids_, else_) => {
+                let left = else_.is_some();
+                theta_joins.insert((left, table_name.clone(), thetas.clone()));
+
                 ids = ids_.clone();  // reflects the grounding column, not if_
+                let else_ =
+                    match else_ {
+                        None => None,
+                        Some(None) => {  // no `else` value => create a compound term
+                            let expr = SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings));
+                            Some(Box::new(expr))
+                        },
+                        Some(Some(else_)) => Some(Box::new(to_sqlexpr(else_.clone())))
+                    };
                 match (ids_, exclude) {
                     (Ids::All, Some(false)) => SQLExpr::Boolean(true),  // TU view
                     (Ids::All, Some(true)) => SQLExpr::Boolean(false),  // UF view
-                    _ => SQLExpr::Value(Column::new(table_name, "G"))
+                    _ => SQLExpr::Value(Column::new(table_name, "G"), else_)
                 }
             },
             QueryVariant::Apply => {
@@ -529,12 +543,17 @@ pub(crate) fn query_for_union(
                         let conditions =
                             if *sub_condition {
                                 vec![Right(table_name.clone())]
-                            } else { vec![] };
+                            } else if condition {  // add `"true" as if_``
+                                let empty_table = TableName { base_table: "".to_string(), index: 0 };
+                                vec![Right(empty_table)]
+                            } else {
+                                vec![]
+                            };
 
                         Some(GroundingQuery::Join {
                             variables: q_variables,
                             conditions,
-                            grounding: SQLExpr::Value(Column::new(table_name, "G")),
+                            grounding: SQLExpr::Value(Column::new(table_name, "G"), None),
                             natural_joins,
                             theta_joins: IndexSet::new(),
                             precise: true  // because it is based on a view
@@ -562,7 +581,7 @@ pub(crate) fn query_for_union(
     // create the sub_view
     let sub_view = GroundingView::View {
         free_variables: free_variables.clone(),
-        condition: condition,
+        condition,
         grounding: Either::Right(table_name),
         query,
         exclude,
@@ -697,5 +716,25 @@ impl GroundingView {
             GroundingView::View{free_variables, query, exclude, ids, ..} =>
                 query.negate(free_variables.clone(), index, view_type, *exclude, ids, solver)
         }
+    }
+}
+
+// convert an identifier to an SQLExpr
+fn to_sqlexpr (
+    id: Term
+) -> SQLExpr {
+    match id {
+        Term::SpecConstant(v) =>
+            SQLExpr::Constant(v),
+        Term::Identifier(c) =>
+            SQLExpr::Construct(c, Box::new(vec![])),
+        Term::Application(function, terms) =>{
+            //todo check for constructor
+            let terms = terms.iter()
+                .map( |t| to_sqlexpr(t.clone()))
+                .collect();
+            SQLExpr::Construct(function, Box::new(terms))
+        }
+        _ => unreachable!()
     }
 }
