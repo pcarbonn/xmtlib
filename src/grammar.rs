@@ -33,7 +33,7 @@ peg::parser!{
         rule numeral() -> Numeral
             = _ "0" { Numeral(0) }
 
-            /  _ s:(quiet!{$(['1'..='9'] ['0'..='9']* )}
+            /  _ s:(quiet!{$("-"? ['1'..='9'] ['0'..='9']* )}
                / expected!("numeral"))
               { Numeral(s.to_string().parse().unwrap()) }
 

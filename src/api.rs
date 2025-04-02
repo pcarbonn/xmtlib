@@ -18,11 +18,7 @@ use itertools::Itertools;
 pub struct Numeral(pub i32);
 impl Display for Numeral {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.0 < 0 {
-            write!(f, "(- {})", -self.0)
-        } else {
-            write!(f, "{}", self.0)
-        }
+        write!(f, "{}", self.0)
     }
 }
 

@@ -52,6 +52,8 @@ Functions:
  - div: Predefined (false)
  - mod: Predefined (false)
  - abs: Predefined (false)
+ - red: Constructor
+ - green: Constructor
  - c: Non Boolean (c_G Complete)
  - mix: Non Boolean (mix_G Partial)
 Groundings:

@@ -467,7 +467,9 @@ fn create_table(
     for constructor_decl in constructor_decls {
         let ConstructorDec(constructor, selectors) = constructor_decl;
         if selectors.len() == 0 {
-            nullary.push(constructor.0.clone())
+            nullary.push(constructor.0.clone());
+            let qual_identifier = QualIdentifier::Identifier(Identifier::Simple(constructor.clone()));
+            solver.functions.insert(qual_identifier, FunctionIs::Constructor);
         } else {
             for SelectorDec(selector, sort) in selectors {
                 let type_ = match sort.to_string().as_str() {

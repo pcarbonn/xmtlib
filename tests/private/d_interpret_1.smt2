@@ -112,6 +112,8 @@ Functions:
  - mod: Predefined (false)
  - abs: Predefined (false)
  - p: Boolean (p_TU Complete, p_UF Complete, p_G Complete)
+ - red: Constructor
+ - green: Constructor
  - bright: Boolean (bright_TU Complete, bright_UF Complete, bright_G Complete)
  - same: Boolean (same_TU Complete, same_UF Complete, same_G Complete)
  - hue: Constructor

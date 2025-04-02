@@ -334,12 +334,7 @@ fn ground_compound(
 
     let function_is = match solver.functions.get(qual_identifier) {
         Some(f) => f,
-        None => {
-            // custom (non-boolean) constructor.  todo: this should not happen once constructors are declared
-            let variant = QueryVariant::Construct;
-            let grounding_query = query_for_compound(qual_identifier, index, &mut vec![], &variant, None, solver)?;
-            return Ok(Grounding::NonBoolean(grounding_query));
-        }
+        None => unreachable!()
     };
 
     match function_is {

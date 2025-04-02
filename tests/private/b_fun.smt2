@@ -45,6 +45,8 @@ Functions:
  - div: Predefined (false)
  - mod: Predefined (false)
  - abs: Predefined (false)
+ - red: Constructor
+ - green: Constructor
  - bright: Color -> Bool (true)
  - invert: Color -> Color (false)
  - pair: Constructor
