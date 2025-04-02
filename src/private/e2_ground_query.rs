@@ -122,15 +122,16 @@ impl std::fmt::Display for GroundingQuery {
                 let grounding_ = format!("{grounding_} AS G");
 
                 // natural joins
-                let naturals = natural_joins.iter()
-                    .map(|natural_join| {
+                let mut where_ = "".to_string();
+                let naturals = natural_joins.iter().enumerate()
+                    .map(|(i, natural_join)| {
 
                             /// Helper function.  Returns the name of a table, with an optional alias.
                             fn name(table_name: &TableName) -> String {
                                 if table_name.index == 0 {
-                                    table_name.base_table.to_string()
+                                    format!(" {}", table_name.base_table.to_string())
                                 } else {
-                                    format!("{} AS {table_name}", table_name.base_table)
+                                    format!(" {} AS {table_name}", table_name.base_table)
                                 }
                             }  // end helper
 
@@ -155,37 +156,41 @@ impl std::fmt::Display for GroundingQuery {
                                             unreachable!("348595")
                                         }
                                     }).collect::<Vec<_>>().join(" AND ");
-                                if on == "" { name  } else { format!("{name} ON {on}")}
+                                if on == "" { name  } else {
+                                    if i == 0 {
+                                        where_ = if on == "" { on } else { format!(" WHERE {on}")};
+                                        name
+                                    } else {
+                                        format!("{name} ON {on}")
+                                    }
+                                }
                             }
                         }
                     })
-                    .collect::<Vec<_>>();
+                    .collect::<Vec<_>>()
+                    .join(" JOIN");
 
                 // theta joins
-                let thetas = theta_joins.iter()
-                    .map( | (table_name, mapping) | {
+                let thetas = theta_joins.iter().enumerate()
+                    .map( | (i, (table_name, mapping)) | {
                         let on = mapping.iter()
                             .filter_map( | expr | expr.to_join(variables))
                             .collect::<Vec<_>>().join(" AND ");
-                        let on = if on == "" { on } else { format!(" ON {on}")};
-
-                        format!("{} AS {table_name}{on}", table_name.base_table)
-                    }).collect::<Vec<_>>();
+                        if i == 0 && naturals.len() == 0 {
+                            where_ = if on == "" { on } else { format!(" WHERE {on}")};
+                            format!(" {} AS {table_name}", table_name.base_table)
+                        } else {
+                            let on = if on == "" { on } else { format!(" ON {on}")};
+                            format!(" JOIN {} AS {table_name}{on}", table_name.base_table)
+                        }
+                    }).collect::<Vec<_>>()
+                    .join("");
 
                 // naturals + thetas + empty
-                let tables = [naturals, thetas].concat();
-                let tables =
-                    if tables.len() == 0 {
-                        "".to_string()
-                    } else if tables.len() == 1 {
-                        let mut tables = format!(" FROM {}", tables.join(" JOIN "));  // only one !
-                        if tables.contains(" ON ") {
-                            // replace the only " ON " by " WHERE "
-                            tables = tables.replace(" ON ", " WHERE ");
-                        }
-                        tables
+                let tables = if 0 < naturals.len() + thetas.len() {
+                        format!(" FROM{naturals}{thetas}{where_}")
                     } else {
-                        format!(" FROM {}", tables.join(" JOIN "))
+                        "".to_string()
                     };
 
                 write!(f, "SELECT {variables_}{condition}{grounding_}{tables}")
