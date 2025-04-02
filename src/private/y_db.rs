@@ -405,15 +405,20 @@ pub(crate) fn init_db(
                 match operator.as_str() {
                     "+" => {
                         let val = ints.into_iter().sum::<i64>();
-                        if val != 0 { strs.push(val.to_string()) }
+                        if val != 0 || strs.len() == 0 {
+                            strs.push(val.to_string())
+                        }
                     },
                     "-" => {
-                        if let rusqlite::types::ValueRef::Integer(val) = ctx.get_raw(0) {
+                        if let rusqlite::types::ValueRef::Integer(val) = ctx.get_raw(1) {
+                            if ints.len() + strs.len() == 1 {  // (- 2)
+                                return Ok((-val).to_string())
+                            }
                             let mut acc = val;
                             for i in ints.iter().skip(1) {
                                 acc -= i;
                             };
-                            if acc != 0 {
+                            if acc != 0 || strs.len() == 0 {
                                 strs.insert(0, acc.to_string())
                             }
                         } else {
@@ -421,22 +426,24 @@ pub(crate) fn init_db(
                             for i in ints.iter().skip(1) {
                                 acc += i;
                             };
-                            if acc != 0 {
+                            if acc != 0 || strs.len() == 0 {
                                 strs.push(acc.to_string())
                             }
                         }
                     }
                     "*" => {
                         let val = ints.into_iter().product::<i64>();
-                        if val != 1 { strs.push(val.to_string()) }
+                        if val != 1 || strs.len() == 0 {
+                            strs.push(val.to_string())
+                        }
                     },
                     "div" => {
-                        if let rusqlite::types::ValueRef::Integer(val) = ctx.get_raw(0) {
+                        if let rusqlite::types::ValueRef::Integer(val) = ctx.get_raw(1) {
                             let mut acc = val;
                             for i in ints.iter().skip(1) {
                                 acc /= i;
                             };
-                            if acc != 1 {
+                            if acc != 1 || strs.len() == 0 {
                                 strs.insert(0, acc.to_string())
                             }
                         } else {
@@ -444,7 +451,7 @@ pub(crate) fn init_db(
                             for i in ints.iter().skip(1) {
                                 acc *= i;
                             };
-                            if acc != 1 {
+                            if acc != 1 || strs.len() == 0 {
                                 strs.push(acc.to_string())
                             }
                         }
@@ -457,15 +464,20 @@ pub(crate) fn init_db(
                 match operator.as_str() {
                     "+" => {
                         let val = reals.into_iter().sum::<f64>();
-                        if val != 0.0 { strs.push(val.to_string()) }
+                        if val != 0.0 || strs.len() == 0 {
+                            strs.push(val.to_string())
+                        }
                     },
                     "-" => {
-                        if let rusqlite::types::ValueRef::Real(val) = ctx.get_raw(0) {
+                        if let rusqlite::types::ValueRef::Real(val) = ctx.get_raw(1) {
+                            if reals.len() + strs.len()  == 1 {  // (- 2.0)
+                                return Ok((-val).to_string())
+                            }
                             let mut acc = val;
                             for i in reals.iter().skip(1) {
                                 acc -= i;
                             };
-                            if acc != 0.0 {
+                            if acc != 0.0 || strs.len() == 0 {
                                 strs.insert(0, acc.to_string())
                             }
                         } else {
@@ -473,22 +485,24 @@ pub(crate) fn init_db(
                             for i in reals.iter().skip(1) {
                                 acc += i;
                             };
-                            if acc != 0.0 {
+                            if acc != 0.0 || strs.len() == 0 {
                                 strs.push(acc.to_string())
                             }
                         }
                     }
                     "*" => {
                         let val = reals.into_iter().product::<f64>();
-                        if val != 1.0 { strs.push(val.to_string()) }
+                        if val != 1.0 || strs.len() == 0 {
+                            strs.push(val.to_string())
+                        }
                     },
                     "div" => {
-                        if let rusqlite::types::ValueRef::Real(val) = ctx.get_raw(0) {
+                        if let rusqlite::types::ValueRef::Real(val) = ctx.get_raw(1) {
                             let mut acc = val;
                             for i in reals.iter().skip(1) {
                                 acc /= i;
                             };
-                            if acc != 1.0 {
+                            if acc != 1.0 || strs.len() == 0 {
                                 strs.insert(0, acc.to_string())
                             }
                         } else {
@@ -496,7 +510,7 @@ pub(crate) fn init_db(
                             for i in reals.iter().skip(1) {
                                 acc *= i;
                             };
-                            if acc != 1.0 {
+                            if acc != 1.0 || strs.len() == 0 {
                                 strs.push(acc.to_string())
                             }
                         }
