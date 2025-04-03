@@ -4,6 +4,8 @@ use peg::{error::ParseError, str::LineCol};
 use rusqlite::Error as SqlError;
 use thiserror::Error;
 
+use crate::api::Term;
+
 /// The number of characters since the begin of a source file.
 ///
 /// Used for error reporting.
@@ -18,6 +20,9 @@ pub enum SolverError {
 
     #[error("{0}")]
     ExprError(String, Option<Offset>),
+
+    #[error("{0}: {1}")]
+    TermError(&'static str, Term),
 
     #[error("Database error: {0}")]
     DatabaseError(#[from] SqlError),
@@ -41,13 +46,21 @@ pub fn format_error(input: &str, e: SolverError) -> String {
         ExprError(msg, offset) =>
             if let Some(offset_) = offset {
                 match offset_to_line_col_utf8(&input, offset_) {
-                    None => msg,
+                    None => format!("****** Error: {}", msg),
                     Some(location) =>
                         pretty_print(input, location, msg)
                 }
             } else {
                 format!("****** Error: {}", msg)
             },
+
+        TermError(msg, term) => {
+            match offset_to_line_col_utf8(&input, term.start()) {
+                None => format!("****** Error: {}", msg),
+                Some(location) =>
+                    pretty_print(input, location, msg.to_string())
+            }
+        },
 
         InternalError(n) => format!("****** Internal Error: {}", n)
     }

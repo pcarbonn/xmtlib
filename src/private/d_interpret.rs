@@ -199,8 +199,8 @@ pub(crate) fn interpret_fun(
                             Err(SolverError::ExprError("too many tuples".to_string(), None))
                         }?;
                     let value = match value {
-                        Term::SpecConstant(SpecConstant::Numeral(v)) => v.to_string(),
-                        Term::SpecConstant(SpecConstant::Decimal(v)) => v.to_string(),
+                        Term::SpecConstant(SpecConstant::Numeral(v), _) => v.to_string(),
+                        Term::SpecConstant(SpecConstant::Decimal(v), _) => v.to_string(),
                         _ => format!("\"{}\"", construct(&value, solver)?)
                     };
 
@@ -245,8 +245,8 @@ pub(crate) fn interpret_fun(
                     populate_table(&name, tuples_strings, solver)?;
 
                     let table_g = if size == tuples.len() {  // full interpretation
-                        if let Some(_) = else_ {
-                            return Err(SolverError::ExprError("Unnecessary `else` value".to_string(), None))
+                        if let Some(else_) = else_ {
+                            return Err(SolverError::TermError("Unnecessary `else` value", else_.clone()))
                         }
                         Interpretation::Table{name, ids, else_: None}
                     } else if let Some(else_) = else_ {  // incomplete interpretation
@@ -359,18 +359,18 @@ fn create_interpretation_table(
 /// Constructor applications are preceded by a space, e.g. ` (cons 0 nil)`
 fn construct(id: &Term, solver: &mut Solver) -> Result<String, SolverError> {
     match id {
-        Term::SpecConstant(_) => Ok(id.to_string()),
-        Term::Identifier(qual_identifier) => {
+        Term::SpecConstant(_, _) => Ok(id.to_string()),
+        Term::Identifier(qual_identifier, _) => {
             if let Some(f_is) = solver.functions.get(qual_identifier) {
                 match f_is {
                     FunctionIs::Constructor => Ok(id.to_string()),
-                    _ => Err(SolverError::ExprError("Not an id".to_string(), None)),
+                    _ => Err(SolverError::TermError("Not an id", id.clone())),
                 }
             } else {
-                Err(SolverError::ExprError("Unknown symbol".to_string(), None))
+                Err(SolverError::TermError("Invalid id in interpretation", id.clone()))
             }
         },
-        Term::Application(qual_identifier, terms) => {
+        Term::Application(qual_identifier, terms, _) => {
             if let Some(f_is) = solver.functions.get(qual_identifier) {
                 match f_is {
                     FunctionIs::Constructor => {
@@ -383,19 +383,19 @@ fn construct(id: &Term, solver: &mut Solver) -> Result<String, SolverError> {
                     | FunctionIs::Calculated { .. }
                     | FunctionIs::NonBooleanInterpreted { .. }
                     | FunctionIs::BooleanInterpreted { .. } =>
-                        Err(SolverError::ExprError("Not an id".to_string(), None)),
+                        Err(SolverError::TermError("Not an id", id.clone())),
                 }
             } else {
-                Err(SolverError::ExprError("Unknown symbol".to_string(), None))
+                Err(SolverError::TermError("Invalid id in interpretation", id.clone()))
             }
         },
-        Term::Let(_, _)
-        | Term::Forall(_, _)
-        | Term::Exists(_, _)
-        | Term::Match(_, _)
-        | Term::Annotation(_, _)
-        | Term::XSortedVar(_, _) =>
-            Err(SolverError::ExprError("Invalid id in interpretation".to_string(), None))
+        Term::Let(_, _, _)
+        | Term::Forall(_, _, _)
+        | Term::Exists(_, _, _)
+        | Term::Match(_, _, _)
+        | Term::Annotation(_, _, _)
+        | Term::XSortedVar(_, _, _) =>
+            Err(SolverError::TermError("Invalid id in interpretation", id.clone()))
     }
 }
 

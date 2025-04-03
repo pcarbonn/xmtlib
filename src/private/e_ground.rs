@@ -163,13 +163,13 @@ pub(crate) fn ground_term_(
 
     let index = solver.groundings.len();
     match term {
-        Term::SpecConstant(spec_constant) => {
+        Term::SpecConstant(spec_constant, _) => {
 
             // a number or string; cannot be Boolean
             let grounding = query_for_constant(spec_constant, solver)?;
             Ok(Grounding::NonBoolean(grounding))
         },
-        Term::XSortedVar(symbol, sort) => {
+        Term::XSortedVar(symbol, sort, _) => {
 
             // a variable
             let base_table = if let Some(sort) = sort {  // finite domain
@@ -186,18 +186,18 @@ pub(crate) fn ground_term_(
                 Ok(Grounding::NonBoolean(g))
             }
         },
-        Term::Identifier(qual_identifier) => {
+        Term::Identifier(qual_identifier, _) => {
 
             // an identifier
             ground_compound(qual_identifier, &mut vec![], solver)
         },
-        Term::Application(qual_identifier, sub_terms) => {
+        Term::Application(qual_identifier, sub_terms, _) => {
 
             // a compound term
             ground_compound(qual_identifier, sub_terms, solver)
         },
         Term::Let(..) => todo!(),
-        Term::Forall(variables, term) => {
+        Term::Forall(variables, term, _) => {
             match ground_term(term, false, solver)? {
                 Grounding::NonBoolean(_) =>
                     Err(InternalError(42578548)),
@@ -251,7 +251,7 @@ pub(crate) fn ground_term_(
                 },
             }
         },
-        Term::Exists(variables, term) => {
+        Term::Exists(variables, term, _) => {
             match ground_term(term, false, solver)? {
                 Grounding::NonBoolean(_) =>
                     Err(InternalError(42578548)),

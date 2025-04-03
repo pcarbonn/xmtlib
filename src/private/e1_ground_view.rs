@@ -724,11 +724,11 @@ fn to_sqlexpr (
     id: Term
 ) -> SQLExpr {
     match id {
-        Term::SpecConstant(v) =>
+        Term::SpecConstant(v, _) =>
             SQLExpr::Constant(v),
-        Term::Identifier(c) =>
+        Term::Identifier(c, _) =>
             SQLExpr::Construct(c, Box::new(vec![])),
-        Term::Application(function, terms) =>{
+        Term::Application(function, terms, _) =>{
             //todo check for constructor
             let terms = terms.iter()
                 .map( |t| to_sqlexpr(t.clone()))
