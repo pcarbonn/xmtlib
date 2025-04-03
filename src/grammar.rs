@@ -118,14 +118,14 @@ peg::parser!{
             { Index::Symbol(s) }
 
         rule identifier() -> Identifier
-            = s:symbol()
-            { Identifier::Simple(s) }
+            = start:position!() s:symbol()
+            { Identifier::Simple(s, Offset(start)) }
 
-            / _ "(" _ "_"
+            / start:position!() _ "(" _ "_"
               s:symbol()
               i:( index() ++ __ )
               _ ")"
-            { Identifier::Indexed(s, i) }
+            { Identifier::Indexed(s, i, Offset(start)) }
 
         // //////////////////////////// Sorts        ////////////////////////////
 
@@ -387,8 +387,8 @@ peg::parser!{
 
         rule xdebug() -> Command
             = _ "x-debug"
-              __ typ:simple_symbol()
-              object:simple_symbol()
+              __ typ:identifier()
+              object:identifier()
               { XDebug (typ, object) }
 
         rule xground() -> Command

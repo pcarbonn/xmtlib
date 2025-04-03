@@ -3,7 +3,7 @@
 use indexmap::{IndexMap, IndexSet};
 
 use crate::api::{Identifier, QualIdentifier, SortedVar, Symbol, Term, VarBinding};
-use crate::error::SolverError::{self, *};
+use crate::error::{SolverError::{self, *}, Offset};
 use crate::private::a_sort::SortObject;
 use crate::solver::Solver;
 
@@ -48,7 +48,7 @@ pub(crate) fn annotate_term(
 
             // replace variable by XSortedVar
             match qual_identifier {
-                QualIdentifier::Identifier(Identifier::Simple(ref symbol)) => {
+                QualIdentifier::Identifier(Identifier::Simple(ref symbol, _)) => {
                     match variables.get(symbol) {
                         Some(Some(SortedVar(_, ref sort))) => // a variable of finite sort
                             Ok(Term::XSortedVar(symbol.clone(), Some(sort.clone()), *start)),
@@ -64,9 +64,9 @@ pub(crate) fn annotate_term(
 
         Term::Application(qual_identifier, terms, start) => {
 
-            let and: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("and".to_string())));
-            let or: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("or".to_string())));
-            let not: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("not".to_string())));
+            let and: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("and".to_string()), Offset(0)));
+            let or: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("or".to_string()), Offset(0)));
+            let not: QualIdentifier = QualIdentifier::Identifier(Identifier::Simple(Symbol("not".to_string()), Offset(0)));
 
             match qual_identifier.to_string().as_str() {
                 "=>" => {

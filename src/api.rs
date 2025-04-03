@@ -146,18 +146,47 @@ impl Display for Index {
 }
 
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone)]
 pub enum Identifier {
     /// `<symbol>`
-    Simple(Symbol),
+    Simple(Symbol, Offset),
     /// `(_ <symbol> <index>+)`
-    Indexed(Symbol, Vec<Index>),
+    Indexed(Symbol, Vec<Index>, Offset),
 }
 impl Display for Identifier {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Self::Simple(m0) => write!(f, "{}", m0),
-            Self::Indexed(m0, m1) => write!(f, "(_ {} {})", m0, m1.iter().format(" ")),
+            Self::Simple(m0, _) => write!(f, "{}", m0),
+            Self::Indexed(m0, m1, _) => write!(f, "(_ {} {})", m0, m1.iter().format(" ")),
+        }
+    }
+}
+impl PartialEq for Identifier {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Simple(l0, _), Self::Simple(r0, _)) => l0 == r0,
+            (Self::Indexed(l0, l1, _), Self::Indexed(r0, r1, _)) => l0 == r0 && l1 == r1,
+            _ => false,
+        }
+    }
+}
+impl Eq for Identifier {}
+impl std::hash::Hash for Identifier {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        match self {
+            Self::Simple(symbol, _) => symbol.hash(state),
+            Self::Indexed(symbol, indices, _) => {
+                symbol.hash(state);
+                indices.hash(state);
+            }
+        }
+    }
+}
+impl Identifier {
+    pub(crate) fn start(&self) -> Offset {
+        match self {
+            Self::Simple(_, start)
+            | Self::Indexed(_, _, start) => *start,
         }
     }
 }
@@ -484,7 +513,7 @@ pub enum Command {
     DeclareSort(Symbol, Numeral),
     DefineSort(Symbol, Vec<Symbol>, Sort),
     SetOption(Option_),
-    XDebug(String, String),
+    XDebug(Identifier, Identifier),
     XGround,
     XInterpretPred(Identifier, Vec<XTuple>),
     XInterpretFun(Identifier, Vec<(XTuple, Term)>, Option<Term>),

@@ -23,20 +23,20 @@ pub(crate) fn interpret_pred(
     let qual_identifier = QualIdentifier::Identifier(identifier.clone());
 
     let function_is = solver.functions.get(&qual_identifier)
-        .ok_or(SolverError::ExprError("Unknown symbol".to_string(), None))?;
+        .ok_or(SolverError::IdentifierError("Unknown symbol", identifier.clone()))?;
 
     match function_is {
         FunctionIs::Predefined { .. } =>
-            Err(SolverError::ExprError("Can't interpret a pre-defined symbol".to_string(), None)),
+            Err(SolverError::IdentifierError("Can't interpret a pre-defined symbol", identifier.clone())),
         FunctionIs::BooleanInterpreted { .. } =>
-            Err(SolverError::ExprError("Can't re-interpret an interpreted symbol".to_string(), None)),
+            Err(SolverError::IdentifierError("Can't re-interpret an interpreted symbol", identifier.clone())),
         FunctionIs::NonBooleanInterpreted { .. } =>
-            Err(SolverError::ExprError("Can't re-interpret an interpreted symbol".to_string(), None)),
+            Err(SolverError::IdentifierError("Can't re-interpret an interpreted symbol", identifier.clone())),
         FunctionIs::Constructor { .. } =>
-            Err(SolverError::ExprError("Can't interpret a constructor".to_string(), None)),
+            Err(SolverError::IdentifierError("Can't interpret a constructor", identifier.clone())),
         FunctionIs::Calculated { signature: (domain, _, boolean) } => {
             if ! *boolean {
-                Err(SolverError::ExprError("Can't use `x-interpret-pred` for non-boolean symbol".to_string(), None))
+                Err(SolverError::IdentifierError("Can't use `x-interpret-pred` for non-boolean symbol", identifier.clone()))
             } else {
                 if domain.len() == 0 {
                     // special case: arity 0
@@ -55,7 +55,7 @@ pub(crate) fn interpret_pred(
                             .collect::<Result<Vec<_>, SolverError>>()?;
                         tuples_strings.push(tuples_t);
                     } else {
-                        return Err(SolverError::ExprError("Incorrect tuple length".to_string(), None))
+                        return Err(SolverError::IdentifierError("Incorrect tuple length", identifier.clone()))
                     }
                 }
                 populate_table(&format!("{identifier}_T"), tuples_strings, solver)?;
@@ -175,28 +175,28 @@ pub(crate) fn interpret_fun(
     let qual_identifier = QualIdentifier::Identifier(identifier.clone());
 
     let function_is = solver.functions.get(&qual_identifier)
-        .ok_or(SolverError::ExprError("Unknown symbol".to_string(), None))?;
+        .ok_or(SolverError::IdentifierError("Unknown symbol", identifier.clone()))?;
 
     match function_is {
         FunctionIs::Predefined { .. } =>
-            Err(SolverError::ExprError("Can't interpret a pre-defined symbol".to_string(), None)),
+            Err(SolverError::IdentifierError("Can't interpret a pre-defined symbol", identifier.clone())),
         FunctionIs::BooleanInterpreted { .. } =>
-            Err(SolverError::ExprError("Can't re-interpret an interpreted symbol".to_string(), None)),
+            Err(SolverError::IdentifierError("Can't re-interpret an interpreted symbol", identifier.clone())),
         FunctionIs::NonBooleanInterpreted { .. } =>
-            Err(SolverError::ExprError("Can't re-interpret an interpreted symbol".to_string(), None)),
+            Err(SolverError::IdentifierError("Can't re-interpret an interpreted symbol", identifier.clone())),
         FunctionIs::Constructor { .. } =>
-            Err(SolverError::ExprError("Can't interpret a constructor".to_string(), None)),
+            Err(SolverError::IdentifierError("Can't interpret a constructor", identifier.clone())),
         FunctionIs::Calculated { signature: (domain, co_domain, boolean) } => {
             if ! *boolean {
                 if domain.len() == 0 {  // constant
 
                     let value =
                         if tuples.len() == 0 {  // (x-interpret-fun c () 1)
-                            else_.clone().ok_or(SolverError::ExprError("no values".to_string(), None))
+                            else_.clone().ok_or(SolverError::IdentifierError("no values", identifier.clone()))
                         } else if tuples.len() == 1 {   // (x-interpret-fun c (() 1) 1)
                             Ok(tuples[0].1.clone())
                         } else {
-                            Err(SolverError::ExprError("too many tuples".to_string(), None))
+                            Err(SolverError::IdentifierError("too many tuples", identifier.clone()))
                         }?;
                     let value = match value {
                         Term::SpecConstant(SpecConstant::Numeral(v), _) => v.to_string(),
@@ -239,7 +239,7 @@ pub(crate) fn interpret_fun(
                             tuples_t.push(value);
                             tuples_strings.push(tuples_t);
                         } else {
-                            return Err(SolverError::ExprError("Incorrect tuple length".to_string(), None))
+                            return Err(SolverError::IdentifierError("Incorrect tuple length", identifier.clone()))
                         }
                     }
                     populate_table(&name, tuples_strings, solver)?;
@@ -257,7 +257,7 @@ pub(crate) fn interpret_fun(
                             Interpretation::Table{name, ids, else_: Some(Some(else_))}
                         }
                     } else {
-                        return Err(SolverError::ExprError("Missing `else` value".to_string(), None))
+                        return Err(SolverError::IdentifierError("Missing `else` value", identifier.clone()))
                     };
                     let function_is = FunctionIs::NonBooleanInterpreted { table_g };
                     solver.functions.insert(qual_identifier, function_is);

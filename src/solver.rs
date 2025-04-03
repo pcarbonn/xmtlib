@@ -8,7 +8,7 @@ use rusqlite::{Connection, Result};
 use z3_sys::*;
 
 use crate::api::*;
-use crate::error::{format_error, SolverError::{self, InternalError}};
+use crate::error::{format_error, SolverError::{self, InternalError}, Offset};
 use crate::grammar::parse;
 use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, ParametricObject, SortObject};
 use crate::private::b_fun::{declare_fun, FunctionIs};
@@ -78,7 +78,7 @@ impl Default for Solver {
 
         // create pre-defined sorts: Bool, Int, Real
         let mut sorts = IndexMap::new();
-        let sort = |s: &str| Sort::Sort(Identifier::Simple(Symbol(s.to_string())));
+        let sort = |s: &str| Sort::Sort(Identifier::Simple(Symbol(s.to_string()), Offset(0)));
 
         let bool_decl = SortObject::Normal{
             datatype_dec: DatatypeDec::DatatypeDec(
@@ -99,7 +99,7 @@ impl Default for Solver {
         // create pre-defined functions
         let mut functions = IndexMap::new();
         let function = |s: &str|
-            QualIdentifier::Identifier(Identifier::Simple(Symbol(s.to_string())));
+            QualIdentifier::Identifier(Identifier::Simple(Symbol(s.to_string()), Offset(0)));
 
         // boolean pre-defined functions
         for s in ["true", "false"] {
@@ -248,9 +248,9 @@ impl Solver {
                     yield_!(self.set_option(option, command)),
 
                 Command::XDebug(typ, obj) => {
-                    match typ.as_str() {
+                    match typ.to_string().as_str() {
                         "solver" => {
-                            match obj.as_str() {
+                            match obj.to_string().as_str() {
                                 "sorts" => {
                                     yield_!(Ok("Sorts:".to_string()));
                                     for (sort, decl) in &self.sorts {
@@ -318,28 +318,28 @@ impl Solver {
                                         yield_!(Ok(format!(" - {term}:{grounding}")))
                                     }
                                 },
-                                _ => yield_!(Err(SolverError::ExprError("Unknown 'x-debug solver' parameter".to_string(), None)))
+                                _ => yield_!(Err(SolverError::IdentifierError("Unknown 'x-debug solver' parameter", obj)))
                             }
                         },
                         "db" => {
-                            if let Ok(content) = pretty_sqlite::pretty_table(&self.conn, obj.as_str()) {
+                            if let Ok(content) = pretty_sqlite::pretty_table(&self.conn, obj.to_string().as_str()) {
                                 yield_!(Ok(content))
                             } else {
-                                yield_!(Err(SolverError::ExprError("Unknown table".to_string(), None)))
+                                yield_!(Err(SolverError::IdentifierError("Unknown table", typ)))
                             }
                         },
                         "db-view" => {
                             // helper function
                             let query = || {
                                 let mut stmt = self.conn.prepare("SELECT sql FROM sqlite_master WHERE type='view' AND name=?1")?;
-                                match stmt.query_row([obj], |row| row.get(0))? {
+                                match stmt.query_row([obj.to_string()], |row| row.get(0))? {
                                     Some(view_sql) => Ok(view_sql),
                                     None => Err(InternalError(4895566))
                                 }
                             };
                             yield_!(query())
                         },
-                        _ => yield_!(Err(SolverError::ExprError("Unknown 'x-debug' parameter".to_string(), None)))
+                        _ => yield_!(Err(SolverError::IdentifierError("Unknown 'x-debug' parameter", typ)))
                     }
                 },
 
@@ -397,7 +397,7 @@ impl Solver {
                                     self.backend = Backend::Z3(ctx);
                                 }
                             },
-                            _ => return Err(SolverError::ExprError("Unknown backend".to_string(), None))
+                            _ => return Err(SolverError::ExprError(format!("Unknown backend: {value}")))
                         }
                         Ok("".to_string())
                     },

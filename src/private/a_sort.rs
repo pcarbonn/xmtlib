@@ -7,7 +7,8 @@ use itertools::Itertools;
 use rusqlite::{params, Connection};
 
 use crate::api::{ConstructorDec, DatatypeDec, Identifier, Numeral, SelectorDec, Sort, SortDec, Symbol, QualIdentifier};
-use crate::{error::SolverError::{self, InternalError}, solver::Solver};
+use crate::error::{SolverError::{self, InternalError}, Offset};
+use crate::solver::Solver;
 use crate::private::b_fun::FunctionIs;
 
 #[allow(unused_imports)]
@@ -97,7 +98,7 @@ pub(crate) fn declare_sort(
     let out = solver.exec(&command)?;
 
     if numeral.0 == 0 {
-        let sort = Sort::Sort(Identifier::Simple(symb));
+        let sort = Sort::Sort(Identifier::Simple(symb, Offset(0)));
         insert_sort(sort, None, TypeInterpretation::Unknown, None, solver)?;
     } else {
         let dt_object = ParametricObject::Unknown;
@@ -133,7 +134,7 @@ pub(crate) fn define_sort(
                 | SortObject::Infinite
                 | SortObject::Unknown => (None, None),
             };
-        let new_sort = Sort::Sort(Identifier::Simple(symb));
+        let new_sort = Sort::Sort(Identifier::Simple(symb, Offset(0)));
         insert_sort(new_sort, new_decl, g, table_name, solver)?;
 
     } else {  // sort must be parametric
@@ -183,10 +184,10 @@ fn recursive_sort(
     declaring: &IndexSet<Symbol>
 ) -> bool {
     match sort {
-        Sort::Sort(Identifier::Simple(symb)) => {
+        Sort::Sort(Identifier::Simple(symb, _)) => {
             if declaring.contains(symb) { return true }
         },
-        Sort::Parametric(Identifier::Simple(symb), sorts) => {
+        Sort::Parametric(Identifier::Simple(symb, _), sorts) => {
             if declaring.contains(symb) { return true }
 
             for sort in sorts {
@@ -226,7 +227,7 @@ pub(crate) fn create_sort(
         }
 
         //
-        let key = Sort::Sort(Identifier::Simple(symb.clone()));
+        let key = Sort::Sort(Identifier::Simple(symb.clone(), Offset(0)));
         insert_sort(key, Some(decl.clone()), grounding, None, solver)?;
         Ok(())
 
@@ -255,7 +256,7 @@ pub(crate) fn instantiate_parent_sort(
     } else {
         match parent_sort {
             Sort::Sort(id) =>   // check if recursive
-                if let Identifier::Simple(symb) = id {
+                if let Identifier::Simple(symb, _) = id {
                     if declaring.contains(symb) {
                         insert_sort(parent_sort.clone(), None, TypeInterpretation::Recursive, None, solver)
                     } else {
@@ -267,7 +268,7 @@ pub(crate) fn instantiate_parent_sort(
 
             Sort::Parametric(id, parameters) => {
                 // running example: Pair Color Color
-                if let Identifier::Simple(symb) = id {
+                if let Identifier::Simple(symb, _) = id {
 
                     // check if recursive
                     if declaring.contains(symb) {
@@ -357,7 +358,7 @@ fn sort_mapping(
     values: &Vec<Sort>
 ) -> IndexMap<Sort, Sort> {
     let old_variables: Vec<Sort> = variables.iter()
-        .map(|s| { Sort::Sort(Identifier::Simple(s.clone()))})
+        .map(|s| { Sort::Sort(Identifier::Simple(s.clone(), Offset(0)))})
         .collect();
     old_variables.into_iter()
         .zip(values.iter().cloned())
@@ -421,7 +422,7 @@ fn insert_sort(
                                 if let Some((table, count)) = alias {
                                     SortObject::Normal{datatype_dec, table, count}
                                 } else {
-                                    let table = if let Sort::Sort(Identifier::Simple(Symbol(ref name))) = sort {
+                                    let table = if let Sort::Sort(Identifier::Simple(Symbol(ref name), _)) = sort {
                                         name.to_string()  // todo: sanitize name (several places)
                                     } else {
                                         format!("Sort_{}", i)
@@ -468,7 +469,7 @@ fn create_table(
         let ConstructorDec(constructor, selectors) = constructor_decl;
         if selectors.len() == 0 {
             nullary.push(constructor.0.clone());
-            let qual_identifier = QualIdentifier::Identifier(Identifier::Simple(constructor.clone()));
+            let qual_identifier = QualIdentifier::Identifier(Identifier::Simple(constructor.clone(), Offset(0)));
             solver.functions.insert(qual_identifier, FunctionIs::Constructor);
         } else {
             for SelectorDec(selector, sort) in selectors {
@@ -507,7 +508,7 @@ fn create_table(
         for constructor_decl in constructor_decls { // e.g. (pair (first Color) (second Color))
             let ConstructorDec(constructor, selectors) = constructor_decl;
 
-            let qual_identifier = QualIdentifier::Identifier(Identifier::Simple(constructor.clone()));
+            let qual_identifier = QualIdentifier::Identifier(Identifier::Simple(constructor.clone(), Offset(0)));
             solver.functions.insert(qual_identifier, FunctionIs::Constructor);
 
             if selectors.len() != 0 {  // otherwise, already in core table

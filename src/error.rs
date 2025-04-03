@@ -4,7 +4,7 @@ use peg::{error::ParseError, str::LineCol};
 use rusqlite::Error as SqlError;
 use thiserror::Error;
 
-use crate::api::Term;
+use crate::api::{Identifier, Term};
 
 /// The number of characters since the begin of a source file.
 ///
@@ -19,10 +19,13 @@ pub enum SolverError {
     ParseError(#[from] ParseError<LineCol>),
 
     #[error("{0}")]
-    ExprError(String, Option<Offset>),
+    ExprError(String),
 
     #[error("{0}: {1}")]
     TermError(&'static str, Term),
+
+    #[error("{0}: {1}")]
+    IdentifierError(&'static str, Identifier),
 
     #[error("Database error: {0}")]
     DatabaseError(#[from] SqlError),
@@ -43,19 +46,18 @@ pub fn format_error(input: &str, e: SolverError) -> String {
 
         DatabaseError(e) => format!("****** Database Error: {}", e),
 
-        ExprError(msg, offset) =>
-            if let Some(offset_) = offset {
-                match offset_to_line_col_utf8(&input, offset_) {
-                    None => format!("****** Error: {}", msg),
-                    Some(location) =>
-                        pretty_print(input, location, msg)
-                }
-            } else {
-                format!("****** Error: {}", msg)
-            },
+        ExprError(msg) => format!("****** Error: {}", msg),
 
         TermError(msg, term) => {
             match offset_to_line_col_utf8(&input, term.start()) {
+                None => format!("****** Error: {}", msg),
+                Some(location) =>
+                    pretty_print(input, location, msg.to_string())
+            }
+        },
+
+        IdentifierError(msg, id) => {
+            match offset_to_line_col_utf8(&input, id.start()) {
                 None => format!("****** Error: {}", msg),
                 Some(location) =>
                     pretty_print(input, location, msg.to_string())
