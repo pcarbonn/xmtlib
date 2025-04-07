@@ -3,7 +3,7 @@
 (declare-datatype Color ( ( red ) ( green ) ))
 ; arity 0
 (declare-fun c () Color)
-(x-interpret-fun c () red)
+(x-interpret-fun c ((() red)))
 (assert (= c green))
 ; arity 2
 (declare-fun mix (Color Color) Color)
@@ -23,7 +23,7 @@
 
 (declare-datatype Color ((red ) (green )))
 (declare-fun c () Color)
-(x-interpret-fun c (  ) red)
+(x-interpret-fun c ( (() red) ) )
 
 (declare-fun mix (Color Color) Color)
 (x-interpret-fun mix ( ((red red) green) ((green green) ?) ((red green) green) ((green red) green) ) )

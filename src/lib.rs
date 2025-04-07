@@ -1,6 +1,132 @@
+// cargo watch -x "doc --no-deps"
 
-pub mod api;
+//! xmt-lib denotes:
+//! * a powerful language for interacting with [SMT](https://fr.wikipedia.org/wiki/Satisfiability_modulo_theories) solvers;
+//! * a program that executes commands in that language;
+//! * a program that translates from that language to
+//! [SMT-Lib 2.6](https://smt-lib.org/language.shtml)
+//! for use with SMT solvers.
+//!
+//! It can be used to find (optimal) solutions of configuration problems
+//! and perform various reasoning tasks with knowledge represented in logical forms.
+//! Of note, the xmt-lib program has a fast "grounder"
+//! based on the [sqlite](https://sqlite.org) relational database engine.
+//!
+//! xmt-lib extends the SMT-Lib 2.6 language with the following commands:
+//!
+//! * `set-option :backend` to specify the SMT solver (if any) used to execute the SMT-Lib 2.6 commands.
+//! * `x-interpret-pred`, to specify the interpretation of a boolean function symbol.
+//! * `x-interpret-fun`, to specify the interpretation of a function symbol.
+//! * `x-ground`, to ground assertions, i.e., to expand the finite quantifications,
+//! taking into account the known interpretations.
+//!
+//! # Example
+//!
+//! This example shows how to use xmt-lib to flag triangles in a graph, i.e. to assert:
+//!
+//! `∀ x,y,z: Edge(x,y) and Edge(y,z) and Edge(z, x) => RedTriangle(x, y, z).`
+//!
+//! ```
+//! use xmtlib::solver::Solver;
+//! let commands = r#"
+//!     (set-option :backend none)
+//!     (declare-fun Edge (Int Int) Bool)
+//!     (declare-fun RedTriangle (Int Int Int) Bool)
+//!     (x-interpret-pred Edge
+//!         (1 2)
+//!         (2 3)
+//!         (1 3)
+//!     )
+//!     (assert (forall ((x Int) (y Int) (z Int))
+//!                 (=> (and (Edge x y) (Edge y z) (Edge x z))
+//!                     (RedTriangle x y z)
+//!                 )))
+//!     (check-sat)  ; implicitly runs (x-ground)
+//! "#;
+//! let mut solver = Solver::default();
+//! let results = solver.parse_and_execute(&commands);
+//! for result in results {
+//!     print!("{}", result);
+//! }
+//! ```
+//! Output:
+//! ```text
+//! (declare-fun Edge (Int Int) Bool)
+//! (declare-fun RedTriangle (Int Int Int) Bool)
+//! (assert (RedTriangle 1 2 3))
+//! (check-sat)
+//! ```
+//! The grounding of the assertion is simply `(assert (RedTriangle 1 2 3))`,
+//! once the interpretation of Edge is taken into account.
+//!
+//! # New commands
+//!
+//! Note that, unlike SMT-Lib 2.6, but like the Z3 solver,
+//! xmt-lib accepts negative numbers in terms (e.g., `-1` is accepted for `(- 1)`).
+//!
+//! ## (set-option :backend
+//!
+//! This command has the following variants:
+//!
+//! * `set-option :backend none` to obtain the translation of xmt-lib commands to SMT-Lib 2.6;
+//! * `set-option :backend Z3` for immediate execution of commands by a Z3 solver.
+//!
+//!
+//! ## (x-interpret-pred
+//!
+//! An `x-interpret-pred` command specifies the total interpretation of a boolean function symbol (aka predicate),
+//! by listing all the tuples of arguments that make it true.
+//!
+//! Example: `(x-interpret-pred Edge (a b) (b c) (c a) )`.
+//! The only pairs of nodes that satisfy the `Edge` predicate are `(a b)`, `(b c)`, and `(c a)`.
+//!
+//! For a proposition `p` (aka a boolean function of arity 0), the interpretation can be given as :
+//!
+//! * `(x-interpret-pred p () )` if `p` is true;
+//! * `(x-interpret-pred p )` if `p` is false;
+//!
+//! Note that a model of the assertions (obtained by `(get-model)`)
+//! will not have any information about interpreted predicate symbols.
+//! So, in our example, `(Edge a b)` may have any value in a model.
+//!
+//!
+//! ## (x-interpret-fun
+//!
+//! An `x-interpret-fun` command specifies the interpretation of a function symbol, possibly partially,
+//! by associating a value to tuples of arguments, and by giving a default value.
+//!
+//! Example `(x-interpret-fun Length ( ((a b) 2) ((b c) 3) ((c a) 4) ) 999)`.
+//! The length of pair `(a b)` is 2, of `(b c)` is 3, of `(c a)` is 4,
+//! and is 999 for every other pairs in the domain of Length.
+//!
+//! An unknown value is specified using `?`, e.g., `(x-interpret-fun Length ( ((a b) ?) ) 999)`.
+//! The default value may also be `?`,
+//! but may not be given if the set of tuples in the interpretation is exhaustive.
+//!
+//! The interpretation of a constant `c` (i.e., a function of arity 0) is given in the default value,
+//! e.g., `(x-interpret-fun Length c () 1)`.
+//!
+//! Note that a model of the assertions (obtained by `(get-model)`)
+//! will not have any information about function symbols
+//! that have been given in the interpretation.
+//!
+//!
+//! ## (x-ground
+//!
+//! Use `(x-ground)` to ground the pending assertions,
+//! i.e., to expand the finite quantifications in them,
+//! taking into account the known interpretations.
+//! Quantifications over infinite domains remain unchanged.
+//!
+//! The grounding of assertions is delayed until requested.
+//! It is thus possible to make assertions,
+//! then to give the interpretations of symbols,
+//! and then to ground the assertions using those interpretations.
+//!
+//! Note that `(check-sat)` grounds any pending assertions.
+
+mod api;
 pub mod error;
-pub mod grammar;
+mod grammar;
 pub mod solver;
 mod private;

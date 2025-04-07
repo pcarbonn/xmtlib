@@ -9,7 +9,7 @@
 )
 (assert (forall ((x Node) (y Node) (z Node))
             (=> (and (Edge x y) (Edge y z) (Edge x z))
-                     (phi x y z)
+                (phi x y z)
             )))
 (assert (forall ((x Node)) (Edge x x)))
 (assert (exists ((x Node) (y Node)) (Edge x y)))

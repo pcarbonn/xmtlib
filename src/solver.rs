@@ -19,7 +19,7 @@ use crate::private::y_db::init_db;
 
 
 #[derive(PartialEq)]
-pub enum Backend {
+pub(crate) enum Backend {
     NoDriver,
     Z3(Z3_context)
 }

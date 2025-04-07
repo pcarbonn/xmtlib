@@ -1,8 +1,10 @@
 // Copyright Pierre Carbonnelle, 2025.
 
 //! This module defines the abstract syntax tree (AST) of XMT-Lib.
-//!
-//! The nodes are listed in the order given in Appendix B of the SMT-Lib standard.
+
+
+
+// The nodes are listed in the order given in Appendix B of the SMT-Lib standard.
 
 // It also implements Display to generate a string in XMT-Lib format.
 

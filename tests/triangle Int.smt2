@@ -8,7 +8,7 @@
 )
 (assert (forall ((x Int) (y Int) (z Int))
             (=> (and (Edge x y) (Edge y z) (Edge x z))
-                     (phi x y z)
+                (phi x y z)
             )))
 (x-ground)
 (x-debug solver functions)
