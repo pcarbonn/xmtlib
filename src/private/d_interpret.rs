@@ -8,7 +8,7 @@ unzip_n!(pub 3);
 use crate::api::{Identifier, QualIdentifier, Sort, XTuple, Term, SpecConstant};
 use crate::error::SolverError::{self, InternalError};
 use crate::private::a_sort::SortObject;
-use crate::private::b_fun::{FunctionIs, Interpretation};
+use crate::private::b_fun::{FunctionObject, Interpretation};
 use crate::private::e1_ground_view::Ids;
 use crate::solver::Solver;
 
@@ -26,15 +26,15 @@ pub(crate) fn interpret_pred(
         .ok_or(SolverError::IdentifierError("Unknown symbol", identifier.clone()))?;
 
     match function_is {
-        FunctionIs::Predefined { .. } =>
+        FunctionObject::Predefined { .. } =>
             Err(SolverError::IdentifierError("Can't interpret a pre-defined symbol", identifier.clone())),
-        FunctionIs::BooleanInterpreted { .. } =>
+        FunctionObject::BooleanInterpreted { .. } =>
             Err(SolverError::IdentifierError("Can't re-interpret an interpreted symbol", identifier.clone())),
-        FunctionIs::NonBooleanInterpreted { .. } =>
+        FunctionObject::NonBooleanInterpreted { .. } =>
             Err(SolverError::IdentifierError("Can't re-interpret an interpreted symbol", identifier.clone())),
-        FunctionIs::Constructor { .. } =>
+        FunctionObject::Constructor { .. } =>
             Err(SolverError::IdentifierError("Can't interpret a constructor", identifier.clone())),
-        FunctionIs::Calculated { signature: (domain, _, boolean) } => {
+        FunctionObject::NotInterpreted { signature: (domain, _, boolean) } => {
             if ! *boolean {
                 Err(SolverError::IdentifierError("Can't use `x-interpret-pred` for non-boolean symbol", identifier.clone()))
             } else {
@@ -72,8 +72,8 @@ pub(crate) fn interpret_pred(
                     let table_uf = Interpretation::Infinite;
                     let table_g = Interpretation::Infinite;
 
-                    // create FunctionIs with boolean interpretations.
-                    let function_is = FunctionIs::BooleanInterpreted { table_tu, table_uf, table_g };
+                    // create FunctionObject with boolean interpretations.
+                    let function_is = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
                     solver.functions.insert(qual_identifier, function_is);
                 } else {
                     // create UF view
@@ -110,8 +110,8 @@ pub(crate) fn interpret_pred(
                     let sql = format!("CREATE VIEW IF NOT EXISTS {identifier}_G AS SELECT * FROM {name_tu} UNION SELECT * FROM {name_uf}");
                     solver.conn.execute(&sql, ())?;
 
-                    // create FunctionIs with boolean interpretations.
-                    let function_is = FunctionIs::BooleanInterpreted { table_tu, table_uf, table_g };
+                    // create FunctionObject with boolean interpretations.
+                    let function_is = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
                     solver.functions.insert(qual_identifier, function_is);
 
                 }
@@ -157,8 +157,8 @@ fn interpret_pred_0(
 
     };
 
-    // create FunctionIs with boolean interpretations.
-    let function_is = FunctionIs::BooleanInterpreted { table_tu, table_uf, table_g };
+    // create FunctionObject with boolean interpretations.
+    let function_is = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
     solver.functions.insert(qual_identifier.clone(), function_is);
     Ok(command)
 }
@@ -178,15 +178,15 @@ pub(crate) fn interpret_fun(
         .ok_or(SolverError::IdentifierError("Unknown symbol", identifier.clone()))?;
 
     match function_is {
-        FunctionIs::Predefined { .. } =>
+        FunctionObject::Predefined { .. } =>
             Err(SolverError::IdentifierError("Can't interpret a pre-defined symbol", identifier.clone())),
-        FunctionIs::BooleanInterpreted { .. } =>
+        FunctionObject::BooleanInterpreted { .. } =>
             Err(SolverError::IdentifierError("Can't re-interpret an interpreted symbol", identifier.clone())),
-        FunctionIs::NonBooleanInterpreted { .. } =>
+        FunctionObject::NonBooleanInterpreted { .. } =>
             Err(SolverError::IdentifierError("Can't re-interpret an interpreted symbol", identifier.clone())),
-        FunctionIs::Constructor { .. } =>
+        FunctionObject::Constructor { .. } =>
             Err(SolverError::IdentifierError("Can't interpret a constructor", identifier.clone())),
-        FunctionIs::Calculated { signature: (domain, co_domain, boolean) } => {
+        FunctionObject::NotInterpreted { signature: (domain, co_domain, boolean) } => {
             if ! *boolean {
                 if domain.len() == 0 {  // constant
 
@@ -207,9 +207,9 @@ pub(crate) fn interpret_fun(
                     let sql = format!("CREATE VIEW IF NOT EXISTS {qual_identifier}_G AS SELECT {value} as G");
                     solver.conn.execute(&sql, ())?;
 
-                    // create FunctionIs.
+                    // create FunctionObject.
                     let table_g  = Interpretation::Table{name: format!("{qual_identifier}_G"), ids: Ids::All, else_: None};
-                    let function_is = FunctionIs::NonBooleanInterpreted { table_g };
+                    let function_is = FunctionObject::NonBooleanInterpreted { table_g };
                     solver.functions.insert(qual_identifier.clone(), function_is);
 
                 } else {
@@ -259,7 +259,7 @@ pub(crate) fn interpret_fun(
                     } else {
                         return Err(SolverError::IdentifierError("Missing `else` value", identifier.clone()))
                     };
-                    let function_is = FunctionIs::NonBooleanInterpreted { table_g };
+                    let function_is = FunctionObject::NonBooleanInterpreted { table_g };
                     solver.functions.insert(qual_identifier, function_is);
                 }
             } else {  // boolean
@@ -281,7 +281,7 @@ fn size(
             let sort_object = solver.sorts.get(sort);
             if let Some(sort_object) = sort_object {
                 match sort_object {
-                    SortObject::Normal{count, ..} => count,
+                    SortObject::Normal{row_count, ..} => row_count,
                     SortObject::Infinite
                     | SortObject::Recursive
                     | SortObject::Unknown => &0,
@@ -363,7 +363,7 @@ fn construct(id: &Term, solver: &mut Solver) -> Result<String, SolverError> {
         Term::Identifier(qual_identifier, _) => {
             if let Some(f_is) = solver.functions.get(qual_identifier) {
                 match f_is {
-                    FunctionIs::Constructor => Ok(id.to_string()),
+                    FunctionObject::Constructor => Ok(id.to_string()),
                     _ => Err(SolverError::TermError("Not an id", id.clone())),
                 }
             } else {
@@ -373,16 +373,16 @@ fn construct(id: &Term, solver: &mut Solver) -> Result<String, SolverError> {
         Term::Application(qual_identifier, terms, _) => {
             if let Some(f_is) = solver.functions.get(qual_identifier) {
                 match f_is {
-                    FunctionIs::Constructor => {
+                    FunctionObject::Constructor => {
                         let new_terms = terms.iter()
                             .map( |t| construct(t, solver))
                             .collect::<Result<Vec<_>, SolverError>>()?.join(" ");
                         Ok(format!(" ({qual_identifier} {new_terms})"))
                     },
-                    FunctionIs::Predefined { .. }
-                    | FunctionIs::Calculated { .. }
-                    | FunctionIs::NonBooleanInterpreted { .. }
-                    | FunctionIs::BooleanInterpreted { .. } =>
+                    FunctionObject::Predefined { .. }
+                    | FunctionObject::NotInterpreted { .. }
+                    | FunctionObject::NonBooleanInterpreted { .. }
+                    | FunctionObject::BooleanInterpreted { .. } =>
                         Err(SolverError::TermError("Not an id", id.clone())),
                 }
             } else {

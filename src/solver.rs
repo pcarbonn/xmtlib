@@ -11,7 +11,7 @@ use crate::api::*;
 use crate::error::{format_error, SolverError::{self, InternalError}, Offset};
 use crate::grammar::parse;
 use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, ParametricObject, SortObject};
-use crate::private::b_fun::{declare_fun, FunctionIs};
+use crate::private::b_fun::{declare_fun, FunctionObject};
 use crate::private::c_assert::assert_;
 use crate::private::d_interpret::{interpret_pred, interpret_fun};
 use crate::private::e_ground::{ground, Grounding};
@@ -38,7 +38,7 @@ pub struct Solver {
     pub(crate) sorts: IndexMap<Sort, SortObject>,
 
     // predicate and function symbols
-    pub(crate) functions: IndexMap<QualIdentifier, FunctionIs>,
+    pub(crate) functions: IndexMap<QualIdentifier, FunctionObject>,
     // pub(crate) qualified_functions: IndexMap<QualIdentifier, FunctionObject>,
 
     // To support differed grounding of terms.
@@ -88,7 +88,7 @@ impl Default for Solver {
                 ],
                 ),
             table: "Bool".to_string(),
-            count: 2};
+            row_count: 2};
         sorts.insert(sort("Bool"), bool_decl);
         sorts.insert(sort("Int" ), SortObject::Infinite);
         sorts.insert(sort("Real" ), SortObject::Infinite);
@@ -104,7 +104,7 @@ impl Default for Solver {
         // boolean pre-defined functions
         for s in ["true", "false"] {
             functions.insert(function(s),
-                FunctionIs::Constructor);
+                FunctionObject::Constructor);
         }
 
         // boolean pre-defined functions
@@ -114,19 +114,19 @@ impl Default for Solver {
                         "<=", "<", ">=", ">"
                         ] {
             functions.insert(function(s),
-                FunctionIs::Predefined{ boolean: Some(true) });
+                FunctionObject::Predefined{ boolean: Some(true) });
         }
 
         // ite
         functions.insert(function("ite"),
-            FunctionIs::Predefined { boolean: None });
+            FunctionObject::Predefined { boolean: None });
 
         // non-boolean pre-defined functions
         for s in ["+", "-", "*", "div",
                         "mod", "abs",
                         ] {
             functions.insert(function(s),
-                FunctionIs::Predefined{ boolean: Some(false) });
+                FunctionObject::Predefined{ boolean: Some(false) });
         };
 
         unsafe {
@@ -255,8 +255,8 @@ impl Solver {
                                     yield_!(Ok("Sorts:".to_string()));
                                     for (sort, decl) in &self.sorts {
                                         match decl {
-                                            SortObject::Normal{datatype_dec, table, count} =>
-                                                yield_!(Ok(format!(" - ({table}: {count}) {sort}: {datatype_dec}"))),
+                                            SortObject::Normal{datatype_dec, table, row_count} =>
+                                                yield_!(Ok(format!(" - ({table}: {row_count}) {sort}: {datatype_dec}"))),
                                             SortObject::Recursive =>
                                                 yield_!(Ok(format!(" - (recursive) {sort}"))),
                                             SortObject::Infinite =>
@@ -272,7 +272,7 @@ impl Solver {
                                         match decl {
                                             ParametricObject::Datatype(decl) =>
                                                 yield_!(Ok(format!(" - {sort}: {decl}"))),
-                                            ParametricObject::Definition{variables, definiendum} => {
+                                            ParametricObject::DTDefinition{variables, definiendum} => {
                                                 let vars = variables.iter()
                                                     .map(|v| v.0.clone())
                                                     .collect::<Vec<String>>().join(",");
@@ -289,15 +289,15 @@ impl Solver {
                                     yield_!(Ok("Functions:".to_string()));
                                     for (symbol, func) in &self.functions {
                                         match func {
-                                            FunctionIs::Predefined{boolean} =>
+                                            FunctionObject::Predefined{boolean} =>
                                                 if let Some(boolean) = boolean {
                                                     yield_!(Ok(format!(" - {symbol}: Predefined ({boolean})")))
                                                 } else {
                                                     yield_!(Ok(format!(" - {symbol}: Predefined (?)")))
                                                 },
-                                            FunctionIs::Constructor =>
+                                            FunctionObject::Constructor =>
                                                 yield_!(Ok(format!(" - {symbol}: Constructor"))),
-                                            FunctionIs::Calculated{signature} => {
+                                            FunctionObject::NotInterpreted{signature} => {
                                                 let (domain, co_domain, boolean) = signature;
                                                 let domain = domain.iter()
                                                     .map(|s| s.to_string())
@@ -305,9 +305,9 @@ impl Solver {
                                                 let co_domain = co_domain.to_string();
                                                 yield_!(Ok(format!(" - {symbol}: {domain} -> {co_domain} ({boolean})")))
                                             },
-                                            FunctionIs::NonBooleanInterpreted{table_g} =>
+                                            FunctionObject::NonBooleanInterpreted{table_g} =>
                                                 yield_!(Ok(format!(" - {symbol}: Non Boolean ({table_g})"))),
-                                            FunctionIs::BooleanInterpreted{table_tu, table_uf, table_g} =>
+                                            FunctionObject::BooleanInterpreted{table_tu, table_uf, table_g} =>
                                                 yield_!(Ok(format!(" - {symbol}: Boolean ({table_tu}, {table_uf}, {table_g})"))),
                                         }
                                     }

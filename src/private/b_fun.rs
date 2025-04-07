@@ -16,10 +16,10 @@ use crate::solver::Solver;
 
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) enum FunctionIs {
+pub(crate) enum FunctionObject {
     Predefined{boolean: Option<bool>},  // None for `ite` --> need special code
     Constructor,
-    Calculated{signature: (Vec<Sort>, Sort, bool)},  // signature used to create table, when later interpreted
+    NotInterpreted{signature: (Vec<Sort>, Sort, bool)},  // signature used to create table, when later interpreted
     NonBooleanInterpreted{ table_g: Interpretation},
     BooleanInterpreted{table_tu: Interpretation, table_uf: Interpretation, table_g: Interpretation}
 }
@@ -34,7 +34,7 @@ pub(crate) enum Interpretation {
 /////////////////////  Implementation  ////////////////////////////////////////
 
 
-impl Display for FunctionIs {
+impl Display for FunctionObject {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Predefined{boolean} =>
@@ -45,8 +45,8 @@ impl Display for FunctionIs {
                 },
             Self::Constructor =>
                 write!(f, "Constructor"),
-            Self::Calculated{signature} =>
-                write!(f, "Calculated({:?})", signature),
+            Self::NotInterpreted{signature} =>
+                write!(f, "NotInterpreted({:?})", signature),
             Self::NonBooleanInterpreted{table_g} =>
                 write!(f, "NonBooleanInterpreted ({table_g})"),
             Self::BooleanInterpreted{table_tu, table_uf, table_g} =>
@@ -96,7 +96,7 @@ pub(crate) fn declare_fun(
         Sort::Sort(Identifier::Simple(Symbol(ref s), _)) => s=="Bool",
         _ => false
     };
-    let function_is = FunctionIs::Calculated{signature: (domain, co_domain, boolean)};
+    let function_is = FunctionObject::NotInterpreted{signature: (domain, co_domain, boolean)};
     solver.functions.insert(identifier, function_is);
 
     Ok(out)

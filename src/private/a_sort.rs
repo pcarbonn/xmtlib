@@ -9,7 +9,7 @@ use rusqlite::{params, Connection};
 use crate::api::{ConstructorDec, DatatypeDec, Identifier, Numeral, SelectorDec, Sort, SortDec, Symbol, QualIdentifier};
 use crate::error::{SolverError::{self, InternalError}, Offset};
 use crate::solver::Solver;
-use crate::private::b_fun::FunctionIs;
+use crate::private::b_fun::FunctionObject;
 
 #[allow(unused_imports)]
 use debug_print::debug_println as dprintln;
@@ -20,14 +20,14 @@ use debug_print::debug_println as dprintln;
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum ParametricObject {
     Datatype(DatatypeDec),
-    Definition{ variables: Vec<Symbol>, definiendum: Sort },
+    DTDefinition{ variables: Vec<Symbol>, definiendum: Sort },
     Recursive,
     Unknown
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum SortObject{
-    Normal{datatype_dec: DatatypeDec, table: String, count: usize},  // table name, number of rows
+    Normal{datatype_dec: DatatypeDec, table: String, row_count: usize},  // table name, number of rows
     Recursive,
     Infinite,  // Int, Real, and derived
     Unknown
@@ -127,8 +127,8 @@ pub(crate) fn define_sort(
         let (new_decl, table_name) =
             match new_decl.clone()
              {
-                SortObject::Normal{datatype_dec, table, count} => {
-                    (Some(datatype_dec.clone()), Some((format!(" {table}"), count)))  // front space to say that the table exists already
+                SortObject::Normal{datatype_dec, table, row_count} => {
+                    (Some(datatype_dec.clone()), Some((format!(" {table}"), row_count)))  // front space to say that the table exists already
                 },
                 SortObject::Recursive
                 | SortObject::Infinite
@@ -138,7 +138,7 @@ pub(crate) fn define_sort(
         insert_sort(new_sort, new_decl, g, table_name, solver)?;
 
     } else {  // sort must be parametric
-        solver.parametric_sorts.insert(symb, ParametricObject::Definition{variables, definiendum});
+        solver.parametric_sorts.insert(symb, ParametricObject::DTDefinition{variables, definiendum});
     }
 
     Ok(out)
@@ -308,7 +308,7 @@ pub(crate) fn instantiate_parent_sort(
                             let new_decl = DatatypeDec::DatatypeDec(new_constructors);
                             insert_sort(parent_sort.clone(), Some(new_decl), grounding, None, solver)
                         },
-                        ParametricObject::Definition{variables, definiendum, } => {
+                        ParametricObject::DTDefinition{variables, definiendum, } => {
                             // running example: parent_sort is (MyPair Color Color)
                             // parent_decl: (define-sort MyPair (T) (Pair T T))
 
@@ -322,8 +322,8 @@ pub(crate) fn instantiate_parent_sort(
 
                             // create sort object
                             match sort_object {
-                                SortObject::Normal{table, count, ..} => {
-                                    let alias = Some((format!(" {table}"), count.clone()));
+                                SortObject::Normal{table, row_count, ..} => {
+                                    let alias = Some((format!(" {table}"), row_count.clone()));
                                     insert_sort(parent_sort.clone(), None, new_g, alias, solver)  // front space to say that the table exists already
                                 },
                                 SortObject::Infinite
@@ -419,16 +419,16 @@ fn insert_sort(
                     if let Some(datatype_dec) = decl {
                         match datatype_dec {
                             DatatypeDec::DatatypeDec(ref constructor_decls) => {
-                                if let Some((table, count)) = alias {
-                                    SortObject::Normal{datatype_dec, table, count}
+                                if let Some((table, row_count)) = alias {
+                                    SortObject::Normal{datatype_dec, table, row_count}
                                 } else {
                                     let table = if let Sort::Sort(Identifier::Simple(Symbol(ref name), _)) = sort {
                                         name.to_string()  // todo: sanitize name (several places)
                                     } else {
                                         format!("Sort_{}", i)
                                     };
-                                    let count = create_table(&table, &constructor_decls, solver)?;
-                                    SortObject::Normal{datatype_dec, table, count}
+                                    let row_count = create_table(&table, &constructor_decls, solver)?;
+                                    SortObject::Normal{datatype_dec, table, row_count}
                                 }
                             },
                             DatatypeDec::Par(..) => {
@@ -457,7 +457,7 @@ fn create_table(
     constructor_decls: &Vec<ConstructorDec>,
     solver: &mut Solver
 ) -> Result<usize, SolverError> {
-    let mut count;
+    let mut row_count;
 
     // running example: (declare-datatype P ((white ) (pair (first Color) (second Color))))
 
@@ -470,7 +470,7 @@ fn create_table(
         if selectors.len() == 0 {
             nullary.push(constructor.0.clone());
             let qual_identifier = QualIdentifier::Identifier(Identifier::Simple(constructor.clone(), Offset(0)));
-            solver.functions.insert(qual_identifier, FunctionIs::Constructor);
+            solver.functions.insert(qual_identifier, FunctionObject::Constructor);
         } else {
             for SelectorDec(selector, sort) in selectors {
                 let type_ = match sort.to_string().as_str() {
@@ -482,7 +482,7 @@ fn create_table(
             }
         }
     }
-    count = nullary.len();
+    row_count = nullary.len();
 
     if column_names.len() == 0 {  // nullary constructors only
 
@@ -509,7 +509,7 @@ fn create_table(
             let ConstructorDec(constructor, selectors) = constructor_decl;
 
             let qual_identifier = QualIdentifier::Identifier(Identifier::Simple(constructor.clone(), Offset(0)));
-            solver.functions.insert(qual_identifier, FunctionIs::Constructor);
+            solver.functions.insert(qual_identifier, FunctionObject::Constructor);
 
             if selectors.len() != 0 {  // otherwise, already in core table
 
@@ -523,15 +523,15 @@ fn create_table(
                 for (i, SelectorDec(selector, sort)) in selectors.iter().enumerate() {
                     let sort_object = solver.sorts.get(&sort.clone())
                         .ok_or(InternalError(7459455))?;
-                    if let SortObject::Normal{table, count, ..} = sort_object {
+                    if let SortObject::Normal{table, row_count, ..} = sort_object {
                         tables.push(table.clone());
                         columns.insert(&selector.0, format!("T{i}.G"));
-                        row_product *= count;
+                        row_product *= row_count;
                     } else {
                         return Err(InternalError(7529545))
                     }
                 }
-                count += row_product;
+                row_count += row_product;
 
                 // "pair"
                 let constructor = &constructor.0;
@@ -564,7 +564,7 @@ fn create_table(
         let insert = format!("INSERT INTO {table} (constructor, {columns}, G) {}", selects.join( " UNION "));
         solver.conn.execute(&insert, ())?;
     }
-    Ok(count)
+    Ok(row_count)
 }
 
 /// creates a table in the DB containing the nullary constructors

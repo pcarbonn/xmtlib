@@ -10,7 +10,7 @@ use crate::api::{QualIdentifier, SortedVar, SpecConstant, Symbol, Term};
 use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 
-use crate::private::e2_ground_query::{GroundingQuery, NaturalJoin, TableName, Column};
+use crate::private::e2_ground_query::{GroundingQuery, NaturalJoin, TableAlias, Column};
 use crate::private::e3_ground_sql::{Mapping, SQLExpr, Predefined};
 
 
@@ -22,9 +22,9 @@ use crate::private::e3_ground_sql::{Mapping, SQLExpr, Predefined};
 pub(crate) enum GroundingView {
     Empty,
     View {  // SELECT vars, cond, grounding (from view) WHERE val <> exclude
-        free_variables: IndexMap<Symbol, Option<TableName>>,  // None for infinite variables, sort interpretation table otherwise
+        free_variables: IndexMap<Symbol, Option<TableAlias>>,  // None for infinite variables, sort interpretation table otherwise
         condition: bool,
-        grounding: Either<SQLExpr, TableName>, // Left for SpecConstant, Boolean without table. Right for grounding field in table.
+        grounding: Either<SQLExpr, TableAlias>, // Left for SpecConstant, Boolean without table. Right for grounding field in table.
         exclude: Option<bool>, // e.g., "false" in TU view
 
         query: GroundingQuery,  // the underlying query
@@ -114,7 +114,7 @@ pub(crate) fn query_for_constant(
         theta_joins: IndexSet::new(),
         precise: true
     };
-    let view = TableName::new("ignore", 0);
+    let view = TableAlias::new("ignore", 0);
     GroundingView::new(view, IndexMap::new(), query, None, Ids::All, solver)
 }
 
@@ -126,9 +126,9 @@ pub(crate) fn query_for_variable(
     index: usize,
     solver: &mut Solver
 ) -> Result<GroundingView, SolverError> {
-    let view = TableName::new("variable", index);
+    let view = TableAlias::new("variable", index);
     if base_table.len() != 0 {
-        let table_name = TableName::new(base_table, index);
+        let table_name = TableAlias::new(base_table, index);
         let column = Column::new(&table_name, "G");
         let variables= IndexMap::from([(symbol.clone(), Some(column.clone()))]);
 
@@ -165,7 +165,7 @@ pub(crate) enum ViewType {
 
 /// describes the type of query to create for a compound term
 pub(crate) enum QueryVariant {
-    Interpretation(TableName, Ids, Option<Option<Term>>),  // None if complete, Some(None) if `else` value is `unknonw`, or Some(Some(value))
+    Interpretation(TableAlias, Ids, Option<Option<Term>>),  // None if complete, Some(None) if `else` value is `unknonw`, or Some(Some(value))
     Apply,
     Construct,
     Predefined
@@ -403,7 +403,7 @@ pub(crate) fn query_for_compound(
     let re = Regex::new(r"[\+\-/\*=\%\?\!\.\$\&\^<>@]").unwrap();
     let name = qual_identifier.to_string();
     let name = re.replace_all(&name, "");
-    let table_name = TableName::new(&name, index);
+    let table_name = TableAlias::new(&name, index);
     let query = GroundingQuery::Join {
         variables,
         conditions,
@@ -420,11 +420,11 @@ pub(crate) fn query_for_compound(
 /// Creates a query over an aggregate view, possibly adding a where clause if exclude is not empty
 pub(crate) fn query_for_aggregate(
     sub_query: &GroundingView,
-    free_variables: &IndexMap<Symbol, Option<TableName>>,
+    free_variables: &IndexMap<Symbol, Option<TableAlias>>,
     infinite_variables: &Vec<SortedVar>,  // variables being quantified
     agg: &str,  // "and", "or" or ""
     exclude: Option<bool>,
-    table_name: TableName,
+    table_name: TableAlias,
     solver: &mut Solver
 ) -> Result<GroundingView, SolverError> {
 
@@ -544,7 +544,7 @@ pub(crate) fn query_for_union(
                             if *sub_condition {
                                 vec![Right(table_name.clone())]
                             } else if condition {  // add `"true" as if_``
-                                let empty_table = TableName { base_table: "".to_string(), index: 0 };
+                                let empty_table = TableAlias { base_table: "".to_string(), index: 0 };
                                 vec![Right(empty_table)]
                             } else {
                                 vec![]
@@ -567,7 +567,7 @@ pub(crate) fn query_for_union(
 
     if sub_queries.len() == 0 { return Ok(GroundingView::Empty) }
 
-    let table_name = TableName{base_table: format!("union_{index}"), index: 0};
+    let table_name = TableAlias{base_table: format!("union_{index}"), index: 0};
     if sub_queries.len() == 1 {
         return GroundingView::new(table_name, free_variables, sub_queries.first().unwrap().clone(), exclude, ids.clone(), solver)
     };
@@ -589,7 +589,7 @@ pub(crate) fn query_for_union(
     };
 
     // create the aggregate
-    let table_name = TableName{base_table: format!("agg_union_{index}"), index: 0};
+    let table_name = TableAlias{base_table: format!("agg_union_{index}"), index: 0};
     let query = GroundingQuery::Aggregate {
         agg: agg.to_string(),
         free_variables: free_variables.clone(),
@@ -607,8 +607,8 @@ pub(crate) fn query_for_union(
 impl GroundingView {
 
     pub(crate) fn new (
-        table_name: TableName,
-        free_variables: IndexMap<Symbol, Option<TableName>>,
+        table_name: TableAlias,
+        free_variables: IndexMap<Symbol, Option<TableAlias>>,
         query: GroundingQuery,
         exclude: Option<bool>,
         ids: Ids,
@@ -691,7 +691,7 @@ impl GroundingView {
     }
 
     /// return the view's variables with their infinity flag
-    pub(crate) fn get_free_variables(&self) -> IndexMap<Symbol, Option<TableName>> {
+    pub(crate) fn get_free_variables(&self) -> IndexMap<Symbol, Option<TableAlias>> {
         match self {
             GroundingView::Empty => IndexMap::new(),
             GroundingView::View{free_variables,..} => free_variables.clone()
