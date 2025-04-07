@@ -90,6 +90,7 @@ impl Default for Solver {
             table: "Bool".to_string(),
             row_count: 2};
         sorts.insert(sort("Bool"), bool_decl);
+        // LINK src/doc.md#_Infinite
         sorts.insert(sort("Int" ), SortObject::Infinite);
         sorts.insert(sort("Real" ), SortObject::Infinite);
         sorts.insert(sort("RoundingMode" ), SortObject::Infinite);  // in FloatingPoint theory
@@ -102,6 +103,7 @@ impl Default for Solver {
             QualIdentifier::Identifier(Identifier::Simple(Symbol(s.to_string()), Offset(0)));
 
         // boolean pre-defined functions
+        // LINK src/doc.md#_Constructor
         for s in ["true", "false"] {
             functions.insert(function(s),
                 FunctionObject::Constructor);

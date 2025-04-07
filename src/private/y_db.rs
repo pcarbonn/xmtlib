@@ -21,6 +21,7 @@ pub(crate) fn init_db(
         },
     )?;
 
+    // LINK src/doc.md#_Constructor
     // create convenience function "construct"
     // similar to "apply", but adds a space in front of the result,
     // to indicate that the result is an identifier
@@ -34,6 +35,7 @@ pub(crate) fn init_db(
         },
     )?;
 
+    // LINK src/doc.md#_Constructor
     // create convenience function "construct"
     // similar to "construct", but adds a space in front of the result,
     // only when each argument is an id

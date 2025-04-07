@@ -304,6 +304,7 @@ fn create_interpretation_table(
 
         // Helper function
         fn column(name: String, sort: &Sort) -> String {
+            // LINK src/doc.md#_Infinite
             let sort_name = sort.to_string();
             if sort_name == "Int" {
                 format!("{name} INTEGER")
@@ -357,6 +358,7 @@ fn create_interpretation_table(
 
 /// Returns the string representation of the id.
 /// Constructor applications are preceded by a space, e.g. ` (cons 0 nil)`
+// LINK src/doc.md#_Constructor
 fn construct(id: &Term, solver: &mut Solver) -> Result<String, SolverError> {
     match id {
         Term::SpecConstant(_, _) => Ok(id.to_string()),

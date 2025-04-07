@@ -1,3 +1,5 @@
+Below is a copy of a selection of the `struct` and `enum` declarations.
+
 ```
 pub struct Solver {
     pub(crate) backend: Backend,

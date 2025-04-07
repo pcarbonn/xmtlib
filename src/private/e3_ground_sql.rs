@@ -157,6 +157,7 @@ impl SQLExpr {
                 sql_for("apply", qual_identifier.to_string(), exprs, variables)
             },
             SQLExpr::Construct(qual_identifier, exprs) => {
+                // LINK src/doc.md#_Constructor
                 sql_for("construct2", qual_identifier.to_string(), exprs, variables)
             },
             SQLExpr::Predefined(function, exprs) => {

@@ -425,6 +425,7 @@ fn ground_compound(
             }
         },
         FunctionObject::Constructor => {
+            // LINK src/doc.md#_Constructor
             let variant = QueryVariant::Construct;
             if qual_identifier.to_string() == "true"
             || qual_identifier.to_string() == "false" {  // boolean

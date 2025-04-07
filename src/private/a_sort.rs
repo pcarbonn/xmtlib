@@ -461,6 +461,7 @@ fn create_table(
 
     // running example: (declare-datatype P ((white ) (pair (first Color) (second Color))))
 
+    // LINK src/doc.md#_Constructor
     // 1st pass: collect nullary constructors and selectors
     // in ((white ) (pair (first Color) (second Color)))
     let mut nullary: Vec<String> = vec![]; // white
@@ -473,6 +474,7 @@ fn create_table(
             solver.functions.insert(qual_identifier, FunctionObject::Constructor);
         } else {
             for SelectorDec(selector, sort) in selectors {
+                // LINK src/doc.md#_Infinite
                 let type_ = match sort.to_string().as_str() {
                     "Int" => "INTEGER",
                     "Real" => "REAL",
@@ -503,6 +505,7 @@ fn create_table(
             selects.push(format!("SELECT NULL as constructor, {projection}, {core}.G AS G from {core}"));
         }
 
+        // LINK src/doc.md#_Constructor
         // add "select "pair" as constructor, T1.G as first, T2.G as second, construct("pair", T1.G, T2.G) as G
         //      from Color as T1 join Color as T2"
         for constructor_decl in constructor_decls { // e.g. (pair (first Color) (second Color))
