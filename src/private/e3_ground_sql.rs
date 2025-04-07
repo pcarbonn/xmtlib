@@ -1,11 +1,11 @@
 // Copyright Pierre Carbonnelle, 2025.
 
-use indexmap::IndexMap;
 use std::cmp::max;
 
 use crate::api::{QualIdentifier, SpecConstant, Symbol};
 use crate::private::e1_ground_view::Ids;
 use crate::private::e2_ground_query::Column;
+use crate::private::z_option_map::OptionMap;
 
 
 ////////////////////// Data structures for grounding queries //////////////////
@@ -77,7 +77,7 @@ impl Mapping {
 
     pub(crate) fn to_if(
         &self,
-        variables: &IndexMap<Symbol, Option<Column>>
+        variables: &OptionMap<Symbol, Column>
     ) -> Option<String> {
         let exp = self.1.to_sql(variables);
         let col = self.2.to_string();
@@ -94,7 +94,7 @@ impl Mapping {
 
     pub(crate) fn to_join(
         &self,
-        variables: &IndexMap<Symbol, Option<Column>>
+        variables: &OptionMap<Symbol, Column>
     ) -> Option<String> {
         let exp = self.1.to_sql(variables);
         let col = self.2.to_string();
@@ -122,7 +122,7 @@ impl SQLExpr {
     // it can return an empty string !
     pub(crate) fn to_sql(
         &self,
-        variables: &IndexMap<Symbol, Option<Column>>
+        variables: &OptionMap<Symbol, Column>
     ) -> String {
 
         match self {
@@ -306,7 +306,7 @@ fn sql_for(
     application: &str,
     function: String,
     exprs: &Box<Vec<SQLExpr>>,
-    variables: &IndexMap<Symbol, Option<Column>>,
+    variables: &OptionMap<Symbol, Column>,
 ) -> String {
     if exprs.len() == 0 {
         format!("\"{function}\"")

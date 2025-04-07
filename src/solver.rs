@@ -8,7 +8,7 @@ use rusqlite::{Connection, Result};
 use z3_sys::*;
 
 use crate::api::*;
-use crate::error::{format_error, SolverError::{self, InternalError}, Offset};
+use crate::error::{format_error, SolverError, Offset};
 use crate::grammar::parse;
 use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, ParametricObject, SortObject};
 use crate::private::b_fun::{declare_fun, FunctionObject};

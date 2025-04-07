@@ -18,7 +18,7 @@
 -------------------------
 (declare-fun Edge (Int Int) Bool)
 (declare-fun phi (Int Int Int) Bool)
-(assert (forall ((x Int) (y Int) (z Int)) (phi 1 2 3)))
+(assert (phi 1 2 3))
 Functions:
  - true: Constructor
  - false: Constructor
@@ -80,6 +80,6 @@ Groundings:
     G : SELECT "x" AS x, "y" AS y, "z" AS z, apply("or", apply("not", apply("Edge", "x", "y")), apply("not", apply("Edge", "y", "z")), apply("not", apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G
  - (forall ((x Int) (y Int) (z Int)) (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z))):
     TU: SELECT "(forall ((x Int) (y Int) (z Int)) " || and_aggregate(G) || ")" as G from (SELECT "x" AS x, "y" AS y, "z" AS z, apply("or", apply("not", apply("Edge", "x", "y")), apply("not", apply("Edge", "y", "z")), apply("not", apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G)
-    UF: SELECT "(forall ((x Int) (y Int) (z Int)) " || G || ")" as G from (SELECT Edge_TU_2.a_0 AS x, Edge_TU_2.a_1 AS y, Edge_TU_5.a_1 AS z, apply("phi", Edge_TU_2.a_0, Edge_TU_2.a_1, Edge_TU_5.a_1) AS G FROM Edge_TU AS Edge_TU_2 JOIN Edge_TU AS Edge_TU_5 ON Edge_TU_2.a_1 = Edge_TU_5.a_0 JOIN Edge_TU AS Edge_TU_7 ON Edge_TU_2.a_0 = Edge_TU_7.a_0 AND Edge_TU_5.a_1 = Edge_TU_7.a_1)
+    UF: SELECT G as G from (SELECT Edge_TU_2.a_0 AS x, Edge_TU_2.a_1 AS y, Edge_TU_5.a_1 AS z, apply("phi", Edge_TU_2.a_0, Edge_TU_2.a_1, Edge_TU_5.a_1) AS G FROM Edge_TU AS Edge_TU_2 JOIN Edge_TU AS Edge_TU_5 ON Edge_TU_2.a_1 = Edge_TU_5.a_0 JOIN Edge_TU AS Edge_TU_7 ON Edge_TU_2.a_0 = Edge_TU_7.a_0 AND Edge_TU_5.a_1 = Edge_TU_7.a_1)
     G : SELECT "(forall ((x Int) (y Int) (z Int)) " || and_aggregate(G) || ")" as G from (SELECT "x" AS x, "y" AS y, "z" AS z, apply("or", apply("not", apply("Edge", "x", "y")), apply("not", apply("Edge", "y", "z")), apply("not", apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G)
 (check-sat)

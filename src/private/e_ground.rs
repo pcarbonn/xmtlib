@@ -5,9 +5,8 @@ use std::future::Future;
 use genawaiter::{sync::Gen, sync::gen, yield_};
 use rusqlite::Connection;
 
-use crate::api::{QualIdentifier, SortedVar, Term};
+use crate::api::{QualIdentifier, Term};
 use crate::error::SolverError::{self, *};
-use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, Interpretation};
 use crate::private::e1_ground_view::{GroundingView, Ids, ViewType, QueryVariant,
     query_for_constant, query_for_variable, query_for_compound, query_for_aggregate, query_for_union};
@@ -203,23 +202,9 @@ pub(crate) fn ground_term_(
                     Err(InternalError(42578548)),
                 Grounding::Boolean { tu: _, uf: sub_uf, g: sub_g } => {
 
-                    // free_variables = query.variables \ variables
-                    let mut free_variables = sub_g.get_free_variables().clone();
-                    for SortedVar(symbol, _) in variables {
-                        free_variables.shift_remove(symbol);
-                    }
-
-                    // infinite_variables < variables
-                    let infinite_variables = variables.iter()
-                        .filter( |SortedVar(_, sort)|
-                            match solver.sorts.get(sort).unwrap() {
-                                SortObject::Normal { .. } => false,
-                                SortObject::Recursive
-                                | SortObject::Infinite
-                                | SortObject::Unknown => true
-                        }).map(|var| var.clone()).collect::<Vec<_>>();
-
                     let table_name = format!("Agg_{index}");
+
+                    let (free_variables, infinite_variables) = sub_g.get_free_variables(variables).clone();
 
                     let tu = query_for_aggregate(
                         &sub_g,
@@ -230,6 +215,18 @@ pub(crate) fn ground_term_(
                         TableAlias{base_table: table_name.clone() + "_TU", index: 0},
                         solver)?;
 
+                    let g = query_for_aggregate(
+                        &sub_g,
+                        &free_variables,
+                        &infinite_variables,
+                        "and",
+                        None,
+                        TableAlias{base_table: table_name.clone() + "_G", index: 0},
+                        solver)?;
+
+                    // the infinite variables may be different for sub_uf
+                    let (free_variables, infinite_variables) = sub_uf.get_free_variables(variables).clone();
+
                     let uf = query_for_aggregate(
                         &sub_uf,
                         &free_variables,
@@ -239,14 +236,6 @@ pub(crate) fn ground_term_(
                         TableAlias{base_table: table_name.clone() + "_UF", index: 0},
                         solver)?;
 
-                    let g = query_for_aggregate(
-                        &sub_g,
-                        &free_variables,
-                        &infinite_variables,
-                        "and",
-                        None,
-                        TableAlias{base_table: table_name.clone() + "_G", index: 0},
-                        solver)?;
                     Ok(Grounding::Boolean{tu, uf, g})
                 },
             }
@@ -257,23 +246,10 @@ pub(crate) fn ground_term_(
                     Err(InternalError(42578548)),
                 Grounding::Boolean { tu: sub_tu, uf: _, g: sub_g } => {
 
-                    // free_variables = query.variables \ variables
-                    let mut free_variables = sub_g.get_free_variables().clone();
-                    for SortedVar(symbol, _) in variables {
-                        free_variables.shift_remove(symbol);
-                    }
-
-                    // infinite_variables < variables
-                    let infinite_variables = variables.iter()
-                    .filter( |SortedVar(_, sort)|
-                        match solver.sorts.get(sort).unwrap() {
-                            SortObject::Normal { .. } => false,
-                            SortObject::Recursive
-                            | SortObject::Infinite
-                            | SortObject::Unknown => true
-                    }).map(|var| var.clone()).collect::<Vec<_>>();
-
                     let table_name = format!("Agg_{index}");
+
+                    let (free_variables, infinite_variables) = sub_tu.get_free_variables(variables).clone();
+
                     let tu = query_for_aggregate(
                         &sub_tu,
                         &free_variables,
@@ -282,6 +258,9 @@ pub(crate) fn ground_term_(
                         None,
                         TableAlias{base_table: table_name.clone() + "_TU", index: 0},
                         solver)?;
+
+                    // the infinite variables may be different from sub tu
+                    let (free_variables, infinite_variables) = sub_g.get_free_variables(variables).clone();
 
                     let uf = query_for_aggregate(
                         &sub_g,

@@ -1,7 +1,7 @@
 // Copyright Pierre Carbonnelle, 2025.
 
 use std::fmt::Display;
-use indexmap::{IndexMap, IndexSet};
+use indexmap::IndexSet;
 use itertools::Either::{self, Left, Right};
 
 use crate::api::{SortedVar, Symbol};
@@ -10,6 +10,7 @@ use crate::solver::{Solver, TermId};
 
 use crate::private::e1_ground_view::{GroundingView, Ids, ViewType};
 use crate::private::e3_ground_sql::{Mapping, SQLExpr, Predefined};
+use crate::private::z_option_map::OptionMap;
 
 
 
@@ -21,7 +22,7 @@ use crate::private::e3_ground_sql::{Mapping, SQLExpr, Predefined};
 pub(crate) enum GroundingQuery {
     Join {
         /// maps variables to None if its domain is infinite or to a Column in a Type or Interpretation table.
-        variables: IndexMap<Symbol, Option<Column>>,
+        variables: OptionMap<Symbol, Column>,
         conditions: Vec<Either<Mapping, TableAlias>>,  // vector of mapping or `if_` column of a table. If TableAlias is empty, "true".
         grounding: SQLExpr,
         natural_joins: IndexSet<NaturalJoin>,  // joins of grounding sub-queries
@@ -31,7 +32,7 @@ pub(crate) enum GroundingQuery {
     },
     Aggregate {
         agg: String,  // "" (top-level), "and" or "or"
-        free_variables: IndexMap<Symbol, Option<TableAlias>>,  // None for infinite variables
+        free_variables: OptionMap<Symbol, TableAlias>,  // None for infinite variables
         infinite_variables: Vec<SortedVar>,
         sub_view: Box<GroundingView>,  // the sub_view has more variables than free_variables
 
@@ -104,7 +105,7 @@ impl std::fmt::Display for GroundingQuery {
                 let condition = conditions.iter()
                     .filter_map( |e| {
                         match e {
-                            Left(mapping) => mapping.to_if(&variables),
+                            Left(mapping) => mapping.to_if(variables),
                             Right(table) => {
                                 if table.to_string().is_empty() {
                                     Some("\"true\"".to_string())
@@ -227,6 +228,7 @@ impl std::fmt::Display for GroundingQuery {
                         };
 
                     // compute the grounding
+                    // LINK src/doc.md#_Infinite
                     let infinite_vars = infinite_variables.iter()
                         .map ( |sv| sv.to_string() )
                         .collect::<Vec<_>>().join(" ");
@@ -308,7 +310,7 @@ impl GroundingQuery {
 
     pub(crate) fn negate(
         &self,
-        free_variables: IndexMap<Symbol, Option<TableAlias>>,
+        free_variables: OptionMap<Symbol, TableAlias>,
         index: TermId,
         view_type: ViewType,
         exclude: Option<bool>,

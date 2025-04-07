@@ -41,7 +41,7 @@ pub(crate) enum Grounding {
 pub(crate) enum GroundingView {
     Empty,
     View {
-        free_variables: IndexMap<Symbol, Option<TableAlias>>,
+        free_variables: OptionMap<Symbol, TableAlias>,
         condition: bool,
         grounding: Either<SQLExpr, TableAlias>,
         exclude: Option<bool>,
@@ -51,7 +51,7 @@ pub(crate) enum GroundingView {
 }
 pub(crate) enum GroundingQuery {
     Join {
-        variables: IndexMap<Symbol, Option<Column>>,
+        variables: OptionMap<Symbol, Column>,
         conditions: Vec<Either<Mapping, TableAlias>>,
         grounding: SQLExpr,
         natural_joins: IndexSet<NaturalJoin>,
@@ -60,7 +60,7 @@ pub(crate) enum GroundingQuery {
     },
     Aggregate {
         agg: String,
-        free_variables: IndexMap<Symbol, Option<TableAlias>>,
+        free_variables: OptionMap<Symbol, TableAlias>,
         infinite_variables: Vec<SortedVar>,
         sub_view: Box<GroundingView>,
     },

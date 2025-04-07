@@ -21,7 +21,6 @@
 (declare-fun p (Color) Bool)
 (declare-fun q (Int) Bool)
 (declare-fun r (Bool) Bool)
-(assert (exists ((x Int)) true))
 (assert (p red))
 (assert (p green))
 (assert (or (p red) (p green)))
@@ -35,13 +34,13 @@ Groundings:
     F: SELECT "true" AS G WHERE FALSE
     G : SELECT "true" AS G
  - (forall ((x Int)) true):
-    TU: SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G from (SELECT "true" AS G)
+    TU: SELECT and_aggregate(G) as G from (SELECT "true" AS G)
     F: SELECT "true" AS G WHERE FALSE
-    G : SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G from (SELECT "true" AS G)
+    G : SELECT and_aggregate(G) as G from (SELECT "true" AS G)
  - (exists ((x Int)) true):
-    TU: SELECT "(exists ((x Int)) " || or_aggregate(G) || ")" as G from (SELECT "true" AS G)
-    UF: SELECT "(exists ((x Int)) " || or_aggregate(G) || ")" as G from (SELECT "true" AS G)
-    G : SELECT "(exists ((x Int)) " || or_aggregate(G) || ")" as G from (SELECT "true" AS G)
+    TU: SELECT or_aggregate(G) as G from (SELECT "true" AS G)
+    UF: SELECT or_aggregate(G) as G from (SELECT "true" AS G)
+    G : SELECT or_aggregate(G) as G from (SELECT "true" AS G)
  - (forall ((x Color)) true):
     TU: SELECT and_aggregate(G) as G from (SELECT "true" AS G)
     F: SELECT "true" AS G WHERE FALSE

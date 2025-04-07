@@ -123,13 +123,13 @@ Groundings:
     UF: SELECT or_aggregate(G) as G from (SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2)
     G : SELECT or_aggregate(G) as G from (SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2)
  - (same x x):
-    T: SELECT same_TU_4.a_1 AS x, "true" AS G FROM same_TU AS same_TU_4 WHERE same_TU_4.a_1 = same_TU_4.a_0
-    F: SELECT same_UF_4.a_1 AS x, "false" AS G FROM same_UF AS same_UF_4 WHERE same_UF_4.a_1 = same_UF_4.a_0
-    G : SELECT same_G_4.a_1 AS x, same_G_4.G AS G FROM same_G AS same_G_4 WHERE same_G_4.a_1 = same_G_4.a_0
+    T: SELECT same_TU_4.a_0 AS x, "true" AS G FROM same_TU AS same_TU_4 WHERE same_TU_4.a_0 = same_TU_4.a_1
+    F: SELECT same_UF_4.a_0 AS x, "false" AS G FROM same_UF AS same_UF_4 WHERE same_UF_4.a_0 = same_UF_4.a_1
+    G : SELECT same_G_4.a_0 AS x, same_G_4.G AS G FROM same_G AS same_G_4 WHERE same_G_4.a_0 = same_G_4.a_1
  - (exists ((x Color)) (same x x)):
-    TU: SELECT or_aggregate(G) as G from (SELECT same_TU_4.a_1 AS x, "true" AS G FROM same_TU AS same_TU_4 WHERE same_TU_4.a_1 = same_TU_4.a_0)
-    UF: SELECT or_aggregate(G) as G from (SELECT same_G_4.a_1 AS x, same_G_4.G AS G FROM same_G AS same_G_4 WHERE same_G_4.a_1 = same_G_4.a_0)
-    G : SELECT or_aggregate(G) as G from (SELECT same_G_4.a_1 AS x, same_G_4.G AS G FROM same_G AS same_G_4 WHERE same_G_4.a_1 = same_G_4.a_0)
+    TU: SELECT or_aggregate(G) as G from (SELECT same_TU_4.a_0 AS x, "true" AS G FROM same_TU AS same_TU_4 WHERE same_TU_4.a_0 = same_TU_4.a_1)
+    UF: SELECT or_aggregate(G) as G from (SELECT same_G_4.a_0 AS x, same_G_4.G AS G FROM same_G AS same_G_4 WHERE same_G_4.a_0 = same_G_4.a_1)
+    G : SELECT or_aggregate(G) as G from (SELECT same_G_4.a_0 AS x, same_G_4.G AS G FROM same_G AS same_G_4 WHERE same_G_4.a_0 = same_G_4.a_1)
  - y: SELECT Color_6.G AS y, Color_6.G AS G FROM Color AS Color_6
  - (same x y):
     T: SELECT same_TU_7.a_0 AS x, same_TU_7.a_1 AS y, "true" AS G FROM same_TU AS same_TU_7

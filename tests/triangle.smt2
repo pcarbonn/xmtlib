@@ -64,13 +64,13 @@ CREATE VIEW Agg_14_UF AS SELECT or_aggregate(G) as G from (SELECT Edge_G_2.a_0 A
     UF: SELECT G as G from (SELECT Edge_TU_2.a_0 AS x, Edge_TU_2.a_1 AS y, Edge_TU_5.a_1 AS z, apply("phi", Edge_TU_2.a_0, Edge_TU_2.a_1, Edge_TU_5.a_1) AS G FROM Edge_TU AS Edge_TU_2 JOIN Edge_TU AS Edge_TU_5 ON Edge_TU_2.a_1 = Edge_TU_5.a_0 JOIN Edge_TU AS Edge_TU_7 ON Edge_TU_2.a_0 = Edge_TU_7.a_0 AND Edge_TU_5.a_1 = Edge_TU_7.a_1)
     G : SELECT and_aggregate(G) as G from (SELECT Edge_G_2.a_0 AS x, Edge_G_2.a_1 AS y, Edge_G_5.a_1 AS z, apply("or", not_(Edge_G_2.G), not_(Edge_G_5.G), not_(Edge_G_7.G), apply("phi", Edge_G_2.a_0, Edge_G_2.a_1, Edge_G_5.a_1)) AS G FROM Edge_G AS Edge_G_2 JOIN Edge_G AS Edge_G_5 ON Edge_G_2.a_1 = Edge_G_5.a_0 JOIN Edge_G AS Edge_G_7 ON Edge_G_2.a_0 = Edge_G_7.a_0 AND Edge_G_5.a_1 = Edge_G_7.a_1)
  - (Edge x x):
-    T: SELECT Edge_TU_12.a_1 AS x, "true" AS G FROM Edge_TU AS Edge_TU_12 WHERE Edge_TU_12.a_1 = Edge_TU_12.a_0
-    F: SELECT Edge_UF_12.a_1 AS x, "false" AS G FROM Edge_UF AS Edge_UF_12 WHERE Edge_UF_12.a_1 = Edge_UF_12.a_0
-    G : SELECT Edge_G_12.a_1 AS x, Edge_G_12.G AS G FROM Edge_G AS Edge_G_12 WHERE Edge_G_12.a_1 = Edge_G_12.a_0
+    T: SELECT Edge_TU_12.a_0 AS x, "true" AS G FROM Edge_TU AS Edge_TU_12 WHERE Edge_TU_12.a_0 = Edge_TU_12.a_1
+    F: SELECT Edge_UF_12.a_0 AS x, "false" AS G FROM Edge_UF AS Edge_UF_12 WHERE Edge_UF_12.a_0 = Edge_UF_12.a_1
+    G : SELECT Edge_G_12.a_0 AS x, Edge_G_12.G AS G FROM Edge_G AS Edge_G_12 WHERE Edge_G_12.a_0 = Edge_G_12.a_1
  - (forall ((x Node)) (Edge x x)):
-    TU: SELECT and_aggregate(G) as G from (SELECT Edge_G_12.a_1 AS x, Edge_G_12.G AS G FROM Edge_G AS Edge_G_12 WHERE Edge_G_12.a_1 = Edge_G_12.a_0)
-    UF: SELECT G as G from (SELECT Edge_UF_12.a_1 AS x, "false" AS G FROM Edge_UF AS Edge_UF_12 WHERE Edge_UF_12.a_1 = Edge_UF_12.a_0)
-    G : SELECT and_aggregate(G) as G from (SELECT Edge_G_12.a_1 AS x, Edge_G_12.G AS G FROM Edge_G AS Edge_G_12 WHERE Edge_G_12.a_1 = Edge_G_12.a_0)
+    TU: SELECT and_aggregate(G) as G from (SELECT Edge_G_12.a_0 AS x, Edge_G_12.G AS G FROM Edge_G AS Edge_G_12 WHERE Edge_G_12.a_0 = Edge_G_12.a_1)
+    UF: SELECT G as G from (SELECT Edge_UF_12.a_0 AS x, "false" AS G FROM Edge_UF AS Edge_UF_12 WHERE Edge_UF_12.a_0 = Edge_UF_12.a_1)
+    G : SELECT and_aggregate(G) as G from (SELECT Edge_G_12.a_0 AS x, Edge_G_12.G AS G FROM Edge_G AS Edge_G_12 WHERE Edge_G_12.a_0 = Edge_G_12.a_1)
  - (exists ((x Node) (y Node)) (Edge x y)):
     TU: SELECT or_aggregate(G) as G from (SELECT Edge_TU_2.a_0 AS x, Edge_TU_2.a_1 AS y, "true" AS G FROM Edge_TU AS Edge_TU_2)
     UF: SELECT or_aggregate(G) as G from (SELECT Edge_G_2.a_0 AS x, Edge_G_2.a_1 AS y, Edge_G_2.G AS G FROM Edge_G AS Edge_G_2)
