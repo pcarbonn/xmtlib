@@ -113,7 +113,7 @@ fn execute_query(
             Err(e) => return Err(SolverError::from(e)),
             Ok(row) => {
                 if row != "true" {
-                    let assert = format!("(assert {})", row);
+                    let assert = format!("(assert {})\n", row);
                     res.push(assert);
                     if row == "false" {
                         break

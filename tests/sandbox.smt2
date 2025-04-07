@@ -12,12 +12,9 @@
 (x-debug solver functions)
 (x-debug solver groundings)
 -------------------------
-
 (declare-datatype Color ((red ) (green )))
 (declare-datatype Hue ((hue (first Color) (second Color))))
 (declare-fun dim (Hue) Bool)
-(x-interpret-pred dim ((hue red red)))
-
  TABLE: Color
 ┌─────────┐
 │ G       │

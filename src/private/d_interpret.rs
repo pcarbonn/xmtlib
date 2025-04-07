@@ -116,7 +116,7 @@ pub(crate) fn interpret_pred(
 
                 }
 
-                Ok(command)
+                Ok("".to_string())
             }
         },
     }
@@ -167,7 +167,7 @@ pub(crate) fn interpret_fun(
     identifier: Identifier,
     tuples: Vec<(XTuple, Term)>,
     else_: Option<Term>,
-    command: String,
+    _command: String,
     solver: &mut Solver,
 )-> Result<String, SolverError> {
 
@@ -265,7 +265,7 @@ pub(crate) fn interpret_fun(
             } else {  // boolean
                 todo!()
             };
-            Ok(command)
+            Ok("".to_string())
         }
     }
 }

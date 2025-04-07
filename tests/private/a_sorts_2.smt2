@@ -19,7 +19,6 @@
 (check-sat)
 
 -------------------------
-
 (declare-datatypes ((Tree 1) (TreeList 1)) ((par (X) ((node (value X) (children (TreeList X))))) (par (Y) ((empty ) (insert (head (Tree Y)) (tail (TreeList Y)))))))
 (declare-datatype TreeInt ((treeint (value (Tree Int)))))
 (declare-sort Pair 2)

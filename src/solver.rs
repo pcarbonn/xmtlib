@@ -254,94 +254,92 @@ impl Solver {
                         "solver" => {
                             match obj.to_string().as_str() {
                                 "sorts" => {
-                                    yield_!(Ok("Sorts:".to_string()));
+                                    yield_!(Ok("Sorts:\n".to_string()));
                                     for (sort, decl) in &self.sorts {
                                         match decl {
                                             SortObject::Normal{datatype_dec, table, row_count} =>
-                                                yield_!(Ok(format!(" - ({table}: {row_count}) {sort}: {datatype_dec}"))),
+                                                yield_!(Ok(format!(" - ({table}: {row_count}) {sort}: {datatype_dec}\n"))),
                                             SortObject::Recursive =>
-                                                yield_!(Ok(format!(" - (recursive) {sort}"))),
+                                                yield_!(Ok(format!(" - (recursive) {sort}\n"))),
                                             SortObject::Infinite =>
-                                                yield_!(Ok(format!(" - (infinite) {sort}"))),
+                                                yield_!(Ok(format!(" - (infinite) {sort}\n"))),
                                             SortObject::Unknown =>
-                                                yield_!(Ok(format!(" - (unknown) {sort}"))),
+                                                yield_!(Ok(format!(" - (unknown) {sort}\n"))),
                                         }
                                     }
                                 },
                                 "parametric_sorts" => {
-                                    yield_!(Ok("Parametric datatypes:".to_string()));
+                                    yield_!(Ok("Parametric datatypes:\n".to_string()));
                                     for (sort, decl) in &self.parametric_sorts {
                                         match decl {
                                             ParametricObject::Datatype(decl) =>
-                                                yield_!(Ok(format!(" - {sort}: {decl}"))),
+                                                yield_!(Ok(format!(" - {sort}: {decl}\n"))),
                                             ParametricObject::DTDefinition{variables, definiendum} => {
                                                 let vars = variables.iter()
                                                     .map(|v| v.0.clone())
                                                     .collect::<Vec<String>>().join(",");
-                                                yield_!(Ok(format!(" - {sort}: ({vars}) -> {definiendum}")))
+                                                yield_!(Ok(format!(" - {sort}: ({vars}) -> {definiendum}\n")))
                                             },
                                             ParametricObject::Recursive =>
-                                                yield_!(Ok(format!(" - (recursive): {sort}"))),
+                                                yield_!(Ok(format!(" - (recursive): {sort}\n"))),
                                             ParametricObject::Unknown =>
-                                                yield_!(Ok(format!(" - (unknown): {sort}"))),
+                                                yield_!(Ok(format!(" - (unknown): {sort}\n"))),
                                         }
                                     }
                                 },
                                 "functions" => {
-                                    yield_!(Ok("Functions:".to_string()));
+                                    yield_!(Ok("Functions:\n".to_string()));
                                     for (symbol, func) in &self.functions {
                                         match func {
                                             FunctionObject::Predefined{boolean} =>
                                                 if let Some(boolean) = boolean {
-                                                    yield_!(Ok(format!(" - {symbol}: Predefined ({boolean})")))
+                                                    yield_!(Ok(format!(" - {symbol}: Predefined ({boolean})\n")))
                                                 } else {
-                                                    yield_!(Ok(format!(" - {symbol}: Predefined (?)")))
+                                                    yield_!(Ok(format!(" - {symbol}: Predefined (?)\n")))
                                                 },
                                             FunctionObject::Constructor =>
-                                                yield_!(Ok(format!(" - {symbol}: Constructor"))),
+                                                yield_!(Ok(format!(" - {symbol}: Constructor\n"))),
                                             FunctionObject::NotInterpreted{signature} => {
                                                 let (domain, co_domain, boolean) = signature;
                                                 let domain = domain.iter()
                                                     .map(|s| s.to_string())
                                                     .collect::<Vec<_>>().join(" * ");
                                                 let co_domain = co_domain.to_string();
-                                                yield_!(Ok(format!(" - {symbol}: {domain} -> {co_domain} ({boolean})")))
+                                                yield_!(Ok(format!(" - {symbol}: {domain} -> {co_domain} ({boolean})\n")))
                                             },
                                             FunctionObject::NonBooleanInterpreted{table_g} =>
-                                                yield_!(Ok(format!(" - {symbol}: Non Boolean ({table_g})"))),
+                                                yield_!(Ok(format!(" - {symbol}: Non Boolean ({table_g})\n"))),
                                             FunctionObject::BooleanInterpreted{table_tu, table_uf, table_g} =>
-                                                yield_!(Ok(format!(" - {symbol}: Boolean ({table_tu}, {table_uf}, {table_g})"))),
+                                                yield_!(Ok(format!(" - {symbol}: Boolean ({table_tu}, {table_uf}, {table_g})\n"))),
                                         }
                                     }
                                 },
                                 "groundings" => {
-                                    yield_!(Ok("Groundings:".to_string()));
+                                    yield_!(Ok("Groundings:\n".to_string()));
                                     for (term, grounding) in &self.groundings {
-                                        yield_!(Ok(format!(" - {term}:{grounding}")))
+                                        yield_!(Ok(format!(" - {term}:{grounding}\n")))
                                     }
                                 },
-                                _ => yield_!(Err(SolverError::IdentifierError("Unknown 'x-debug solver' parameter", obj)))
+                                _ => yield_!(Err(SolverError::IdentifierError("Unknown 'x-debug solver' parameter\n", obj)))
                             }
                         },
                         "db" => {
                             if let Ok(content) = pretty_sqlite::pretty_table(&self.conn, obj.to_string().as_str()) {
-                                yield_!(Ok(content))
+                                yield_!(Ok(format!("{content}\n")))
                             } else {
-                                yield_!(Err(SolverError::IdentifierError("Unknown table", typ)))
+                                yield_!(Err(SolverError::IdentifierError("Unknown table\n", typ)))
                             }
                         },
                         "db-view" => {
                             // helper function
                             let query = || {
                                 let mut stmt = self.conn.prepare("SELECT sql FROM sqlite_master WHERE type='view' AND name=?1")?;
-                                match stmt.query_row([obj.to_string()], |row| row.get(0))? {
-                                    Some(view_sql) => Ok(view_sql),
-                                    None => Err(InternalError(4895566))
-                                }
+                                let res = stmt.query_row([obj.to_string()], |row| row.get::<_, String>(0))?;
+                                Ok(res)
                             };
                             yield_!(query())
                         },
-                        _ => yield_!(Err(SolverError::IdentifierError("Unknown 'x-debug' parameter", typ)))
+                        _ => yield_!(Err(SolverError::IdentifierError("Unknown 'x-debug' parameter\n", typ)))
                     }
                 },
 

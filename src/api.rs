@@ -524,70 +524,70 @@ pub enum Command {
 impl Display for Command {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Self::Assert(m0) => write!(f, "(assert {m0})"),
-            Self::CheckSat => write!(f, "(check-sat)"),
+            Self::Assert(m0) => write!(f, "(assert {m0})\n"),
+            Self::CheckSat => write!(f, "(check-sat)\n"),
             // Self::CheckSatAssuming(m0) => {
-            //     write!(f, "(check-sat-assuming ({}))", m0.iter().format(" "))
+            //     write!(f, "(check-sat-assuming ({}))\n", m0.iter().format(" "))
             // }
-            Self::DeclareConst(m0, m1) => write!(f, "(declare-const {m0} {m1})"),
+            Self::DeclareConst(m0, m1) => write!(f, "(declare-const {m0} {m1})\n"),
             Self::DeclareDatatype(m0, m1) => {
-                write!(f, "(declare-datatype {m0} {m1})")
+                write!(f, "(declare-datatype {m0} {m1})\n")
             }
             Self::DeclareDatatypes(m0, m1) => {
                 let sorts = m0.iter().format(" ");
                 let dec = m1.iter()
                 .format(" ");
-                write!(f, "(declare-datatypes ({sorts}) ({dec}))")
+                write!(f, "(declare-datatypes ({sorts}) ({dec}))\n")
             }
             Self::DeclareFun(m0, m1, m2) => {
                 let sorts = m1.iter().format(" ");
-                write!(f, "(declare-fun {m0} ({sorts}) {m2})")
+                write!(f, "(declare-fun {m0} ({sorts}) {m2})\n")
             }
-            Self::DeclareSort(m0, m1) => write!(f, "(declare-sort {m0} {m1})"),
-            // Self::DefineFun(m0) => write!(f, "(define-fun {})", m0),
-            // Self::DefineFunRec(m0) => write!(f, "(define-fun-rec {})", m0),
+            Self::DeclareSort(m0, m1) => write!(f, "(declare-sort {m0} {m1})\n"),
+            // Self::DefineFun(m0) => write!(f, "(define-fun {})\n", m0),
+            // Self::DefineFunRec(m0) => write!(f, "(define-fun-rec {})\n", m0),
             // Self::DefineFunsRec(m0, m1) => {
             //     write!(
-            //         f, "(define-funs-rec ({}) ({}))", m0.iter().format(" "), m1.iter()
+            //         f, "(define-funs-rec ({}) ({}))\n", m0.iter().format(" "), m1.iter()
             //         .format(" ")
             //     )
             // }
             Self::DefineSort(m0, m1, m2) => {
                 let variables = m1.iter().format(" ");
-                write!(f, "(define-sort {m0} ({variables}) {m2})")
+                write!(f, "(define-sort {m0} ({variables}) {m2})\n")
             }
-            // Self::Echo(m0) => write!(f, "(echo {})", m0),
-            // Self::Exit => write!(f, "(exit)"),
-            // Self::GetAssertions => write!(f, "(get-assertions)"),
-            // Self::GetAssignment => write!(f, "(get-assignment)"),
-            // Self::GetInfo(m0) => write!(f, "(get-info {})", m0),
-            // Self::GetModel => write!(f, "(get-model)"),
-            // Self::GetOption(m0) => write!(f, "(get-option {})", m0),
-            // Self::GetProof => write!(f, "(get-proof)"),
-            // Self::GetUnsatAssumptions => write!(f, "(get-unsat-assumptions)"),
-            // Self::GetUnsatCore => write!(f, "(get-unsat-core)"),
-            // Self::GetValue(m0) => write!(f, "(get-value ({}))", m0.iter().format(" ")),
-            // Self::Pop(m0) => write!(f, "(pop {})", m0),
-            // Self::Push(m0) => write!(f, "(push {})", m0),
-            // Self::Reset => write!(f, "(reset)"),
-            // Self::ResetAssertions => write!(f, "(reset-assertions)"),
-            // Self::SetInfo(m0) => write!(f, "(set-info {})", m0),
-            // Self::SetLogic(m0) => write!(f, "(set-logic {})", m0),
+            // Self::Echo(m0) => write!(f, "(echo {})\n", m0),
+            // Self::Exit => write!(f, "(exit)\n"),
+            // Self::GetAssertions => write!(f, "(get-assertions)\n"),
+            // Self::GetAssignment => write!(f, "(get-assignment)\n"),
+            // Self::GetInfo(m0) => write!(f, "(get-info {})\n", m0),
+            // Self::GetModel => write!(f, "(get-model)\n"),
+            // Self::GetOption(m0) => write!(f, "(get-option {})\n", m0),
+            // Self::GetProof => write!(f, "(get-proof)\n"),
+            // Self::GetUnsatAssumptions => write!(f, "(get-unsat-assumptions)\n"),
+            // Self::GetUnsatCore => write!(f, "(get-unsat-core)\n"),
+            // Self::GetValue(m0) => write!(f, "(get-value ({}))\n", m0.iter().format(" ")),
+            // Self::Pop(m0) => write!(f, "(pop {})\n", m0),
+            // Self::Push(m0) => write!(f, "(push {})\n", m0),
+            // Self::Reset => write!(f, "(reset)\n"),
+            // Self::ResetAssertions => write!(f, "(reset-assertions)\n"),
+            // Self::SetInfo(m0) => write!(f, "(set-info {})\n", m0),
+            // Self::SetLogic(m0) => write!(f, "(set-logic {})\n", m0),
             Self::SetOption(m0) => write!(f, "(set-option {})", m0),
-            // Self::Simplify(m0) => write!(f, "(simplify {})", m0),
+            // Self::Simplify(m0) => write!(f, "(simplify {})\n", m0),
 
-            Self::XInterpretPred(s1, s2 ) => write!(f, "(x-interpret-pred {s1} {})", s2.iter().format(" ")),
+            Self::XInterpretPred(s1, s2 ) => write!(f, "(x-interpret-pred {s1} {})\n", s2.iter().format(" ")),
             Self::XInterpretFun(s1, s2, s3 ) => {
                 let tuples = s2.iter()
                     .map(|(args, value)| format!("({args} {value})"))
                     .collect::<Vec<_>>().join(" ");
                 let else_ = if let Some(else_) = s3 { else_.to_string() }
                     else { "".to_string() };
-                write!(f, "(x-interpret-fun {s1} ( {tuples} ) {else_})")
+                write!(f, "(x-interpret-fun {s1} ( {tuples} ) {else_})\n")
             },
-            Self::XDebug(s1, s2) => write!(f, "(x-debug {s1} {s2})"),
-            Self::XGround => write!(f, "(x-ground)"),
-            Self::Verbatim(s) => write!(f, "{s}"),
+            Self::XDebug(s1, s2) => write!(f, "(x-debug {s1} {s2})\n"),
+            Self::XGround => write!(f, "(x-ground)\n"),
+            Self::Verbatim(s) => write!(f, "{s}\n"),
         }
     }
 }

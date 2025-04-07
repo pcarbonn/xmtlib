@@ -61,7 +61,7 @@ fn test_file(path: &Path) {
     // execute file
     let mut solver = Solver::default();
     let results = solver.parse_and_execute(&input);
-    let result = results.into_iter().collect::<Vec<_>>().join("\n");
+    let result = results.into_iter().collect::<Vec<_>>().join("");
 
     // compare to expected
     let actual = input.to_owned() + "\n-------------------------\n"+ &result;

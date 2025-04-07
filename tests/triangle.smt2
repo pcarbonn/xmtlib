@@ -18,18 +18,12 @@
 (x-debug solver groundings)
 (check-sat)
 -------------------------
-
 (declare-datatype Node ((|1| ) (|2| ) (|3| )))
 (declare-fun Edge (Node Node) Bool)
 (declare-fun phi (Node Node Node) Bool)
-(x-interpret-pred Edge (|1| |2|) (|2| |3|) (|1| |3|))
-
-
-
 (assert (phi |1| |2| |3|))
 (assert false)
-CREATE VIEW Agg_14_UF AS SELECT or_aggregate(G) as G from (SELECT Edge_G_2.a_0 AS x, Edge_G_2.a_1 AS y, Edge_G_2.G AS G FROM Edge_G AS Edge_G_2)
-Groundings:
+CREATE VIEW Agg_14_UF AS SELECT or_aggregate(G) as G from (SELECT Edge_G_2.a_0 AS x, Edge_G_2.a_1 AS y, Edge_G_2.G AS G FROM Edge_G AS Edge_G_2)Groundings:
  - x: SELECT Node.G AS x, Node.G AS G FROM Node
  - y: SELECT Node_1.G AS y, Node_1.G AS G FROM Node AS Node_1
  - (Edge x y):

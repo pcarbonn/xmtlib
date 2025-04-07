@@ -2,7 +2,5 @@
 (assert false)
 (check-sat)
 -------------------------
-
-
 (assert false)
 (check-sat)

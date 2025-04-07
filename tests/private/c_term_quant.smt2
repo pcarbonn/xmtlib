@@ -17,20 +17,10 @@
 (x-debug solver groundings)
 (x-debug db-view negate_16)
 -------------------------
-
-
-
 (declare-datatype Color ((red ) (green )))
-
-
 (declare-fun p (Color) Bool)
-
-
 (declare-fun q (Int) Bool)
-
 (declare-fun r (Bool) Bool)
-
-
 (assert (exists ((x Int)) true))
 (assert (p red))
 (assert (p green))

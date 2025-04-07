@@ -7,12 +7,6 @@
 (x-ground)
 (x-debug solver groundings)
 -------------------------
-
-
-
-
-
-
 (assert false)
 (assert false)
 (assert false)

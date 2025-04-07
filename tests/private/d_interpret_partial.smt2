@@ -18,12 +18,8 @@
 (x-debug solver groundings)
 (x-debug db mix_g)
 -------------------------
-
 (declare-datatype Color ((red ) (green )))
 (declare-fun mix (Color Color) Color)
-(x-interpret-fun mix ( ((green green) red) ((red green) green) ((green red) green) ) ?)
-
-
 (assert (= (mix red red) red))
 Functions:
  - true: Constructor

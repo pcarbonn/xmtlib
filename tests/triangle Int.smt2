@@ -16,11 +16,8 @@
 (x-debug solver groundings)
 (check-sat)
 -------------------------
-
 (declare-fun Edge (Int Int) Bool)
 (declare-fun phi (Int Int Int) Bool)
-(x-interpret-pred Edge (1 2) (2 3) (1 3))
-
 (assert (forall ((x Int) (y Int) (z Int)) (phi 1 2 3)))
 Functions:
  - true: Constructor

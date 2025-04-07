@@ -9,13 +9,9 @@
 (x-debug db p_TU)
 (x-debug solver groundings)
 -------------------------
-
 (declare-datatype T ((a ) (b )))
 (declare-fun p (T T) Bool)
-(x-interpret-pred p (a a))
 (declare-fun f (T) T)
-
-
 (assert (not (= (f a) a)))
  TABLE: p_TU
 ┌─────┬─────┬────────┐

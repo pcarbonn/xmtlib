@@ -13,14 +13,7 @@
 (x-debug solver groundings)
 (x-debug db is_true_UF)
 -------------------------
-
-
-
-
 (declare-fun is_true (Bool) Bool)
-(x-interpret-pred is_true (true))
-
-
 (assert false)
 (assert false)
 (assert false)

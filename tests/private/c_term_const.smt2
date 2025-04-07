@@ -12,16 +12,10 @@
 (x-ground)
 (x-debug solver groundings)
 -------------------------
-
-
 (declare-const p Bool)
 (declare-const c Int)
-
 (declare-datatype Color ((red ) (green )))
 (declare-fun q (Color) Bool)
-
-
-
 (assert p)
 (assert (q red))
 (assert (or (q red) (q green)))

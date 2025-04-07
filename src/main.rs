@@ -29,7 +29,7 @@ fn main() {
         let mut solver = Solver::default();
         let results = solver.parse_and_execute(&source);
         for result in results {
-            println!("{}", result);
+            print!("{}", result);
         }
     } else {
         eprintln!("Error: File '{:?}' does not exist.", args.file_path);
@@ -48,7 +48,7 @@ mod tests {
     fn tester(source: &str, output: &str) {
         let mut solver = Solver::default();
         let results = solver.parse_and_execute(source);
-        assert_eq!(results.into_iter().collect::<Vec<_>>().join("\n"), output);
+        assert_eq!(results.into_iter().collect::<Vec<_>>().join(""), output);
     }
 
     #[test]
@@ -61,7 +61,7 @@ mod tests {
         tester( "(assert false)
             (check-sat)",
 
-        "\n\n\n\n\nunsat\n"
+        "unsat\n"
         );
     }
 }

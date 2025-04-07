@@ -17,7 +17,6 @@
 (x-debug db Q)
 (check-sat)
 -------------------------
-
 (declare-datatype Color ((red ) (green )))
 (declare-datatype Pair (par (X Y) ((white ) (pair (first X) (second Y)))))
 (declare-datatype P ((p (x (Pair Color Color)))))

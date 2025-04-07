@@ -32,22 +32,13 @@
 (x-debug solver functions)
 (x-debug solver groundings)
 -------------------------
-
 (declare-fun p () Bool)
 (x-interpret-pred p )
-
 (declare-datatype Color ((red ) (green )))
 (declare-fun bright (Color) Bool)
-(x-interpret-pred bright (red))
-
 (declare-fun same (Color Color) Bool)
-(x-interpret-pred same (red red) (green green))
-
-
 (declare-datatype Hue ((hue (first Color) (second Color))))
 (declare-fun dim (Hue) Bool)
-(x-interpret-pred dim ((hue red red)))
-
 (assert false)
  TABLE: bright_TU
 ┌───────┬────────┐
@@ -89,8 +80,7 @@
 ├──────────────────┤
 │ " (hue red red)" │
 └──────────────────┘
-CREATE VIEW Agg_1_UF AS SELECT or_aggregate(G) as G from (SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2)
-Functions:
+CREATE VIEW Agg_1_UF AS SELECT or_aggregate(G) as G from (SELECT bright_G_2.a_0 AS x, bright_G_2.G AS G FROM bright_G AS bright_G_2)Functions:
  - true: Constructor
  - false: Constructor
  - not: Predefined (true)

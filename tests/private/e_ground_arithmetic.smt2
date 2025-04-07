@@ -6,11 +6,6 @@
 (x-ground)
 (x-debug solver groundings)
 -------------------------
-
-
-
-
-
 (assert (= 2 (+ 1 1)))
 (assert false)
 (assert (= 1 (mod 3 2)))
