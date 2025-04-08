@@ -69,7 +69,7 @@ pub(crate) fn interpret_pred(
                 let sql = format!("CREATE VIEW IF NOT EXISTS {identifier}_TU AS SELECT *, \"true\" as G from {identifier}_T");
                 solver.conn.execute(&sql, ())?;
 
-                let size = size(&domain, &solver);
+                let size = size(&domain, &solver)?;
                 if size == 0 {  // infinite
                     let table_uf = Interpretation::Infinite;
                     let table_g = Interpretation::Infinite;
@@ -218,7 +218,7 @@ pub(crate) fn interpret_fun(
 
                     let domain = domain.clone();
                     let co_domain = co_domain.clone();
-                    let size = size(&domain, &solver);
+                    let size = size(&domain, &solver)?;
 
                     let name = format!("{identifier}_G");
                     create_interpretation_table(name.clone(), &domain, &Some(co_domain), solver)?;
@@ -277,19 +277,23 @@ pub(crate) fn interpret_fun(
 fn size(
     domain: &Vec<Sort>,
     solver: &Solver
-) -> usize {
+) -> Result<usize, SolverError> {
     domain.iter()
         .map( |sort| {
             let sort_object = solver.sorts.get(sort);
             if let Some(sort_object) = sort_object {
                 match sort_object {
-                    SortObject::Normal{row_count, ..} => row_count,
+                    SortObject::Normal{row_count, ..} => Ok(row_count),
                     SortObject::Infinite
                     | SortObject::Recursive
-                    | SortObject::Unknown => &0,
+                    | SortObject::Unknown => Ok(&0),
                 }
             } else {
-                unreachable!("7895162")
+                let id = match sort {
+                    Sort::Sort(id)
+                    | Sort::Parametric(id, _) => id,
+                };
+                return Err(SolverError::IdentifierError("Unknown sort", id.clone()));
             }
         }).product()
 }

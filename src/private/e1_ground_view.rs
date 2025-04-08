@@ -313,7 +313,7 @@ pub(crate) fn query_for_compound(
                             None // otherwise, unused variable
                         }
                     } else {
-                        unreachable!()  // infinite variable.
+                        unreachable!()  // infinite variable joined to a table.
                     }
                 },
                 NaturalJoin::ViewType(..) => {
@@ -336,7 +336,7 @@ pub(crate) fn query_for_compound(
                             let expr = SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings));
                             Some(Box::new(expr))
                         },
-                        Some(Some(else_)) => Some(Box::new(to_sqlexpr(else_.clone())))
+                        Some(Some(else_)) => Some(Box::new(to_sqlexpr(else_.clone())?))
                     };
                 match (ids_, exclude) {
                     (Ids::All, Some(false)) => SQLExpr::Boolean(true),  // TU view
@@ -744,21 +744,22 @@ impl GroundingView {
 }
 
 // convert an identifier to an SQLExpr
+// this function is recursive
 fn to_sqlexpr (
     id: L<Term>
-) -> SQLExpr {
+) -> Result<SQLExpr, SolverError> {
     match id {
         L(Term::SpecConstant(v), _) =>
-            SQLExpr::Constant(v),
-            L(Term::Identifier(c), _) =>
-            SQLExpr::Construct(c, Box::new(vec![])),
-            L(Term::Application(function, terms), _) =>{
+            Ok(SQLExpr::Constant(v)),
+        L(Term::Identifier(c), _) =>
+            Ok(SQLExpr::Construct(c, Box::new(vec![]))),
+        L(Term::Application(function, terms), _) =>{
             //todo check for constructor
             let terms = terms.iter()
                 .map( |t| to_sqlexpr(t.clone()))
-                .collect();
-            SQLExpr::Construct(function, Box::new(terms))
+                .collect::<Result<Vec<_>,_>>()?;
+            Ok(SQLExpr::Construct(function, Box::new(terms)))
         }
-        _ => unreachable!()
+        _ => Err(SolverError::TermError("Not an id", id.clone()))
     }
 }

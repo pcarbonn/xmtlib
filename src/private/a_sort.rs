@@ -261,7 +261,7 @@ pub(crate) fn instantiate_parent_sort(
                     if declaring.contains(symb) {
                         insert_sort(parent_sort.clone(), None, TypeInterpretation::Recursive, None, solver)
                     } else {
-                        Err(InternalError(741265)) // it should be in the solver already
+                        Err(SolverError::IdentifierError("Unknown sort", id.clone()))
                     }
                 } else {  // indexed identifier
                     insert_sort(parent_sort.clone(), None, TypeInterpretation::Unknown, None, solver)
