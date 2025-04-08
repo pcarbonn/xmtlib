@@ -5,7 +5,7 @@ use rusqlite::Error as SqlError;
 use thiserror::Error;
 
 use crate::api::{Identifier, Term};
-use crate::private::z_option_map::L;
+use crate::private::z_utilities::L;
 
 /// The number of characters since the begin of a source file.
 ///

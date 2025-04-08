@@ -13,7 +13,7 @@ use crate::solver::{Solver, TermId};
 
 use crate::private::e2_ground_query::{GroundingQuery, NaturalJoin, TableAlias, Column};
 use crate::private::e3_ground_sql::{Mapping, SQLExpr, Predefined};
-use crate::private::z_option_map::{OptionMap, L};
+use crate::private::z_utilities::{OptionMap, L};
 
 
 ////////////////////// Data structures for grounding views ////////////////////
