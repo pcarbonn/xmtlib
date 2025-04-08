@@ -188,12 +188,12 @@ pub(crate) fn ground_term_(
         Term::Identifier(qual_identifier, _) => {
 
             // an identifier
-            ground_compound(qual_identifier, &mut vec![], solver)
+            ground_compound(term, qual_identifier, &mut vec![], solver)
         },
         Term::Application(qual_identifier, sub_terms, _) => {
 
             // a compound term
-            ground_compound(qual_identifier, sub_terms, solver)
+            ground_compound(term, qual_identifier, sub_terms, solver)
         },
         Term::Let(..) => todo!(),
         Term::Forall(variables, term, _) => {
@@ -290,6 +290,7 @@ pub(crate) fn ground_term_(
 
 // Grounds a compound term
 fn ground_compound(
+    term: &Term,
     qual_identifier: &QualIdentifier,
     sub_terms: &Vec<Term>,
     solver: &mut Solver
@@ -313,7 +314,7 @@ fn ground_compound(
 
     let function_is = match solver.functions.get(qual_identifier) {
         Some(f) => f,
-        None => unreachable!()
+        None => return Err(SolverError::TermError("Unknown symbol", term.clone()))
     };
 
     match function_is {

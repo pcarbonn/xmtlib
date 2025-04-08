@@ -70,16 +70,19 @@ pub fn format_error(input: &str, e: SolverError) -> String {
 
 /// Show the error in the context of the `input` source code.
 fn pretty_print(input: &str, location: LineCol, msg: String) -> String {
-    let source = input.lines().nth(location.line-1).unwrap();
-    chic::Error::new(format!("at position ({}, {}): {}", location.line, location.column, msg))
-        .error(
-            location.line,
-            location.column - 1,
-            location.column,
-            &source,
-            msg,
-        )
-        .to_string()
+    if let Some(source) = input.lines().nth(location.line-1) {
+        chic::Error::new(format!("at position ({}, {}): {}", location.line, location.column, msg))
+            .error(
+                location.line,
+                location.column - 1,
+                location.column,
+                &source,
+                msg,
+            )
+            .to_string()
+    } else {
+        format!("****** Error: {msg} at {location}")
+    }
 
 }
 
