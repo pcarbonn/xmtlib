@@ -5,6 +5,7 @@ use rusqlite::Error as SqlError;
 use thiserror::Error;
 
 use crate::api::{Identifier, Term};
+use crate::private::z_option_map::L;
 
 /// The number of characters since the begin of a source file.
 ///
@@ -25,7 +26,7 @@ pub enum SolverError {
     TermError(&'static str, Term),
 
     #[error("{0}: {1}")]
-    IdentifierError(&'static str, Identifier),
+    IdentifierError(&'static str, L<Identifier>),
 
     #[error("Database error: {0}")]
     DatabaseError(#[from] SqlError),

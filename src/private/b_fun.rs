@@ -6,10 +6,11 @@ use std::fmt::Display;
 use indexmap::IndexSet;
 
 use crate::api::{Sort, Symbol, Identifier, QualIdentifier, Term};
-use crate::private::a_sort::instantiate_parent_sort;
-use crate::private::e1_ground_view::Ids;
 use crate::error::{SolverError, Offset};
 use crate::solver::Solver;
+use crate::private::a_sort::instantiate_parent_sort;
+use crate::private::e1_ground_view::Ids;
+use crate::private::z_option_map::L;
 
 
 /////////////////////  Data structure for Function  ///////////////////////////
@@ -91,9 +92,9 @@ pub(crate) fn declare_fun(
     }
     instantiate_parent_sort(&co_domain, &declaring, solver)?;
 
-    let identifier = QualIdentifier::Identifier(Identifier::Simple(symbol, Offset(0)));
+    let identifier = QualIdentifier::Identifier(L(Identifier::Simple(symbol), Offset(0)));
     let boolean = match co_domain {
-        Sort::Sort(Identifier::Simple(Symbol(ref s), _)) => s=="Bool",
+        Sort::Sort(L(Identifier::Simple(Symbol(ref s)), _)) => s=="Bool",
         _ => false
     };
     let function_is = FunctionObject::NotInterpreted{signature: (domain, co_domain, boolean)};

@@ -7,14 +7,16 @@ unzip_n!(pub 3);
 
 use crate::api::{Identifier, QualIdentifier, Sort, XTuple, Term, SpecConstant};
 use crate::error::SolverError::{self, InternalError};
+use crate::solver::Solver;
+
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, Interpretation};
 use crate::private::e1_ground_view::Ids;
-use crate::solver::Solver;
+use crate::private::z_option_map::L;
 
 
 pub(crate) fn interpret_pred(
-    identifier: Identifier,
+    identifier: L<Identifier>,
     tuples: Vec<XTuple>,
     command: String,
     solver: &mut Solver,
@@ -164,7 +166,7 @@ fn interpret_pred_0(
 }
 
 pub(crate) fn interpret_fun(
-    identifier: Identifier,
+    identifier: L<Identifier>,
     tuples: Vec<(XTuple, Term)>,
     else_: Option<Term>,
     _command: String,

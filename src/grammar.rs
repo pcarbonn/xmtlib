@@ -8,6 +8,7 @@ use peg::{error::ParseError, str::LineCol};
 
 use crate::api::{*, Command::*};
 use crate::error::Offset;
+use crate::private::z_option_map::L;
 
 #[allow(unused_imports)]
 use debug_print::debug_println as dprintln;
@@ -117,16 +118,16 @@ peg::parser!{
             / s:symbol()
             { Index::Symbol(s) }
 
-        rule identifier() -> Identifier
+        rule identifier() -> L<Identifier>
             = start:position!() s:symbol()
-            { Identifier::Simple(s, Offset(start)) }
+            { L(Identifier::Simple(s), Offset(start)) }
 
             / start:position!() "(" _
               "_" __
               s:symbol() __
               i:( index() ++ __ ) _
               ")"
-            { Identifier::Indexed(s, i, Offset(start)) }
+            { L(Identifier::Indexed(s, i), Offset(start)) }
 
         // //////////////////////////// Sorts        ////////////////////////////
 

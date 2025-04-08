@@ -16,6 +16,7 @@ use crate::private::c_assert::assert_;
 use crate::private::d_interpret::{interpret_pred, interpret_fun};
 use crate::private::e_ground::{ground, Grounding};
 use crate::private::y_db::init_db;
+use crate::private::z_option_map::L;
 
 
 #[derive(PartialEq)]
@@ -78,7 +79,7 @@ impl Default for Solver {
 
         // create pre-defined sorts: Bool, Int, Real
         let mut sorts = IndexMap::new();
-        let sort = |s: &str| Sort::Sort(Identifier::Simple(Symbol(s.to_string()), Offset(0)));
+        let sort = |s: &str| Sort::Sort(L(Identifier::Simple(Symbol(s.to_string())), Offset(0)));
 
         let bool_decl = SortObject::Normal{
             datatype_dec: DatatypeDec::DatatypeDec(
@@ -100,7 +101,7 @@ impl Default for Solver {
         // create pre-defined functions
         let mut functions = IndexMap::new();
         let function = |s: &str|
-            QualIdentifier::Identifier(Identifier::Simple(Symbol(s.to_string()), Offset(0)));
+            QualIdentifier::Identifier(L(Identifier::Simple(Symbol(s.to_string())), Offset(0)));
 
         // boolean pre-defined functions
         // LINK src/doc.md#_Constructor

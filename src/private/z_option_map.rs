@@ -1,9 +1,11 @@
 // Copyright Pierre Carbonnelle, 2025.
 
-
+use std::fmt::Display;
 use std::hash::Hash;
 
 use indexmap::{IndexMap, map::Iter};
+
+use crate::error::Offset;
 
 /// An IndexMap that maps keys to optional values.  Values are not erased by an insert.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -78,5 +80,34 @@ where
         iter.for_each(move |(k, v)| {
             self.insert(k, v);
         });
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////!SECTION
+///
+///
+#[derive(Debug, Clone)]
+pub struct L<T: Display+ Hash + Eq>(pub T, pub Offset);
+
+impl<T: Display+ Hash + Eq> Display for L<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+impl<T: Display+ Hash + Eq> PartialEq for L<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+impl<T: Display+ Hash + Eq> Eq for L<T> {}
+impl<T: Display+ Hash + Eq> Hash for L<T> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.0.hash(state);
+    }
+}
+
+impl<T: Display+ Hash + Eq> L<T> {
+    pub(crate) fn start(&self) -> Offset {
+        self.1
     }
 }

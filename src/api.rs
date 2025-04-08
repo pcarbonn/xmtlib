@@ -13,6 +13,7 @@ use std::fmt::Display;
 use itertools::Itertools;
 
 use crate::error::Offset;
+use crate::private::z_option_map::L;
 
 // //////////////////////////// Other tokens ////////////////////////////
 
@@ -148,47 +149,18 @@ impl Display for Index {
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Identifier {
     /// `<symbol>`
-    Simple(Symbol, Offset),
+    Simple(Symbol),
     /// `(_ <symbol> <index>+)`
-    Indexed(Symbol, Vec<Index>, Offset),
+    Indexed(Symbol, Vec<Index>),
 }
 impl Display for Identifier {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Self::Simple(m0, _) => write!(f, "{}", m0),
-            Self::Indexed(m0, m1, _) => write!(f, "(_ {} {})", m0, m1.iter().format(" ")),
-        }
-    }
-}
-impl PartialEq for Identifier {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Self::Simple(l0, _), Self::Simple(r0, _)) => l0 == r0,
-            (Self::Indexed(l0, l1, _), Self::Indexed(r0, r1, _)) => l0 == r0 && l1 == r1,
-            _ => false,
-        }
-    }
-}
-impl Eq for Identifier {}
-impl std::hash::Hash for Identifier {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        match self {
-            Self::Simple(symbol, _) => symbol.hash(state),
-            Self::Indexed(symbol, indices, _) => {
-                symbol.hash(state);
-                indices.hash(state);
-            }
-        }
-    }
-}
-impl Identifier {
-    pub(crate) fn start(&self) -> Offset {
-        match self {
-            Self::Simple(_, start)
-            | Self::Indexed(_, _, start) => *start,
+            Self::Simple(m0) => write!(f, "{}", m0),
+            Self::Indexed(m0, m1) => write!(f, "(_ {} {})", m0, m1.iter().format(" ")),
         }
     }
 }
@@ -200,9 +172,9 @@ impl Identifier {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Sort {
     /// `<identifier>`
-    Sort(Identifier),
+    Sort(L<Identifier>),
     /// `(<identifier> <sort>+)`
-    Parametric(Identifier, Vec<Sort>),
+    Parametric(L<Identifier>, Vec<Sort>),
 }
 impl Display for Sort {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -256,9 +228,9 @@ impl std::fmt::Display for Attribute {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum QualIdentifier {
     /// `<identifier>`
-    Identifier(Identifier),
+    Identifier(L<Identifier>),
     /// `(as <identifier> <sort>)`
-    Sorted(Identifier, Sort),
+    Sorted(L<Identifier>, Sort),
 }
 impl Display for QualIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -515,10 +487,10 @@ pub enum Command {
     DeclareSort(Symbol, Numeral),
     DefineSort(Symbol, Vec<Symbol>, Sort),
     SetOption(Option_),
-    XDebug(Identifier, Identifier),
+    XDebug(L<Identifier>, L<Identifier>),
     XGround,
-    XInterpretPred(Identifier, Vec<XTuple>),
-    XInterpretFun(Identifier, Vec<(XTuple, Term)>, Option<Term>),
+    XInterpretPred(L<Identifier>, Vec<XTuple>),
+    XInterpretFun(L<Identifier>, Vec<(XTuple, Term)>, Option<Term>),
     Verbatim(String),
 }
 impl Display for Command {
