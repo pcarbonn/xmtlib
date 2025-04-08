@@ -13,7 +13,7 @@ use crate::private::z_option_map::L;
 /////////////////////  Command (assert ////////////////////////////////////////
 
 pub(crate) fn assert_(
-    term: &Term,
+    term: &L<Term>,
     command: String,
     solver: &mut Solver
 ) -> Result<String, SolverError> {
@@ -37,25 +37,25 @@ pub(crate) fn assert_(
 /// - todo: push existential quantification up conjunction, down disjunction
 /// - todo: merge nested quantification/aggregate of the same type
 pub(crate) fn annotate_term(
-    term: &Term,
+    term: &L<Term>,
     variables: &mut IndexMap<Symbol, Option<SortedVar>>,  // can't use XSortedVar here because it's a term variant
     //todo add expected_type to allow qualification of identifier
     solver: &Solver
-) -> Result<Term, SolverError> {
+) -> Result<L<Term>, SolverError> {
 
     match term {
-        Term::SpecConstant(_, _) => Ok(term.clone()),
+        L(Term::SpecConstant(_), _) => Ok(term.clone()),
 
-        Term::Identifier(ref qual_identifier, start) => {
+        L(Term::Identifier(ref qual_identifier), start) => {
 
             // replace variable by XSortedVar
             match qual_identifier {
                 QualIdentifier::Identifier(L(Identifier::Simple(ref symbol), _)) => {
                     match variables.get(symbol) {
                         Some(Some(SortedVar(_, ref sort))) => // a variable of finite sort
-                            Ok(Term::XSortedVar(symbol.clone(), Some(sort.clone()), *start)),
+                            Ok(L(Term::XSortedVar(symbol.clone(), Some(sort.clone())), *start)),
                         Some(None) =>
-                            Ok(Term::XSortedVar(symbol.clone(), None, *start)),  // a variable of infinite sort
+                            Ok(L(Term::XSortedVar(symbol.clone(), None), *start)),  // a variable of infinite sort
                         None =>
                             Ok(term.clone())  // a regular identifier
                     }
@@ -64,7 +64,7 @@ pub(crate) fn annotate_term(
             }
         },
 
-        Term::Application(qual_identifier, terms, start) => {
+        L(Term::Application(qual_identifier, terms), start) => {
 
             let and: QualIdentifier = QualIdentifier::Identifier(L(Identifier::Simple(Symbol("and".to_string())), Offset(0)));
             let or: QualIdentifier = QualIdentifier::Identifier(L(Identifier::Simple(Symbol("or".to_string())), Offset(0)));
@@ -76,11 +76,11 @@ pub(crate) fn annotate_term(
                     // negate all terms, except the last one
                     let new_terms = terms.iter().enumerate()
                         .map( | (i, t) | if i < terms.len()-1 {
-                            Term::Application(not.clone(), vec![t.clone()], *start)
+                            L(Term::Application(not.clone(), vec![t.clone()]), *start)
                         } else {
                             t.clone()
                         }).collect::<Vec<_>>();
-                    let new_term = Term::Application(or.clone(), new_terms, *start);
+                    let new_term = L(Term::Application(or.clone(), new_terms), *start);
                     annotate_term(&new_term, variables, solver)
                 }
                 "not" => {
@@ -88,35 +88,35 @@ pub(crate) fn annotate_term(
                     match terms.get(0) {
                         Some(sub_term) => {
                             match sub_term {
-                                Term::Application(sub_identifier, sub_terms, start) => {
+                                L(Term::Application(sub_identifier, sub_terms), start) => {
                                     match sub_identifier.to_string().as_str() {
                                         "and" => {
                                             // annotate(not((and ps))) becomes annotate((or (not ps)))
                                             // negate all terms
                                             let new_terms = sub_terms.iter()
-                                                .map( | t | Term::Application(not.clone(), vec![t.clone()], t.start()))
+                                                .map( | t | L(Term::Application(not.clone(), vec![t.clone()]), t.start()))
                                                 .collect::<IndexSet<_>>();
-                                            let new_term = Term::Application(or.clone(), new_terms.iter().cloned().collect(), *start);
+                                            let new_term = L(Term::Application(or.clone(), new_terms.iter().cloned().collect()), *start);
                                             annotate_term(&new_term, variables, solver)
                                         },
                                         "or" => {
                                             // annotate(not((or ps))) becomes annotate((and (not ps)))
                                             // negate all terms
                                             let new_terms = sub_terms.iter()
-                                                .map( | t | Term::Application(not.clone(), vec![t.clone()], t.start()))
+                                                .map( | t | L(Term::Application(not.clone(), vec![t.clone()]), t.start()))
                                                 .collect::<IndexSet<_>>();
-                                            let new_term = Term::Application(and.clone(), new_terms.iter().cloned().collect(), *start);
+                                            let new_term = L(Term::Application(and.clone(), new_terms.iter().cloned().collect()), *start);
                                             annotate_term(&new_term, variables, solver)
                                         },
                                         _ => {
                                             let new_term = annotate_term(sub_term, variables, solver)?;
-                                            Ok(Term::Application(qual_identifier.clone(), vec![new_term], *start))
+                                            Ok(L(Term::Application(qual_identifier.clone(), vec![new_term]), *start))
                                         }
                                     }
                                 }
                                 _ => {
                                     let new_term = annotate_term(sub_term, variables, solver)?;
-                                    Ok(Term::Application(qual_identifier.clone(), vec![new_term], sub_term.start()))
+                                    Ok(L(Term::Application(qual_identifier.clone(), vec![new_term]), sub_term.start()))
                                 }
                             }
                         }
@@ -128,7 +128,7 @@ pub(crate) fn annotate_term(
                     let mut new_sub_terms = vec![];
                     for sub_term in terms {
                         let sub_term = annotate_term(sub_term, variables, solver)?;
-                        if let Term::Application(ref sub_identifier, ref sub_terms2, _) = sub_term {
+                        if let L(Term::Application(ref sub_identifier, ref sub_terms2), _) = sub_term {
                             if sub_identifier.to_string() == "and" {
                                 new_sub_terms.append(&mut sub_terms2.clone());
                             } else {
@@ -138,14 +138,14 @@ pub(crate) fn annotate_term(
                             new_sub_terms.push(sub_term);
                         }
                     };
-                    Ok(Term::Application(and.clone(), new_sub_terms, *start))
+                    Ok(L(Term::Application(and.clone(), new_sub_terms), *start))
                 }
                 "or" => {
                     // annotate(or p (or qs)) becomes (or annotate(p) annotate(qs)), without repetition
                     let mut new_sub_terms = vec![];
                     for sub_term in terms {
                         let sub_term = annotate_term(sub_term, variables, solver)?;
-                        if let Term::Application(ref sub_identifier, ref sub_terms2, _) = sub_term {
+                        if let L(Term::Application(ref sub_identifier, ref sub_terms2), _) = sub_term {
                             if sub_identifier.to_string() == "or" {
                                 new_sub_terms.append(&mut sub_terms2.clone());
                             } else {
@@ -155,19 +155,19 @@ pub(crate) fn annotate_term(
                             new_sub_terms.push(sub_term);
                         }
                     };
-                    Ok(Term::Application(or.clone(), new_sub_terms, *start))
+                    Ok(L(Term::Application(or.clone(), new_sub_terms), *start))
                 }
                 _ => {
                     // a regular identifier
                     let new_terms = terms.iter()
                         .map(|t| annotate_term(t, variables, solver))
                         .collect::<Result<Vec<_>, _>>()?;
-                    Ok(Term::Application(qual_identifier.clone(), new_terms, *start))
+                    Ok(L(Term::Application(qual_identifier.clone(), new_terms), *start))
                 }
             }
         },
 
-        Term::Let(var_bindings, term, start) => {
+        L(Term::Let(var_bindings, term), start) => {
             // transform the t_i in var_bindings using variables, and term using new_variables for propoer shadowing
             let mut new_variables = variables.clone();
             let mut new_var_bindings = vec![];
@@ -177,22 +177,22 @@ pub(crate) fn annotate_term(
                 new_var_bindings.push(VarBinding(symbol.clone(), binding))
             };
             let new_term = annotate_term(term, &mut new_variables, solver)?;
-            Ok(Term::Let(new_var_bindings, Box::new(new_term), *start))
+            Ok(L(Term::Let(new_var_bindings, Box::new(new_term)), *start))
         },
 
-        Term::Forall(sorted_vars, term, start) => {
+        L(Term::Forall(sorted_vars, term), start) => {
             let new_term =
                 process_quantification(sorted_vars, term, variables, solver)?;
-            Ok(Term::Forall(sorted_vars.clone(), Box::new(new_term), *start))
+            Ok(L(Term::Forall(sorted_vars.clone(), Box::new(new_term)), *start))
         },
 
-        Term::Exists(sorted_vars, term, start) => {
+        L(Term::Exists(sorted_vars, term), start) => {
             let new_term =
                 process_quantification(sorted_vars, term, variables, solver)?;
-            Ok(Term::Exists(sorted_vars.clone(), Box::new(new_term), *start))
+            Ok(L(Term::Exists(sorted_vars.clone(), Box::new(new_term)), *start))
         },
 
-        Term::Match(_, _, _) => {
+        L(Term::Match(_, _), _) => {
             // let term = annotate_term(term, variables, solver)?;
             // let mut new_match_cases = vec![];
             // for MatchCase(pattern, result) in match_cases {
@@ -203,12 +203,12 @@ pub(crate) fn annotate_term(
             todo!("need to decide how to ground match term")
         },
 
-        Term::Annotation(term, attributes, start) => {
+        L(Term::Annotation(term, attributes), start) => {
             let new_term = annotate_term(&term, variables, solver)?;
-            Ok(Term::Annotation(Box::new(new_term), attributes.clone(), *start))
+            Ok(L(Term::Annotation(Box::new(new_term), attributes.clone()), *start))
         },
 
-        Term::XSortedVar(_, _, _) =>
+        L(Term::XSortedVar(_, _), _) =>
             Err(InternalError(812685563)),  // XSortedVar not expected here
     }
 }
@@ -221,10 +221,10 @@ pub(crate) fn annotate_term(
 /// The third element of the result is the subset of `variables` with finite domain.
 fn process_quantification (
     sorted_vars: &Vec<SortedVar>,
-    term: &Box<Term>,
+    term: &Box<L<Term>>,
     variables: &mut IndexMap<Symbol, Option<SortedVar>>,
     solver: &Solver
-) -> Result<Term, SolverError> {
+) -> Result<L<Term>, SolverError> {
 
     let mut new_variables = variables.clone();
     for SortedVar(symbol, sort) in sorted_vars {

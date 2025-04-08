@@ -167,8 +167,8 @@ fn interpret_pred_0(
 
 pub(crate) fn interpret_fun(
     identifier: L<Identifier>,
-    tuples: Vec<(XTuple, Term)>,
-    else_: Option<Term>,
+    tuples: Vec<(XTuple, L<Term>)>,
+    else_: Option<L<Term>>,
     _command: String,
     solver: &mut Solver,
 )-> Result<String, SolverError> {
@@ -201,8 +201,8 @@ pub(crate) fn interpret_fun(
                             Err(SolverError::IdentifierError("too many tuples", identifier.clone()))
                         }?;
                     let value = match value {
-                        Term::SpecConstant(SpecConstant::Numeral(v), _) => v.to_string(),
-                        Term::SpecConstant(SpecConstant::Decimal(v), _) => v.to_string(),
+                        L(Term::SpecConstant(SpecConstant::Numeral(v)), _) => v.to_string(),
+                        L(Term::SpecConstant(SpecConstant::Decimal(v)), _) => v.to_string(),
                         _ => format!("\"{}\"", construct(&value, solver)?)
                     };
 
@@ -361,10 +361,10 @@ fn create_interpretation_table(
 /// Returns the string representation of the id.
 /// Constructor applications are preceded by a space, e.g. ` (cons 0 nil)`
 // LINK src/doc.md#_Constructor
-fn construct(id: &Term, solver: &mut Solver) -> Result<String, SolverError> {
+fn construct(id: &L<Term>, solver: &mut Solver) -> Result<String, SolverError> {
     match id {
-        Term::SpecConstant(_, _) => Ok(id.to_string()),
-        Term::Identifier(qual_identifier, _) => {
+        L(Term::SpecConstant(_), _) => Ok(id.to_string()),
+        L(Term::Identifier(qual_identifier), _) => {
             if let Some(f_is) = solver.functions.get(qual_identifier) {
                 match f_is {
                     FunctionObject::Constructor => Ok(id.to_string()),
@@ -374,7 +374,7 @@ fn construct(id: &Term, solver: &mut Solver) -> Result<String, SolverError> {
                 Err(SolverError::TermError("Invalid id in interpretation", id.clone()))
             }
         },
-        Term::Application(qual_identifier, terms, _) => {
+        L(Term::Application(qual_identifier, terms), _) => {
             if let Some(f_is) = solver.functions.get(qual_identifier) {
                 match f_is {
                     FunctionObject::Constructor => {
@@ -393,12 +393,12 @@ fn construct(id: &Term, solver: &mut Solver) -> Result<String, SolverError> {
                 Err(SolverError::TermError("Invalid id in interpretation", id.clone()))
             }
         },
-        Term::Let(_, _, _)
-        | Term::Forall(_, _, _)
-        | Term::Exists(_, _, _)
-        | Term::Match(_, _, _)
-        | Term::Annotation(_, _, _)
-        | Term::XSortedVar(_, _, _) =>
+        L(Term::Let(_, _), _)
+        | L(Term::Forall(_, _), _)
+        | L(Term::Exists(_, _), _)
+        | L(Term::Match(_, _), _)
+        | L(Term::Annotation(_, _), _)
+        | L(Term::XSortedVar(_, _), _) =>
             Err(SolverError::TermError("Invalid id in interpretation", id.clone()))
     }
 }

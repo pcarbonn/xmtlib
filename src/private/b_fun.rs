@@ -27,7 +27,7 @@ pub(crate) enum FunctionObject {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum Interpretation {
-    Table{name: String, ids: Ids, else_: Option<Option<Term>>},  // None if complete, Some(None) if no `else` value, or Some(Some(value))
+    Table{name: String, ids: Ids, else_: Option<Option<L<Term>>>},  // None if complete, Some(None) if no `else` value, or Some(Some(value))
     Infinite  // for UF, G of interpreted predicate over infinite domain
 }
 

@@ -13,7 +13,7 @@ use crate::solver::{Solver, TermId};
 
 use crate::private::e2_ground_query::{GroundingQuery, NaturalJoin, TableAlias, Column};
 use crate::private::e3_ground_sql::{Mapping, SQLExpr, Predefined};
-use crate::private::z_option_map::OptionMap;
+use crate::private::z_option_map::{OptionMap, L};
 
 
 ////////////////////// Data structures for grounding views ////////////////////
@@ -167,7 +167,7 @@ pub(crate) enum ViewType {
 
 /// describes the type of query to create for a compound term
 pub(crate) enum QueryVariant {
-    Interpretation(TableAlias, Ids, Option<Option<Term>>),  // None if complete, Some(None) if `else` value is `unknonw`, or Some(Some(value))
+    Interpretation(TableAlias, Ids, Option<Option<L<Term>>>),  // None if complete, Some(None) if `else` value is `unknonw`, or Some(Some(value))
     Apply,
     Construct,
     Predefined
@@ -745,14 +745,14 @@ impl GroundingView {
 
 // convert an identifier to an SQLExpr
 fn to_sqlexpr (
-    id: Term
+    id: L<Term>
 ) -> SQLExpr {
     match id {
-        Term::SpecConstant(v, _) =>
+        L(Term::SpecConstant(v), _) =>
             SQLExpr::Constant(v),
-        Term::Identifier(c, _) =>
+            L(Term::Identifier(c), _) =>
             SQLExpr::Construct(c, Box::new(vec![])),
-        Term::Application(function, terms, _) =>{
+            L(Term::Application(function, terms), _) =>{
             //todo check for constructor
             let terms = terms.iter()
                 .map( |t| to_sqlexpr(t.clone()))

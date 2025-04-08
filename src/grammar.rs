@@ -207,18 +207,18 @@ peg::parser!{
               ")"
             { MatchCase(pattern, term) }
 
-        rule term() -> Term
+        rule term() -> L<Term>
             = start:position!() spec_constant:spec_constant()
-              { Term::SpecConstant(spec_constant, Offset(start)) }
+              { L(Term::SpecConstant(spec_constant), Offset(start)) }
 
             / start:position!() qual_identifier:qual_identifier()
-              { Term::Identifier(qual_identifier, Offset(start)) }
+              { L(Term::Identifier(qual_identifier), Offset(start)) }
 
             / start:position!() "(" _
               qual_identifier:qual_identifier() _
               terms:( term() ++ __ ) _
               ")"
-              { Term::Application(qual_identifier, terms, Offset(start)) }
+              { L(Term::Application(qual_identifier, terms), Offset(start)) }
 
             / start:position!() "(" _
               "let" _
@@ -227,7 +227,7 @@ peg::parser!{
               ")" _
               term:term() _
               ")"
-              { Term::Let(var_bindings, Box::new(term), Offset(start)) }
+              { L(Term::Let(var_bindings, Box::new(term)), Offset(start)) }
 
             / start:position!() "(" _
               "forall" _
@@ -236,7 +236,7 @@ peg::parser!{
               ")" _
               term:term() _
               ")"
-              { Term::Forall(sorted_vars, Box::new(term), Offset(start)) }
+              { L(Term::Forall(sorted_vars, Box::new(term)), Offset(start)) }
 
             / start:position!() "(" _
               "exists" _
@@ -245,7 +245,7 @@ peg::parser!{
               ")" _
               term:term() _
               ")"
-              { Term::Exists(sorted_vars, Box::new(term), Offset(start)) }
+              { L(Term::Exists(sorted_vars, Box::new(term)), Offset(start)) }
 
             / start:position!() "(" _
               "match" _
@@ -254,27 +254,27 @@ peg::parser!{
                 match_cases:(match_case() ++ __) _
               ")" _
               ")"
-              { Term::Match(Box::new(term), match_cases, Offset(start))}
+              { L(Term::Match(Box::new(term), match_cases), Offset(start))}
 
             / start:position!() "(" _
               "!" _
               term:term() _
               attributes:(attribute() ++ __) _
               ")"
-              { Term::Annotation(Box::new(term), attributes, Offset(start))}
+              { L(Term::Annotation(Box::new(term), attributes), Offset(start))}
 
-        rule xid() -> Term  // an id
+        rule xid() -> L<Term>  // an id
             = start:position!() spec_constant:spec_constant()
-              { Term::SpecConstant(spec_constant, Offset(start)) }
+              { L(Term::SpecConstant(spec_constant), Offset(start)) }
 
             / start:position!() qual_identifier:qual_identifier()
-              { Term::Identifier(qual_identifier, Offset(start)) }
+              { L(Term::Identifier(qual_identifier), Offset(start)) }
 
             / start:position!() "(" _
               qual_identifier:qual_identifier() _
               terms:( xid() ++ __ ) _
               ")"
-              { Term::Application(qual_identifier, terms, Offset(start)) }
+              { L(Term::Application(qual_identifier, terms), Offset(start)) }
 
         rule xtuple() -> XTuple
             = "(" _
@@ -419,7 +419,7 @@ peg::parser!{
               tuples: ( xtuple() ** _ )
               { XInterpretPred(identifier, tuples) }
 
-        rule ftuple() -> (XTuple, Term)
+        rule ftuple() -> (XTuple, L<Term>)
             = "(" _
               tuple: xtuple() _
               term: term() _

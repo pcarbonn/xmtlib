@@ -7,11 +7,13 @@ use rusqlite::Connection;
 
 use crate::api::{QualIdentifier, Term};
 use crate::error::SolverError::{self, *};
+use crate::solver::{Solver, Backend};
+
 use crate::private::b_fun::{FunctionObject, Interpretation};
 use crate::private::e1_ground_view::{GroundingView, Ids, ViewType, QueryVariant,
     query_for_constant, query_for_variable, query_for_compound, query_for_aggregate, query_for_union};
 use crate::private::e2_ground_query::TableAlias;
-use crate::solver::{Solver, Backend};
+use crate::private::z_option_map::L;
 
 
 /////////////////////  Data structure for Grounding  //////////////////////////
@@ -134,7 +136,7 @@ fn execute_query(
 /// if the term is a universal quantification).
 ///
 fn ground_term(
-    term: &Term,
+    term: &L<Term>,
     top_level: bool,
     solver: &mut Solver
 ) -> Result<Grounding, SolverError> {
@@ -155,20 +157,20 @@ fn ground_term(
 /// * top_level: indicates if it is an assertion (to avoid building a conjunction)
 ///
 pub(crate) fn ground_term_(
-    term: &Term,
+    term: &L<Term>,
     top_level: bool,
     solver: &mut Solver
 ) -> Result<Grounding, SolverError> {
 
     let index = solver.groundings.len();
     match term {
-        Term::SpecConstant(spec_constant, _) => {
+        L(Term::SpecConstant(spec_constant), _) => {
 
             // a number or string; cannot be Boolean
             let grounding = query_for_constant(spec_constant, solver)?;
             Ok(Grounding::NonBoolean(grounding))
         },
-        Term::XSortedVar(symbol, sort, _) => {
+        L(Term::XSortedVar(symbol, sort), _) => {
 
             // a variable
             let base_table = if let Some(sort) = sort {  // finite domain
@@ -185,18 +187,18 @@ pub(crate) fn ground_term_(
                 Ok(Grounding::NonBoolean(g))
             }
         },
-        Term::Identifier(qual_identifier, _) => {
+        L(Term::Identifier(qual_identifier), _) => {
 
             // an identifier
             ground_compound(term, qual_identifier, &mut vec![], solver)
         },
-        Term::Application(qual_identifier, sub_terms, _) => {
+        L(Term::Application(qual_identifier, sub_terms), _) => {
 
             // a compound term
             ground_compound(term, qual_identifier, sub_terms, solver)
         },
-        Term::Let(..) => todo!(),
-        Term::Forall(variables, term, _) => {
+        L(Term::Let(..), _) => todo!(),
+        L(Term::Forall(variables, term), _) => {
             match ground_term(term, false, solver)? {
                 Grounding::NonBoolean(_) =>
                     Err(InternalError(42578548)),
@@ -240,7 +242,7 @@ pub(crate) fn ground_term_(
                 },
             }
         },
-        Term::Exists(variables, term, _) => {
+        L(Term::Exists(variables, term), _) => {
             match ground_term(term, false, solver)? {
                 Grounding::NonBoolean(_) =>
                     Err(InternalError(42578548)),
@@ -283,16 +285,16 @@ pub(crate) fn ground_term_(
                 },
             }
         },
-        Term::Match(..) => todo!(),
-        Term::Annotation(..) => todo!(),
+        L(Term::Match(..), _) => todo!(),
+        L(Term::Annotation(..), _) => todo!(),
     }
 }
 
 // Grounds a compound term
 fn ground_compound(
-    term: &Term,
+    term: &L<Term>,
     qual_identifier: &QualIdentifier,
-    sub_terms: &Vec<Term>,
+    sub_terms: &Vec<L<Term>>,
     solver: &mut Solver
 ) -> Result<Grounding, SolverError> {
 

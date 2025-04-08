@@ -23,7 +23,7 @@ pub enum SolverError {
     ExprError(String),
 
     #[error("{0}: {1}")]
-    TermError(&'static str, Term),
+    TermError(&'static str, L<Term>),
 
     #[error("{0}: {1}")]
     IdentifierError(&'static str, L<Identifier>),
