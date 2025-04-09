@@ -104,26 +104,60 @@ fn execute_query(
     conn: &mut Connection
 ) -> Result<Vec<String>, SolverError> {
     let mut stmt = conn.prepare(&query)?;
-    let row_iter = stmt.query_map([], |row| {
-        row.get::<usize, String>(0)
-    })?;
+    if stmt.column_count() == 1 {  //  just G
+        let row_iter = stmt.query_map([], |row| {
+            row.get::<usize, String>(0)
+        })?;
 
-    let mut res = vec![];
-    for row in row_iter {
-        match row {
-            Err(e) => return Err(SolverError::from(e)),
-            Ok(row) => {
-                if row != "true" {
-                    let assert = format!("(assert {})\n", row);
-                    res.push(assert);
-                    if row == "false" {
-                        break
+        let mut res = vec![];
+        for row in row_iter {
+            match row {
+                Err(e) => return Err(SolverError::from(e)),
+                Ok(g) => {
+                    if g != "true" {
+                        let assert = format!("(assert {g})\n");
+                        res.push(assert);
+                        if g == "false" {
+                            break
+                        }
                     }
                 }
             }
         }
+        return Ok(res)
+    } else if stmt.column_count() == 2 {  // with an if_ column
+        let row_iter = stmt.query_map([], |row| {
+            Ok((
+                row.get::<usize, String>(0)?,
+                row.get::<usize, String>(1)?
+            ))
+        })?;
+
+        let mut res = vec![];
+        for row in row_iter {
+            match row {
+                Err(e) => return Err(SolverError::from(e)),
+                Ok((if_, g)) => {
+                    if if_ == "" {
+                        if g != "true" {
+                            let assert = format!("(assert {g})\n");
+                            res.push(assert);
+                            if g == "false" {
+                                break
+                            }
+                        }
+                    } else {
+                        let assert = format!("(assert (=> {if_} {g}))\n");
+                        res.push(assert);
+                    }
+                }
+            }
+        }
+        return Ok(res)
+    } else {
+        unreachable!()
     }
-    Ok(res)
+
 }
 
 
@@ -367,7 +401,7 @@ fn ground_compound(
                                 }
                             },
                             Some(Grounding::NonBoolean(_))
-                            | None => Err(InternalError(85896566))
+                            | None => Err(SolverError::TermError("not a boolean term", term.clone()))
                         }
                     }
                     "=" => {

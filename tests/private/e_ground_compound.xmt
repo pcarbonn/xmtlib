@@ -1,41 +1,45 @@
 (set-option :backend none)
 (declare-datatype T ( ( a ) ( b ) ))
-(declare-fun p (T T) Bool)
-(x-interpret-pred p (a a))
-(declare-fun f (T) T)
-(assert (p a a))
-(assert (forall ((x T)) (not (p x (f a)))))
+(declare-datatype Tf ( ( A ) ( B ) ))
+(declare-datatype bol ( ( TRUE ) ( FALSE )))
+(declare-fun p (T Tf) bol)
+(x-interpret-fun p (
+   ((a A) TRUE)
+   ((a B) FALSE)
+   ((b A) FALSE)
+) ?)
+
+(declare-fun f (T) Tf)
+(x-interpret-fun f (
+   ((b) B)
+) ? )
+(assert (= (p a a) TRUE))
+(assert (exists ((x T)) (= (p x (f x)) TRUE)))
 (x-ground)
-(x-debug db p_TU)
 (x-debug solver groundings)
 -------------------------
 (declare-datatype T ((a ) (b )))
-(declare-fun p (T T) Bool)
-(declare-fun f (T) T)
-(assert (not (= (f a) a)))
- TABLE: p_TU
-┌─────┬─────┬────────┐
-│ a_0 │ a_1 │ G      │
-├─────┼─────┼────────┤
-│ "a" │ "a" │ "true" │
-└─────┴─────┴────────┘
+(declare-datatype Tf ((A ) (B )))
+(declare-datatype bol ((TRUE ) (FALSE )))
+(declare-fun p (T Tf) bol)
+(declare-fun f (T) Tf)
+(assert (or (= (p a (f a)) TRUE) (= (p b B) TRUE)))
 Groundings:
  - a: SELECT "a" AS G
- - (p a a):
-    T: SELECT "true" AS G FROM p_TU AS p_TU_1 WHERE "a" = p_TU_1.a_0 AND "a" = p_TU_1.a_1
-    F: SELECT "false" AS G FROM p_UF AS p_UF_1 WHERE "a" = p_UF_1.a_0 AND "a" = p_UF_1.a_1
-    G : SELECT p_G_1.G AS G FROM p_G AS p_G_1 WHERE "a" = p_G_1.a_0 AND "a" = p_G_1.a_1
- - x: SELECT T_2.G AS x, T_2.G AS G FROM T AS T_2
- - (f a): SELECT apply("f", "a") AS G
- - (p x (f a)):
-    T: SELECT p_TU_4.a_0 AS x, apply("=",apply("f", "a"), p_TU_4.a_1) AS if_, "true" AS G FROM p_TU AS p_TU_4
-    F: SELECT p_UF_4.a_0 AS x, apply("=",apply("f", "a"), p_UF_4.a_1) AS if_, "false" AS G FROM p_UF AS p_UF_4
-    G : SELECT p_G_4.a_0 AS x, apply("=",apply("f", "a"), p_G_4.a_1) AS if_, p_G_4.G AS G FROM p_G AS p_G_4
- - (not (p x (f a))):
-    T: SELECT p_UF_4.a_0 AS x, apply("=",apply("f", "a"), p_UF_4.a_1) AS if_, "true" AS G FROM p_UF AS p_UF_4
-    F: SELECT p_TU_4.a_0 AS x, apply("=",apply("f", "a"), p_TU_4.a_1) AS if_, "false" AS G FROM p_TU AS p_TU_4
-    G : SELECT p_G_4.a_0 AS x, apply("=",apply("f", "a"), p_G_4.a_1) AS if_, not_(p_G_4.G) AS G FROM p_G AS p_G_4
- - (forall ((x T)) (not (p x (f a)))):
-    TU: SELECT and_aggregate(implies_(if_, G)) as G from (SELECT p_G_4.a_0 AS x, apply("=",apply("f", "a"), p_G_4.a_1) AS if_, not_(p_G_4.G) AS G FROM p_G AS p_G_4)
-    UF: SELECT implies_(if_, G) as G from (SELECT p_TU_4.a_0 AS x, apply("=",apply("f", "a"), p_TU_4.a_1) AS if_, "false" AS G FROM p_TU AS p_TU_4)
-    G : SELECT and_aggregate(implies_(if_, G)) as G from (SELECT p_G_4.a_0 AS x, apply("=",apply("f", "a"), p_G_4.a_1) AS if_, not_(p_G_4.G) AS G FROM p_G AS p_G_4)
+ - (p a a): SELECT IFNULL(p_G_1.G, apply("p", "a", "a")) AS G FROM p_G AS p_G_1 WHERE "a" = p_G_1.a_0 AND "a" = p_G_1.a_1
+ - TRUE: SELECT "TRUE" AS G
+ - (= (p a a) TRUE):
+    T: SELECT eq_(IFNULL(p_G_1.G, apply("p", "a", "a")), "TRUE") AS G FROM p_G AS p_G_1 WHERE "a" = p_G_1.a_0 AND "a" = p_G_1.a_1
+    F: SELECT eq_(IFNULL(p_G_1.G, apply("p", "a", "a")), "TRUE") AS G FROM p_G AS p_G_1 WHERE "a" = p_G_1.a_0 AND "a" = p_G_1.a_1
+    G : SELECT eq_(IFNULL(p_G_1.G, apply("p", "a", "a")), "TRUE") AS G FROM p_G AS p_G_1 WHERE "a" = p_G_1.a_0 AND "a" = p_G_1.a_1
+ - x: SELECT T_4.G AS x, T_4.G AS G FROM T AS T_4
+ - (f x): SELECT T_4.G AS x, IFNULL(f_G_5.G, apply("f", T_4.G)) AS G FROM T AS T_4 LEFT JOIN f_G AS f_G_5 ON T_4.G = f_G_5.a_0
+ - (p x (f x)): SELECT T_4.G AS x, IFNULL(p_G_6.G, apply("p", T_4.G, IFNULL(f_G_5.G, apply("f", T_4.G)))) AS G FROM T AS T_4 LEFT JOIN f_G AS f_G_5 ON T_4.G = f_G_5.a_0 LEFT JOIN p_G AS p_G_6 ON T_4.G = p_G_6.a_0 AND IFNULL(f_G_5.G, apply("f", T_4.G)) = p_G_6.a_1
+ - (= (p x (f x)) TRUE):
+    T: SELECT T_4.G AS x, eq_(IFNULL(p_G_6.G, apply("p", T_4.G, IFNULL(f_G_5.G, apply("f", T_4.G)))), "TRUE") AS G FROM T AS T_4 LEFT JOIN f_G AS f_G_5 ON T_4.G = f_G_5.a_0 LEFT JOIN p_G AS p_G_6 ON T_4.G = p_G_6.a_0 AND IFNULL(f_G_5.G, apply("f", T_4.G)) = p_G_6.a_1
+    F: SELECT T_4.G AS x, eq_(IFNULL(p_G_6.G, apply("p", T_4.G, IFNULL(f_G_5.G, apply("f", T_4.G)))), "TRUE") AS G FROM T AS T_4 LEFT JOIN f_G AS f_G_5 ON T_4.G = f_G_5.a_0 LEFT JOIN p_G AS p_G_6 ON T_4.G = p_G_6.a_0 AND IFNULL(f_G_5.G, apply("f", T_4.G)) = p_G_6.a_1
+    G : SELECT T_4.G AS x, eq_(IFNULL(p_G_6.G, apply("p", T_4.G, IFNULL(f_G_5.G, apply("f", T_4.G)))), "TRUE") AS G FROM T AS T_4 LEFT JOIN f_G AS f_G_5 ON T_4.G = f_G_5.a_0 LEFT JOIN p_G AS p_G_6 ON T_4.G = p_G_6.a_0 AND IFNULL(f_G_5.G, apply("f", T_4.G)) = p_G_6.a_1
+ - (exists ((x T)) (= (p x (f x)) TRUE)):
+    TU: SELECT or_aggregate(G) as G from (SELECT T_4.G AS x, eq_(IFNULL(p_G_6.G, apply("p", T_4.G, IFNULL(f_G_5.G, apply("f", T_4.G)))), "TRUE") AS G FROM T AS T_4 LEFT JOIN f_G AS f_G_5 ON T_4.G = f_G_5.a_0 LEFT JOIN p_G AS p_G_6 ON T_4.G = p_G_6.a_0 AND IFNULL(f_G_5.G, apply("f", T_4.G)) = p_G_6.a_1)
+    UF: SELECT or_aggregate(G) as G from (SELECT T_4.G AS x, eq_(IFNULL(p_G_6.G, apply("p", T_4.G, IFNULL(f_G_5.G, apply("f", T_4.G)))), "TRUE") AS G FROM T AS T_4 LEFT JOIN f_G AS f_G_5 ON T_4.G = f_G_5.a_0 LEFT JOIN p_G AS p_G_6 ON T_4.G = p_G_6.a_0 AND IFNULL(f_G_5.G, apply("f", T_4.G)) = p_G_6.a_1)
+    G : SELECT or_aggregate(G) as G from (SELECT T_4.G AS x, eq_(IFNULL(p_G_6.G, apply("p", T_4.G, IFNULL(f_G_5.G, apply("f", T_4.G)))), "TRUE") AS G FROM T AS T_4 LEFT JOIN f_G AS f_G_5 ON T_4.G = f_G_5.a_0 LEFT JOIN p_G AS p_G_6 ON T_4.G = p_G_6.a_0 AND IFNULL(f_G_5.G, apply("f", T_4.G)) = p_G_6.a_1)

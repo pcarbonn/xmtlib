@@ -1,0 +1,31 @@
+(set-option :backend none)
+(declare-datatype T ( ( a ) ( b ) ))
+(declare-datatype Tf ( ( A ) ( B ) ))
+(declare-datatype bol ( ( TRUE ) ( FALSE )))
+(declare-fun p (T Tf) bol)
+(x-interpret-fun p (
+   ((a A) FALSE)
+   ((a B) ?)
+) TRUE )
+
+(declare-fun f (T) Tf)
+(assert (= (p a (f a)) TRUE))
+(x-ground)
+(x-debug solver groundings)
+-------------------------
+(declare-datatype T ((a ) (b )))
+(declare-datatype Tf ((A ) (B )))
+(declare-datatype bol ((TRUE ) (FALSE )))
+(declare-fun p (T Tf) bol)
+(declare-fun f (T) Tf)
+(assert (=> (= (f a) A) false))
+(assert (=> (= (f a) B) (= (p a B) TRUE)))
+Groundings:
+ - a: SELECT "a" AS G
+ - (f a): SELECT apply("f", "a") AS G
+ - (p a (f a)): SELECT apply("=",apply("f", "a"), p_G_2.a_1) AS if_, IFNULL(p_G_2.G, "TRUE") AS G FROM p_G AS p_G_2 WHERE "a" = p_G_2.a_0
+ - TRUE: SELECT "TRUE" AS G
+ - (= (p a (f a)) TRUE):
+    TU: SELECT apply("=",apply("f", "a"), p_G_2.a_1) AS if_, eq_(IFNULL(p_G_2.G, "TRUE"), "TRUE") AS G FROM p_G AS p_G_2 WHERE "a" = p_G_2.a_0
+    UF: SELECT apply("=",apply("f", "a"), p_G_2.a_1) AS if_, eq_(IFNULL(p_G_2.G, "TRUE"), "TRUE") AS G FROM p_G AS p_G_2 WHERE "a" = p_G_2.a_0
+    G : SELECT apply("=",apply("f", "a"), p_G_2.a_1) AS if_, eq_(IFNULL(p_G_2.G, "TRUE"), "TRUE") AS G FROM p_G AS p_G_2 WHERE "a" = p_G_2.a_0
