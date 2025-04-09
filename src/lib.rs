@@ -7,7 +7,7 @@
 //! [SMT-Lib 2.6](https://smt-lib.org/language.shtml)
 //! for use with SMT solvers.
 //!
-//! It can be used to find (optimal) solutions of configuration problems
+//! The program can be used to find (optimal) solutions of configuration problems
 //! and perform various reasoning tasks with knowledge represented in logical forms.
 //! Of note, the xmt-lib program has a fast "grounder"
 //! based on the [sqlite](https://sqlite.org) relational database engine.
@@ -20,6 +20,9 @@
 //! * `x-ground`, to ground assertions, i.e., to expand the finite quantifications,
 //! taking into account the known interpretations.
 //!
+//! It supports the Core, Int and Real [theories of SMT-Lib](https://smt-lib.org/theories.shtml).
+//!
+//!
 //! # Example
 //!
 //! This example shows how to use xmt-lib to flag triangles in a graph, i.e. to assert:
@@ -28,6 +31,7 @@
 //!
 //! ```
 //! use xmtlib::solver::Solver;
+//! let mut solver = Solver::default();
 //! let commands = r#"
 //!     (set-option :backend none)
 //!     (declare-fun Edge (Int Int) Bool)
@@ -43,7 +47,6 @@
 //!                 )))
 //!     (check-sat)  ; implicitly runs (x-ground)
 //! "#;
-//! let mut solver = Solver::default();
 //! let results = solver.parse_and_execute(&commands);
 //! for result in results {
 //!     print!("{}", result);
@@ -56,8 +59,10 @@
 //! (assert (RedTriangle 1 2 3))
 //! (check-sat)
 //! ```
+//!
 //! The grounding of the assertion is simply `(assert (RedTriangle 1 2 3))`,
 //! once the interpretation of Edge is taken into account.
+//!
 //!
 //! # New commands
 //!
@@ -95,20 +100,38 @@
 //! An `x-interpret-fun` command specifies the interpretation of a function symbol, possibly partially,
 //! by associating a value to tuples of arguments, and by giving a default value.
 //!
-//! Example `(x-interpret-fun Length ( ((a b) 2) ((b c) 3) ((c a) 4) ) 999)`.
+//! Example: `(x-interpret-fun Length ( ((a b) 2) ((b c) 3) ((c a) 4) ) 999)`.
 //! The length of pair `(a b)` is 2, of `(b c)` is 3, of `(c a)` is 4,
 //! and is 999 for every other pairs in the domain of Length.
 //!
-//! An unknown value is specified using `?`, e.g., `(x-interpret-fun Length ( ((a b) ?) ) 999)`.
-//! The default value may also be `?`,
-//! but may not be given if the set of tuples in the interpretation is exhaustive.
+//! The grammar of this command is :
+//!
+//! ```text
+//!     '(' 'x-interpret-fun' <symbol> '(' <mapping>* ')' <value>? ')'
+//!```
+//!
+//! with 0 or more mapping of the form:
+//!
+//! ```text
+//!    '(' <tuple> <value> ')'
+//!```
+//!
+//! where a tuple is a list of identifiers between parenthesis (e.g., `(a b)`),
+//! and a value is an identifier or  `?` (for unknown value).
+//! The list of identifiers must match the arity of the function symbol.
+//! The default value must be given if the set of tuples in the interpretation
+//! does not cover the domain of the function;
+//! it may not be given otherwise.
 //!
 //! The interpretation of a constant `c` (i.e., a function of arity 0) is given in the default value,
 //! e.g., `(x-interpret-fun Length c () 1)`.
 //!
-//! Note that a model of the assertions (obtained by `(get-model)`)
+//! Note that a model (obtained by `(get-model)`)
 //! will not have any information about function symbols
 //! that have been given in the interpretation.
+//! (In our triangle example above,
+//! the `Edge` function is not constrained by any assertions,
+//! and can thus have any interpretation in a model)
 //!
 //!
 //! ## (x-ground
@@ -124,6 +147,16 @@
 //! and then to ground the assertions using those interpretations.
 //!
 //! Note that `(check-sat)` grounds any pending assertions.
+//!
+//!
+//! # API
+//!
+//! The programmable interface of xmt-lib is text based: commands are sent as strings,
+//! not as objects constructed in memory.
+//! This is similar to the approach used in interfaces for the web (HTML) and relational databases (SQL).
+//! We believe this is an acceptable compromise between performance and simplicity.
+//! Should we be wrong, we can easily make the memory-based API public.
+//!
 
 mod api;
 pub mod error;

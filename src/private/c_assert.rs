@@ -7,7 +7,7 @@ use crate::error::{SolverError::{self, *}, Offset};
 use crate::solver::Solver;
 
 use crate::private::a_sort::SortObject;
-use crate::private::z_utilities::L;
+use crate::api::L;
 
 
 /////////////////////  Command (assert ////////////////////////////////////////

@@ -7,13 +7,13 @@ use std::hash::Hash;
 use indexmap::IndexSet;
 use itertools::Either::{self, Left, Right};
 
-use crate::api::{QualIdentifier, SortedVar, SpecConstant, Symbol, Term};
+use crate::api::{QualIdentifier, SortedVar, SpecConstant, Symbol, Term, L};
 use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 
 use crate::private::e2_ground_query::{GroundingQuery, NaturalJoin, TableAlias, Column};
 use crate::private::e3_ground_sql::{Mapping, SQLExpr, Predefined};
-use crate::private::z_utilities::{OptionMap, L};
+use crate::private::z_utilities::OptionMap;
 
 
 ////////////////////// Data structures for grounding views ////////////////////

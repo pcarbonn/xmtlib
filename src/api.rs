@@ -9,10 +9,12 @@
 // It also implements Display to generate a string in XMT-Lib format.
 
 use std::fmt::Display;
+use std::hash::Hash;
 
 use itertools::Itertools;
 
-use crate::private::z_utilities::L;
+use crate::error::Offset;
+
 
 // //////////////////////////// Other tokens ////////////////////////////
 
@@ -505,4 +507,34 @@ fn parse_test() {
 
     assert_eq!(parse("(check-sat) "),
                Ok(vec![CheckSat]));
+}
+
+
+//////////////////////////    L          //////////////////////////////////////
+
+
+#[derive(Debug, Clone)]
+pub struct L<T: Display+ Hash + Eq>(pub T, pub Offset);
+
+impl<T: Display+ Hash + Eq> Display for L<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+impl<T: Display+ Hash + Eq> PartialEq for L<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+impl<T: Display+ Hash + Eq> Eq for L<T> {}
+impl<T: Display+ Hash + Eq> Hash for L<T> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.0.hash(state);
+    }
+}
+
+impl<T: Display+ Hash + Eq> L<T> {
+    pub(crate) fn start(&self) -> Offset {
+        self.1
+    }
 }

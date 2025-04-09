@@ -16,7 +16,7 @@ use crate::private::c_assert::assert_;
 use crate::private::d_interpret::{interpret_pred, interpret_fun};
 use crate::private::e_ground::{ground, Grounding};
 use crate::private::y_db::init_db;
-use crate::private::z_utilities::L;
+use crate::api::L;
 
 
 #[derive(PartialEq)]

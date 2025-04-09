@@ -10,7 +10,7 @@ use crate::api::{ConstructorDec, DatatypeDec, Identifier, Numeral, SelectorDec, 
 use crate::error::{SolverError::{self, InternalError}, Offset};
 use crate::solver::Solver;
 use crate::private::b_fun::FunctionObject;
-use crate::private::z_utilities::L;
+use crate::api::L;
 
 #[allow(unused_imports)]
 use debug_print::debug_println as dprintln;
