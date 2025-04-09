@@ -33,8 +33,7 @@ pub(crate) enum Predefined {
     #[strum(to_string = "and")] And,
     #[strum(to_string = "or" )] Or,
     #[strum(to_string = "not")] Not,
-    // `Implies` is a binary connective used internally.  Use `implies_` instead of string.
-    #[strum(to_string = "=>")] Implies,
+    // "=>" is replaced by a disjunction during annotation
     #[strum(to_string = "="  )] Eq,
     #[strum(to_string = "<"  )] Less,
     #[strum(to_string = "<=" )] LE,
@@ -252,9 +251,9 @@ impl SQLExpr {
                         }).collect::<Vec<_>>().join(", ");
 
                     if ids == Ids::None {
-                        format!("compare_(\"distinct\", {terms})")
-                    } else {
                         format!("apply(\"distinct\", {terms})")
+                    } else {
+                        format!("compare_(\"distinct\", {terms})")
                     }
                 } else if LEFT_ASSOC.contains(function) {
                     // + - * div
@@ -270,22 +269,6 @@ impl SQLExpr {
                         format!("apply(\"{function}\", {terms})")
                     } else {
                         format!("left_(\"{function}\", {terms})")
-                    }
-                } else if *function == Predefined::Implies {
-                    // Implies
-                    assert_eq!(exprs.len(), 2);  // implies is a binary connective used internally
-                    let e1 = exprs.first().unwrap().1.to_sql(variables);
-                    let e2 = exprs.get(2).unwrap().1.to_sql(variables);
-                    if e1 == "true" {
-                        e2
-                    } else if e1 == "false" {
-                        "true".to_string()
-                    } else if e2 == "true" {
-                        "true".to_string()
-                    } else if e2 == "false" {
-                        format!("not_({e1})")
-                    } else {
-                        format!("implies_({e1}, {e2})")
                     }
                 } else {
                     unreachable!()

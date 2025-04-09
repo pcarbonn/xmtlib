@@ -367,7 +367,6 @@ pub(crate) fn query_for_compound(
                 let function = match qual_identifier.to_string().as_str() {
                     "and"       => Predefined::And,
                     "or"        => Predefined::Or,
-                    "implies"   => Predefined::Implies,
                     "not"       => Predefined::Not,
                     "="         => Predefined::Eq,
                     "<"         => Predefined::Less,
@@ -386,7 +385,6 @@ pub(crate) fn query_for_compound(
                 };
                 if ! [  Predefined::And,
                         Predefined::Or,
-                        Predefined::Implies,
                         Predefined::Not
                      ].contains(&function) {
                     precise = false

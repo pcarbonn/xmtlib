@@ -14,6 +14,7 @@
      ((green red) green)
    ))
 (assert (exists ((x Color)) (= (mix x x) x)))
+(assert (exists ((x Color)) (= (mix x x) x green)))
 (x-ground)
 (x-debug solver functions)
 (x-debug solver groundings)
@@ -25,6 +26,7 @@
 (declare-fun mix (Color Color) Color)
 (assert false)
 (assert (= (mix green green) green))
+(assert (= (mix green green) green green))
 Functions:
  - true: Constructor
  - false: Constructor
@@ -67,6 +69,14 @@ Groundings:
     TU: SELECT or_aggregate(G) as G from (SELECT mix_G_4.a_0 AS x, eq_(mix_G_4.G, mix_G_4.a_0) AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_0 = mix_G_4.a_1)
     UF: SELECT or_aggregate(G) as G from (SELECT mix_G_4.a_0 AS x, eq_(mix_G_4.G, mix_G_4.a_0) AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_0 = mix_G_4.a_1)
     G : SELECT or_aggregate(G) as G from (SELECT mix_G_4.a_0 AS x, eq_(mix_G_4.G, mix_G_4.a_0) AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_0 = mix_G_4.a_1)
+ - (= (mix x x) x green):
+    TU: SELECT mix_G_4.a_0 AS x, eq_(mix_G_4.G, mix_G_4.a_0, "green") AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_0 = mix_G_4.a_1
+    UF: SELECT mix_G_4.a_0 AS x, eq_(mix_G_4.G, mix_G_4.a_0, "green") AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_0 = mix_G_4.a_1
+    G : SELECT mix_G_4.a_0 AS x, eq_(mix_G_4.G, mix_G_4.a_0, "green") AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_0 = mix_G_4.a_1
+ - (exists ((x Color)) (= (mix x x) x green)):
+    TU: SELECT or_aggregate(G) as G from (SELECT mix_G_4.a_0 AS x, eq_(mix_G_4.G, mix_G_4.a_0, "green") AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_0 = mix_G_4.a_1)
+    UF: SELECT or_aggregate(G) as G from (SELECT mix_G_4.a_0 AS x, eq_(mix_G_4.G, mix_G_4.a_0, "green") AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_0 = mix_G_4.a_1)
+    G : SELECT or_aggregate(G) as G from (SELECT mix_G_4.a_0 AS x, eq_(mix_G_4.G, mix_G_4.a_0, "green") AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_0 = mix_G_4.a_1)
 CREATE VIEW c_G AS SELECT "red" as G TABLE: mix_g
 ┌─────────┬─────────┬─────────────────────┐
 │ a_0     │ a_1     │ G                   │

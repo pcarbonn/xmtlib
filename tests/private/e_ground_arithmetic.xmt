@@ -1,12 +1,32 @@
 (set-option :backend none)
+(declare-const c Int)
 (assert (= 2 (+ 1 (abs 1))))
 (assert (= 0 (- 3 1 2)))
+(assert (= 2 (+ c (abs 1))))
+(assert (= 0 (- c 1 2)))
 (assert (= 4 (* 2 2 -1)))
 (assert (= 1 (mod 3 2)))
+
+(declare-const d Real)
+(assert (= 2.1 (+ 1.0 (abs 1.0))))
+(assert (= 0.0 (- 3.0 1.0 2.0)))
+(assert (= 2.1 (+ d (abs 1.0))))
+(assert (= 0.0 (- d 1.0 2.0)))
+(assert (= 4.0 (* 2.0 2.0 -1.0)))
+(assert (= 1.0 (mod 3 2)))
 (x-ground)
 (x-debug solver groundings)
 -------------------------
+(declare-const c Int)
+(declare-const d Real)
 (assert (= 2 (+ 1 1)))
+(assert (= 2 (+ c 1)))
+(assert (= 0 (- c 1 2)))
+(assert false)
+(assert (= 1 (mod 3 2)))
+(assert (= 2.1 (+ 1 1)))
+(assert (= 2.1 (+ d 1)))
+(assert (= 0 (- d 1 2)))
 (assert false)
 (assert (= 1 (mod 3 2)))
 Groundings:
@@ -25,6 +45,17 @@ Groundings:
     T: SELECT eq_(0, left_("-", 3, 1, 2)) AS G
     F: SELECT eq_(0, left_("-", 3, 1, 2)) AS G
     G : SELECT eq_(0, left_("-", 3, 1, 2)) AS G
+ - c: SELECT "c" AS G
+ - (+ c (abs 1)): SELECT apply("+", "c", abs_(1)) AS G
+ - (= 2 (+ c (abs 1))):
+    TU: SELECT apply("=", 2, apply("+", "c", abs_(1))) AS G
+    UF: SELECT apply("=", 2, apply("+", "c", abs_(1))) AS G
+    G : SELECT apply("=", 2, apply("+", "c", abs_(1))) AS G
+ - (- c 1 2): SELECT apply("-", "c", 1, 2) AS G
+ - (= 0 (- c 1 2)):
+    TU: SELECT apply("=", 0, apply("-", "c", 1, 2)) AS G
+    UF: SELECT apply("=", 0, apply("-", "c", 1, 2)) AS G
+    G : SELECT apply("=", 0, apply("-", "c", 1, 2)) AS G
  - 4: SELECT 4 AS G
  - -1: SELECT -1 AS G
  - (* 2 2 -1): SELECT left_("*", 2, 2, -1) AS G
@@ -37,3 +68,41 @@ Groundings:
     T: SELECT eq_(1, apply("mod", 3, 2)) AS G
     F: SELECT eq_(1, apply("mod", 3, 2)) AS G
     G : SELECT eq_(1, apply("mod", 3, 2)) AS G
+ - 2.1: SELECT 2.1 AS G
+ - 1.0: SELECT 1.0 AS G
+ - (abs 1.0): SELECT abs_(1.0) AS G
+ - (+ 1.0 (abs 1.0)): SELECT left_("+", 1.0, abs_(1.0)) AS G
+ - (= 2.1 (+ 1.0 (abs 1.0))):
+    T: SELECT eq_(2.1, left_("+", 1.0, abs_(1.0))) AS G
+    F: SELECT eq_(2.1, left_("+", 1.0, abs_(1.0))) AS G
+    G : SELECT eq_(2.1, left_("+", 1.0, abs_(1.0))) AS G
+ - 0.0: SELECT 0.0 AS G
+ - 3.0: SELECT 3.0 AS G
+ - 2.0: SELECT 2.0 AS G
+ - (- 3.0 1.0 2.0): SELECT left_("-", 3.0, 1.0, 2.0) AS G
+ - (= 0.0 (- 3.0 1.0 2.0)):
+    T: SELECT eq_(0.0, left_("-", 3.0, 1.0, 2.0)) AS G
+    F: SELECT eq_(0.0, left_("-", 3.0, 1.0, 2.0)) AS G
+    G : SELECT eq_(0.0, left_("-", 3.0, 1.0, 2.0)) AS G
+ - d: SELECT "d" AS G
+ - (+ d (abs 1.0)): SELECT apply("+", "d", abs_(1.0)) AS G
+ - (= 2.1 (+ d (abs 1.0))):
+    TU: SELECT apply("=", 2.1, apply("+", "d", abs_(1.0))) AS G
+    UF: SELECT apply("=", 2.1, apply("+", "d", abs_(1.0))) AS G
+    G : SELECT apply("=", 2.1, apply("+", "d", abs_(1.0))) AS G
+ - (- d 1.0 2.0): SELECT apply("-", "d", 1.0, 2.0) AS G
+ - (= 0.0 (- d 1.0 2.0)):
+    TU: SELECT apply("=", 0.0, apply("-", "d", 1.0, 2.0)) AS G
+    UF: SELECT apply("=", 0.0, apply("-", "d", 1.0, 2.0)) AS G
+    G : SELECT apply("=", 0.0, apply("-", "d", 1.0, 2.0)) AS G
+ - 4.0: SELECT 4.0 AS G
+ - -1.0: SELECT -1.0 AS G
+ - (* 2.0 2.0 -1.0): SELECT left_("*", 2.0, 2.0, -1.0) AS G
+ - (= 4.0 (* 2.0 2.0 -1.0)):
+    T: SELECT eq_(4.0, left_("*", 2.0, 2.0, -1.0)) AS G
+    F: SELECT eq_(4.0, left_("*", 2.0, 2.0, -1.0)) AS G
+    G : SELECT eq_(4.0, left_("*", 2.0, 2.0, -1.0)) AS G
+ - (= 1.0 (mod 3 2)):
+    T: SELECT eq_(1.0, apply("mod", 3, 2)) AS G
+    F: SELECT eq_(1.0, apply("mod", 3, 2)) AS G
+    G : SELECT eq_(1.0, apply("mod", 3, 2)) AS G
