@@ -7,24 +7,24 @@ use std::path::Path;
 use xmtlib::solver::Solver;
 
 
-#[test] fn test_a_sorts_1()     { test_file(Path::new("tests/private/a_sorts_1.smt2")) }
-#[test] fn test_a_sorts_2()     { test_file(Path::new("tests/private/a_sorts_2.smt2")) }
-#[test] fn test_b_fun()         { test_file(Path::new("tests/private/b_fun.smt2")) }
-#[test] fn test_c_term_const()  { test_file(Path::new("tests/private/c_term_const.smt2")) }
-#[test] fn test_c_term_quant()  { test_file(Path::new("tests/private/c_term_quant.smt2")) }
-#[test] fn test_d_interpret_1() { test_file(Path::new("tests/private/d_interpret_1.smt2")) }
-#[test] fn test_d_interpret_fun_2() { test_file(Path::new("tests/private/d_interpret_fun_2.smt2")) }
-#[test] fn test_d_interpret_partial() { test_file(Path::new("tests/private/d_interpret_partial.smt2")) }
-#[test] fn test_e_ground_comparison()   { test_file(Path::new("tests/private/e_ground_comparison.smt2")) }
-#[test] fn test_e_ground_comound()      { test_file(Path::new("tests/private/e_ground_compound.smt2")) }
-#[test] fn test_e_ground_equality()     { test_file(Path::new("tests/private/e_ground_equality.smt2")) }
-#[test] fn test_e_ground_arithmetic()     { test_file(Path::new("tests/private/e_ground_arithmetic.smt2")) }
-#[test] fn test_e_ground()      { test_file(Path::new("tests/private/e_ground.smt2")) }
+#[test] fn test_a_sorts_1()     { test_file(Path::new("tests/private/a_sorts_1.xmt")) }
+#[test] fn test_a_sorts_2()     { test_file(Path::new("tests/private/a_sorts_2.xmt")) }
+#[test] fn test_b_fun()         { test_file(Path::new("tests/private/b_fun.xmt")) }
+#[test] fn test_c_term_const()  { test_file(Path::new("tests/private/c_term_const.xmt")) }
+#[test] fn test_c_term_quant()  { test_file(Path::new("tests/private/c_term_quant.xmt")) }
+#[test] fn test_d_interpret_1() { test_file(Path::new("tests/private/d_interpret_1.xmt")) }
+#[test] fn test_d_interpret_fun_2() { test_file(Path::new("tests/private/d_interpret_fun_2.xmt")) }
+#[test] fn test_d_interpret_partial() { test_file(Path::new("tests/private/d_interpret_partial.xmt")) }
+#[test] fn test_e_ground_comparison()   { test_file(Path::new("tests/private/e_ground_comparison.xmt")) }
+#[test] fn test_e_ground_comound()      { test_file(Path::new("tests/private/e_ground_compound.xmt")) }
+#[test] fn test_e_ground_equality()     { test_file(Path::new("tests/private/e_ground_equality.xmt")) }
+#[test] fn test_e_ground_arithmetic()     { test_file(Path::new("tests/private/e_ground_arithmetic.xmt")) }
+#[test] fn test_e_ground()      { test_file(Path::new("tests/private/e_ground.xmt")) }
 
-#[test] fn test_empty()         { test_file(Path::new("tests/empty.smt2")) }
-#[test] fn test_sandbox()       { test_file(Path::new("tests/sandbox.smt2")) }
-#[test] fn test_triangle_int()  { test_file(Path::new("tests/triangle Int.smt2")) }
-#[test] fn test_triangle()      { test_file(Path::new("tests/triangle.smt2")) }
+#[test] fn test_empty()         { test_file(Path::new("tests/empty.xmt")) }
+#[test] fn test_sandbox()       { test_file(Path::new("tests/sandbox.xmt")) }
+#[test] fn test_triangle_int()  { test_file(Path::new("tests/triangle Int.xmt")) }
+#[test] fn test_triangle()      { test_file(Path::new("tests/triangle.xmt")) }
 
 // #[test]
 // fn test_all_smt2_files() {
@@ -32,7 +32,7 @@ use xmtlib::solver::Solver;
 //     all_smt2(test_dir)
 // }
 
-// recursively test all .smt2 files in the test directory and its subdirectories
+// recursively test all .xmt files in the test directory and its subdirectories
 // fn all_smt2(test_dir: &Path) {
 //     for entry in fs::read_dir(test_dir).expect("read_dir call failed") {
 //         if let Ok(entry) = entry {
