@@ -30,7 +30,9 @@ pub(crate) fn assert_(
 /// - replace p=>(q=>r) by ~p|~q|r
 /// - merge nested conjunction (resp. disjunction)
 /// - remove duplicate conjuncts/disjuncts
-/// - todo: push negation down
+/// - push negation down disjunctions and conjunctions
+
+/// - todo: push negation down quantification
 /// - todo: replace ambiguous simple identifier (constructor) by a qualified identifier
 /// - todo: annotate `ite` with the type
 /// - todo: push universal quantification up disjunction, down conjunction

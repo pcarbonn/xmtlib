@@ -361,7 +361,7 @@ impl GroundingQuery {
                 let table_name = TableAlias{base_table: format!("negate_{index}"), index: 0};
                 GroundingView::new(table_name, free_variables, query, exclude, ids.clone(), solver)
             },
-            GroundingQuery::Union {..} => unreachable!()
+            GroundingQuery::Union {..} => unreachable!()  // because negation is pushed down conjunctions and disjunctions
         }
     }
 

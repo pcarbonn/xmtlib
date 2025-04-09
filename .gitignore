@@ -27,3 +27,4 @@ Cargo.lock
 
 xmtlib.log
 .VSCodeCounter/
+.z3-trace

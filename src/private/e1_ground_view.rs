@@ -313,7 +313,7 @@ pub(crate) fn query_for_compound(
                             None // otherwise, unused variable
                         }
                     } else {
-                        unreachable!()  // infinite variable joined to a table.
+                        unreachable!()  // infinite variable cannot be joined to a table.
                     }
                 },
                 NaturalJoin::ViewType(..) => {

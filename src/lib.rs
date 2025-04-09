@@ -5,7 +5,8 @@
 //! * a program that executes commands in that language;
 //! * a program that translates from that language to
 //! [SMT-Lib 2.6](https://smt-lib.org/language.shtml)
-//! for use with SMT solvers.
+//! for use with SMT solvers;
+// !todo * a rust library that executes or translates xmt-lib commands.
 //!
 //! The program can be used to find (optimal) solutions of configuration problems
 //! and perform various reasoning tasks with knowledge represented in logical forms.
@@ -23,16 +24,18 @@
 //! It supports the Core, Int and Real [theories of SMT-Lib](https://smt-lib.org/theories.shtml).
 //!
 //!
-//! # Example
+//! # Usage
 //!
-//! This example shows how to use xmt-lib to flag triangles in a graph, i.e. to assert:
+//! The following examples show how to use xmt-lib to flag triangles in a graph, i.e. to assert:
 //!
 //! `∀ x,y,z: Edge(x,y) and Edge(y,z) and Edge(z, x) => RedTriangle(x, y, z).`
 //!
-//! ```
-//! use xmtlib::solver::Solver;
-//! let mut solver = Solver::default();
-//! let commands = r#"
+//! * Install the Rust toolchain using [rustup](https://rustup.rs/).
+//! * Install [z3](https://github.com/Z3Prover/z3) so that `z3` is in your `PATH`
+//! * Download the xmt-lib repository.
+//! * Create a `Triangle.xmt` file with the following xmt-lib content:
+//!
+//! ```text
 //!     (set-option :backend none)
 //!     (declare-fun Edge (Int Int) Bool)
 //!     (declare-fun RedTriangle (Int Int Int) Bool)
@@ -46,13 +49,19 @@
 //!                     (RedTriangle x y z)
 //!                 )))
 //!     (check-sat)  ; implicitly runs (x-ground)
-//! "#;
-//! let results = solver.parse_and_execute(&commands);
-//! for result in results {
-//!     print!("{}", result);
-//! }
 //! ```
-//! Output:
+//!
+//! * In the xmt-lib directory, run `cargo run --release -- path/to/Triangle.xmt`
+//!
+//! Note: If the Rust toolchain cannot find Z3,
+//! modify the last line in the `Cargo.toml` file in the xmt-lib directory to:
+//!
+//! ```text
+//! z3 = { version = "0.24", features = ["static-link-z3"] }
+//! ```
+//! and re-run the `cargo` command (it will take a few minutes).
+//!
+//! The program will output the translation to SMT-Lib 2.6:
 //! ```text
 //! (declare-fun Edge (Int Int) Bool)
 //! (declare-fun RedTriangle (Int Int Int) Bool)
@@ -62,6 +71,55 @@
 //!
 //! The grounding of the assertion is simply `(assert (RedTriangle 1 2 3))`,
 //! once the interpretation of Edge is taken into account.
+//!
+//! To check satisfiability, submit the output to a SMT solver,
+//! or replace the first line of Triangle.xmt with:
+//!
+//! ```text
+//!    (set-option :backend Z3)
+//! ```
+
+// todo: use as a rust library
+
+//!
+// ! # Example
+// !
+// ! This example shows how to use xmt-lib to flag triangles in a graph, i.e. to assert:
+// !
+// ! `∀ x,y,z: Edge(x,y) and Edge(y,z) and Edge(z, x) => RedTriangle(x, y, z).`
+// !
+// ! ```
+// ! use xmtlib::solver::Solver;
+// ! let mut solver = Solver::default();
+// ! let commands = r#"
+// !     (set-option :backend none)
+// !     (declare-fun Edge (Int Int) Bool)
+// !     (declare-fun RedTriangle (Int Int Int) Bool)
+// !     (x-interpret-pred Edge
+// !         (1 2)
+// !         (2 3)
+// !         (1 3)
+// !     )
+// !     (assert (forall ((x Int) (y Int) (z Int))
+// !                 (=> (and (Edge x y) (Edge y z) (Edge x z))
+// !                     (RedTriangle x y z)
+// !                 )))
+// !     (check-sat)  ; implicitly runs (x-ground)
+// ! "#;
+// ! let results = solver.parse_and_execute(&commands);
+// ! for result in results {
+// !     print!("{}", result);
+// ! }
+// ! ```
+// ! Output:
+// ! ```text
+// ! (declare-fun Edge (Int Int) Bool)
+// ! (declare-fun RedTriangle (Int Int Int) Bool)
+// ! (assert (RedTriangle 1 2 3))
+// ! (check-sat)
+// ! ```
+// !
+
 //!
 //!
 //! # New commands
