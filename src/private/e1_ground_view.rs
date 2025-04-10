@@ -400,7 +400,8 @@ pub(crate) fn query_for_compound(
         };
 
     let name = solver.get_db_name(qual_identifier.to_string());
-    let table_name = TableAlias::new(&name, index);
+    let name = format!("{name}_{index}");
+    let table_name = TableAlias::new(&name, 0);
     let query = GroundingQuery::Join {
         variables,
         conditions,

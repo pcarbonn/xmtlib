@@ -44,32 +44,34 @@ Functions:
  - abs: Predefined (false)
  - red: Constructor
  - green: Constructor
- - mix: Non Boolean (mix_G?? Complete)
+ - mix: Non Boolean (mix_G Partial)
 Groundings:
  - green: SELECT "green" AS G
  - red: SELECT "red" AS G
- - (mix red green): SELECT IFNULL(mix_G_2.G, apply("mix", "red", "green")) AS G FROM mix_G AS mix_G_2 WHERE "red" = mix_G_2.a_0 AND "green" = mix_G_2.a_1
+ - (mix red green): SELECT mix_G_2.G AS G FROM mix_G AS mix_G_2 WHERE "red" = mix_G_2.a_0 AND "green" = mix_G_2.a_1
  - (= green (mix red green)):
-    TU: SELECT eq_("green", IFNULL(mix_G_2.G, apply("mix", "red", "green"))) AS G FROM mix_G AS mix_G_2 WHERE "red" = mix_G_2.a_0 AND "green" = mix_G_2.a_1
-    UF: SELECT eq_("green", IFNULL(mix_G_2.G, apply("mix", "red", "green"))) AS G FROM mix_G AS mix_G_2 WHERE "red" = mix_G_2.a_0 AND "green" = mix_G_2.a_1
-    G : SELECT eq_("green", IFNULL(mix_G_2.G, apply("mix", "red", "green"))) AS G FROM mix_G AS mix_G_2 WHERE "red" = mix_G_2.a_0 AND "green" = mix_G_2.a_1
+    TU: SELECT eq_("green", mix_G_2.G) AS G FROM mix_G AS mix_G_2 WHERE "red" = mix_G_2.a_0 AND "green" = mix_G_2.a_1
+    UF: SELECT eq_("green", mix_G_2.G) AS G FROM mix_G AS mix_G_2 WHERE "red" = mix_G_2.a_0 AND "green" = mix_G_2.a_1
+    G : SELECT eq_("green", mix_G_2.G) AS G FROM mix_G AS mix_G_2 WHERE "red" = mix_G_2.a_0 AND "green" = mix_G_2.a_1
  - x: SELECT Color_4.G AS x, Color_4.G AS G FROM Color AS Color_4
- - (mix x x): SELECT Color_4.G AS x, IFNULL(mix_G_5.G, apply("mix", Color_4.G, Color_4.G)) AS G FROM Color AS Color_4 LEFT JOIN mix_G AS mix_G_5 ON Color_4.G = mix_G_5.a_0 AND Color_4.G = mix_G_5.a_1
+ - (mix x x): SELECT mix_G_5.a_0 AS x, mix_G_5.G AS G FROM mix_G AS mix_G_5 WHERE mix_G_5.a_0 = mix_G_5.a_1
  - (= (mix x x) x):
-    TU: SELECT Color_4.G AS x, eq_(IFNULL(mix_G_5.G, apply("mix", Color_4.G, Color_4.G)), Color_4.G) AS G FROM Color AS Color_4 LEFT JOIN mix_G AS mix_G_5 ON Color_4.G = mix_G_5.a_0 AND Color_4.G = mix_G_5.a_1
-    UF: SELECT Color_4.G AS x, eq_(IFNULL(mix_G_5.G, apply("mix", Color_4.G, Color_4.G)), Color_4.G) AS G FROM Color AS Color_4 LEFT JOIN mix_G AS mix_G_5 ON Color_4.G = mix_G_5.a_0 AND Color_4.G = mix_G_5.a_1
-    G : SELECT Color_4.G AS x, eq_(IFNULL(mix_G_5.G, apply("mix", Color_4.G, Color_4.G)), Color_4.G) AS G FROM Color AS Color_4 LEFT JOIN mix_G AS mix_G_5 ON Color_4.G = mix_G_5.a_0 AND Color_4.G = mix_G_5.a_1
+    TU: SELECT mix_G_5.a_0 AS x, eq_(mix_G_5.G, mix_G_5.a_0) AS G FROM mix_G AS mix_G_5 WHERE mix_G_5.a_0 = mix_G_5.a_1
+    UF: SELECT mix_G_5.a_0 AS x, eq_(mix_G_5.G, mix_G_5.a_0) AS G FROM mix_G AS mix_G_5 WHERE mix_G_5.a_0 = mix_G_5.a_1
+    G : SELECT mix_G_5.a_0 AS x, eq_(mix_G_5.G, mix_G_5.a_0) AS G FROM mix_G AS mix_G_5 WHERE mix_G_5.a_0 = mix_G_5.a_1
  - (exists ((x Color)) (= (mix x x) x)):
-    TU: SELECT or_aggregate(G) as G from (SELECT Color_4.G AS x, eq_(IFNULL(mix_G_5.G, apply("mix", Color_4.G, Color_4.G)), Color_4.G) AS G FROM Color AS Color_4 LEFT JOIN mix_G AS mix_G_5 ON Color_4.G = mix_G_5.a_0 AND Color_4.G = mix_G_5.a_1)
-    UF: SELECT or_aggregate(G) as G from (SELECT Color_4.G AS x, eq_(IFNULL(mix_G_5.G, apply("mix", Color_4.G, Color_4.G)), Color_4.G) AS G FROM Color AS Color_4 LEFT JOIN mix_G AS mix_G_5 ON Color_4.G = mix_G_5.a_0 AND Color_4.G = mix_G_5.a_1)
-    G : SELECT or_aggregate(G) as G from (SELECT Color_4.G AS x, eq_(IFNULL(mix_G_5.G, apply("mix", Color_4.G, Color_4.G)), Color_4.G) AS G FROM Color AS Color_4 LEFT JOIN mix_G AS mix_G_5 ON Color_4.G = mix_G_5.a_0 AND Color_4.G = mix_G_5.a_1)
+    TU: SELECT or_aggregate(G) as G from (SELECT mix_G_5.a_0 AS x, eq_(mix_G_5.G, mix_G_5.a_0) AS G FROM mix_G AS mix_G_5 WHERE mix_G_5.a_0 = mix_G_5.a_1)
+    UF: SELECT or_aggregate(G) as G from (SELECT mix_G_5.a_0 AS x, eq_(mix_G_5.G, mix_G_5.a_0) AS G FROM mix_G AS mix_G_5 WHERE mix_G_5.a_0 = mix_G_5.a_1)
+    G : SELECT or_aggregate(G) as G from (SELECT mix_G_5.a_0 AS x, eq_(mix_G_5.G, mix_G_5.a_0) AS G FROM mix_G AS mix_G_5 WHERE mix_G_5.a_0 = mix_G_5.a_1)
  TABLE: mix_g
-┌─────────┬─────────┬─────────┐
-│ a_0     │ a_1     │ G       │
-├─────────┼─────────┼─────────┤
-│ "green" │ "green" │ "red"   │
-├─────────┼─────────┼─────────┤
-│ "red"   │ "green" │ "green" │
-├─────────┼─────────┼─────────┤
-│ "green" │ "red"   │ "green" │
-└─────────┴─────────┴─────────┘
+┌─────────┬─────────┬─────────────────┐
+│ a_0     │ a_1     │ G               │
+├─────────┼─────────┼─────────────────┤
+│ "green" │ "green" │ "red"           │
+├─────────┼─────────┼─────────────────┤
+│ "green" │ "red"   │ "green"         │
+├─────────┼─────────┼─────────────────┤
+│ "red"   │ "green" │ "green"         │
+├─────────┼─────────┼─────────────────┤
+│ "red"   │ "red"   │ "(mix red red)" │
+└─────────┴─────────┴─────────────────┘

@@ -172,7 +172,7 @@ impl Solver {
                             Ok(s) => yield_!(s),
                             Err(e) => {
                                 yield_!(format_error(&source, e));
-                                break
+                                //break
                             }
                         }
                     }
@@ -195,7 +195,7 @@ impl Solver {
                 for result in self.execute1(command) {
                     if result.is_err() {
                         yield_!(result);
-                        break
+                        //break
                     } else {
                         yield_!(result);
                     }
@@ -422,11 +422,11 @@ impl Solver {
         } else {
             let re = Regex::new(r"[\+\-/\*=\%\?\!\.\$\&\^<>@]").unwrap();
             let db_name = re.replace_all(&name, "").to_string();
-            let index = self.db_names.len();
             let db_name = if db_name.len() == 0 {
+                let index = self.db_names.len();
                 format!("_db_{index}")
             } else {
-                db_name
+                format!("_db_{db_name}")
             };
             self.db_names.insert(name, db_name.clone());
             db_name

@@ -174,7 +174,7 @@ pub(crate) fn init_db(
         },
     )?;
 
-    // create function "if_"  : is_id(a1) OR a1 == a2
+    // create function "if_" : `is_id(a1) OR a1 == a2` in SMT-Lib
     conn.create_scalar_function(
         "if_",
         2,
@@ -194,7 +194,7 @@ pub(crate) fn init_db(
                         bool_to_sql(true)
                     } else {
                         if let Ok(col) = ctx.get::<String>(1) {
-                            bool_to_sql(value == col)
+                            Ok(format!("(= {value} {col})"))
                         } else {  // col may be null
                             bool_to_sql(false)
                         }
@@ -205,7 +205,7 @@ pub(crate) fn init_db(
             }
         })?;
 
-    // create function "join_"  : NOT is_id(a1) OR a1 == a2
+    // create function "join_"  : `NOT is_id(a1) OR a1 == a2` in SQL
     conn.create_scalar_function(
         "join_",
         2,
@@ -216,20 +216,20 @@ pub(crate) fn init_db(
                 rusqlite::types::ValueRef::Null =>
                     Err(Error::InvalidFunctionParameterType(0, value.data_type())),
                 rusqlite::types::ValueRef::Integer(col) =>{
-                    bool_to_sql(value == rusqlite::types::ValueRef::Integer(col))
+                    Ok(value == rusqlite::types::ValueRef::Integer(col))
                 },
                 rusqlite::types::ValueRef::Real(col) => {
-                    bool_to_sql(value == rusqlite::types::ValueRef::Real(col))
+                    Ok(value == rusqlite::types::ValueRef::Real(col))
                 },
                 rusqlite::types::ValueRef::Text(_) => {
                     let value = ctx.get::<String>(0)?;
                     if value.starts_with("(") {  // not an id
-                        bool_to_sql(true)
+                        Ok(true)
                     } else {
                         if let Ok(col) = ctx.get::<String>(1) {
-                            bool_to_sql(value == col)
+                            Ok(value == col)
                         } else {  // col may be null
-                            bool_to_sql(false)
+                            Ok(false)
                         }
                     }
                 }
