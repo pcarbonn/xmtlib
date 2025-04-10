@@ -50,14 +50,14 @@ Groundings:
  - red: SELECT "red" AS G
  - (mix red green): SELECT IFNULL(mix_G_2.G, apply("mix", "red", "green")) AS G FROM mix_G AS mix_G_2 WHERE "red" = mix_G_2.a_0 AND "green" = mix_G_2.a_1
  - (= green (mix red green)):
-    T: SELECT eq_("green", IFNULL(mix_G_2.G, apply("mix", "red", "green"))) AS G FROM mix_G AS mix_G_2 WHERE "red" = mix_G_2.a_0 AND "green" = mix_G_2.a_1
-    F: SELECT eq_("green", IFNULL(mix_G_2.G, apply("mix", "red", "green"))) AS G FROM mix_G AS mix_G_2 WHERE "red" = mix_G_2.a_0 AND "green" = mix_G_2.a_1
+    TU: SELECT eq_("green", IFNULL(mix_G_2.G, apply("mix", "red", "green"))) AS G FROM mix_G AS mix_G_2 WHERE "red" = mix_G_2.a_0 AND "green" = mix_G_2.a_1
+    UF: SELECT eq_("green", IFNULL(mix_G_2.G, apply("mix", "red", "green"))) AS G FROM mix_G AS mix_G_2 WHERE "red" = mix_G_2.a_0 AND "green" = mix_G_2.a_1
     G : SELECT eq_("green", IFNULL(mix_G_2.G, apply("mix", "red", "green"))) AS G FROM mix_G AS mix_G_2 WHERE "red" = mix_G_2.a_0 AND "green" = mix_G_2.a_1
  - x: SELECT Color_4.G AS x, Color_4.G AS G FROM Color AS Color_4
  - (mix x x): SELECT Color_4.G AS x, IFNULL(mix_G_5.G, apply("mix", Color_4.G, Color_4.G)) AS G FROM Color AS Color_4 LEFT JOIN mix_G AS mix_G_5 ON Color_4.G = mix_G_5.a_0 AND Color_4.G = mix_G_5.a_1
  - (= (mix x x) x):
-    T: SELECT Color_4.G AS x, eq_(IFNULL(mix_G_5.G, apply("mix", Color_4.G, Color_4.G)), Color_4.G) AS G FROM Color AS Color_4 LEFT JOIN mix_G AS mix_G_5 ON Color_4.G = mix_G_5.a_0 AND Color_4.G = mix_G_5.a_1
-    F: SELECT Color_4.G AS x, eq_(IFNULL(mix_G_5.G, apply("mix", Color_4.G, Color_4.G)), Color_4.G) AS G FROM Color AS Color_4 LEFT JOIN mix_G AS mix_G_5 ON Color_4.G = mix_G_5.a_0 AND Color_4.G = mix_G_5.a_1
+    TU: SELECT Color_4.G AS x, eq_(IFNULL(mix_G_5.G, apply("mix", Color_4.G, Color_4.G)), Color_4.G) AS G FROM Color AS Color_4 LEFT JOIN mix_G AS mix_G_5 ON Color_4.G = mix_G_5.a_0 AND Color_4.G = mix_G_5.a_1
+    UF: SELECT Color_4.G AS x, eq_(IFNULL(mix_G_5.G, apply("mix", Color_4.G, Color_4.G)), Color_4.G) AS G FROM Color AS Color_4 LEFT JOIN mix_G AS mix_G_5 ON Color_4.G = mix_G_5.a_0 AND Color_4.G = mix_G_5.a_1
     G : SELECT Color_4.G AS x, eq_(IFNULL(mix_G_5.G, apply("mix", Color_4.G, Color_4.G)), Color_4.G) AS G FROM Color AS Color_4 LEFT JOIN mix_G AS mix_G_5 ON Color_4.G = mix_G_5.a_0 AND Color_4.G = mix_G_5.a_1
  - (exists ((x Color)) (= (mix x x) x)):
     TU: SELECT or_aggregate(G) as G from (SELECT Color_4.G AS x, eq_(IFNULL(mix_G_5.G, apply("mix", Color_4.G, Color_4.G)), Color_4.G) AS G FROM Color AS Color_4 LEFT JOIN mix_G AS mix_G_5 ON Color_4.G = mix_G_5.a_0 AND Color_4.G = mix_G_5.a_1)

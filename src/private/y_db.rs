@@ -166,8 +166,11 @@ pub(crate) fn init_db(
         1,                     // Number of arguments the function takes
         FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC, // Deterministic (same input gives same output)
         |ctx| {                // The function logic
-            let a1 = ctx.get::<String>(0)?;
-            Ok(! a1.starts_with("("))
+            if let Ok(a1) = ctx.get::<String>(0) {
+                bool_to_sql(! a1.starts_with("("))
+            } else {
+                bool_to_sql(true)
+            }
         },
     )?;
 
@@ -182,16 +185,19 @@ pub(crate) fn init_db(
                 rusqlite::types::ValueRef::Null =>
                     Err(Error::InvalidFunctionParameterType(0, value.data_type())),
                 rusqlite::types::ValueRef::Integer(_) =>
-                    Ok(true),
+                    bool_to_sql(true),
                 rusqlite::types::ValueRef::Real(_) =>
-                    Ok(true),
+                    bool_to_sql(true),
                 rusqlite::types::ValueRef::Text(_) => {
-                    let value = ctx.get::<String>(1)?;
+                    let value = ctx.get::<String>(0)?;
                     if ! value.starts_with("(") {  // an id
-                        Ok(true)
+                        bool_to_sql(true)
                     } else {
-                        let col = ctx.get::<String>(1)?;
-                        Ok(value == col)
+                        if let Ok(col) = ctx.get::<String>(1) {
+                            bool_to_sql(value == col)
+                        } else {  // col may be null
+                            bool_to_sql(false)
+                        }
                     }
                 },
                 rusqlite::types::ValueRef::Blob(_) =>
@@ -210,18 +216,21 @@ pub(crate) fn init_db(
                 rusqlite::types::ValueRef::Null =>
                     Err(Error::InvalidFunctionParameterType(0, value.data_type())),
                 rusqlite::types::ValueRef::Integer(col) =>{
-                    Ok(value == rusqlite::types::ValueRef::Integer(col))
+                    bool_to_sql(value == rusqlite::types::ValueRef::Integer(col))
                 },
                 rusqlite::types::ValueRef::Real(col) => {
-                    Ok(value == rusqlite::types::ValueRef::Real(col))
+                    bool_to_sql(value == rusqlite::types::ValueRef::Real(col))
                 },
                 rusqlite::types::ValueRef::Text(_) => {
-                    let value = ctx.get::<String>(1)?;
+                    let value = ctx.get::<String>(0)?;
                     if value.starts_with("(") {  // not an id
-                        Ok(true)
+                        bool_to_sql(true)
                     } else {
-                        let col = ctx.get::<String>(1)?;
-                        Ok(value == col)
+                        if let Ok(col) = ctx.get::<String>(1) {
+                            bool_to_sql(value == col)
+                        } else {  // col may be null
+                            bool_to_sql(false)
+                        }
                     }
                 }
                 rusqlite::types::ValueRef::Blob(_) =>
@@ -698,4 +707,9 @@ fn get_args (ctx: &Context) -> Result<Vec<String>, Error> {
 #[inline]
 fn is_id(value: &str) -> bool {
     ! value.starts_with("(")
+}
+#[inline]
+fn bool_to_sql(b: bool) -> Result<String, Error> {
+    if b { Ok("true".to_string()) }
+    else { Ok("false".to_string()) }
 }

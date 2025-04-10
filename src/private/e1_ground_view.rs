@@ -329,19 +329,23 @@ pub(crate) fn query_for_compound(
                 theta_joins.insert((left, table_name.clone(), thetas.clone()));
 
                 ids = ids_.clone();  // reflects the grounding column, not if_
-                let else_ =
-                    match else_ {
-                        None => None,
-                        Some(None) => {  // no `else` value => create a compound term
-                            let expr = SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings));
-                            Some(Box::new(expr))
-                        },
-                        Some(Some(else_)) => Some(Box::new(to_sqlexpr(else_.clone())?))
-                    };
-                match (ids_, exclude) {
-                    (Ids::All, Some(false)) => SQLExpr::Boolean(true),  // TU view
-                    (Ids::All, Some(true)) => SQLExpr::Boolean(false),  // UF view
-                    _ => SQLExpr::Value(Column::new(table_name, "G"), else_)
+                match (else_, ids_, exclude) {
+                    (None, Ids::All, Some(false)) => SQLExpr::Boolean(true),  // complete TU view_
+                    (None, Ids::All, Some(true)) => SQLExpr::Boolean(false),  // complete UF view
+                    _ => {
+                        let else_ =
+                            match else_ {
+                                None => None,
+                                Some(None) => {  // no `else` value => create a compound term
+                                    let expr = SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings));
+                                    ids = max(ids, Ids::Some);
+                                    Some(Box::new(expr))
+                                },
+                                Some(Some(else_)) => // else_ is an id
+                                    Some(Box::new(to_sqlexpr(else_.clone())?))
+                            };
+                        SQLExpr::Value(Column::new(table_name, "G"), else_)
+                    }
                 }
             },
             QueryVariant::Apply => {

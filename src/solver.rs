@@ -192,8 +192,9 @@ impl Solver {
                     if result.is_err() {
                         yield_!(result);
                         break
+                    } else {
+                        yield_!(result);
                     }
-                    yield_!(result);
                 }
             }
         })
