@@ -18,7 +18,7 @@ pub(crate) enum ParametricObject {
     Unknown
 }
 pub(crate) enum SortObject{
-    Normal{datatype_dec: DatatypeDec, table: String, row_count: usize},
+    Normal{datatype_dec: DatatypeDec, table: DbName, row_count: usize},
     Recursive,
     Infinite,
     Unknown
@@ -31,7 +31,7 @@ pub(crate) enum FunctionObject {
     BooleanInterpreted{table_tu: Interpretation, table_uf: Interpretation, table_g: Interpretation}
 }
 pub(crate) enum Interpretation {
-    Table{name: String, ids: Ids},
+    Table{name: DbName, ids: Ids},
     Infinite
 }
 pub(crate) enum Grounding {

@@ -6,16 +6,16 @@
 (assert (exists ((x Hue)) (dim x) ))
 
 (x-ground)
-(x-debug db Color)
-(x-debug db Hue)
-(x-debug db dim_T)
+(x-debug db _xmt_Color)
+(x-debug db _xmt_Hue)
+(x-debug db _xmt_dim_T)
 (x-debug solver functions)
 (x-debug solver groundings)
 -------------------------
 (declare-datatype Color ((red ) (green )))
 (declare-datatype Hue ((hue (first Color) (second Color))))
 (declare-fun dim (Hue) Bool)
- TABLE: Color
+ TABLE: _xmt_color
 ┌─────────┐
 │ G       │
 ├─────────┤
@@ -23,7 +23,7 @@
 ├─────────┤
 │ "green" │
 └─────────┘
- TABLE: Hue
+ TABLE: _xmt_hue
 ┌─────────────┬─────────┬─────────┬──────────────────────┐
 │ constructor │ first   │ second  │ G                    │
 ├─────────────┼─────────┼─────────┼──────────────────────┤
@@ -35,7 +35,7 @@
 ├─────────────┼─────────┼─────────┼──────────────────────┤
 │ "hue"       │ "green" │ "green" │ " (hue green green)" │
 └─────────────┴─────────┴─────────┴──────────────────────┘
- TABLE: dim_T
+ TABLE: _xmt_dim_t
 ┌──────────────────┐
 │ a_0              │
 ├──────────────────┤
@@ -65,14 +65,14 @@ Functions:
  - red: Constructor
  - green: Constructor
  - hue: Constructor
- - dim: Boolean (dim_TU Complete, dim_UF Complete, dim_G Complete)
+ - dim: Boolean (_xmt_dim_TU Complete, _xmt_dim_UF Complete, _xmt_dim_G Complete)
 Groundings:
- - x: SELECT Hue.G AS x, Hue.G AS G FROM Hue
+ - x: SELECT _xmt_hue.G AS x, _xmt_hue.G AS G FROM _xmt_hue
  - (dim x):
-    T: SELECT dim_TU_1.a_0 AS x, "true" AS G FROM dim_TU AS dim_TU_1
-    F: SELECT dim_UF_1.a_0 AS x, "false" AS G FROM dim_UF AS dim_UF_1
-    G : SELECT dim_G_1.a_0 AS x, dim_G_1.G AS G FROM dim_G AS dim_G_1
+    T: SELECT _xmt_dim_TU_1.a_0 AS x, "true" AS G FROM _xmt_dim_TU AS _xmt_dim_TU_1
+    F: SELECT _xmt_dim_UF_1.a_0 AS x, "false" AS G FROM _xmt_dim_UF AS _xmt_dim_UF_1
+    G : SELECT _xmt_dim_G_1.a_0 AS x, _xmt_dim_G_1.G AS G FROM _xmt_dim_G AS _xmt_dim_G_1
  - (exists ((x Hue)) (dim x)):
-    TU: SELECT or_aggregate(G) as G from (SELECT dim_TU_1.a_0 AS x, "true" AS G FROM dim_TU AS dim_TU_1)
-    UF: SELECT or_aggregate(G) as G from (SELECT dim_G_1.a_0 AS x, dim_G_1.G AS G FROM dim_G AS dim_G_1)
-    G : SELECT or_aggregate(G) as G from (SELECT dim_G_1.a_0 AS x, dim_G_1.G AS G FROM dim_G AS dim_G_1)
+    TU: SELECT or_aggregate(G) as G from (SELECT _xmt_dim_TU_1.a_0 AS x, "true" AS G FROM _xmt_dim_TU AS _xmt_dim_TU_1)
+    UF: SELECT or_aggregate(G) as G from (SELECT _xmt_dim_G_1.a_0 AS x, _xmt_dim_G_1.G AS G FROM _xmt_dim_G AS _xmt_dim_G_1)
+    G : SELECT or_aggregate(G) as G from (SELECT _xmt_dim_G_1.a_0 AS x, _xmt_dim_G_1.G AS G FROM _xmt_dim_G AS _xmt_dim_G_1)

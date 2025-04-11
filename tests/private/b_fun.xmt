@@ -22,7 +22,7 @@ Sorts:
  - (infinite) RoundingMode
  - (infinite) String
  - (infinite) RegLan
- - (Color: 2) Color: ((red ) (green ))
+ - (_xmt_color: 2) Color: ((red ) (green ))
  - (Sort_7: 4) (Pair Color): ((pair (first Color) (second Color)))
 Functions:
  - true: Constructor
@@ -54,5 +54,5 @@ Functions:
  - colorOf: Int -> Color (false)
 Tables and Views:
  - Bool (table)
- - Color (table)
+ - _xmt_color (table)
  - Sort_7 (table)

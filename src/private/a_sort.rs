@@ -10,6 +10,7 @@ use crate::api::{ConstructorDec, DatatypeDec, Identifier, Numeral, SelectorDec, 
 use crate::error::{SolverError::{self, InternalError}, Offset};
 use crate::solver::Solver;
 use crate::private::b_fun::FunctionObject;
+use crate::private::e2_ground_query::DbName;
 use crate::api::L;
 
 #[allow(unused_imports)]
@@ -28,7 +29,7 @@ pub(crate) enum ParametricObject {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum SortObject{
-    Normal{datatype_dec: DatatypeDec, table: String, row_count: usize},  // table name, number of rows
+    Normal{datatype_dec: DatatypeDec, table: DbName, row_count: usize},  // table name, number of rows
     Recursive,
     Infinite,  // Int, Real, and derived
     Unknown
@@ -91,14 +92,14 @@ pub(crate) fn declare_datatypes(
 
 pub(crate) fn declare_sort(
     symb: Symbol,
-    numeral: Numeral,
+    arity: Numeral,
     command: String,
     solver: &mut Solver
 ) -> Result<String, SolverError> {
 
     let out = solver.exec(&command)?;
 
-    if numeral.0 == 0 {
+    if arity.0 == 0 {
         let sort = Sort::Sort(L(Identifier::Simple(symb), Offset(0)));
         insert_sort(sort, None, TypeInterpretation::Unknown, None, solver)?;
     } else {
@@ -129,7 +130,7 @@ pub(crate) fn define_sort(
             match new_decl.clone()
              {
                 SortObject::Normal{datatype_dec, table, row_count} => {
-                    (Some(datatype_dec.clone()), Some((format!(" {table}"), row_count)))  // front space to say that the table exists already
+                    (Some(datatype_dec.clone()), Some((table, row_count)))
                 },
                 SortObject::Recursive
                 | SortObject::Infinite
@@ -324,8 +325,8 @@ pub(crate) fn instantiate_parent_sort(
                             // create sort object
                             match sort_object {
                                 SortObject::Normal{table, row_count, ..} => {
-                                    let alias = Some((format!(" {table}"), row_count.clone()));
-                                    insert_sort(parent_sort.clone(), None, new_g, alias, solver)  // front space to say that the table exists already
+                                    let alias = Some((table.clone(), row_count.clone()));
+                                    insert_sort(parent_sort.clone(), None, new_g, alias, solver)
                                 },
                                 SortObject::Infinite
                                 | SortObject::Recursive
@@ -407,7 +408,7 @@ fn insert_sort(
     sort: Sort,
     decl: Option<DatatypeDec>,
     grounding: TypeInterpretation,
-    alias: Option<(String, usize)>,  // name and size of the table that `sort` is an alias for.
+    alias: Option<(DbName, usize)>,  // name and size of the table that `sort` is an alias for.
     solver: &mut Solver,
 ) -> Result<TypeInterpretation, SolverError> {
 
@@ -423,11 +424,12 @@ fn insert_sort(
                                 if let Some((table, row_count)) = alias {
                                     SortObject::Normal{datatype_dec, table, row_count}
                                 } else {
-                                    let table = if let Sort::Sort(L(Identifier::Simple(Symbol(ref name)), _)) = sort {
-                                        name.to_string()  // todo: sanitize name (several places)
-                                    } else {
-                                        format!("Sort_{}", i)
-                                    };
+                                    let table =
+                                        if let Sort::Sort(L(Identifier::Simple(Symbol(ref name)), _)) = sort {
+                                            solver.create_db_name(name.to_string())
+                                        } else {
+                                            DbName(format!("Sort_{}", i))
+                                        };
                                     let row_count = create_table(&table, &constructor_decls, solver)?;
                                     SortObject::Normal{datatype_dec, table, row_count}
                                 }
@@ -454,7 +456,7 @@ fn insert_sort(
 
 
 fn create_table(
-    table: &str,
+    table: &DbName,
     constructor_decls: &Vec<ConstructorDec>,
     solver: &mut Solver
 ) -> Result<usize, SolverError> {
@@ -496,7 +498,7 @@ fn create_table(
         let mut selects: Vec<String> = vec![];
 
         if 0 < nullary.len() {
-            let core = format!("{table}_core");
+            let core = DbName(format!("{table}_core"));
             create_core_table(&core, nullary, &mut solver.conn)?;
 
             //  "NULL as first, NULL as second"
@@ -573,7 +575,7 @@ fn create_table(
 
 /// creates a table in the DB containing the nullary constructors
 fn create_core_table(
-    table: &str,
+    table: &DbName,
     values: Vec<String>,
     conn: &mut Connection
 ) -> Result<(), SolverError> {

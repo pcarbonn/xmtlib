@@ -9,10 +9,11 @@ use crate::api::{QualIdentifier, Term};
 use crate::error::SolverError::{self, *};
 use crate::solver::{Solver, Backend};
 
+use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, Interpretation};
 use crate::private::e1_ground_view::{GroundingView, Ids, ViewType, QueryVariant,
     query_for_constant, query_for_variable, query_for_compound, query_for_aggregate, query_for_union};
-use crate::private::e2_ground_query::TableAlias;
+use crate::private::e2_ground_query::{DbName, TableAlias};
 use crate::api::L;
 
 
@@ -207,18 +208,26 @@ pub(crate) fn ground_term_(
         L(Term::XSortedVar(symbol, sort), _) => {
 
             // a variable
-            let base_table = if let Some(sort) = sort {  // finite domain
-                    sort.to_string()
+            let base_table =
+                if let Some(sort) = sort {  // finite domain
+                    match solver.sorts.get(sort) {
+                        Some(SortObject::Normal{table, ..}) => Some(table.clone()),
+                        Some(SortObject::Recursive)
+                        | Some(SortObject::Infinite)
+                        | Some(SortObject::Unknown) => None,
+                        None => None,
+                    }
                 } else {
-                    "".to_string()
+                    None
                 };
 
-            let g = query_for_variable(symbol, &base_table, index, solver)?;
+            let g = query_for_variable(symbol, base_table, index, solver)?;
 
-            if base_table == "bool" {
-                Ok(Grounding::Boolean { tu: g.clone(), uf: g.clone(), g })
-            } else {
-                Ok(Grounding::NonBoolean(g))
+            match sort {
+                Some(sort) if sort.to_string() == "bool" => {
+                    Ok(Grounding::Boolean { tu: g.clone(), uf: g.clone(), g })
+                },
+                _ => Ok(Grounding::NonBoolean(g))
             }
         },
         L(Term::Identifier(qual_identifier), _) => {
@@ -238,7 +247,7 @@ pub(crate) fn ground_term_(
                     Err(InternalError(42578548)),
                 Grounding::Boolean { tu: _, uf: sub_uf, g: sub_g } => {
 
-                    let table_name = format!("Agg_{index}");
+                    let table_name = DbName(format!("Agg_{index}"));
 
                     let (free_variables, infinite_variables) = sub_g.get_free_variables(variables).clone();
 
@@ -248,7 +257,7 @@ pub(crate) fn ground_term_(
                         &infinite_variables,
                         "and",
                         Some(false),
-                        TableAlias{base_table: table_name.clone() + "_TU", index: 0},
+                        TableAlias{base_table: DbName(format!("{table_name}_TU")), index: 0},
                         solver)?;
 
                     let g = query_for_aggregate(
@@ -257,7 +266,7 @@ pub(crate) fn ground_term_(
                         &infinite_variables,
                         "and",
                         None,
-                        TableAlias{base_table: table_name.clone() + "_G", index: 0},
+                        TableAlias{base_table: DbName(format!("{table_name}_G")), index: 0},
                         solver)?;
 
                     // the infinite variables may be different for sub_uf
@@ -269,7 +278,7 @@ pub(crate) fn ground_term_(
                         &infinite_variables,
                         if top_level { "" } else { "and" },
                         None,
-                        TableAlias{base_table: table_name.clone() + "_UF", index: 0},
+                        TableAlias{base_table: DbName(format!("{table_name}_UF")), index: 0},
                         solver)?;
 
                     Ok(Grounding::Boolean{tu, uf, g})
@@ -282,7 +291,7 @@ pub(crate) fn ground_term_(
                     Err(InternalError(42578548)),
                 Grounding::Boolean { tu: sub_tu, uf: _, g: sub_g } => {
 
-                    let table_name = format!("Agg_{index}");
+                    let table_name = DbName(format!("Agg_{index}"));
 
                     let (free_variables, infinite_variables) = sub_tu.get_free_variables(variables).clone();
 
@@ -292,7 +301,7 @@ pub(crate) fn ground_term_(
                         &infinite_variables,
                         "or",
                         None,
-                        TableAlias{base_table: table_name.clone() + "_TU", index: 0},
+                        TableAlias{base_table: DbName(format!("{table_name}_TU")), index: 0},
                         solver)?;
 
                     // the infinite variables may be different from sub tu
@@ -304,7 +313,7 @@ pub(crate) fn ground_term_(
                         &infinite_variables,
                         "or",
                         Some(true),
-                        TableAlias{base_table: table_name.clone() + "_UF", index: 0},
+                        TableAlias{base_table: DbName(format!("{table_name}_UF")), index: 0},
                         solver)?;
 
                     let g = query_for_aggregate(
@@ -313,7 +322,7 @@ pub(crate) fn ground_term_(
                         &infinite_variables,
                         "or",
                         None,
-                        TableAlias{base_table: table_name.clone() + "_G", index: 0},
+                        TableAlias{base_table: DbName(format!("{table_name}_G")), index: 0},
                         solver)?;
                     Ok(Grounding::Boolean{tu, uf, g})
                 },
@@ -378,7 +387,7 @@ fn ground_compound(
 
                         let tu = query_for_union(tus, Some(false), "or".to_string(), index, solver)?;
 
-                        let uf = query_for_compound(qual_identifier, index, &mut ufs, &variant, Some(true), solver)?;
+                        let uf = query_for_compound(qual_identifier,  index, &mut ufs, &variant, Some(true), solver)?;
 
                         let g = query_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
 
@@ -489,7 +498,7 @@ fn ground_compound(
                 };
                 let variant = match table {
                     Interpretation::Table{name, ids} => {
-                        let table_name = TableAlias::new(name, index);
+                        let table_name = TableAlias::new(name.clone(), index);
                         QueryVariant::Interpretation(table_name, ids.clone())
                     },
                     Interpretation::Infinite => QueryVariant::Apply
@@ -503,7 +512,7 @@ fn ground_compound(
         FunctionObject::NonBooleanInterpreted { table_g } => {
             let variant = match table_g {
                 Interpretation::Table{name, ids} => {
-                    let table_name = TableAlias::new(name, index);
+                    let table_name = TableAlias::new(name.clone(), index);
                     QueryVariant::Interpretation(table_name, ids.clone())
                 },
                 Interpretation::Infinite => QueryVariant::Apply

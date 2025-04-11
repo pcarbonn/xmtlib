@@ -43,15 +43,15 @@ pub fn format_error(input: &str, e: SolverError) -> String {
     match e {
 
         ParseError(e) =>
-            pretty_print(input, e.location, format!("Expected: {}", e.expected)),
+            pretty_print(input, e.location, format!("Expected: {}\n", e.expected)),
 
-        DatabaseError(e) => format!("****** Database Error: {}", e),
+        DatabaseError(e) => format!("****** Database Error: {}\n", e),
 
-        ExprError(msg) => format!("****** Error: {}", msg),
+        ExprError(msg) => format!("****** Error: {}\n", msg),
 
         TermError(msg, term) => {
             match offset_to_line_col_utf8(&input, term.start()) {
-                None => format!("****** Error: {}", msg),
+                None => format!("****** Error: {}\n", msg),
                 Some(location) =>
                     pretty_print(input, location, msg.to_string())
             }
@@ -59,13 +59,13 @@ pub fn format_error(input: &str, e: SolverError) -> String {
 
         IdentifierError(msg, id) => {
             match offset_to_line_col_utf8(&input, id.start()) {
-                None => format!("****** Error: {}", msg),
+                None => format!("****** Error: {}\n", msg),
                 Some(location) =>
                     pretty_print(input, location, msg.to_string())
             }
         },
 
-        InternalError(n) => format!("****** Internal Error: {}", n)
+        InternalError(n) => format!("****** Internal Error: {}\n", n)
     }
 }
 
@@ -82,7 +82,7 @@ fn pretty_print(input: &str, location: LineCol, msg: String) -> String {
             )
             .to_string()
     } else {
-        format!("****** Error: {msg} at {location}")
+        format!("****** Error: {msg} at {location}\n")
     }
 
 }

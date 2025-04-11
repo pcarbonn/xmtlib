@@ -1,6 +1,7 @@
 ; declare-datatype
 (set-option :backend none)
 (declare-datatype Color ( ( red ) ( green ) ))
+(declare-datatype color ( ( blue ) ( white ) ))
 (declare-datatype Pair (par (X Y) ( ( white ) (pair (first X) (second Y)))))
 (declare-datatype P ( (p (x (Pair Color Color)))))
 (declare-datatype Triplet (par (X) ((triplet (first (Pair X (Pair X X)))))))
@@ -15,10 +16,11 @@
 (x-debug solver parametric_sorts)
 (x-debug solver sorts)
 (x-debug db tables)
-(x-debug db Q)
+(x-debug db _xmt_Q)
 (check-sat)
 -------------------------
 (declare-datatype Color ((red ) (green )))
+(declare-datatype color ((blue ) (white )))
 (declare-datatype Pair (par (X Y) ((white ) (pair (first X) (second Y)))))
 (declare-datatype P ((p (x (Pair Color Color)))))
 (declare-datatype Triplet (par (X) ((triplet (first (Pair X (Pair X X)))))))
@@ -42,18 +44,19 @@ Sorts:
  - (infinite) RoundingMode
  - (infinite) String
  - (infinite) RegLan
- - (Color: 2) Color: ((red ) (green ))
- - (Sort_7: 5) (Pair Color Color): ((white ) (pair (first Color) (second Color)))
- - (P: 5) P: ((p (x (Pair Color Color))))
- - (Sort_9: 11) (Pair Color (Pair Color Color)): ((white ) (pair (first Color) (second (Pair Color Color))))
- - (Sort_10: 11) (Triplet Color): ((triplet (first (Pair Color (Pair Color Color)))))
- - (Q: 11) Q: ((q (x (Triplet Color))))
+ - (_xmt_color: 2) Color: ((red ) (green ))
+ - (_xmt_color_1: 2) color: ((blue ) (white ))
+ - (Sort_8: 5) (Pair Color Color): ((white ) (pair (first Color) (second Color)))
+ - (_xmt_p: 5) P: ((p (x (Pair Color Color))))
+ - (Sort_10: 11) (Pair Color (Pair Color Color)): ((white ) (pair (first Color) (second (Pair Color Color))))
+ - (Sort_11: 11) (Triplet Color): ((triplet (first (Pair Color (Pair Color Color)))))
+ - (_xmt_q: 11) Q: ((q (x (Triplet Color))))
  - (infinite) R
  - (recursive) ColorList
  - (recursive) (Pair ColorList ColorList)
  - (recursive) (Pair ColorList (Pair ColorList ColorList))
  - (recursive) (Triplet ColorList)
- - ( Sort_7: 5) PairColor: ((white ) (pair (first Color) (second Color)))
+ - (Sort_8: 5) PairColor: ((white ) (pair (first Color) (second Color)))
  - (unknown) (MyPair Color)
  - (unknown) MyPairColor
  - (unknown) (_ BitVec 2)
@@ -64,15 +67,16 @@ Sorts:
  - (unknown) MyArray
 Tables and Views:
  - Bool (table)
- - Color (table)
- - Sort_7_core (table)
- - Sort_7 (table)
- - P (table)
- - Sort_9_core (table)
- - Sort_9 (table)
+ - _xmt_color (table)
+ - _xmt_color_1 (table)
+ - Sort_8_core (table)
+ - Sort_8 (table)
+ - _xmt_p (table)
+ - Sort_10_core (table)
  - Sort_10 (table)
- - Q (table)
- TABLE: Q
+ - Sort_11 (table)
+ - _xmt_q (table)
+ TABLE: _xmt_q
 ┌─────────────┬────────────────────────────────────────────────┬─────────────────────────────────────────────────────┐
 │ constructor │ x                                              │ G                                                   │
 ├─────────────┼────────────────────────────────────────────────┼─────────────────────────────────────────────────────┤

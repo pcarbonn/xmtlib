@@ -4,7 +4,7 @@ use regex::Regex;
 use std::future::Future;
 
 use genawaiter::{sync::Gen, sync::gen, yield_};
-use indexmap::IndexMap;
+use indexmap::{IndexMap, IndexSet};
 use rusqlite::{Connection, Result};
 use z3_sys::*;
 
@@ -16,6 +16,7 @@ use crate::private::b_fun::{declare_fun, FunctionObject};
 use crate::private::c_assert::assert_;
 use crate::private::d_interpret::{interpret_pred, interpret_fun};
 use crate::private::e_ground::{ground, Grounding};
+use crate::private::e2_ground_query::DbName;
 use crate::private::y_db::init_db;
 use crate::api::L;
 
@@ -50,7 +51,7 @@ pub struct Solver {
     // a mapping from a term to a composable representation of its grounding
     pub(crate) groundings: IndexMap<L<Term>, Grounding>,
 
-    pub(crate) db_names: IndexMap<String, String>,
+    pub(crate) db_names: IndexSet<String>,
 }
 
 
@@ -91,7 +92,7 @@ impl Default for Solver {
                     ConstructorDec (Symbol("false".to_string()),vec![]),
                 ],
                 ),
-            table: "Bool".to_string(),
+            table: DbName("Bool".to_string()),
             row_count: 2};
         sorts.insert(sort("Bool"), bool_decl);
         // LINK src/doc.md#_Infinite
@@ -149,7 +150,7 @@ impl Default for Solver {
                 // qualified_functions: IndexMap::new(),
                 assertions_to_ground: vec![],
                 groundings: IndexMap::new(),
-                db_names: IndexMap::new(),
+                db_names: IndexSet::new(),
             }
         }
 
@@ -325,7 +326,7 @@ impl Solver {
                                         yield_!(Ok(format!(" - {name} ({typ})\n")));
                                     }
                                 }
-                            } else if let Ok(content) = pretty_sqlite::pretty_table(&self.conn, obj.to_string().as_str()) {
+                            } else if let Ok(content) = pretty_sqlite::pretty_table(&self.conn, obj.to_string().to_lowercase().as_str()) {
                                 yield_!(Ok(format!("{content}\n")))
                             } else {
                                 yield_!(Err(SolverError::IdentifierError("Unknown table\n", typ)))
@@ -338,7 +339,8 @@ impl Solver {
                                 let res = stmt.query_row([obj.to_string()], |row| row.get::<_, String>(0))?;
                                 Ok(res)
                             };
-                            yield_!(query())
+                            yield_!(query());
+                            yield_!(Ok(format!("\n")))
                         },
                         _ => yield_!(Err(SolverError::IdentifierError("Unknown 'x-debug' parameter\n", typ)))
                     }
@@ -410,21 +412,23 @@ impl Solver {
     }
 
 
-    /// Sanitize a name.  Removes non-alphanumeric characters, and adds a number if empty.
-    pub(crate) fn get_db_name(self: &mut Solver, name: String) -> String {
-        if let Some(db_name) = self.db_names.get(&name) {
-            db_name.clone()
-        } else {
-            let re = Regex::new(r"[\+\-/\*=\%\?\!\.\$\&\^<>@]").unwrap();
-            let db_name = re.replace_all(&name, "").to_string();
-            let db_name = if db_name.len() == 0 {
-                let index = self.db_names.len();
-                format!("_db_{index}")
+    /// Sanitize a name.  Removes non-alphanumeric characters, and adds a number if empty or ambiguous.
+    pub(crate) fn create_db_name(self: &mut Solver, name: String) -> DbName {
+        let re = Regex::new(r"[\+\-/\*=\%\?\!\.\$\&\^<>@]").unwrap();
+        let db_name = re.replace_all(&name, "").to_string().to_lowercase();
+        let index = self.db_names.len();
+        let db_name =
+            if db_name.len() == 0 {
+                format!("_xmt_{index}")
             } else {
-                format!("_db_{db_name}")
+                let temp = format!("_xmt_{db_name}");
+                if self.db_names.contains(&temp) {
+                    format!("_xmt_{db_name}_{index}")
+                } else {
+                    temp
+                }
             };
-            self.db_names.insert(name, db_name.clone());
-            db_name
-        }
+        self.db_names.insert(db_name.clone());
+        DbName(db_name)
     }
 }

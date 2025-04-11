@@ -1,8 +1,8 @@
 // Copyright Pierre Carbonnelle, 2025.
 
-use std::fmt::Display;
 use indexmap::IndexSet;
 use itertools::Either::{self, Left, Right};
+use std::fmt::Display;
 
 use crate::api::{SortedVar, Symbol};
 use crate::error::SolverError;
@@ -60,16 +60,21 @@ pub(crate) type ThetaJoin = (TableAlias, Vec<Mapping>);
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct TableAlias {
-    pub(crate) base_table: String,  // contains index for views !
+    pub(crate) base_table: DbName,  // contains index for views !
     pub(crate) index: TermId, // to disambiguate interpretation table
 }
 
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct Column {
-    pub(crate) table_name: TableAlias,
+    pub(crate) table_alias: TableAlias,
     column: String
 }
+
+
+/// The name of a table or column in the datase
+#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash)]
+pub(crate) struct DbName(pub(crate) String);
 
 
 ///////////////////////////  Display //////////////////////////////////////////
@@ -136,7 +141,7 @@ impl std::fmt::Display for GroundingQuery {
                             /// Helper function.  Returns the name of a table, with an optional alias.
                             fn name(table_name: &TableAlias) -> String {
                                 if table_name.index == 0 {
-                                    format!(" {}", table_name.base_table.to_string())
+                                    format!(" {}", table_name.base_table)
                                 } else {
                                     format!(" {} AS {table_name}", table_name.base_table)
                                 }
@@ -275,6 +280,13 @@ impl std::fmt::Display for GroundingQuery {
 }
 
 
+impl std::fmt::Display for DbName {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+
 impl std::fmt::Display for TableAlias {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         if self.index == 0 {
@@ -288,7 +300,7 @@ impl std::fmt::Display for TableAlias {
 
 impl std::fmt::Display for Column {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}.{}", self.table_name, self.column)
+        write!(f, "{}.{}", self.table_alias, self.column)
     }
 }
 
@@ -322,6 +334,7 @@ impl GroundingQuery {
             Some(true) => Some(false),
             Some(false) => Some(true),
         };
+        let base_table = DbName(format!("negate_{index}"));
 
         match self {
             GroundingQuery::Join { variables, conditions, grounding,
@@ -347,7 +360,7 @@ impl GroundingQuery {
                     theta_joins: theta_joins.clone(),
                     precise: *precise
                 };
-                let table_name = TableAlias{base_table: format!("negate_{index}"), index: 0};
+                let table_name = TableAlias{base_table, index: 0};
                 GroundingView::new(table_name, free_variables, query, exclude, ids.clone(), solver)
             }
             GroundingQuery::Aggregate { agg, infinite_variables, sub_view, .. } => {
@@ -357,7 +370,7 @@ impl GroundingQuery {
                     infinite_variables: infinite_variables.clone(),
                     sub_view: Box::new(sub_view.negate(index, view_type, solver)?)
                 };
-                let table_name = TableAlias{base_table: format!("negate_{index}"), index: 0};
+                let table_name = TableAlias{base_table, index: 0};
                 GroundingView::new(table_name, free_variables, query, exclude, ids.clone(), solver)
             },
             GroundingQuery::Union {..} => unreachable!()  // because negation is pushed down conjunctions and disjunctions
@@ -369,15 +382,15 @@ impl GroundingQuery {
 
 impl TableAlias {
     #[inline]
-    pub(crate) fn new<T: Display + ? Sized>(base_table: &T, index: usize) -> Self {
-        TableAlias{base_table: base_table.to_string(), index}
+    pub(crate) fn new(base_table: DbName, index: usize) -> Self {
+        TableAlias{base_table: base_table, index}
     }
 }
 
 
 impl Column {
     #[inline]
-    pub(crate) fn new<T: Display + ? Sized>(table_name: &TableAlias, column: &T) -> Self {
-        Column{table_name: table_name.clone(), column: column.to_string()}
+    pub(crate) fn new<T: Display + ? Sized>(table_alias: &TableAlias, column: &T) -> Self {
+        Column{table_alias: table_alias.clone(), column: column.to_string()}
     }
 }

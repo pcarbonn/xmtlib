@@ -17,7 +17,7 @@
 (x-debug solver functions)
 (x-debug solver groundings)
 (x-debug db tables)
-(x-debug db mix_g)
+(x-debug db _xmt_mix_g)
 -------------------------
 (declare-datatype Color ((red ) (green )))
 (declare-fun mix (Color Color) Color)
@@ -45,42 +45,46 @@ Functions:
  - abs: Predefined (false)
  - red: Constructor
  - green: Constructor
- - mix: Non Boolean (mix_G Partial)
+ - mix: Non Boolean (_xmt_mix_G Partial)
 Groundings:
  - green: SELECT "green" AS G
  - red: SELECT "red" AS G
- - (mix red green): SELECT mix_G_2.G AS G FROM mix_G AS mix_G_2 WHERE "red" = mix_G_2.a_0 AND "green" = mix_G_2.a_1
+ - (mix red green): SELECT _xmt_mix_G_2.G AS G FROM _xmt_mix_G AS _xmt_mix_G_2 WHERE "red" = _xmt_mix_G_2.a_0 AND "green" = _xmt_mix_G_2.a_1
  - (= green (mix red green)):
-    TU: SELECT eq_("green", mix_G_2.G) AS G FROM mix_G AS mix_G_2 WHERE "red" = mix_G_2.a_0 AND "green" = mix_G_2.a_1
-    UF: SELECT eq_("green", mix_G_2.G) AS G FROM mix_G AS mix_G_2 WHERE "red" = mix_G_2.a_0 AND "green" = mix_G_2.a_1
-    G : SELECT eq_("green", mix_G_2.G) AS G FROM mix_G AS mix_G_2 WHERE "red" = mix_G_2.a_0 AND "green" = mix_G_2.a_1
- - x: SELECT Color_4.G AS x, Color_4.G AS G FROM Color AS Color_4
- - (mix x x): SELECT mix_G_5.a_0 AS x, mix_G_5.G AS G FROM mix_G AS mix_G_5 WHERE mix_G_5.a_0 = mix_G_5.a_1
+    TU: SELECT eq_("green", _xmt_mix_G_2.G) AS G FROM _xmt_mix_G AS _xmt_mix_G_2 WHERE "red" = _xmt_mix_G_2.a_0 AND "green" = _xmt_mix_G_2.a_1
+    UF: SELECT eq_("green", _xmt_mix_G_2.G) AS G FROM _xmt_mix_G AS _xmt_mix_G_2 WHERE "red" = _xmt_mix_G_2.a_0 AND "green" = _xmt_mix_G_2.a_1
+    G : SELECT eq_("green", _xmt_mix_G_2.G) AS G FROM _xmt_mix_G AS _xmt_mix_G_2 WHERE "red" = _xmt_mix_G_2.a_0 AND "green" = _xmt_mix_G_2.a_1
+ - x: SELECT _xmt_color_4.G AS x, _xmt_color_4.G AS G FROM _xmt_color AS _xmt_color_4
+ - (mix x x): SELECT _xmt_mix_G_5.a_0 AS x, _xmt_mix_G_5.G AS G FROM _xmt_mix_G AS _xmt_mix_G_5 WHERE _xmt_mix_G_5.a_0 = _xmt_mix_G_5.a_1
  - (= (mix x x) x):
-    TU: SELECT mix_G_5.a_0 AS x, eq_(mix_G_5.G, mix_G_5.a_0) AS G FROM mix_G AS mix_G_5 WHERE mix_G_5.a_0 = mix_G_5.a_1
-    UF: SELECT mix_G_5.a_0 AS x, eq_(mix_G_5.G, mix_G_5.a_0) AS G FROM mix_G AS mix_G_5 WHERE mix_G_5.a_0 = mix_G_5.a_1
-    G : SELECT mix_G_5.a_0 AS x, eq_(mix_G_5.G, mix_G_5.a_0) AS G FROM mix_G AS mix_G_5 WHERE mix_G_5.a_0 = mix_G_5.a_1
+    TU: SELECT _xmt_mix_G_5.a_0 AS x, eq_(_xmt_mix_G_5.G, _xmt_mix_G_5.a_0) AS G FROM _xmt_mix_G AS _xmt_mix_G_5 WHERE _xmt_mix_G_5.a_0 = _xmt_mix_G_5.a_1
+    UF: SELECT _xmt_mix_G_5.a_0 AS x, eq_(_xmt_mix_G_5.G, _xmt_mix_G_5.a_0) AS G FROM _xmt_mix_G AS _xmt_mix_G_5 WHERE _xmt_mix_G_5.a_0 = _xmt_mix_G_5.a_1
+    G : SELECT _xmt_mix_G_5.a_0 AS x, eq_(_xmt_mix_G_5.G, _xmt_mix_G_5.a_0) AS G FROM _xmt_mix_G AS _xmt_mix_G_5 WHERE _xmt_mix_G_5.a_0 = _xmt_mix_G_5.a_1
  - (exists ((x Color)) (= (mix x x) x)):
-    TU: SELECT or_aggregate(G) as G from (SELECT mix_G_5.a_0 AS x, eq_(mix_G_5.G, mix_G_5.a_0) AS G FROM mix_G AS mix_G_5 WHERE mix_G_5.a_0 = mix_G_5.a_1)
-    UF: SELECT or_aggregate(G) as G from (SELECT mix_G_5.a_0 AS x, eq_(mix_G_5.G, mix_G_5.a_0) AS G FROM mix_G AS mix_G_5 WHERE mix_G_5.a_0 = mix_G_5.a_1)
-    G : SELECT or_aggregate(G) as G from (SELECT mix_G_5.a_0 AS x, eq_(mix_G_5.G, mix_G_5.a_0) AS G FROM mix_G AS mix_G_5 WHERE mix_G_5.a_0 = mix_G_5.a_1)
+    TU: SELECT or_aggregate(G) as G from (SELECT _xmt_mix_G_5.a_0 AS x, eq_(_xmt_mix_G_5.G, _xmt_mix_G_5.a_0) AS G FROM _xmt_mix_G AS _xmt_mix_G_5 WHERE _xmt_mix_G_5.a_0 = _xmt_mix_G_5.a_1)
+    UF: SELECT or_aggregate(G) as G from (SELECT _xmt_mix_G_5.a_0 AS x, eq_(_xmt_mix_G_5.G, _xmt_mix_G_5.a_0) AS G FROM _xmt_mix_G AS _xmt_mix_G_5 WHERE _xmt_mix_G_5.a_0 = _xmt_mix_G_5.a_1)
+    G : SELECT or_aggregate(G) as G from (SELECT _xmt_mix_G_5.a_0 AS x, eq_(_xmt_mix_G_5.G, _xmt_mix_G_5.a_0) AS G FROM _xmt_mix_G AS _xmt_mix_G_5 WHERE _xmt_mix_G_5.a_0 = _xmt_mix_G_5.a_1)
 Tables and Views:
  - Bool (table)
- - Color (table)
- - mix_U (table)
- - mix_UF (view)
- - mix_G (view)
+ - _xmt_color (table)
+ - _xmt_mix_U (table)
+ - _xmt_mix_UF (view)
+ - _xmt_mix_G (view)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
- - _db_mix_2 (view)
- - _db_3_3 (view)
+ - _xmt_mix_2 (view)
+ - _xmt__3 (view)
+ - _xmt__3_6 (view)
+ - _xmt__3_7 (view)
  - variable_4 (view)
- - _db_mix_5 (view)
- - _db_3_6 (view)
+ - _xmt_mix_5 (view)
+ - _xmt__6 (view)
+ - _xmt__6_10 (view)
+ - _xmt__6_11 (view)
  - Agg_4_TU (view)
  - Agg_4_UF (view)
  - Agg_4_G (view)
- TABLE: mix_g
+ TABLE: _xmt_mix_g
 ┌─────────┬─────────┬─────────────────┐
 │ a_0     │ a_1     │ G               │
 ├─────────┼─────────┼─────────────────┤

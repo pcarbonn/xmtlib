@@ -50,7 +50,7 @@ Groundings:
     G : SELECT apply("or", apply("q", "red"), apply("q", "red")) AS G
 Tables and Views:
  - Bool (table)
- - Color (table)
+ - _xmt_color (table)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
  - union_6 (view)

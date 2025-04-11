@@ -50,19 +50,19 @@ Groundings:
     TU: SELECT or_aggregate(G) as G from (SELECT "true" AS G)
     UF: SELECT or_aggregate(G) as G from (SELECT "true" AS G)
     G : SELECT or_aggregate(G) as G from (SELECT "true" AS G)
- - x: SELECT Color_5.G AS x, Color_5.G AS G FROM Color AS Color_5
+ - x: SELECT _xmt_color_5.G AS x, _xmt_color_5.G AS G FROM _xmt_color AS _xmt_color_5
  - (p x):
-    TU: SELECT Color_5.G AS x, apply("p", Color_5.G) AS G FROM Color AS Color_5
-    UF: SELECT Color_5.G AS x, apply("p", Color_5.G) AS G FROM Color AS Color_5
-    G : SELECT Color_5.G AS x, apply("p", Color_5.G) AS G FROM Color AS Color_5
+    TU: SELECT _xmt_color_5.G AS x, apply("p", _xmt_color_5.G) AS G FROM _xmt_color AS _xmt_color_5
+    UF: SELECT _xmt_color_5.G AS x, apply("p", _xmt_color_5.G) AS G FROM _xmt_color AS _xmt_color_5
+    G : SELECT _xmt_color_5.G AS x, apply("p", _xmt_color_5.G) AS G FROM _xmt_color AS _xmt_color_5
  - (forall ((x Color)) (p x)):
-    TU: SELECT and_aggregate(G) as G from (SELECT Color_5.G AS x, apply("p", Color_5.G) AS G FROM Color AS Color_5)
-    UF: SELECT G as G from (SELECT Color_5.G AS x, apply("p", Color_5.G) AS G FROM Color AS Color_5)
-    G : SELECT and_aggregate(G) as G from (SELECT Color_5.G AS x, apply("p", Color_5.G) AS G FROM Color AS Color_5)
+    TU: SELECT and_aggregate(G) as G from (SELECT _xmt_color_5.G AS x, apply("p", _xmt_color_5.G) AS G FROM _xmt_color AS _xmt_color_5)
+    UF: SELECT G as G from (SELECT _xmt_color_5.G AS x, apply("p", _xmt_color_5.G) AS G FROM _xmt_color AS _xmt_color_5)
+    G : SELECT and_aggregate(G) as G from (SELECT _xmt_color_5.G AS x, apply("p", _xmt_color_5.G) AS G FROM _xmt_color AS _xmt_color_5)
  - (exists ((x Color)) (p x)):
-    TU: SELECT or_aggregate(G) as G from (SELECT Color_5.G AS x, apply("p", Color_5.G) AS G FROM Color AS Color_5)
-    UF: SELECT or_aggregate(G) as G from (SELECT Color_5.G AS x, apply("p", Color_5.G) AS G FROM Color AS Color_5)
-    G : SELECT or_aggregate(G) as G from (SELECT Color_5.G AS x, apply("p", Color_5.G) AS G FROM Color AS Color_5)
+    TU: SELECT or_aggregate(G) as G from (SELECT _xmt_color_5.G AS x, apply("p", _xmt_color_5.G) AS G FROM _xmt_color AS _xmt_color_5)
+    UF: SELECT or_aggregate(G) as G from (SELECT _xmt_color_5.G AS x, apply("p", _xmt_color_5.G) AS G FROM _xmt_color AS _xmt_color_5)
+    G : SELECT or_aggregate(G) as G from (SELECT _xmt_color_5.G AS x, apply("p", _xmt_color_5.G) AS G FROM _xmt_color AS _xmt_color_5)
  - x: SELECT "x" AS x, "x" AS G
  - (q x):
     TU: SELECT "x" AS x, apply("q", "x") AS G
@@ -103,7 +103,7 @@ Groundings:
     G : SELECT and_aggregate(G) as G from (SELECT Bool_12.G AS x, apply("not", apply("r", Bool_12.G)) AS G FROM Bool AS Bool_12)
 Tables and Views:
  - Bool (table)
- - Color (table)
+ - _xmt_color (table)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
  - Agg_0_TU (view)
@@ -117,7 +117,9 @@ Tables and Views:
  - Agg_4_UF (view)
  - Agg_4_G (view)
  - variable_5 (view)
- - _db_p_6 (view)
+ - _xmt_p_6 (view)
+ - _xmt_p_6_4 (view)
+ - _xmt_p_6_5 (view)
  - Agg_5_TU (view)
  - Agg_5_G (view)
  - Agg_5_UF (view)
@@ -128,14 +130,17 @@ Tables and Views:
  - Agg_9_G (view)
  - Agg_9_UF (view)
  - variable_12 (view)
- - _db_r_13 (view)
+ - _xmt_r_13 (view)
+ - _xmt_r_13_10 (view)
+ - _xmt_r_13_11 (view)
  - Agg_12_TU (view)
  - Agg_12_UF (view)
  - Agg_12_G (view)
  - negate_15 (view)
  - negate_16 (view)
  - union_18 (view)
- - _db_or_18 (view)
+ - _xmt_or_18 (view)
+ - _xmt_or_18_15 (view)
  - Agg_16_TU (view)
  - Agg_16_G (view)
  - Agg_16_UF (view)

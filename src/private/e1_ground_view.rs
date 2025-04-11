@@ -10,7 +10,7 @@ use crate::api::{QualIdentifier, SortedVar, SpecConstant, Symbol};
 use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 
-use crate::private::e2_ground_query::{GroundingQuery, NaturalJoin, TableAlias, Column};
+use crate::private::e2_ground_query::{GroundingQuery, NaturalJoin, DbName, TableAlias, Column};
 use crate::private::e3_ground_sql::{Mapping, SQLExpr, Predefined};
 use crate::private::z_utilities::OptionMap;
 
@@ -115,7 +115,8 @@ pub(crate) fn query_for_constant(
         theta_joins: IndexSet::new(),
         precise: true
     };
-    let view = TableAlias::new("ignore", 0);
+    let base_table = DbName("ignore".to_string());
+    let view = TableAlias::new(base_table, 0);
     GroundingView::new(view, OptionMap::new(), query, None, Ids::All, solver)
 }
 
@@ -123,25 +124,26 @@ pub(crate) fn query_for_constant(
 /// Creates a query for a variable
 pub(crate) fn query_for_variable(
     symbol: &Symbol,
-    base_table: &String,
+    base_table: Option<DbName>,
     index: usize,
     solver: &mut Solver
 ) -> Result<GroundingView, SolverError> {
-    let view = TableAlias::new("variable", index);
-    if base_table.len() != 0 {
-        let table_name = TableAlias::new(base_table, index);
-        let column = Column::new(&table_name, "G");
+    let table_name = DbName("variable".to_string());
+    let view = TableAlias::new(table_name, index);
+    if let Some(base_table) = base_table {
+        let table_alias = TableAlias::new(base_table, index);
+        let column = Column::new(&table_alias, "G");
         let variables= OptionMap::from([(symbol.clone(), Some(column.clone()))]);
 
         let query = GroundingQuery::Join{
             variables,
             conditions: vec![],
             grounding: SQLExpr::Variable(symbol.clone()),
-            natural_joins: IndexSet::from([NaturalJoin::Variable(table_name.clone(), symbol.clone())]),
+            natural_joins: IndexSet::from([NaturalJoin::Variable(table_alias.clone(), symbol.clone())]),
             theta_joins: IndexSet::new(),
             precise: false  // imprecise for boolean variable !
         };
-        let free_variables = OptionMap::from([(symbol.clone(), Some(table_name))]);
+        let free_variables = OptionMap::from([(symbol.clone(), Some(table_alias))]);
         GroundingView::new(view, free_variables, query, None, Ids::All, solver) // todo perf: exclude for boolean
     } else {  // infinite variable ==> just "x"
         let variables = OptionMap::from([(symbol.clone(), None)]);
@@ -304,7 +306,7 @@ pub(crate) fn query_for_compound(
                 NaturalJoin::Variable(table_name, symbol) => {
                     let column = variables.get(symbol).unwrap();
                     if let Some(column) = column {
-                        if column.table_name == *table_name  {
+                        if column.table_alias == *table_name  {
                             Some(natural_join.clone())
                         } else {
                             None // otherwise, unused variable
@@ -383,9 +385,8 @@ pub(crate) fn query_for_compound(
             }
         };
 
-    let name = solver.get_db_name(qual_identifier.to_string());
-    let name = format!("{name}_{index}");
-    let table_name = TableAlias::new(&name, 0);
+    let base_table = solver.create_db_name(format!("{qual_identifier}_{index}"));
+    let table_name = TableAlias::new(base_table, 0);
     let query = GroundingQuery::Join {
         variables,
         conditions,
@@ -549,7 +550,7 @@ pub(crate) fn query_for_union(
 
     if sub_queries.len() == 0 { return Ok(GroundingView::Empty) }
 
-    let table_name = TableAlias{base_table: format!("union_{index}"), index: 0};
+    let table_name = TableAlias{base_table: DbName(format!("union_{index}")), index: 0};
     if sub_queries.len() == 1 {
         return GroundingView::new(table_name, free_variables, sub_queries.first().unwrap().clone(), exclude, ids.clone(), solver)
     };
@@ -571,7 +572,7 @@ pub(crate) fn query_for_union(
     };
 
     // create the aggregate
-    let table_name = TableAlias{base_table: format!("agg_union_{index}"), index: 0};
+    let table_name = TableAlias{base_table: DbName(format!("agg_union_{index}")), index: 0};
     let query = GroundingQuery::Aggregate {
         agg: agg.to_string(),
         free_variables: free_variables.clone(),
