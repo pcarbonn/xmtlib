@@ -54,10 +54,10 @@ pub(crate) fn annotate_term(
             match qual_identifier {
                 QualIdentifier::Identifier(L(Identifier::Simple(ref symbol), _)) => {
                     match variables.get(symbol) {
-                        Some(Some(SortedVar(_, ref sort))) => // a variable of finite sort
+                        Some(Some(SortedVar(_, ref sort))) => // a regular variable
                             Ok(L(Term::XSortedVar(symbol.clone(), Some(sort.clone())), *start)),
-                        Some(None) =>
-                            Ok(L(Term::XSortedVar(symbol.clone(), None), *start)),  // a variable of infinite sort
+                        Some(None) =>  // a variable introduced by a `let``
+                            Ok(L(Term::XSortedVar(symbol.clone(), None), *start)),
                         None =>
                             Ok(term.clone())  // a regular identifier
                     }

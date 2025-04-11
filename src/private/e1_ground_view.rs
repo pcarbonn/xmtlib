@@ -276,7 +276,7 @@ pub(crate) fn query_for_compound(
                             }
 
                             if *sub_condition {
-                                conditions.push(Right(table_name.clone()));
+                                conditions.push(Right(Some(table_name.clone())));
                             }
                             groundings.push(SQLExpr::Value(Column::new(table_name, "G")));
 
@@ -525,10 +525,9 @@ pub(crate) fn query_for_union(
 
                         let conditions =
                             if *sub_condition {
-                                vec![Right(table_name.clone())]
+                                vec![Right(Some(table_name.clone()))]
                             } else if condition {  // add `"true" as if_``
-                                let empty_table = TableAlias { base_table: "".to_string(), index: 0 };
-                                vec![Right(empty_table)]
+                                vec![Right(None)]
                             } else {
                                 vec![]
                             };

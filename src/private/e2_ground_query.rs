@@ -23,7 +23,7 @@ pub(crate) enum GroundingQuery {
     Join {
         /// maps variables to None if its domain is infinite or to a Column in a Type or Interpretation table.
         variables: OptionMap<Symbol, Column>,
-        conditions: Vec<Either<Mapping, TableAlias>>,  // vector of mapping or `if_` column of a table. If TableAlias is empty, "true".
+        conditions: Vec<Either<Mapping, Option<TableAlias>>>,  // vector of mapping or `if_` column of a table. If TableAlias is None, "true".
         grounding: SQLExpr,
         natural_joins: IndexSet<NaturalJoin>,  // joins of grounding sub-queries
         theta_joins: IndexSet<ThetaJoin>,  // joins with interpretation tables
@@ -107,10 +107,10 @@ impl std::fmt::Display for GroundingQuery {
                         match e {
                             Left(mapping) => mapping.to_if(variables),
                             Right(table) => {
-                                if table.to_string().is_empty() {
-                                    Some("\"true\"".to_string())
-                                } else {
+                                if let Some(table) = table {
                                     Some(format!("{table}.if_"))
+                                } else {
+                                    Some("\"true\"".to_string())
                                 }
                             }
                         }
