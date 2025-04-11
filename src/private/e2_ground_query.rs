@@ -55,7 +55,7 @@ pub(crate) enum NaturalJoin {
 
 
 /// indexed table name + mapping of (gated) expressions to value column
-pub(crate) type ThetaJoin = (bool, TableAlias, Vec<Mapping>);  // true for LEFT JOIN
+pub(crate) type ThetaJoin = (TableAlias, Vec<Mapping>);
 
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -179,7 +179,7 @@ impl std::fmt::Display for GroundingQuery {
 
                 // theta joins
                 let thetas = theta_joins.iter().enumerate()
-                    .map( | (i, (left, table_name, mapping)) | {
+                    .map( | (i, (table_name, mapping)) | {
                         let on = mapping.iter()
                             .filter_map( | expr | expr.to_join(variables))
                             .collect::<Vec<_>>().join(" AND ");
@@ -188,8 +188,7 @@ impl std::fmt::Display for GroundingQuery {
                             format!(" {} AS {table_name}", table_name.base_table)
                         } else {
                             let on = if on == "" { on } else { format!(" ON {on}")};
-                            let join = if *left { "LEFT JOIN" } else { "JOIN" };
-                            format!(" {join} {} AS {table_name}{on}", table_name.base_table)
+                            format!(" JOIN {} AS {table_name}{on}", table_name.base_table)
                         }
                     }).collect::<Vec<_>>()
                     .join("");

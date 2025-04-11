@@ -488,9 +488,9 @@ fn ground_compound(
                     ViewType::G  => None
                 };
                 let variant = match table {
-                    Interpretation::Table{name, ids, else_} => {
+                    Interpretation::Table{name, ids} => {
                         let table_name = TableAlias::new(name, index);
-                        QueryVariant::Interpretation(table_name, ids.clone(), else_.clone())
+                        QueryVariant::Interpretation(table_name, ids.clone())
                     },
                     Interpretation::Infinite => QueryVariant::Apply
                 };
@@ -502,9 +502,9 @@ fn ground_compound(
         },
         FunctionObject::NonBooleanInterpreted { table_g } => {
             let variant = match table_g {
-                Interpretation::Table{name, ids, else_} => {
+                Interpretation::Table{name, ids} => {
                     let table_name = TableAlias::new(name, index);
-                    QueryVariant::Interpretation(table_name, ids.clone(), else_.clone())
+                    QueryVariant::Interpretation(table_name, ids.clone())
                 },
                 Interpretation::Infinite => QueryVariant::Apply
             };

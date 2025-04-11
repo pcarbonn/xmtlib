@@ -20,7 +20,7 @@ pub(crate) enum SQLExpr {
     Boolean(bool),
     Constant(SpecConstant),
     Variable(Symbol),
-    Value(Column, Option<Box<SQLExpr>>),  // in an interpretation table, with value if NULL.
+    Value(Column),
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
     Construct(QualIdentifier, Box<Vec<SQLExpr>>),  // constructor
     Predefined(Predefined, Box<Vec<(Ids, SQLExpr)>>),
@@ -144,14 +144,7 @@ impl SQLExpr {
                     format!("\"{symbol}\"")
                 }
             },
-            SQLExpr::Value(column, ifnull) => {
-                if let Some(ifnull) = ifnull {
-                    let ifnull = ifnull.to_sql(variables);
-                    format!("IFNULL({column}, {ifnull})")
-                } else {
-                    column.to_string()
-                }
-            },
+            SQLExpr::Value(column) => column.to_string(),
             SQLExpr::Apply(qual_identifier, exprs) => {
                 sql_for("apply", qual_identifier.to_string(), exprs, variables)
             },

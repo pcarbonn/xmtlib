@@ -64,7 +64,7 @@ pub(crate) fn interpret_pred(
 
                 // create TU view
                 let name_tu = format!("{identifier}_TU");
-                let table_tu = Interpretation::Table{name: name_tu.clone(), ids: Ids::All, else_: None};
+                let table_tu = Interpretation::Table{name: name_tu.clone(), ids: Ids::All};
 
                 let sql = format!("CREATE VIEW IF NOT EXISTS {identifier}_TU AS SELECT *, \"true\" as G from {identifier}_T");
                 solver.conn.execute(&sql, ())?;
@@ -81,7 +81,7 @@ pub(crate) fn interpret_pred(
 
                     // create UF view
                     let name_uf = format!("{identifier}_UF");
-                    let table_uf = Interpretation::Table{name: name_uf.clone(), ids: Ids::All, else_: None};
+                    let table_uf = Interpretation::Table{name: name_uf.clone(), ids: Ids::All};
 
                     create_g_view(
                         name_tu,
@@ -90,7 +90,7 @@ pub(crate) fn interpret_pred(
                         identifier.clone(),
                         solver
                     )?;
-                    let  table_g = Interpretation::Table{name: format!("{identifier}_G"), ids: Ids::All, else_: None};
+                    let  table_g = Interpretation::Table{name: format!("{identifier}_G"), ids: Ids::All};
 
                     // create FunctionObject with boolean interpretations.
                     let function_is = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
@@ -113,9 +113,9 @@ fn interpret_pred_0(
     solver: &mut Solver,
 ) -> Result<String, SolverError> {
 
-    let table_tu = Interpretation::Table{name: format!("{qual_identifier}_TU"), ids: Ids::All, else_: None};
-    let table_uf = Interpretation::Table{name: format!("{qual_identifier}_UF"), ids: Ids::All, else_: None};
-    let table_g  = Interpretation::Table{name: format!("{qual_identifier}_G"), ids: Ids::All, else_: None};
+    let table_tu = Interpretation::Table{name: format!("{qual_identifier}_TU"), ids: Ids::All};
+    let table_uf = Interpretation::Table{name: format!("{qual_identifier}_UF"), ids: Ids::All};
+    let table_g  = Interpretation::Table{name: format!("{qual_identifier}_G"), ids: Ids::All};
 
     if tuples.len() == 0 {  // false
         let sql = format!("CREATE VIEW IF NOT EXISTS {qual_identifier}_TU AS SELECT 'false' as G WHERE false");  // empty table
@@ -190,7 +190,7 @@ pub(crate) fn interpret_fun(
                     solver.conn.execute(&sql, ())?;
 
                     // create FunctionObject.
-                    let table_g  = Interpretation::Table{name: format!("{qual_identifier}_G"), ids: Ids::All, else_: None};
+                    let table_g  = Interpretation::Table{name: format!("{qual_identifier}_G"), ids: Ids::All};
                     let function_is = FunctionObject::NonBooleanInterpreted { table_g };
                     solver.functions.insert(qual_identifier.clone(), function_is);
 
@@ -253,7 +253,7 @@ pub(crate) fn interpret_fun(
                         return Err(SolverError::IdentifierError("Missing `else` value", identifier.clone()))
                     };
 
-                    let table_g = Interpretation::Table{name: table_g, ids, else_: None};
+                    let table_g = Interpretation::Table{name: table_g, ids};
                     let function_is = FunctionObject::NonBooleanInterpreted { table_g };
                     solver.functions.insert(qual_identifier, function_is);
                 }

@@ -5,7 +5,7 @@ use std::fmt::Display;
 
 use indexmap::IndexSet;
 
-use crate::api::{Sort, Symbol, Identifier, QualIdentifier, Term};
+use crate::api::{Sort, Symbol, Identifier, QualIdentifier};
 use crate::error::{SolverError, Offset};
 use crate::solver::Solver;
 use crate::private::a_sort::instantiate_parent_sort;
@@ -27,7 +27,7 @@ pub(crate) enum FunctionObject {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum Interpretation {
-    Table{name: String, ids: Ids, else_: Option<Option<L<Term>>>},  // None if complete, Some(None) if no `else` value, or Some(Some(value))
+    Table{name: String, ids: Ids},
     Infinite  // for UF, G of interpreted predicate over infinite domain
 }
 
@@ -60,15 +60,7 @@ impl Display for FunctionObject {
 impl Display for Interpretation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Table{name, ids, else_} => {
-                if let Some(Some(else_)) = else_ {
-                    write!(f, "{name}?{else_} {ids}")
-                } else if let Some(None) = else_ {
-                    write!(f, "{name}?? {ids}")
-                } else {
-                    write!(f, "{name} {ids}")
-                }
-            },
+            Self::Table{name, ids} => write!(f, "{name} {ids}"),
             Self::Infinite {} =>
                 write!(f, "(infinite)"),
         }

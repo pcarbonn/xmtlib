@@ -31,7 +31,7 @@ pub(crate) enum FunctionObject {
     BooleanInterpreted{table_tu: Interpretation, table_uf: Interpretation, table_g: Interpretation}
 }
 pub(crate) enum Interpretation {
-    Table{name: String, ids: Ids, else_: Option<Option<Term>>},
+    Table{name: String, ids: Ids},
     Infinite
 }
 pub(crate) enum Grounding {
@@ -73,13 +73,13 @@ pub(crate) enum NaturalJoin {
     Variable(TableAlias, Symbol),
     ViewType(TableAlias, Vec<Symbol>),
 }
-pub(crate) type ThetaJoin = (bool, TableAlias, Vec<Mapping>);
+pub(crate) type ThetaJoin = (TableAlias, Vec<Mapping>);
 pub(crate) struct Mapping (pub Ids, pub SQLExpr, pub Column);
 pub(crate) enum SQLExpr {
     Boolean(bool),
     Constant(SpecConstant),
     Variable(Symbol),
-    Value(Column, Option<Box<SQLExpr>>),
+    Value(Column),
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
     Construct(QualIdentifier, Box<Vec<SQLExpr>>),
     Predefined(Predefined, Box<Vec<(Ids, SQLExpr)>>),
