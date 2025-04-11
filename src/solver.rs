@@ -1,5 +1,6 @@
 // Copyright Pierre Carbonnelle, 2025.
 
+use regex::Regex;
 use std::future::Future;
 
 use genawaiter::{sync::Gen, sync::gen, yield_};
@@ -48,6 +49,8 @@ pub struct Solver {
     pub(crate) assertions_to_ground: Vec<(String, L<Term>)>,
     // a mapping from a term to a composable representation of its grounding
     pub(crate) groundings: IndexMap<L<Term>, Grounding>,
+
+    pub(crate) db_names: IndexMap<String, String>,
 }
 
 
@@ -146,6 +149,7 @@ impl Default for Solver {
                 // qualified_functions: IndexMap::new(),
                 assertions_to_ground: vec![],
                 groundings: IndexMap::new(),
+                db_names: IndexMap::new(),
             }
         }
 
@@ -363,7 +367,7 @@ impl Solver {
         })
     }
 
-    // execute a command string
+    /// execute a command string
     pub(crate) fn exec(&mut self, cmd: &str) -> Result<String, SolverError> {
         match self.backend {
             Backend::NoDriver => {
@@ -410,4 +414,22 @@ impl Solver {
         }
     }
 
+
+    /// Sanitize a name.  Removes non-alphanumeric characters, and adds a number if empty.
+    pub(crate) fn get_db_name(self: &mut Solver, name: String) -> String {
+        if let Some(db_name) = self.db_names.get(&name) {
+            db_name.clone()
+        } else {
+            let re = Regex::new(r"[\+\-/\*=\%\?\!\.\$\&\^<>@]").unwrap();
+            let db_name = re.replace_all(&name, "").to_string();
+            let index = self.db_names.len();
+            let db_name = if db_name.len() == 0 {
+                format!("_db_{index}")
+            } else {
+                db_name
+            };
+            self.db_names.insert(name, db_name.clone());
+            db_name
+        }
+    }
 }

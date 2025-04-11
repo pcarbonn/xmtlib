@@ -1,6 +1,5 @@
 // Copyright Pierre Carbonnelle, 2025.
 
-use regex::Regex;
 use std::cmp::max;
 use std::hash::Hash;
 
@@ -400,10 +399,7 @@ pub(crate) fn query_for_compound(
             }
         };
 
-    // sanitize the name
-    let re = Regex::new(r"[\+\-/\*=\%\?\!\.\$\&\^<>@]").unwrap();
-    let name = qual_identifier.to_string();
-    let name = re.replace_all(&name, "");
+    let name = solver.get_db_name(qual_identifier.to_string());
     let table_name = TableAlias::new(&name, index);
     let query = GroundingQuery::Join {
         variables,
