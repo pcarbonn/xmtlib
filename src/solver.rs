@@ -296,28 +296,7 @@ impl Solver {
                                 "functions" => {
                                     yield_!(Ok("Functions:\n".to_string()));
                                     for (symbol, func) in &self.functions {
-                                        match func {
-                                            FunctionObject::Predefined{boolean} =>
-                                                if let Some(boolean) = boolean {
-                                                    yield_!(Ok(format!(" - {symbol}: Predefined ({boolean})\n")))
-                                                } else {
-                                                    yield_!(Ok(format!(" - {symbol}: Predefined (?)\n")))
-                                                },
-                                            FunctionObject::Constructor =>
-                                                yield_!(Ok(format!(" - {symbol}: Constructor\n"))),
-                                            FunctionObject::NotInterpreted{signature} => {
-                                                let (domain, co_domain, boolean) = signature;
-                                                let domain = domain.iter()
-                                                    .map(|s| s.to_string())
-                                                    .collect::<Vec<_>>().join(" * ");
-                                                let co_domain = co_domain.to_string();
-                                                yield_!(Ok(format!(" - {symbol}: {domain} -> {co_domain} ({boolean})\n")))
-                                            },
-                                            FunctionObject::NonBooleanInterpreted{table_g} =>
-                                                yield_!(Ok(format!(" - {symbol}: Non Boolean ({table_g})\n"))),
-                                            FunctionObject::BooleanInterpreted{table_tu, table_uf, table_g} =>
-                                                yield_!(Ok(format!(" - {symbol}: Boolean ({table_tu}, {table_uf}, {table_g})\n"))),
-                                        }
+                                        yield_!(Ok(format!(" - {symbol}: {func}\n")))
                                     }
                                 },
                                 "groundings" => {

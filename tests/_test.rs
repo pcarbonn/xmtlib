@@ -1,5 +1,12 @@
 // Copyright Pierre Carbonnelle, 2025.
 
+// to open overview of code coverage;
+//    > cargo llvm-cov --open
+// to view coverage in one file in VS Code
+//    > cargo llvm-cov --lcov --output-path ./target/lcov.info
+//    then, open file, ctrl-Shift-P, Coverage, Display (a bit slow !)
+
+
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::Path;

@@ -46,12 +46,18 @@ impl Display for FunctionObject {
                 },
             Self::Constructor =>
                 write!(f, "Constructor"),
-            Self::NotInterpreted{signature} =>
-                write!(f, "NotInterpreted({:?})", signature),
+            Self::NotInterpreted{signature} => {
+                let (domain, co_domain, boolean) = signature;
+                let domain = domain.iter()
+                    .map(|s| s.to_string())
+                    .collect::<Vec<_>>().join(" * ");
+                let co_domain = co_domain.to_string();
+                write!(f,"{domain} -> {co_domain} ({boolean})")
+            }
             Self::NonBooleanInterpreted{table_g} =>
-                write!(f, "NonBooleanInterpreted ({table_g})"),
+                write!(f, "Non Boolean ({table_g})"),
             Self::BooleanInterpreted{table_tu, table_uf, table_g} =>
-                write!(f, "BooleanInterpreted ({table_tu}, {table_uf}, {table_g})"),
+                write!(f, "Boolean ({table_tu}, {table_uf}, {table_g})"),
         }
     }
 }

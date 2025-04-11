@@ -5,6 +5,7 @@
 (assert (= 2 (+ c (abs 1))))
 (assert (= 0 (- c 1 2)))
 (assert (= 4 (* 2 2 -1)))
+(assert (= 2 (div 4 2)))
 (assert (= 1 (mod 3 2)))
 
 (declare-const d Real)
@@ -13,6 +14,7 @@
 (assert (= 2.1 (+ d (abs 1.0))))
 (assert (= 0.0 (- d 1.0 2.0)))
 (assert (= 4.0 (* 2.0 2.0 -1.0)))
+(assert (= 2.0 (div 4.0 2.0)))
 (assert (= 1.0 (mod 3 2)))
 (x-ground)
 (x-debug solver groundings)
@@ -63,6 +65,11 @@ Groundings:
     T: SELECT eq_(4, left_("*", 2, 2, -1)) AS G
     F: SELECT eq_(4, left_("*", 2, 2, -1)) AS G
     G : SELECT eq_(4, left_("*", 2, 2, -1)) AS G
+ - (div 4 2): SELECT left_("div", 4, 2) AS G
+ - (= 2 (div 4 2)):
+    T: SELECT eq_(2, left_("div", 4, 2)) AS G
+    F: SELECT eq_(2, left_("div", 4, 2)) AS G
+    G : SELECT eq_(2, left_("div", 4, 2)) AS G
  - (mod 3 2): SELECT apply("mod", 3, 2) AS G
  - (= 1 (mod 3 2)):
     T: SELECT eq_(1, apply("mod", 3, 2)) AS G
@@ -102,6 +109,11 @@ Groundings:
     T: SELECT eq_(4.0, left_("*", 2.0, 2.0, -1.0)) AS G
     F: SELECT eq_(4.0, left_("*", 2.0, 2.0, -1.0)) AS G
     G : SELECT eq_(4.0, left_("*", 2.0, 2.0, -1.0)) AS G
+ - (div 4.0 2.0): SELECT left_("div", 4.0, 2.0) AS G
+ - (= 2.0 (div 4.0 2.0)):
+    T: SELECT eq_(2.0, left_("div", 4.0, 2.0)) AS G
+    F: SELECT eq_(2.0, left_("div", 4.0, 2.0)) AS G
+    G : SELECT eq_(2.0, left_("div", 4.0, 2.0)) AS G
  - (= 1.0 (mod 3 2)):
     T: SELECT eq_(1.0, apply("mod", 3, 2)) AS G
     F: SELECT eq_(1.0, apply("mod", 3, 2)) AS G
