@@ -7,6 +7,7 @@
 (declare-fun colorOf ( Int ) Color)
 (x-debug solver sorts)
 (x-debug solver functions)
+(x-debug db tables)
 -------------------------
 (declare-datatype Color ((red ) (green )))
 (declare-datatype Pair (par (X) ((pair (first X) (second X)))))
@@ -51,3 +52,7 @@ Functions:
  - pair: Constructor
  - brightest: (Pair Color) -> Color (false)
  - colorOf: Int -> Color (false)
+Tables and Views:
+ - Bool (table)
+ - Color (table)
+ - Sort_7 (table)

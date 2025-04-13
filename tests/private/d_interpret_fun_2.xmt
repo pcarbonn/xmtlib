@@ -18,6 +18,7 @@
 (x-ground)
 (x-debug solver functions)
 (x-debug solver groundings)
+(x-debug db tables)
 (x-debug db-view c_G)
 (x-debug db mix_g)
 -------------------------
@@ -77,6 +78,25 @@ Groundings:
     TU: SELECT or_aggregate(G) as G from (SELECT mix_G_4.a_0 AS x, eq_(mix_G_4.G, mix_G_4.a_0, "green") AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_0 = mix_G_4.a_1)
     UF: SELECT or_aggregate(G) as G from (SELECT mix_G_4.a_0 AS x, eq_(mix_G_4.G, mix_G_4.a_0, "green") AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_0 = mix_G_4.a_1)
     G : SELECT or_aggregate(G) as G from (SELECT mix_G_4.a_0 AS x, eq_(mix_G_4.G, mix_G_4.a_0, "green") AS G FROM mix_G AS mix_G_4 WHERE mix_G_4.a_0 = mix_G_4.a_1)
+Tables and Views:
+ - Bool (table)
+ - Color (table)
+ - c_G (view)
+ - mix_G (table)
+ - sqlite_stat1 (table)
+ - sqlite_stat4 (table)
+ - _db_c_0 (view)
+ - _db_2_2 (view)
+ - variable_3 (view)
+ - _db_mix_4 (view)
+ - _db_2_5 (view)
+ - Agg_3_TU (view)
+ - Agg_3_UF (view)
+ - Agg_3_G (view)
+ - _db_2_7 (view)
+ - Agg_7_TU (view)
+ - Agg_7_UF (view)
+ - Agg_7_G (view)
 CREATE VIEW c_G AS SELECT "red" as G TABLE: mix_g
 ┌─────────┬─────────┬─────────────────────┐
 │ a_0     │ a_1     │ G                   │

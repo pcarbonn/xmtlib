@@ -14,6 +14,7 @@
 (define-sort MyArray () (Array Color Color))
 (x-debug solver parametric_sorts)
 (x-debug solver sorts)
+(x-debug db tables)
 (x-debug db Q)
 (check-sat)
 -------------------------
@@ -61,6 +62,16 @@ Sorts:
  - (unknown) MyBitVec
  - (unknown) (Array Color Color)
  - (unknown) MyArray
+Tables and Views:
+ - Bool (table)
+ - Color (table)
+ - Sort_7_core (table)
+ - Sort_7 (table)
+ - P (table)
+ - Sort_9_core (table)
+ - Sort_9 (table)
+ - Sort_10 (table)
+ - Q (table)
  TABLE: Q
 ┌─────────────┬────────────────────────────────────────────────┬─────────────────────────────────────────────────────┐
 │ constructor │ x                                              │ G                                                   │

@@ -16,6 +16,7 @@
 (x-ground)
 (x-debug solver functions)
 (x-debug solver groundings)
+(x-debug db tables)
 (x-debug db mix_g)
 -------------------------
 (declare-datatype Color ((red ) (green )))
@@ -63,6 +64,22 @@ Groundings:
     TU: SELECT or_aggregate(G) as G from (SELECT mix_G_5.a_0 AS x, eq_(mix_G_5.G, mix_G_5.a_0) AS G FROM mix_G AS mix_G_5 WHERE mix_G_5.a_0 = mix_G_5.a_1)
     UF: SELECT or_aggregate(G) as G from (SELECT mix_G_5.a_0 AS x, eq_(mix_G_5.G, mix_G_5.a_0) AS G FROM mix_G AS mix_G_5 WHERE mix_G_5.a_0 = mix_G_5.a_1)
     G : SELECT or_aggregate(G) as G from (SELECT mix_G_5.a_0 AS x, eq_(mix_G_5.G, mix_G_5.a_0) AS G FROM mix_G AS mix_G_5 WHERE mix_G_5.a_0 = mix_G_5.a_1)
+Tables and Views:
+ - Bool (table)
+ - Color (table)
+ - mix_U (table)
+ - mix_UF (view)
+ - mix_G (view)
+ - sqlite_stat1 (table)
+ - sqlite_stat4 (table)
+ - _db_mix_2 (view)
+ - _db_3_3 (view)
+ - variable_4 (view)
+ - _db_mix_5 (view)
+ - _db_3_6 (view)
+ - Agg_4_TU (view)
+ - Agg_4_UF (view)
+ - Agg_4_G (view)
  TABLE: mix_g
 ┌─────────┬─────────┬─────────────────┐
 │ a_0     │ a_1     │ G               │

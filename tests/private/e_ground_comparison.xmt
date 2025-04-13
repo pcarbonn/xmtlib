@@ -11,6 +11,7 @@
 
 (x-ground)
 (x-debug solver groundings)
+(x-debug db tables)
 -------------------------
 (assert false)
 (assert false)
@@ -83,3 +84,11 @@ Groundings:
     T: SELECT compare_("distinct", 1.0, 2.0, 3.0) AS G
     F: SELECT compare_("distinct", 1.0, 2.0, 3.0) AS G
     G : SELECT compare_("distinct", 1.0, 2.0, 3.0) AS G
+Tables and Views:
+ - Bool (table)
+ - sqlite_stat1 (table)
+ - sqlite_stat4 (table)
+ - union_11 (view)
+ - agg_union_11 (view)
+ - union_18 (view)
+ - agg_union_18 (view)

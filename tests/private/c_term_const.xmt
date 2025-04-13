@@ -11,6 +11,7 @@
 ;(assert (or p p))
 (x-ground)
 (x-debug solver groundings)
+(x-debug db tables)
 -------------------------
 (declare-const p Bool)
 (declare-const c Int)
@@ -47,3 +48,12 @@ Groundings:
     TU: SELECT or_aggregate(G) as G from (SELECT apply("q", "red") AS G UNION SELECT apply("q", "red") AS G)
     UF: SELECT apply("or", apply("q", "red"), apply("q", "red")) AS G
     G : SELECT apply("or", apply("q", "red"), apply("q", "red")) AS G
+Tables and Views:
+ - Bool (table)
+ - Color (table)
+ - sqlite_stat1 (table)
+ - sqlite_stat4 (table)
+ - union_6 (view)
+ - agg_union_6 (view)
+ - union_7 (view)
+ - agg_union_7 (view)

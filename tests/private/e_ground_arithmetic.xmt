@@ -18,6 +18,7 @@
 (assert (= 1.0 (mod 3 2)))
 (x-ground)
 (x-debug solver groundings)
+(x-debug db tables)
 -------------------------
 (declare-const c Int)
 (declare-const d Real)
@@ -118,3 +119,7 @@ Groundings:
     T: SELECT eq_(1.0, apply("mod", 3, 2)) AS G
     F: SELECT eq_(1.0, apply("mod", 3, 2)) AS G
     G : SELECT eq_(1.0, apply("mod", 3, 2)) AS G
+Tables and Views:
+ - Bool (table)
+ - sqlite_stat1 (table)
+ - sqlite_stat4 (table)

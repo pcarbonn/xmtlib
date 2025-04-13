@@ -309,7 +309,23 @@ impl Solver {
                             }
                         },
                         "db" => {
-                            if let Ok(content) = pretty_sqlite::pretty_table(&self.conn, obj.to_string().as_str()) {
+                            if obj.to_string() == "tables" {
+                                // Query to list all tables and views in the database
+                                let query = "SELECT name, type FROM sqlite_master WHERE type IN ('table', 'view')";
+                                let mut stmt = self.conn.prepare(query).unwrap();
+                                let rows = stmt.query_map([], |row| {
+                                    let name: String = row.get(0)?;
+                                    let typ: String = row.get(1)?;
+                                    Ok((name, typ))
+                                }).unwrap();
+
+                                yield_!(Ok("Tables and Views:\n".to_string()));
+                                for row in rows {
+                                    if let Ok((name, typ)) = row {
+                                        yield_!(Ok(format!(" - {name} ({typ})\n")));
+                                    }
+                                }
+                            } else if let Ok(content) = pretty_sqlite::pretty_table(&self.conn, obj.to_string().as_str()) {
                                 yield_!(Ok(format!("{content}\n")))
                             } else {
                                 yield_!(Err(SolverError::IdentifierError("Unknown table\n", typ)))

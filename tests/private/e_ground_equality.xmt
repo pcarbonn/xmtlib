@@ -5,6 +5,7 @@
 (assert (and (= 2 2) (not (= 3 3))))
 (x-ground)
 (x-debug solver groundings)
+(x-debug db tables)
 -------------------------
 (assert false)
 (assert false)
@@ -40,3 +41,9 @@ Groundings:
     T: SELECT "true" AS G
     UF: SELECT and_aggregate(G) as G from (SELECT "true" AS G UNION SELECT "false" AS G)
     G : SELECT and_("true", not_("true")) AS G
+Tables and Views:
+ - Bool (table)
+ - sqlite_stat1 (table)
+ - sqlite_stat4 (table)
+ - union_8 (view)
+ - agg_union_8 (view)
