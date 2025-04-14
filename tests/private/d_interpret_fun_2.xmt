@@ -1,11 +1,12 @@
 (set-option :backend none)
-; arity 2
 (declare-datatype Color ( ( red ) ( green ) ))
+
 ; arity 0
 (declare-fun C () Color)
 (declare-fun c () Color)
 (x-interpret-fun c ((() red)))
 (assert (= c green))
+
 ; arity 2
 (declare-fun Mix (Color Color) Color)
 (declare-fun mix (Color Color) Color)
@@ -20,6 +21,14 @@
    ) ?)
 (assert (exists ((x Color)) (= (mix x x) x)))
 (assert (exists ((x Color)) (= (mix x x) x green)))
+
+; infinite
+(declare-fun RGB (Int) Color)
+(x-interpret-fun RGB
+   (
+      ((0) red)
+   ) red
+)
 (x-ground)
 (x-debug solver functions)
 (x-debug solver groundings)
@@ -32,7 +41,12 @@
 (declare-fun c () Color)
 (declare-fun Mix (Color Color) Color)
 (declare-fun mix (Color Color) Color)
-(assert false)
+(declare-fun RGB (Int) Color)
+error: at position (27, 18): Cannot interpret a symbol with infinite domain
+   |
+27 | (x-interpret-fun RGB
+   |                  ^ Cannot interpret a symbol with infinite domain
+   |(assert false)
 (assert (= (mix green green) green))
 (assert (= (mix green green) green green))
 Functions:
@@ -62,6 +76,7 @@ Functions:
  - c: Non Boolean (_xmt_c_G Complete)
  - Mix: Non Boolean (_xmt_mix_3_G Partial)
  - mix: Non Boolean (_xmt_mix_G Partial)
+ - RGB: Int -> Color (false)
 Groundings:
  - c: SELECT _xmt_c_G.G AS G FROM _xmt_c_G AS _xmt_c_G
  - green: SELECT "green" AS G
@@ -95,23 +110,24 @@ Tables and Views:
  - _xmt_mix_3_U (table)
  - _xmt_mix_3_UF (view)
  - _xmt_mix_3_G (view)
+ - _xmt_rgb_U (table)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
  - _xmt_c_0 (view)
  - _xmt__2 (view)
- - _xmt__2_7 (view)
  - _xmt__2_8 (view)
+ - _xmt__2_9 (view)
  - variable_3 (view)
  - _xmt_mix_4 (view)
  - _xmt__5 (view)
- - _xmt__5_11 (view)
  - _xmt__5_12 (view)
+ - _xmt__5_13 (view)
  - Agg_3_TU (view)
  - Agg_3_UF (view)
  - Agg_3_G (view)
  - _xmt__7 (view)
- - _xmt__7_14 (view)
  - _xmt__7_15 (view)
+ - _xmt__7_16 (view)
  - Agg_7_TU (view)
  - Agg_7_UF (view)
  - Agg_7_G (view)

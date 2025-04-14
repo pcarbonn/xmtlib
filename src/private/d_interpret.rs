@@ -449,7 +449,7 @@ fn create_g_view(
                         format!("{table} AS {table}_{i}"),
                         format!("{table}_{i}.G = {from}.a_{i}"))),
                 Some(_) => // infinite domain
-                    Err(InternalError(8452695)),
+                    Err(SolverError::IdentifierError("Cannot interpret a symbol with infinite domain", identifier.clone())),
                 None =>
                     Err(InternalError(658884995))
             }
