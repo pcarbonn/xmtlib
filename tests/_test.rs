@@ -34,25 +34,26 @@ use xmtlib::solver::Solver;
 #[test] fn test_triangle_int()  { test_file(Path::new("tests/triangle Int.xmt")) }
 #[test] fn test_triangle()      { test_file(Path::new("tests/triangle.xmt")) }
 
+
 // #[test]
-// fn test_all_smt2_files() {
-//     let test_dir = Path::new("tests");
-//     all_smt2(test_dir)
+// fn test_all_xmt_files() {
+//     let test_dir = Path::new("tests/benchmark");
+//     all_xmt(test_dir)
 // }
 
-// recursively test all .xmt files in the test directory and its subdirectories
-// fn all_smt2(test_dir: &Path) {
+// // recursively test all .xmt files in the test directory and its subdirectories
+// fn all_xmt(test_dir: &Path) {
 //     for entry in fs::read_dir(test_dir).expect("read_dir call failed") {
 //         if let Ok(entry) = entry {
 //             let path = entry.path();
 //             if path.is_file() {
 //                 if let Some(extension) = path.extension() {
-//                     if extension == "smt2" {
+//                     if extension == "xmt" {
 //                         test_file(&path)
 //                     }
 //                 }
 //             } else if path.is_dir() {
-//                 all_smt2(&path)
+//                 all_xmt(&path)
 //             }
 //         }
 //     }

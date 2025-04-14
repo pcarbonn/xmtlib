@@ -1,0 +1,89 @@
+(set-option :backend none)
+(declare-datatype substrate ( (a) (b)  ))
+(declare-datatype glue ( (A) (B)))
+(declare-datatype fam ( (epoxy) (put) (pue) (mma) ))
+(declare-datatype quality ( (great) (good) (bad) ))
+
+(declare-fun adhesion (glue substrate) quality)
+(declare-fun strength (glue) Int)
+(declare-fun elongation (glue) Int)
+(declare-fun family (glue) fam)
+
+(declare-fun chosen_fam () fam)
+(declare-fun chosen_glue () glue)
+
+(declare-fun min_strength () Int)
+(declare-fun min_elon () Int)
+(declare-fun max_elon () Int)
+
+(declare-fun possible_bonding (quality) Bool)
+(declare-fun substrateA () substrate)
+(declare-fun substrateB () substrate)
+
+(x-interpret-fun adhesion
+    (
+        ((A a) bad)
+        ((A b) bad)
+
+        ((B a) good)
+        ((B b) great)
+    ))
+
+(x-interpret-fun family
+    (
+        ((A) pue)
+        ((B) mma)
+    ))
+
+(x-interpret-fun strength
+    (
+        ((A) 40)
+        ((B) 42)
+    ))
+
+(x-interpret-fun elongation
+    (
+        ((A) 0)
+        ((B) 8)
+    ))
+
+(assert (= chosen_fam (family chosen_glue)))
+(assert (<= min_strength (strength chosen_glue)))
+(assert (<= min_elon (elongation chosen_glue)))
+(assert (>= max_elon (elongation chosen_glue)))
+(assert (possible_bonding (adhesion chosen_glue substrateA)))
+(assert (possible_bonding (adhesion chosen_glue substrateB)))
+(x-ground)
+-------------------------
+(declare-datatype substrate ((a ) (b )))
+(declare-datatype glue ((A ) (B )))
+(declare-datatype fam ((epoxy ) (put ) (pue ) (mma )))
+(declare-datatype quality ((great ) (good ) (bad )))
+(declare-fun adhesion (glue substrate) quality)
+(declare-fun strength (glue) Int)
+(declare-fun elongation (glue) Int)
+(declare-fun family (glue) fam)
+(declare-fun chosen_fam () fam)
+(declare-fun chosen_glue () glue)
+(declare-fun min_strength () Int)
+(declare-fun min_elon () Int)
+(declare-fun max_elon () Int)
+(declare-fun possible_bonding (quality) Bool)
+(declare-fun substrateA () substrate)
+(declare-fun substrateB () substrate)
+(assert (=> (= chosen_glue A) (= chosen_fam pue)))
+(assert (=> (= chosen_glue B) (= chosen_fam mma)))
+(assert (=> (= chosen_glue A) (<= min_strength 40)))
+(assert (=> (= chosen_glue B) (<= min_strength 42)))
+(assert (=> (= chosen_glue A) (<= min_elon 0)))
+(assert (=> (= chosen_glue B) (<= min_elon 8)))
+(assert (=> (= chosen_glue A) (>= max_elon 0)))
+(assert (=> (= chosen_glue B) (>= max_elon 8)))
+(assert (=> (and (= chosen_glue A) (= substrateA a)) (possible_bonding bad)))
+(assert (=> (and (= chosen_glue A) (= substrateA b)) (possible_bonding bad)))
+(assert (=> (and (= chosen_glue B) (= substrateA a)) (possible_bonding good)))
+(assert (=> (and (= chosen_glue B) (= substrateA b)) (possible_bonding great)))
+(assert (=> (and (= chosen_glue A) (= substrateB a)) (possible_bonding bad)))
+(assert (=> (and (= chosen_glue A) (= substrateB b)) (possible_bonding bad)))
+(assert (=> (and (= chosen_glue B) (= substrateB a)) (possible_bonding good)))
+(assert (=> (and (= chosen_glue B) (= substrateB b)) (possible_bonding great)))
