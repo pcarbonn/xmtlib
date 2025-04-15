@@ -12,6 +12,7 @@ use std::fmt::Display;
 use std::hash::Hash;
 
 use itertools::Itertools;
+use itertools::Either;
 
 use crate::error::Offset;
 
@@ -345,6 +346,14 @@ impl std::fmt::Display for XSet {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct XRange(pub Vec<L<Term>>);
+impl std::fmt::Display for XRange {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "(x-range {})", self.0.iter().format(" "))
+    }
+}
+
 // //////////////////////////// Theories     ////////////////////////////
 // //////////////////////////// Logics       ////////////////////////////
 // //////////////////////////// Info flags   ////////////////////////////
@@ -429,7 +438,7 @@ pub enum Command {
     SetOption(Option_),
     XDebug(L<Identifier>, L<Identifier>),
     XGround,
-    XInterpretPred(L<Identifier>, XSet),
+    XInterpretPred(L<Identifier>, Either<XSet, XRange>),
     XInterpretFun(L<Identifier>, Vec<(XTuple, L<Term>)>, Option<L<Term>>),
     Verbatim(String),
 }

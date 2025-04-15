@@ -141,11 +141,17 @@
 //!
 //! ## (x-interpret-pred
 //!
-//! An `x-interpret-pred` command specifies the total interpretation of a boolean function symbol (aka predicate),
+//! An `x-interpret-pred` command specifies the total interpretation of a boolean function symbol (aka a predicate),
 //! by listing all the tuples of arguments that make it true.
+//! Such an intepretation can be given only once.
 //!
 //! Example: `(x-interpret-pred Edge (x-set (a b) (b c) (c a)) )`.
 //! The only pairs of nodes that satisfy the `Edge` predicate are `(a b)`, `(b c)`, and `(c a)`.
+//!
+//! For a unary predicate over integers, the set can be given as a (union of) interval with inclusive boundaries:
+//!
+//! Example: `(x-interpret-pred Row (x-range 1 8) )`.
+//! The values making Row true are 1, 2, 3, 4, 5, 6, 7, 8.
 //!
 //! For a proposition `p` (aka a boolean function of arity 0), the interpretation can be given as :
 //!

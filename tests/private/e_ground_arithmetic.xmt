@@ -16,12 +16,17 @@
 (assert (= 4.0 (* 2.0 2.0 -1.0)))
 (assert (= 2.0 (div 4.0 2.0)))
 (assert (= 1.0 (mod 3 2)))
+
+(declare-fun Row (Int) Bool)
+(x-interpret-pred Row (x-range 1 8 10 10))
 (x-ground)
 (x-debug solver groundings)
 (x-debug db tables)
+(x-debug db _xmt_row_T)
 -------------------------
 (declare-const c Int)
 (declare-const d Real)
+(declare-fun Row (Int) Bool)
 (assert (= 2 (+ 1 1)))
 (assert (= 2 (+ c 1)))
 (assert (= 0 (- c 1 2)))
@@ -121,5 +126,29 @@ Groundings:
     G : SELECT eq_(1.0, apply("mod", 3, 2)) AS G
 Tables and Views:
  - Bool (table)
+ - _xmt_row_T (table)
+ - _xmt_row_TU (view)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
+ TABLE: _xmt_row_t
+┌─────┐
+│ a_0 │
+├─────┤
+│ 1   │
+├─────┤
+│ 2   │
+├─────┤
+│ 3   │
+├─────┤
+│ 4   │
+├─────┤
+│ 5   │
+├─────┤
+│ 6   │
+├─────┤
+│ 7   │
+├─────┤
+│ 8   │
+├─────┤
+│ 10  │
+└─────┘

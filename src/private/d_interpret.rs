@@ -1,11 +1,12 @@
 // Copyright Pierre Carbonnelle, 2025.
 
+use itertools::Either::{self, Left, Right};
 use rusqlite::params_from_iter;
 use unzip_n::unzip_n;
 
 unzip_n!(pub 4);
 
-use crate::api::{Identifier, QualIdentifier, Sort, XTuple, XSet, Term, SpecConstant};
+use crate::api::{Identifier, QualIdentifier, Sort, XTuple, XSet, XRange, Term, SpecConstant};
 use crate::error::SolverError::{self, InternalError};
 use crate::solver::Solver;
 
@@ -18,7 +19,7 @@ use crate::api::L;
 
 pub(crate) fn interpret_pred(
     identifier: L<Identifier>,
-    tuples: XSet,
+    tuples: Either<XSet, XRange>,
     solver: &mut Solver,
  ) -> Result<String, SolverError> {
     // get the symbol declaration
@@ -51,16 +52,38 @@ pub(crate) fn interpret_pred(
 
                 // populate the table
                 let mut tuples_strings = vec![];
-                for XTuple(tuple) in &tuples.0 {
-                    if tuple.len() == domain.len() {
-                        let tuples_t = tuple.iter()
-                            .map(|t| construct(t, solver) )
-                            .collect::<Result<Vec<_>, SolverError>>()?;
-                        tuples_strings.push(tuples_t);
-                    } else {
-                        return Err(SolverError::IdentifierError("Incorrect tuple length", identifier.clone()))
+                match tuples {
+                    Left(tuples) => {
+                        for XTuple(tuple) in &tuples.0 {
+                            if tuple.len() == domain.len() {
+                                let tuples_t = tuple.iter()
+                                    .map(|t| construct(t, solver) )
+                                    .collect::<Result<Vec<_>, SolverError>>()?;
+                                tuples_strings.push(tuples_t);
+                            } else {
+                                return Err(SolverError::IdentifierError("Incorrect tuple length", identifier.clone()))
+                            }
+                        }
                     }
-                }
+                    Right(ranges) => {
+                        if ranges.0.len() % 2 == 1 {
+                            return Err(SolverError::IdentifierError("Odd number of boundaries in range", identifier))
+                        };
+                        for pairs in ranges.0.chunks(2) {
+                            if let L(Term::SpecConstant(SpecConstant::Numeral(a)), _) = &pairs[0] {
+                                if let L(Term::SpecConstant(SpecConstant::Numeral(b)), _) = &pairs[1] {
+                                    for i in a.0..(b.0+1) {
+                                        tuples_strings.push(vec![i.to_string()]);
+                                    }
+                                } else {
+                                    return Err(SolverError::TermError("Expecting an integer", pairs[1].clone()))
+                                }
+                            } else {
+                                return Err(SolverError::TermError("Expecting an integer", pairs[0].clone()))
+                            }
+                        }
+                    }
+                };
                 populate_table(&format!("{table_name}_T"), tuples_strings, solver)?;
 
                 // create TU view
@@ -110,7 +133,7 @@ pub(crate) fn interpret_pred(
 /// Interpret a predicate of arity 0
 fn interpret_pred_0(
     qual_identifier: QualIdentifier,
-    tuples: XSet,
+    tuples: Either<XSet, XRange>,
     solver: &mut Solver,
 ) -> Result<String, SolverError> {
     let table_name = solver.create_db_name(qual_identifier.to_string());
@@ -119,26 +142,31 @@ fn interpret_pred_0(
     let table_uf = Interpretation::Table{name: DbName(format!("{table_name}_UF")), ids: Ids::All};
     let table_g  = Interpretation::Table{name: DbName(format!("{table_name}_G")), ids: Ids::All};
 
-    if tuples.0.len() == 0 {  // false
-        let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_TU AS SELECT 'false' as G WHERE false");  // empty table
-        solver.conn.execute(&sql, ())?;
+    match tuples {
+        Left(tuples) => {
+            if tuples.0.len() == 0 {  // false
+                let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_TU AS SELECT 'false' as G WHERE false");  // empty table
+                solver.conn.execute(&sql, ())?;
 
-        let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_UF AS SELECT 'false' as G");
-        solver.conn.execute(&sql, ())?;
+                let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_UF AS SELECT 'false' as G");
+                solver.conn.execute(&sql, ())?;
 
-        let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_G AS SELECT 'false' as G");
-        solver.conn.execute(&sql, ())?;
+                let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_G AS SELECT 'false' as G");
+                solver.conn.execute(&sql, ())?;
 
-    } else {  // true
-        let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_TU AS SELECT 'true' as G");
-        solver.conn.execute(&sql, ())?;
+            } else {  // true
+                let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_TU AS SELECT 'true' as G");
+                solver.conn.execute(&sql, ())?;
 
-        let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_UF AS SELECT 'true' as G WHERE false");  // empty table
-        solver.conn.execute(&sql, ())?;
+                let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_UF AS SELECT 'true' as G WHERE false");  // empty table
+                solver.conn.execute(&sql, ())?;
 
-        let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_G AS SELECT 'true' as G");
-        solver.conn.execute(&sql, ())?;
+                let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_G AS SELECT 'true' as G");
+                solver.conn.execute(&sql, ())?;
 
+            }
+        }
+        Right(_) => todo!()
     };
 
     // create FunctionObject with boolean interpretations.

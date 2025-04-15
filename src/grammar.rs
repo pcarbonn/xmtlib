@@ -3,6 +3,7 @@
 //! This module defines the grammar of XMT-Lib.
 //! The nodes of the syntax tree are listed in the order given in Appendix B of the SMT-Lib standard.
 
+use itertools::Either::{Left, Right};
 
 use peg::{error::ParseError, str::LineCol};
 
@@ -35,7 +36,7 @@ peg::parser!{
 
             /  s:(quiet!{$("-"? ['1'..='9'] ['0'..='9']* )}
                / expected!("numeral"))
-              { Numeral(s.to_string().parse().unwrap()) }
+            { Numeral(s.to_string().parse().unwrap()) }
 
         rule decimal() -> Decimal
             = numerator:numeral() "." denominator:(quiet!{$(['0'..='9']+)} / expected!("numeral"))
@@ -55,7 +56,7 @@ peg::parser!{
             = "\""
               string: string_char()*
               "\""
-              { String_(string.join("")) }
+            { String_(string.join("")) }
 
               rule string_char() -> String
                   = chars: [^'"']+ { chars.iter().collect() }
@@ -71,33 +72,33 @@ peg::parser!{
 
         rule symbol() -> Symbol
             = s:simple_symbol()
-              { Symbol(s) }
+            { Symbol(s) }
 
             / s:(quiet!{$(['|'] [^ '|' | '\\' ]* ['|'] )}
                    / expected!("symbol"))
-              { Symbol(s.to_string()) }
+            { Symbol(s.to_string()) }
 
         rule keyword() -> Keyword
             = ":" symbol:simple_symbol()
-              { Keyword(format!(":{symbol}")) }
+            { Keyword(format!(":{symbol}")) }
 
         // //////////////////////////// S-expressions ///////////////////////////
 
         rule spec_constant() -> SpecConstant
             = decimal: decimal()
-              { SpecConstant::Decimal(decimal) }
+            { SpecConstant::Decimal(decimal) }
 
             / numeral:numeral()
-              { SpecConstant::Numeral(numeral) }
+            { SpecConstant::Numeral(numeral) }
 
             / hexadecimal:hexadecimal()
-              { SpecConstant::Hexadecimal(hexadecimal) }
+            { SpecConstant::Hexadecimal(hexadecimal) }
 
             / binary:binary()
-              { SpecConstant::Binary(binary) }
+            { SpecConstant::Binary(binary) }
 
             / string:string()
-              { SpecConstant::String(string) }
+            { SpecConstant::String(string) }
 
         rule s_expr() -> SExpr
             = s: symbol()
@@ -143,15 +144,15 @@ peg::parser!{
 
         rule attribute_value() -> AttributeValue
             = spec_constant:spec_constant()
-              { AttributeValue::SpecConstant(spec_constant) }
+            { AttributeValue::SpecConstant(spec_constant) }
 
             / symbol:symbol()
-              { AttributeValue::Symbol(symbol) }
+            { AttributeValue::Symbol(symbol) }
 
             / "(" _
               s_expr:s_expr() _
               ")"
-              { AttributeValue::Expr(s_expr) }
+            { AttributeValue::Expr(s_expr) }
 
         rule attribute() -> Attribute
             = keyword:keyword() _
@@ -165,38 +166,38 @@ peg::parser!{
 
         rule qual_identifier() -> QualIdentifier
             = identifier:identifier()
-              { QualIdentifier::Identifier(identifier) }
+            { QualIdentifier::Identifier(identifier) }
 
             / "(" _
                "as" _
                identifier:identifier() _
                sort:sort() _
                ")"
-              { QualIdentifier::Sorted(identifier, sort)}
+            { QualIdentifier::Sorted(identifier, sort)}
 
         rule var_binding() -> VarBinding
             = "(" _
               symbol:symbol() _
               term:term() _
               ")"
-              { VarBinding(symbol, term) }
+            { VarBinding(symbol, term) }
 
         rule sorted_var() -> SortedVar
             = "(" _
               symbol:symbol() _
               sort:sort() _
               ")"
-              { SortedVar(symbol, sort) }
+            { SortedVar(symbol, sort) }
 
         rule pattern() -> Pattern
             = symbol:symbol()
-              { Pattern::Symbol(symbol) }
+            { Pattern::Symbol(symbol) }
 
             / "(" _
               symbol:symbol() _
               symbols:(symbol() ++ _) _
               ")"
-              { Pattern::Application(symbol, symbols) }
+            { Pattern::Application(symbol, symbols) }
 
         rule match_case() -> MatchCase
             = "(" _
@@ -207,16 +208,16 @@ peg::parser!{
 
         rule term() -> L<Term>
             = start:position!() spec_constant:spec_constant()
-              { L(Term::SpecConstant(spec_constant), Offset(start)) }
+            { L(Term::SpecConstant(spec_constant), Offset(start)) }
 
             / start:position!() qual_identifier:qual_identifier()
-              { L(Term::Identifier(qual_identifier), Offset(start)) }
+            { L(Term::Identifier(qual_identifier), Offset(start)) }
 
             / start:position!() "(" _
               qual_identifier:qual_identifier() _
               terms:( term() ++ _ ) _
               ")"
-              { L(Term::Application(qual_identifier, terms), Offset(start)) }
+            { L(Term::Application(qual_identifier, terms), Offset(start)) }
 
             / start:position!() "(" _
               "let" _
@@ -225,7 +226,7 @@ peg::parser!{
               ")" _
               term:term() _
               ")"
-              { L(Term::Let(var_bindings, Box::new(term)), Offset(start)) }
+            { L(Term::Let(var_bindings, Box::new(term)), Offset(start)) }
 
             / start:position!() "(" _
               "forall" _
@@ -234,7 +235,7 @@ peg::parser!{
               ")" _
               term:term() _
               ")"
-              { L(Term::Forall(sorted_vars, Box::new(term)), Offset(start)) }
+            { L(Term::Forall(sorted_vars, Box::new(term)), Offset(start)) }
 
             / start:position!() "(" _
               "exists" _
@@ -243,7 +244,7 @@ peg::parser!{
               ")" _
               term:term() _
               ")"
-              { L(Term::Exists(sorted_vars, Box::new(term)), Offset(start)) }
+            { L(Term::Exists(sorted_vars, Box::new(term)), Offset(start)) }
 
             / start:position!() "(" _
               "match" _
@@ -252,40 +253,47 @@ peg::parser!{
                 match_cases:(match_case() ++ _) _
               ")" _
               ")"
-              { L(Term::Match(Box::new(term), match_cases), Offset(start))}
+            { L(Term::Match(Box::new(term), match_cases), Offset(start))}
 
             / start:position!() "(" _
               "!" _
               term:term() _
               attributes:(attribute() ++ _) _
               ")"
-              { L(Term::Annotation(Box::new(term), attributes), Offset(start))}
+            { L(Term::Annotation(Box::new(term), attributes), Offset(start))}
 
         rule xid() -> L<Term>  // an id
             = start:position!() spec_constant:spec_constant()
-              { L(Term::SpecConstant(spec_constant), Offset(start)) }
+            { L(Term::SpecConstant(spec_constant), Offset(start)) }
 
             / start:position!() qual_identifier:qual_identifier()
-              { L(Term::Identifier(qual_identifier), Offset(start)) }
+            { L(Term::Identifier(qual_identifier), Offset(start)) }
 
             / start:position!() "(" _
               qual_identifier:qual_identifier() _
               terms:( xid() ++ _ ) _
               ")"
-              { L(Term::Application(qual_identifier, terms), Offset(start)) }
+            { L(Term::Application(qual_identifier, terms), Offset(start)) }
 
         rule xtuple() -> XTuple
             = "(" _
               terms: ( xid() ** _ ) _
               ")" _
-              { XTuple(terms) }
+            { XTuple(terms) }
 
         rule xset() -> XSet
             = "(" _
               "x-set" _
               tuples: (xtuple() ** _) _
               ")" _
-              { XSet(tuples) }
+            { XSet(tuples) }
+
+        rule xrange() -> XRange
+            = "(" _
+              "x-range" _
+              boundaries: (term() ** _) _
+              ")" _
+            { XRange(boundaries) }
 
         // //////////////////////////// Theories     ////////////////////////////
         // //////////////////////////// Logics       ////////////////////////////
@@ -422,7 +430,12 @@ peg::parser!{
             = "x-interpret-pred" _
               identifier: identifier() _
               xset: xset() _
-              { XInterpretPred(identifier, xset) }
+            { XInterpretPred(identifier, Left(xset)) }
+
+            / "x-interpret-pred" _
+              identifier: identifier() _
+              xrange: xrange() _
+            { XInterpretPred(identifier, Right(xrange)) }
 
         rule ftuple() -> (XTuple, L<Term>)
             = "(" _
@@ -439,13 +452,13 @@ peg::parser!{
                 tuples: (ftuple() ** _) _
               ")" _
               else_: term()?
-              { XInterpretFun(identifier, tuples, else_) }
+            { XInterpretFun(identifier, tuples, else_) }
 
         rule xdebug() -> Command
             = "x-debug" _
               typ:identifier() _
               object:identifier()
-              { XDebug (typ, object) }
+            { XDebug (typ, object) }
 
         rule xground() -> Command
             = "x-ground"
