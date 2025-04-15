@@ -22,6 +22,9 @@
 (x-interpret-pred dim (x-set ((hue red red))))
 (assert (exists ((x Hue)) (dim x) ))
 
+; convert to definition
+(declare-fun dark (Color) Bool)
+(assert (dark red))
 (x-ground)
 (x-debug db _xmt_bright_TU)
 (x-debug db _xmt_bright_G)
@@ -32,6 +35,9 @@
 (x-debug solver functions)
 (x-debug solver groundings)
 (x-debug db tables)
+
+;todo convert to definition
+(x-interpret-pred dark (x-set (red)))
 -------------------------
 (declare-fun p () Bool)
 (declare-datatype Color ((red ) (green )))
@@ -39,7 +45,9 @@
 (declare-fun same (Color Color) Bool)
 (declare-datatype Hue ((hue (first Color) (second Color))))
 (declare-fun dim (Hue) Bool)
+(declare-fun dark (Color) Bool)
 (assert false)
+(assert (dark red))
  TABLE: _xmt_bright_tu
 ┌───────┬────────┐
 │ a_0   │ G      │
@@ -109,6 +117,7 @@ Functions:
  - same: Boolean (_xmt_same_TU Complete, _xmt_same_UF Complete, _xmt_same_G Complete)
  - hue: Constructor
  - dim: Boolean (_xmt_dim_TU Complete, _xmt_dim_UF Complete, _xmt_dim_G Complete)
+ - dark: Color -> Bool (true)
 Groundings:
  - p:
     T: SELECT "true" AS G FROM _xmt_p_1_TU AS _xmt_p_1_TU
@@ -153,6 +162,11 @@ Groundings:
     TU: SELECT or_aggregate(G) as G from (SELECT _xmt_dim_TU_11.a_0 AS x, "true" AS G FROM _xmt_dim_TU AS _xmt_dim_TU_11)
     UF: SELECT or_aggregate(G) as G from (SELECT _xmt_dim_G_11.a_0 AS x, _xmt_dim_G_11.G AS G FROM _xmt_dim_G AS _xmt_dim_G_11)
     G : SELECT or_aggregate(G) as G from (SELECT _xmt_dim_G_11.a_0 AS x, _xmt_dim_G_11.G AS G FROM _xmt_dim_G AS _xmt_dim_G_11)
+ - red: SELECT "red" AS G
+ - (dark red):
+    TU: SELECT apply("dark", "red") AS G
+    UF: SELECT apply("dark", "red") AS G
+    G : SELECT apply("dark", "red") AS G
 Tables and Views:
  - Bool (table)
  - _xmt_p_1_TU (view)
@@ -204,3 +218,8 @@ Tables and Views:
  - Agg_10_TU (view)
  - Agg_10_UF (view)
  - Agg_10_G (view)
+error: at position (40, 19): Can't interpret a symbol after grounding its use
+   |
+40 | (x-interpret-pred dark (x-set (red)))
+   |                   ^ Can't interpret a symbol after grounding its use
+   |

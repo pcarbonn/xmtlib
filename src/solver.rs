@@ -51,6 +51,12 @@ pub struct Solver {
     // a mapping from a term to a composable representation of its grounding
     pub(crate) groundings: IndexMap<L<Term>, Grounding>,
 
+    // to convert interpretations to definitions when given late
+    // (i.e., make an assertion with p, x-ground, interpret p
+    // --> need to add a definition of p to avoid losing information about p)
+    pub(crate) grounded: IndexSet<Identifier>,
+
+    // to handle the fact that db names are case insensitive in sqlite
     pub(crate) db_names: IndexSet<String>,
 }
 
@@ -150,6 +156,7 @@ impl Default for Solver {
                 // qualified_functions: IndexMap::new(),
                 assertions_to_ground: vec![],
                 groundings: IndexMap::new(),
+                grounded: IndexSet::new(),
                 db_names: IndexSet::new(),
             }
         }
@@ -173,7 +180,7 @@ impl Solver {
                             Ok(s) => yield_!(s),
                             Err(e) => {
                                 yield_!(format_error(&source, e));
-                                //break
+                                break
                             }
                         }
                     }
@@ -196,7 +203,7 @@ impl Solver {
                 for result in self.execute1(command) {
                     if result.is_err() {
                         yield_!(result);
-                        //break
+                        break
                     } else {
                         yield_!(result);
                     }

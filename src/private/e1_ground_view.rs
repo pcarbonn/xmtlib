@@ -6,7 +6,7 @@ use std::hash::Hash;
 use indexmap::IndexSet;
 use itertools::Either::{self, Left, Right};
 
-use crate::api::{QualIdentifier, SortedVar, SpecConstant, Symbol};
+use crate::api::{QualIdentifier, SortedVar, SpecConstant, Symbol, L};
 use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 
@@ -335,6 +335,9 @@ pub(crate) fn query_for_compound(
             },
             QueryVariant::Apply => {
                 ids = Ids::None;
+                if let QualIdentifier::Identifier(L(identifier, _)) = qual_identifier {
+                    solver.grounded.insert(identifier.clone());
+                };  // qualified identifier cannot be interpreted: they are either pre-defined or accessors
                 SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings))
             },
             QueryVariant::Construct => {

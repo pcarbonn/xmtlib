@@ -39,6 +39,10 @@ pub(crate) fn interpret_pred(
         FunctionObject::Constructor { .. } =>
             Err(SolverError::IdentifierError("Can't interpret a constructor", identifier.clone())),
         FunctionObject::NotInterpreted { signature: (domain, _, boolean) } => {
+            if solver.grounded.contains(&identifier.0) {
+                // todo: convert interpretation to definition
+                return Err(SolverError::IdentifierError("Can't interpret a symbol after grounding its use", identifier))
+            };
             if ! *boolean {
                 Err(SolverError::IdentifierError("Can't use `x-interpret-pred` for non-boolean symbol", identifier.clone()))
             } else {
@@ -200,6 +204,10 @@ pub(crate) fn interpret_fun(
         FunctionObject::Constructor { .. } =>
             Err(SolverError::IdentifierError("Can't interpret a constructor", identifier.clone())),
         FunctionObject::NotInterpreted { signature: (domain, co_domain, boolean) } => {
+            if solver.grounded.contains(&identifier.0) {
+                // todo: convert interpretation to definition
+                return Err(SolverError::IdentifierError("Can't interpret a symbol after grounding its use", identifier))
+            };
             if ! *boolean {
                 if domain.len() == 0 {  // constant
 

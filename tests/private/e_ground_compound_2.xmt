@@ -20,7 +20,6 @@
 (x-ground)
 (x-debug solver groundings)
 (x-debug db tables)
-(x-debug db-view _xmt_7)
 -------------------------
 (declare-datatype T ((a ) (b )))
 (declare-datatype Tf ((A ) (B )))
@@ -105,5 +104,3 @@ Tables and Views:
  - Agg_12_TU (view)
  - Agg_12_G (view)
  - Agg_12_UF (view)
-****** Database Error: Query returned no rows
-
