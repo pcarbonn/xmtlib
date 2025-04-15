@@ -368,6 +368,7 @@ pub(crate) fn query_for_compound(
                     ">="        => Predefined::GE,
                     ">"         => Predefined::Greater,
                     "distinct"  => Predefined::Distinct,
+                    "ite"       => Predefined::Ite,
 
                     "+"     => Predefined::Plus,
                     "-"     => Predefined::Minus,

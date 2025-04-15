@@ -75,7 +75,7 @@ pub(crate) fn ground(
             match ground_term(&term, true, solver) {
                 Ok(g) => {
                     match g {
-                        Grounding::NonBoolean(_) => yield_!(Err(InternalError(4852956))),
+                        Grounding::NonBoolean(_) => yield_!(Err(SolverError::TermError("Expecting a boolean", term.clone()))),
                         Grounding::Boolean{uf, ..} => {
                             // execute the UF query
                             let query = uf.to_string();
@@ -366,8 +366,43 @@ fn ground_compound(
 
     match function_is {
         FunctionObject::Predefined { boolean: None } => { // ite
-            // need to determine if boolean result or not
-            todo!("ite not yet supported")
+            match qual_identifier.to_string().as_str() {
+                "ite" => {
+                    if sub_terms.len() != 3 {
+                        return Err(SolverError::TermError("Incorrect number of arguments", term.clone()))
+                    }
+                    let variant = QueryVariant::Predefined;
+                    if let Grounding::Boolean{g: ifg, ..} = groundings[0].clone() {
+                        match (groundings[1].clone(), groundings[2].clone()) {
+                            ( Grounding::NonBoolean(lg),
+                              Grounding::NonBoolean(rg)) => {
+                                let mut sub_queries = vec![ifg, lg, rg];
+                                let g = query_for_compound(qual_identifier, index, &mut sub_queries, &variant, None, solver)?;
+
+                        Ok(Grounding::NonBoolean( g ))
+                            },
+                            ( Grounding::Boolean{tu: ltu, uf: luf, g: lg, ..},
+                              Grounding::Boolean{tu: rtu, uf: ruf, g: rg, ..}) => {
+
+                                let mut sub_queries = vec![ifg.clone(), ltu, rtu];
+                                let tu = query_for_compound(qual_identifier, index, &mut sub_queries, &variant, None, solver)?;
+
+                                let mut sub_queries = vec![ifg.clone(), luf, ruf];
+                                let uf = query_for_compound(qual_identifier, index, &mut sub_queries, &variant, None, solver)?;
+
+                                let mut sub_queries = vec![ifg, lg, rg];
+                                let g = query_for_compound(qual_identifier, index, &mut sub_queries, &variant, None, solver)?;
+
+                                Ok(Grounding::Boolean{tu, uf, g})
+                            },
+                            _ => return Err(SolverError::TermError("Incorrect type of arguments", term.clone()))
+                        }
+                    } else {
+                        return Err(SolverError::TermError("Incorrect type of arguments", term.clone()))
+                    }
+                }
+                _ => Err(InternalError(3884562))
+            }
         },
         FunctionObject::Predefined { boolean: Some(boolean) } => {
             let variant = QueryVariant::Predefined;

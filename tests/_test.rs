@@ -22,12 +22,13 @@ use xmtlib::solver::Solver;
 #[test] fn test_d_interpret_1() { test_file(Path::new("tests/private/d_interpret_1.xmt")) }
 #[test] fn test_d_interpret_fun_2() { test_file(Path::new("tests/private/d_interpret_fun_2.xmt")) }
 #[test] fn test_d_interpret_partial() { test_file(Path::new("tests/private/d_interpret_partial.xmt")) }
+#[test] fn test_e_ground()      { test_file(Path::new("tests/private/e_ground.xmt")) }
 #[test] fn test_e_ground_comparison()   { test_file(Path::new("tests/private/e_ground_comparison.xmt")) }
 #[test] fn test_e_ground_compound_1()      { test_file(Path::new("tests/private/e_ground_compound_1.xmt")) }
 #[test] fn test_e_ground_compound_2()      { test_file(Path::new("tests/private/e_ground_compound_2.xmt")) }
 #[test] fn test_e_ground_equality()     { test_file(Path::new("tests/private/e_ground_equality.xmt")) }
 #[test] fn test_e_ground_arithmetic()     { test_file(Path::new("tests/private/e_ground_arithmetic.xmt")) }
-#[test] fn test_e_ground()      { test_file(Path::new("tests/private/e_ground.xmt")) }
+#[test] fn test_e_ground_predef()     { test_file(Path::new("tests/private/e_ground_predef.xmt")) }
 
 #[test] fn test_empty()         { test_file(Path::new("tests/empty.xmt")) }
 #[test] fn test_sandbox()       { test_file(Path::new("tests/sandbox.xmt")) }

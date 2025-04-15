@@ -561,6 +561,26 @@ pub(crate) fn init_db(
         },
     )?;
 
+    // create function "ite_"
+    conn.create_scalar_function(
+        "ite_",
+        3,                     // Number of arguments the function takes
+        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,                  // Deterministic (same input gives same output)
+        |ctx| {                // The function logic
+            let args = get_args(ctx)?;
+            let (if_, left, right) = (&args[0], &args[1], &args[2]);
+            if *if_ == "true" {
+                Ok(left.to_string())
+            } else if *if_ == "false" {
+                Ok(right.to_string())
+            } else if left == right {  // condition is irrelevant
+                Ok(left.to_string())
+            } else {
+                Ok(format!("(ite {if_} {left} {right})"))
+            }
+        },
+    )?;
+
     conn.create_aggregate_function(
         "and_aggregate",
         1,

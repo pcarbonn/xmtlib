@@ -16,7 +16,7 @@ fn execute(solver: &mut Solver, commands: &str) -> () {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let n = 5+1;
+    let n = 8000+1;
 
     let start = Instant::now();
     let mut solver = Solver::default();

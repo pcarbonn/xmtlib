@@ -40,6 +40,7 @@ pub(crate) enum Predefined {
     #[strum(to_string = ">=" )] GE,
     #[strum(to_string = ">"  )] Greater,
     #[strum(to_string = "distinct")] Distinct,
+    #[strum(to_string = "ite")] Ite,
 
     #[strum(to_string = "+"  )] Plus,
     #[strum(to_string = "-"  )] Minus,
@@ -234,7 +235,7 @@ impl SQLExpr {
                             _ => unreachable!()
                         }
                     }
-                } else if PAIRWISE.contains(function) {
+                } else if PAIRWISE.contains(function) { // distinct
 
                     let mut ids = Ids::All;
                     let terms = exprs.iter()
@@ -262,6 +263,23 @@ impl SQLExpr {
                         format!("apply(\"{function}\", {terms})")
                     } else {
                         format!("left_(\"{function}\", {terms})")
+                    }
+                } else if *function == Predefined::Ite {
+                    let terms = exprs.iter()
+                        .map(|(_, e)| {
+                            e.to_sql(variables)
+                        }).collect::<Vec<_>>();
+
+                    if terms[1] == terms[2] {  // condition is irrelevant
+                        terms[1].clone()
+                    } else {
+                        let terms = terms.join(", ");
+                        let ids = &exprs[0].0;
+                        if *ids == Ids::None {
+                            format!("apply(\"{function}\", {terms})")
+                        } else {
+                            format!("ite_({terms})")
+                        }
                     }
                 } else {
                     unreachable!()

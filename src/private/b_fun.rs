@@ -19,7 +19,7 @@ use crate::api::L;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum FunctionObject {
-    Predefined{boolean: Option<bool>},  // None for `ite` --> need special code
+    Predefined{boolean: Option<bool>},  // None = unknown for `ite, let` --> need special code
     Constructor,
     NotInterpreted{signature: (Vec<Sort>, Sort, bool)},  // signature used to create table, when later interpreted
     NonBooleanInterpreted{ table_g: Interpretation},

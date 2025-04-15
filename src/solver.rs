@@ -132,8 +132,10 @@ impl Default for Solver {
                 FunctionObject::Predefined{ boolean: Some(true) });
         }
 
-        // ite
+        // ite, lte
         functions.insert(function("ite"),
+            FunctionObject::Predefined { boolean: None });
+        functions.insert(function("let"),
             FunctionObject::Predefined { boolean: None });
 
         // non-boolean pre-defined functions

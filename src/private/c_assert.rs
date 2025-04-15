@@ -34,7 +34,6 @@ pub(crate) fn assert_(
 
 /// - todo: push negation down quantification
 /// - todo: replace ambiguous simple identifier (constructor) by a qualified identifier
-/// - todo: annotate `ite` with the type
 /// - todo: push universal quantification up disjunction, down conjunction
 /// - todo: push existential quantification up conjunction, down disjunction
 /// - todo: merge nested quantification/aggregate of the same type

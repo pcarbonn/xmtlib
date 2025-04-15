@@ -104,6 +104,7 @@ Functions:
  - >=: Predefined (true)
  - >: Predefined (true)
  - ite: Predefined (?)
+ - let: Predefined (?)
  - +: Predefined (false)
  - -: Predefined (false)
  - *: Predefined (false)
