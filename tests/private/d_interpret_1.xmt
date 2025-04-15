@@ -1,25 +1,25 @@
 (set-option :backend none)
 ; arity 0
 (declare-fun p () Bool)
-(x-interpret-pred p )
+(x-interpret-pred p (x-set ))
 (assert p)
 
 ; arity 1
 (declare-datatype Color ( ( red ) ( green ) ))
 (declare-fun bright (Color) Bool)
-(x-interpret-pred bright (red))
+(x-interpret-pred bright (x-set (red)))
 (assert (exists ((x Color)) (bright x) ))
 
 ; arity 2
 (declare-fun same (Color Color) Bool)
-(x-interpret-pred same (red red) (green green))
+(x-interpret-pred same (x-set (red red) (green green)))
 (assert (exists ((x Color)) (same x x) ))
 (assert (exists ((x Color)) (exists ((y Color)) (same x y) )))
 
 ; constructor
 (declare-datatype Hue ( ( hue (first Color) (second Color) ) ))
 (declare-fun dim (Hue) Bool)
-(x-interpret-pred dim ((hue red red)))
+(x-interpret-pred dim (x-set ((hue red red))))
 (assert (exists ((x Hue)) (dim x) ))
 
 (x-ground)
@@ -34,7 +34,6 @@
 (x-debug db tables)
 -------------------------
 (declare-fun p () Bool)
-(x-interpret-pred p )
 (declare-datatype Color ((red ) (green )))
 (declare-fun bright (Color) Bool)
 (declare-fun same (Color Color) Bool)

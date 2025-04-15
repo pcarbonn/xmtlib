@@ -13,8 +13,6 @@ use crate::api::L;
 #[allow(unused_imports)]
 use debug_print::debug_println as dprintln;
 
-// TODO store offset in API
-
 
 peg::parser!{
     pub grammar smt_lib() for str {
@@ -106,7 +104,7 @@ peg::parser!{
             { SExpr::Symbol(s) }
 
             / "(" _
-              s:( s_expr() ** __ ) _
+              s:( s_expr() ** _ ) _
               ")"
             { SExpr::Paren(s) }
 
@@ -125,7 +123,7 @@ peg::parser!{
             / start:position!() "(" _
               "_" __
               s:symbol() __
-              i:( index() ++ __ ) _
+              i:( index() ++ _ ) _
               ")"
             { L(Identifier::Indexed(s, i), Offset(start)) }
 
@@ -137,7 +135,7 @@ peg::parser!{
 
             / "(" _
               id:identifier() _
-              sorts:( sort() ++ __ ) _
+              sorts:( sort() ++ _ ) _
               ")"
             { Sort::Parametric(id, sorts) }
 
@@ -196,7 +194,7 @@ peg::parser!{
 
             / "(" _
               symbol:symbol() _
-              symbols:(symbol() ++ __) _
+              symbols:(symbol() ++ _) _
               ")"
               { Pattern::Application(symbol, symbols) }
 
@@ -216,14 +214,14 @@ peg::parser!{
 
             / start:position!() "(" _
               qual_identifier:qual_identifier() _
-              terms:( term() ++ __ ) _
+              terms:( term() ++ _ ) _
               ")"
               { L(Term::Application(qual_identifier, terms), Offset(start)) }
 
             / start:position!() "(" _
               "let" _
               "(" _
-                  var_bindings:(var_binding() ++ __) _
+                  var_bindings:(var_binding() ++ _) _
               ")" _
               term:term() _
               ")"
@@ -232,7 +230,7 @@ peg::parser!{
             / start:position!() "(" _
               "forall" _
               "(" _
-                sorted_vars:(sorted_var() ++ __) _
+                sorted_vars:(sorted_var() ++ _) _
               ")" _
               term:term() _
               ")"
@@ -241,7 +239,7 @@ peg::parser!{
             / start:position!() "(" _
               "exists" _
               "(" _
-                sorted_vars:(sorted_var() ++ __) _
+                sorted_vars:(sorted_var() ++ _) _
               ")" _
               term:term() _
               ")"
@@ -251,7 +249,7 @@ peg::parser!{
               "match" _
               term:term() _
               "(" _
-                match_cases:(match_case() ++ __) _
+                match_cases:(match_case() ++ _) _
               ")" _
               ")"
               { L(Term::Match(Box::new(term), match_cases), Offset(start))}
@@ -259,7 +257,7 @@ peg::parser!{
             / start:position!() "(" _
               "!" _
               term:term() _
-              attributes:(attribute() ++ __) _
+              attributes:(attribute() ++ _) _
               ")"
               { L(Term::Annotation(Box::new(term), attributes), Offset(start))}
 
@@ -272,15 +270,22 @@ peg::parser!{
 
             / start:position!() "(" _
               qual_identifier:qual_identifier() _
-              terms:( xid() ++ __ ) _
+              terms:( xid() ++ _ ) _
               ")"
               { L(Term::Application(qual_identifier, terms), Offset(start)) }
 
         rule xtuple() -> XTuple
             = "(" _
-              terms: ( xid() ** __ ) _
-              ")"
+              terms: ( xid() ** _ ) _
+              ")" _
               { XTuple(terms) }
+
+        rule xset() -> XSet
+            = "(" _
+              "x-set" _
+              tuples: (xtuple() ** _) _
+              ")" _
+              { XSet(tuples) }
 
         // //////////////////////////// Theories     ////////////////////////////
         // //////////////////////////// Logics       ////////////////////////////
@@ -310,7 +315,7 @@ peg::parser!{
         rule constructor_dec() -> ConstructorDec
             = "(" _
               s:symbol() _
-              ss:( selector_dec() ** __ ) _
+              ss:( selector_dec() ** _ ) _
               ")"
             { ConstructorDec(s, ss) }
 
@@ -318,10 +323,10 @@ peg::parser!{
             = "(" _
                "par" _
                "(" _
-                  v:( symbol() ++ __ ) _
+                  v:( symbol() ++ _ ) _
                 ")" _
                 "(" _
-                    c:( constructor_dec() ++ __ ) _
+                    c:( constructor_dec() ++ _ ) _
                 ")" _
                 ")"
             { DatatypeDec::Par(v, c) }
@@ -379,10 +384,10 @@ peg::parser!{
         rule declare_datatypes() -> Command
             ="declare-datatypes" _
              "(" _
-                s:(sort_dec() ++ __) _
+                s:(sort_dec() ++ _) _
               ")" _
               "(" _
-                decl:(datatype_dec() ++ __) _
+                decl:(datatype_dec() ++ _) _
               ")"
             { DeclareDatatypes(s, decl) }
 
@@ -390,7 +395,7 @@ peg::parser!{
             = "declare-fun" _
               symbol:symbol() _
               "(" _
-                  domain:(sort() ** __) _
+                  domain:(sort() ** _) _
               ")" _
               co_domain:sort()
             { DeclareFun(symbol, domain, co_domain) }
@@ -416,8 +421,8 @@ peg::parser!{
         rule xinterpret_pred() -> Command
             = "x-interpret-pred" _
               identifier: identifier() _
-              tuples: ( xtuple() ** _ )
-              { XInterpretPred(identifier, tuples) }
+              xset: xset() _
+              { XInterpretPred(identifier, xset) }
 
         rule ftuple() -> (XTuple, L<Term>)
             = "(" _
@@ -468,7 +473,7 @@ peg::parser!{
                          / "set-logic"
                          / "simplify"
                          ) _
-              s: (s_expr() ** __)
+              s: (s_expr() ** _)
             { Verbatim(format!("{}", SExpr::Paren(s))) }
 
         pub rule script() -> Vec<Command>

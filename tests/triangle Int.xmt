@@ -2,9 +2,11 @@
 (declare-fun Edge (Int Int) Bool)
 (declare-fun phi (Int Int Int) Bool)
 (x-interpret-pred Edge
+  (x-set
     (1 2)
     (2 3)
     (1 3)
+  )
 )
 (assert (forall ((x Int) (y Int) (z Int))
             (=> (and (Edge x y) (Edge y z) (Edge x z))

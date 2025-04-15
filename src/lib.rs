@@ -40,9 +40,11 @@
 //!     (declare-fun Edge (Int Int) Bool)
 //!     (declare-fun RedTriangle (Int Int Int) Bool)
 //!     (x-interpret-pred Edge
-//!         (1 2)
-//!         (2 3)
-//!         (1 3)
+//!         (x-set
+//!             (1 2)
+//!             (2 3)
+//!             (1 3)
+//!         )
 //!     )
 //!     (assert (forall ((x Int) (y Int) (z Int))
 //!                 (=> (and (Edge x y) (Edge y z) (Edge x z))
@@ -96,9 +98,11 @@
 // !     (declare-fun Edge (Int Int) Bool)
 // !     (declare-fun RedTriangle (Int Int Int) Bool)
 // !     (x-interpret-pred Edge
-// !         (1 2)
-// !         (2 3)
-// !         (1 3)
+// !         (x-set
+// !             (1 2)
+// !             (2 3)
+// !             (1 3)
+// !         )
 // !     )
 // !     (assert (forall ((x Int) (y Int) (z Int))
 // !                 (=> (and (Edge x y) (Edge y z) (Edge x z))
@@ -140,13 +144,13 @@
 //! An `x-interpret-pred` command specifies the total interpretation of a boolean function symbol (aka predicate),
 //! by listing all the tuples of arguments that make it true.
 //!
-//! Example: `(x-interpret-pred Edge (a b) (b c) (c a) )`.
+//! Example: `(x-interpret-pred Edge (x-set (a b) (b c) (c a)) )`.
 //! The only pairs of nodes that satisfy the `Edge` predicate are `(a b)`, `(b c)`, and `(c a)`.
 //!
 //! For a proposition `p` (aka a boolean function of arity 0), the interpretation can be given as :
 //!
-//! * `(x-interpret-pred p () )` if `p` is true;
-//! * `(x-interpret-pred p )` if `p` is false;
+//! * `(x-interpret-pred p (x-set ()) )` if `p` is true;
+//! * `(x-interpret-pred p (x-set   ) )` if `p` is false;
 //!
 //! Note that a model of the assertions (obtained by `(get-model)`)
 //! will not have any information about interpreted predicate symbols.

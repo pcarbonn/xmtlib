@@ -2,7 +2,7 @@
 (declare-datatype Color ( ( red ) ( green ) ))
 (declare-datatype Hue ( ( hue (first Color) (second Color) ) ))
 (declare-fun dim (Hue) Bool)
-(x-interpret-pred dim ((hue red red)))
+(x-interpret-pred dim (x-set ((hue red red))))
 (assert (exists ((x Hue)) (dim x) ))
 
 (x-ground)

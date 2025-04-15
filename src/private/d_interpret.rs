@@ -5,7 +5,7 @@ use unzip_n::unzip_n;
 
 unzip_n!(pub 4);
 
-use crate::api::{Identifier, QualIdentifier, Sort, XTuple, Term, SpecConstant};
+use crate::api::{Identifier, QualIdentifier, Sort, XTuple, XSet, Term, SpecConstant};
 use crate::error::SolverError::{self, InternalError};
 use crate::solver::Solver;
 
@@ -18,8 +18,7 @@ use crate::api::L;
 
 pub(crate) fn interpret_pred(
     identifier: L<Identifier>,
-    tuples: Vec<XTuple>,
-    command: String,
+    tuples: XSet,
     solver: &mut Solver,
  ) -> Result<String, SolverError> {
     // get the symbol declaration
@@ -44,7 +43,7 @@ pub(crate) fn interpret_pred(
             } else {
                 if domain.len() == 0 {
                     // special case: arity 0
-                    return interpret_pred_0(qual_identifier, tuples, command, solver);
+                    return interpret_pred_0(qual_identifier, tuples, solver);
                 }
 
                 let domain = domain.clone();
@@ -52,7 +51,7 @@ pub(crate) fn interpret_pred(
 
                 // populate the table
                 let mut tuples_strings = vec![];
-                for XTuple(tuple) in &tuples {
+                for XTuple(tuple) in &tuples.0 {
                     if tuple.len() == domain.len() {
                         let tuples_t = tuple.iter()
                             .map(|t| construct(t, solver) )
@@ -111,8 +110,7 @@ pub(crate) fn interpret_pred(
 /// Interpret a predicate of arity 0
 fn interpret_pred_0(
     qual_identifier: QualIdentifier,
-    tuples: Vec<XTuple>,
-    command: String,
+    tuples: XSet,
     solver: &mut Solver,
 ) -> Result<String, SolverError> {
     let table_name = solver.create_db_name(qual_identifier.to_string());
@@ -121,7 +119,7 @@ fn interpret_pred_0(
     let table_uf = Interpretation::Table{name: DbName(format!("{table_name}_UF")), ids: Ids::All};
     let table_g  = Interpretation::Table{name: DbName(format!("{table_name}_G")), ids: Ids::All};
 
-    if tuples.len() == 0 {  // false
+    if tuples.0.len() == 0 {  // false
         let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_TU AS SELECT 'false' as G WHERE false");  // empty table
         solver.conn.execute(&sql, ())?;
 
@@ -146,7 +144,7 @@ fn interpret_pred_0(
     // create FunctionObject with boolean interpretations.
     let function_is = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
     solver.functions.insert(qual_identifier.clone(), function_is);
-    Ok(command)
+    Ok("".to_string())
 }
 
 pub(crate) fn interpret_fun(

@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         (set-option :backend none)
         (declare-fun Edge (Int Int) Bool)
         (declare-fun phi (Int Int Int) Bool)
-        (x-interpret-pred Edge)
+        (x-interpret-pred Edge (x-set ))
     "#).as_str());
 
     let declaration = Instant::now();

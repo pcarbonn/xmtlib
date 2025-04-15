@@ -337,6 +337,14 @@ impl std::fmt::Display for XTuple {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct XSet(pub Vec<XTuple>);
+impl std::fmt::Display for XSet {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "(x-set {})", self.0.iter().format(" "))
+    }
+}
+
 // //////////////////////////// Theories     ////////////////////////////
 // //////////////////////////// Logics       ////////////////////////////
 // //////////////////////////// Info flags   ////////////////////////////
@@ -421,7 +429,7 @@ pub enum Command {
     SetOption(Option_),
     XDebug(L<Identifier>, L<Identifier>),
     XGround,
-    XInterpretPred(L<Identifier>, Vec<XTuple>),
+    XInterpretPred(L<Identifier>, XSet),
     XInterpretFun(L<Identifier>, Vec<(XTuple, L<Term>)>, Option<L<Term>>),
     Verbatim(String),
 }
@@ -480,7 +488,7 @@ impl Display for Command {
             Self::SetOption(m0) => write!(f, "(set-option {})", m0),
             // Self::Simplify(m0) => write!(f, "(simplify {})\n", m0),
 
-            Self::XInterpretPred(s1, s2 ) => write!(f, "(x-interpret-pred {s1} {})\n", s2.iter().format(" ")),
+            Self::XInterpretPred(s1, s2 ) => write!(f, "(x-interpret-pred {s1} {s2})\n"),
             Self::XInterpretFun(s1, s2, s3 ) => {
                 let tuples = s2.iter()
                     .map(|(args, value)| format!("({args} {value})"))

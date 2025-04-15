@@ -248,7 +248,7 @@ impl Solver {
                     yield_!(define_sort(symb, variables, sort, command, self)),
 
                 Command::XInterpretPred(identifier, tuples) =>
-                    yield_!(interpret_pred(identifier, tuples, command, self)),
+                    yield_!(interpret_pred(identifier, tuples, self)),
 
                 Command::XInterpretFun(identifier, tuples, else_) =>
                     yield_!(interpret_fun(identifier, tuples, else_, command, self)),

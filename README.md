@@ -11,7 +11,7 @@ The program can be used to solve configuration problems and perform various reas
 xmt-lib extends the SMT-Lib 2.6 language with the following commands:
 
 * `set-option :backend none` for translation to SMT-Lib-2, or `set-option :backend Z3` for execution with Z3 solver.
-* `x-interpret-pred`, to specify the interpretation of a boolean function.  E.g., `(x-interpret-pred edge (a b) (b c) (c a) )`
+* `x-interpret-pred`, to specify the interpretation of a boolean function.  E.g., `(x-interpret-pred edge (x-set (a b) (b c) (c a)) )`
 * `x-interpret-fun`, to specify the intepretation of a function symbol.  E.g., `(x-interpret-fun length ( ((a b) 2) ((b c) 3) ((c a) 4) ) 999)`
 * `x-ground`, to ground the previous assertions, i.e., to expand the finite quantifications, taking into account the known interpretations.
 

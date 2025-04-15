@@ -5,7 +5,7 @@
 
 
 (declare-fun is_true (Bool) Bool)
-(x-interpret-pred is_true (true))
+(x-interpret-pred is_true (x-set (true)))
 (assert (is_true true))
 (assert (not (and (is_true true) (is_true false))))
 (assert (not (is_true (exists ((x Bool)) (is_true x)))))
