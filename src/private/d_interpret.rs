@@ -176,9 +176,9 @@ pub(crate) fn interpret_fun(
                 if domain.len() == 0 {  // constant
 
                     let value =
-                        if tuples.len() == 0 {  // (x-interpret-fun c () 1)
+                        if tuples.len() == 0 {  // (x-interpret-fun c (x-mapping ) 1)
                             else_.clone().ok_or(SolverError::IdentifierError("no values", identifier.clone()))
-                        } else if tuples.len() == 1 {   // (x-interpret-fun c (() 1))
+                        } else if tuples.len() == 1 {   // (x-interpret-fun c (x-mapping () 1))
                             Ok(tuples[0].1.clone())
                         } else {
                             Err(SolverError::IdentifierError("too many tuples", identifier.clone()))

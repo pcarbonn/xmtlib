@@ -152,6 +152,9 @@
 //! * `(x-interpret-pred p (x-set ()) )` if `p` is true;
 //! * `(x-interpret-pred p (x-set   ) )` if `p` is false;
 //!
+//! Unlike an assertion about the value of a proposition,
+//! the interpretation of a proposition is used to simplify the grounding.
+//!
 //! Note that a model of the assertions (obtained by `(get-model)`)
 //! will not have any information about interpreted predicate symbols.
 //! So, in our example, `(Edge a b)` may have any value in a model.
@@ -161,15 +164,16 @@
 //!
 //! An `x-interpret-fun` command specifies the interpretation of a function symbol, possibly partially,
 //! by associating a value to tuples of arguments, and by giving a default value.
+//! (The interpretation of a function with an infinite domain cannot be given)
 //!
-//! Example: `(x-interpret-fun Length ( ((a b) 2) ((b c) 3) ((c a) 4) ) 999)`.
+//! Example: `(x-interpret-fun Length (x-mapping ((a b) 2) ((b c) 3) ((c a) 4) ) 999)`.
 //! The length of pair `(a b)` is 2, of `(b c)` is 3, of `(c a)` is 4,
 //! and is 999 for every other pairs in the domain of Length.
 //!
 //! The grammar of this command is :
 //!
 //! ```text
-//!     '(' 'x-interpret-fun' <symbol> '(' <mapping>* ')' <value>? ')'
+//!     '(' 'x-interpret-fun' <symbol> '(' 'x-mapping' <mapping>* ')' <value>? ')'
 //!```
 //!
 //! with 0 or more mapping of the form:
@@ -186,7 +190,7 @@
 //! it may not be given otherwise.
 //!
 //! The interpretation of a constant `c` (i.e., a function of arity 0) is given in the default value,
-//! e.g., `(x-interpret-fun Length c () 1)`.
+//! e.g., `(x-interpret-fun Length c (x-mapping ) 1)`.
 //!
 //! Note that a model (obtained by `(get-model)`)
 //! will not have any information about function symbols

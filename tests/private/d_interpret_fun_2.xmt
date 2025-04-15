@@ -4,20 +4,22 @@
 ; arity 0
 (declare-fun C () Color)
 (declare-fun c () Color)
-(x-interpret-fun c ((() red)))
+(x-interpret-fun c (x-mapping (() red)))
 (assert (= c green))
 
 ; arity 2
 (declare-fun Mix (Color Color) Color)
 (declare-fun mix (Color Color) Color)
 (x-interpret-fun mix
-   ( ((red red) green)
+   (x-mapping
+     ((red red) green)
      ((green green) ?)
      ((red green) green)
      ((green red) green)
    ))
 (x-interpret-fun Mix
-   ( ((red red) green)
+   (x-mapping
+      ((red red) green)
    ) ?)
 (assert (exists ((x Color)) (= (mix x x) x)))
 (assert (exists ((x Color)) (= (mix x x) x green)))
@@ -25,7 +27,7 @@
 ; infinite
 (declare-fun RGB (Int) Color)
 (x-interpret-fun RGB
-   (
+   (x-mapping
       ((0) red)
    ) red
 )
@@ -42,9 +44,9 @@
 (declare-fun Mix (Color Color) Color)
 (declare-fun mix (Color Color) Color)
 (declare-fun RGB (Int) Color)
-error: at position (27, 18): Cannot interpret a symbol with infinite domain
+error: at position (29, 18): Cannot interpret a symbol with infinite domain
    |
-27 | (x-interpret-fun RGB
+29 | (x-interpret-fun RGB
    |                  ^ Cannot interpret a symbol with infinite domain
    |(assert false)
 (assert (= (mix green green) green))

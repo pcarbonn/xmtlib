@@ -435,6 +435,7 @@ peg::parser!{
             = "x-interpret-fun" _
               identifier: identifier() _
               "(" _
+              "x-mapping" _
                 tuples: (ftuple() ** _) _
               ")" _
               else_: term()?

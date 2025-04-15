@@ -21,7 +21,7 @@
 (declare-fun substrateB () substrate)
 
 (x-interpret-fun adhesion
-    (
+    (x-mapping
         ((A a) bad)
         ((A b) bad)
 
@@ -30,19 +30,19 @@
     ))
 
 (x-interpret-fun family
-    (
+    (x-mapping
         ((A) pue)
         ((B) mma)
     ))
 
 (x-interpret-fun strength
-    (
+    (x-mapping
         ((A) 40)
         ((B) 42)
     ))
 
 (x-interpret-fun elongation
-    (
+    (x-mapping
         ((A) 0)
         ((B) 8)
     ))

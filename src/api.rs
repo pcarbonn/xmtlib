@@ -495,7 +495,7 @@ impl Display for Command {
                     .collect::<Vec<_>>().join(" ");
                 let else_ = if let Some(else_) = s3 { else_.to_string() }
                     else { "".to_string() };
-                write!(f, "(x-interpret-fun {s1} ( {tuples} ) {else_})\n")
+                write!(f, "(x-interpret-fun {s1} (x-mapping {tuples} ) {else_})\n")
             },
             Self::XDebug(s1, s2) => write!(f, "(x-debug {s1} {s2})\n"),
             Self::XGround => write!(f, "(x-ground)\n"),

@@ -3,13 +3,13 @@
 (declare-datatype Tf ( ( A ) ( B ) ))
 (declare-datatype bol ( ( TRUE ) ( FALSE )))
 (declare-fun p (T Tf) bol)
-(x-interpret-fun p (
+(x-interpret-fun p (x-mapping
    ((a A) FALSE)
    ((a B) ?)
 ) TRUE )
 
 (declare-fun P (Tf Tf) bol)
-(x-interpret-fun P (
+(x-interpret-fun P (x-mapping
    ((A A) FALSE)
    ((B B) ?)
 ) TRUE )

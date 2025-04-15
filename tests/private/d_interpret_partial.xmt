@@ -5,7 +5,7 @@
 ; arity 2
 (declare-fun mix (Color Color) Color)
 (x-interpret-fun mix
-   (
+   (x-mapping
      ((green green) red)
      ((red green) green)
      ((green red) green)
