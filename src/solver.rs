@@ -32,31 +32,33 @@ pub(crate) type TermId = usize;
 
 pub struct Solver {
     pub(crate) backend: Backend,
+    /// help ensure the backend is not changed after a command has been executed
+    pub (crate) started: bool,
     pub conn: Connection,
 
-    // contains only parametric data type declarations
+    /// contains only parametric data type declarations
     pub(crate) parametric_sorts: IndexMap<Symbol, ParametricObject>,
 
-    // contains nullary data types and the used instantiations of parametric data types
+    /// contains nullary data types and the used instantiations of parametric data types
     pub(crate) sorts: IndexMap<Sort, SortObject>,
 
-    // predicate and function symbols
+    /// predicate and function symbols
     pub(crate) functions: IndexMap<QualIdentifier, FunctionObject>,
     // pub(crate) qualified_functions: IndexMap<QualIdentifier, FunctionObject>,
 
-    // To support differed grounding of terms.
-    // The string is the original assertion command.
-    // The first element is the annotated term
+    /// To support differed grounding of terms.
+    /// The string is the original assertion command.
+    /// The first element is the annotated term
     pub(crate) assertions_to_ground: Vec<(String, L<Term>)>,
-    // a mapping from a term to a composable representation of its grounding
+    /// a mapping from a term to a composable representation of its grounding
     pub(crate) groundings: IndexMap<L<Term>, Grounding>,
 
-    // to convert interpretations to definitions when given late
-    // (i.e., make an assertion with p, x-ground, interpret p
-    // --> need to add a definition of p to avoid losing information about p)
+    /// to convert interpretations to definitions when given late
+    /// (i.e., make an assertion with p, x-ground, interpret p
+    /// --> need to add a definition of p to avoid losing information about p)
     pub(crate) grounded: IndexSet<Identifier>,
 
-    // to handle the fact that db names are case insensitive in sqlite
+    /// to handle the fact that db names are case insensitive in sqlite
     pub(crate) db_names: IndexSet<String>,
 }
 
@@ -149,6 +151,7 @@ impl Default for Solver {
 
             Solver {
                 backend: backend,
+                started: false,
                 conn: conn,
                 parametric_sorts: parametric_sorts,
                 sorts: sorts,
@@ -373,6 +376,9 @@ impl Solver {
 
     /// execute a command string
     pub(crate) fn exec(&mut self, cmd: &str) -> Result<String, SolverError> {
+        if cmd.to_string().len() != 0 {
+            self.started = true;
+        }
         match self.backend {
             Backend::NoDriver => {
                 return Ok(cmd.to_string())
@@ -398,16 +404,23 @@ impl Solver {
             Option_::Attribute(Attribute::WithValue(keyword, value)) => {
                 match (keyword.0.as_str(), value) {
                     (":backend", AttributeValue::Symbol(Symbol(value))) => {
-                        match value.as_str() {
-                            "none" => self.backend = Backend::NoDriver,
-                            "Z3" => {
-                                unsafe {
-                                    let cfg = Z3_mk_config();
-                                    let ctx = Z3_mk_context(cfg);
-                                    self.backend = Backend::Z3(ctx);
-                                }
-                            },
-                            _ => return Err(SolverError::ExprError(format!("Unknown backend: {value}")))
+                        let new =
+                            match value.as_str() {
+                                "none" => Backend::NoDriver,
+                                "Z3" => {
+                                    unsafe {
+                                        let cfg = Z3_mk_config();
+                                        let ctx = Z3_mk_context(cfg);
+                                        Backend::Z3(ctx)
+                                    }
+                                },
+                                _ => return Err(SolverError::ExprError(format!("Unknown backend: {value}")))
+                            };
+                        if self.backend != new {
+                            if self.started {
+                                return Err(SolverError::ExprError("Can't change backend anymore".to_string()))
+                            };
+                            self.backend = new;
                         }
                         Ok("".to_string())
                     },

@@ -138,6 +138,9 @@
 //! * `set-option :backend none` to obtain the translation of xmt-lib commands to SMT-Lib 2.6;
 //! * `set-option :backend Z3` for immediate execution of commands by a Z3 solver.
 //!
+//! By default, the backend is Z3.
+//! It can only be changed at the start of a session.
+//!
 //!
 //! ## (x-interpret-pred
 //!
