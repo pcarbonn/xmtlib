@@ -161,9 +161,11 @@ pub(crate) fn query_for_variable(
 }
 
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, strum_macros::Display, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum ViewType {
-    TU, UF, G,
+    #[strum(to_string = "TU")] TU,
+    #[strum(to_string = "UF")] UF,
+    #[strum(to_string = "G")] G,
 }
 
 /// describes the type of query to create for a compound term
@@ -561,7 +563,7 @@ pub(crate) fn query_for_union(
     // create the union
     let query = GroundingQuery::Union{ sub_queries: Box::new(sub_queries), precise };
 
-    let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS {query}");
+    let sql = format!("CREATE VIEW {table_name} AS {query}");
     solver.conn.execute(&sql, ())?;
 
     // create the sub_view
@@ -626,7 +628,7 @@ impl GroundingView {
                     let vars = if vars == "" { vars } else { vars + ", " };
                     let if_= if condition { "if_, " } else { "" };
                     let grounding = "G".to_string();
-                    let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {vars}{if_}{grounding} FROM ({query})");
+                    let sql = format!("CREATE VIEW {table_name} AS SELECT {vars}{if_}{grounding} FROM ({query})");
                     solver.conn.execute(&sql, ())?;
 
                     Ok(GroundingView::View{
@@ -640,7 +642,7 @@ impl GroundingView {
             },
             GroundingQuery::Aggregate { .. } => {
 
-                let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS {query}");
+                let sql = format!("CREATE VIEW {table_name} AS {query}");
                 solver.conn.execute(&sql, ())?;
 
                 Ok(GroundingView::View {
@@ -654,7 +656,7 @@ impl GroundingView {
             },
             GroundingQuery::Union { ref sub_queries, .. } => {
 
-                let sql = format!("CREATE VIEW IF NOT EXISTS {table_name} AS {query}");
+                let sql = format!("CREATE VIEW {table_name} AS {query}");
                 solver.conn.execute(&sql, ())?;
 
                 Ok(GroundingView::View {

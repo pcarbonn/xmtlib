@@ -94,7 +94,7 @@ pub(crate) fn interpret_pred(
                 let name_tu = format!("{table_name}_TU");
                 let table_tu = Interpretation::Table{name: DbName(name_tu.clone()), ids: Ids::All};
 
-                let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_TU AS SELECT *, \"true\" as G from {table_name}_T");
+                let sql = format!("CREATE VIEW {table_name}_TU AS SELECT *, \"true\" as G from {table_name}_T");
                 solver.conn.execute(&sql, ())?;
 
                 let size = size(&domain, &solver)?;
@@ -149,23 +149,23 @@ fn interpret_pred_0(
     match tuples {
         Left(tuples) => {
             if tuples.0.len() == 0 {  // false
-                let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_TU AS SELECT 'false' as G WHERE false");  // empty table
+                let sql = format!("CREATE VIEW {table_name}_TU AS SELECT 'false' as G WHERE false");  // empty table
                 solver.conn.execute(&sql, ())?;
 
-                let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_UF AS SELECT 'false' as G");
+                let sql = format!("CREATE VIEW {table_name}_UF AS SELECT 'false' as G");
                 solver.conn.execute(&sql, ())?;
 
-                let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_G AS SELECT 'false' as G");
+                let sql = format!("CREATE VIEW {table_name}_G AS SELECT 'false' as G");
                 solver.conn.execute(&sql, ())?;
 
             } else {  // true
-                let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_TU AS SELECT 'true' as G");
+                let sql = format!("CREATE VIEW {table_name}_TU AS SELECT 'true' as G");
                 solver.conn.execute(&sql, ())?;
 
-                let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_UF AS SELECT 'true' as G WHERE false");  // empty table
+                let sql = format!("CREATE VIEW {table_name}_UF AS SELECT 'true' as G WHERE false");  // empty table
                 solver.conn.execute(&sql, ())?;
 
-                let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_G AS SELECT 'true' as G");
+                let sql = format!("CREATE VIEW {table_name}_G AS SELECT 'true' as G");
                 solver.conn.execute(&sql, ())?;
 
             }
@@ -225,7 +225,7 @@ pub(crate) fn interpret_fun(
                         _ => format!("\"{}\"", construct(&value, solver)?)
                     };
 
-                    let sql = format!("CREATE VIEW IF NOT EXISTS {table_name}_G AS SELECT {value} as G");
+                    let sql = format!("CREATE VIEW {table_name}_G AS SELECT {value} as G");
                     solver.conn.execute(&sql, ())?;
 
                     // create FunctionObject.
@@ -501,11 +501,11 @@ fn create_g_view(
         Some(v) => format!("\"{v}\""),
         None => format!("apply(\"{identifier}\", {args})")
     };
-    let sql = format!("CREATE VIEW IF NOT EXISTS {temp} AS SELECT {columns}, {value} as G from {joins} LEFT JOIN {from} ON {thetas} WHERE {from}.G IS NULL");
+    let sql = format!("CREATE VIEW {temp} AS SELECT {columns}, {value} as G from {joins} LEFT JOIN {from} ON {thetas} WHERE {from}.G IS NULL");
     solver.conn.execute(&sql, ())?;
 
     // create the final view
-    let sql = format!("CREATE VIEW IF NOT EXISTS {to} AS SELECT * FROM {from} UNION SELECT * FROM {temp}");
+    let sql = format!("CREATE VIEW {to} AS SELECT * FROM {from} UNION SELECT * FROM {temp}");
     solver.conn.execute(&sql, ())?;
     Ok(())
 }

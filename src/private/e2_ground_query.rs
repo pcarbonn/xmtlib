@@ -334,7 +334,7 @@ impl GroundingQuery {
             Some(true) => Some(false),
             Some(false) => Some(true),
         };
-        let base_table = DbName(format!("negate_{index}"));
+        let base_table = DbName(format!("negate_{index}_{view_type}"));
 
         match self {
             GroundingQuery::Join { variables, conditions, grounding,
@@ -370,7 +370,7 @@ impl GroundingQuery {
                     infinite_variables: infinite_variables.clone(),
                     sub_view: Box::new(sub_view.negate(index, view_type, solver)?)
                 };
-                let table_name = TableAlias{base_table, index: 0};
+                let table_name = TableAlias{base_table, index: 1};
                 GroundingView::new(table_name, free_variables, query, exclude, ids.clone(), solver)
             },
             GroundingQuery::Union {..} => unreachable!()  // because negation is pushed down conjunctions and disjunctions

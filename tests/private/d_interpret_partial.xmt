@@ -81,9 +81,9 @@ Tables and Views:
  - _xmt__6 (view)
  - _xmt__6_10 (view)
  - _xmt__6_11 (view)
- - Agg_4_TU (view)
- - Agg_4_UF (view)
- - Agg_4_G (view)
+ - Agg_7_TU (view)
+ - Agg_7_UF (view)
+ - Agg_7_G (view)
  TABLE: _xmt_mix_g
 ┌─────────┬─────────┬─────────────────┐
 │ a_0     │ a_1     │ G               │

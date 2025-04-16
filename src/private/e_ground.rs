@@ -197,7 +197,6 @@ pub(crate) fn ground_term_(
     solver: &mut Solver
 ) -> Result<Grounding, SolverError> {
 
-    let index = solver.groundings.len();
     match term {
         L(Term::SpecConstant(spec_constant), _) => {
 
@@ -221,6 +220,7 @@ pub(crate) fn ground_term_(
                     None
                 };
 
+            let index = solver.groundings.len();
             let g = query_for_variable(symbol, base_table, index, solver)?;
 
             match sort {
@@ -247,6 +247,7 @@ pub(crate) fn ground_term_(
                     Err(InternalError(42578548)),
                 Grounding::Boolean { tu: _, uf: sub_uf, g: sub_g } => {
 
+                    let index = solver.groundings.len();
                     let table_name = DbName(format!("Agg_{index}"));
 
                     let (free_variables, infinite_variables) = sub_g.get_free_variables(variables).clone();
@@ -291,6 +292,7 @@ pub(crate) fn ground_term_(
                     Err(InternalError(42578548)),
                 Grounding::Boolean { tu: sub_tu, uf: _, g: sub_g } => {
 
+                    let index = solver.groundings.len();
                     let table_name = DbName(format!("Agg_{index}"));
 
                     let (free_variables, infinite_variables) = sub_tu.get_free_variables(variables).clone();

@@ -118,15 +118,15 @@ Tables and Views:
  - _xmt__5 (view)
  - _xmt__5_11 (view)
  - _xmt__5_12 (view)
- - Agg_3_TU (view)
- - Agg_3_UF (view)
- - Agg_3_G (view)
+ - Agg_6_TU (view)
+ - Agg_6_UF (view)
+ - Agg_6_G (view)
  - _xmt__7 (view)
  - _xmt__7_14 (view)
  - _xmt__7_15 (view)
- - Agg_7_TU (view)
- - Agg_7_UF (view)
- - Agg_7_G (view)
+ - Agg_8_TU (view)
+ - Agg_8_UF (view)
+ - Agg_8_G (view)
 CREATE VIEW _xmt_c_G AS SELECT "red" as G
  TABLE: _xmt_mix_g
 ┌─────────┬─────────┬─────────────────────┐
