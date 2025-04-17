@@ -6,6 +6,8 @@
 (declare-fun c () Color)
 (x-interpret-fun c (x-mapping (() red)))
 (assert (= c green))
+(declare-fun p () Bool)
+(x-interpret-fun p (x-mapping ) true)
 
 ; arity 2
 (declare-fun Mix (Color Color) Color)
@@ -28,6 +30,7 @@
 (x-debug solver functions)
 (x-debug solver groundings)
 (x-debug db tables)
+(x-debug db _xmt_p_UF)
 (x-debug db-view _xmt_c_G)
 (x-debug db _xmt_mix_g)
 
@@ -42,6 +45,7 @@
 (declare-datatype Color ((red ) (green )))
 (declare-fun C () Color)
 (declare-fun c () Color)
+(declare-fun p () Bool)
 (declare-fun Mix (Color Color) Color)
 (declare-fun mix (Color Color) Color)
 (assert false)
@@ -73,7 +77,8 @@ Functions:
  - green: Constructor
  - C:  -> Color (false)
  - c: Non Boolean (_xmt_c_G Complete)
- - Mix: Non Boolean (_xmt_mix_3_G Partial)
+ - p: Boolean (_xmt_p_TU Complete, _xmt_p_UF Complete, _xmt_p_G Complete)
+ - Mix: Non Boolean (_xmt_mix_4_G Partial)
  - mix: Non Boolean (_xmt_mix_G Partial)
 Groundings:
  - c: SELECT _xmt_c_G.G AS G FROM _xmt_c_G AS _xmt_c_G
@@ -104,30 +109,37 @@ Tables and Views:
  - Bool (table)
  - _xmt_color (table)
  - _xmt_c_G (view)
+ - _xmt_p_TU (view)
+ - _xmt_p_UF (view)
+ - _xmt_p_G (view)
  - _xmt_mix_G (table)
- - _xmt_mix_3_U (table)
- - _xmt_mix_3_UF (view)
- - _xmt_mix_3_G (view)
+ - _xmt_mix_4_U (table)
+ - _xmt_mix_4_UF (view)
+ - _xmt_mix_4_G (view)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
  - _xmt_c_0 (view)
  - _xmt__2 (view)
- - _xmt__2_7 (view)
  - _xmt__2_8 (view)
+ - _xmt__2_9 (view)
  - variable_3 (view)
- - _xmt_mix_4 (view)
+ - _xmt_mix_4_10 (view)
  - _xmt__5 (view)
- - _xmt__5_11 (view)
  - _xmt__5_12 (view)
+ - _xmt__5_13 (view)
  - Agg_6_TU (view)
  - Agg_6_UF (view)
  - Agg_6_G (view)
  - _xmt__7 (view)
- - _xmt__7_14 (view)
  - _xmt__7_15 (view)
+ - _xmt__7_16 (view)
  - Agg_8_TU (view)
  - Agg_8_UF (view)
  - Agg_8_G (view)
+ TABLE: _xmt_p_uf
+┌───┐
+│ G │
+└───┘
 CREATE VIEW _xmt_c_G AS SELECT "red" as G
  TABLE: _xmt_mix_g
 ┌─────────┬─────────┬─────────────────────┐
@@ -142,8 +154,8 @@ CREATE VIEW _xmt_c_G AS SELECT "red" as G
 │ "green" │ "red"   │ "green"             │
 └─────────┴─────────┴─────────────────────┘
 (declare-fun RGB (Int) Color)
-error: at position (36, 18): Cannot interpret a symbol with infinite domain
+error: at position (39, 18): Cannot interpret a symbol with infinite domain
    |
-36 | (x-interpret-fun RGB
+39 | (x-interpret-fun RGB
    |                  ^ Cannot interpret a symbol with infinite domain
    |
