@@ -16,7 +16,7 @@ use crate::private::b_fun::{declare_fun, FunctionObject};
 use crate::private::c_assert::assert_;
 use crate::private::d_interpret::{interpret_pred, interpret_fun};
 use crate::private::e_ground::{ground, Grounding};
-use crate::private::e2_ground_query::DbName;
+use crate::private::e2_ground_query::TableName;
 use crate::private::y_db::init_db;
 use crate::api::L;
 
@@ -100,7 +100,7 @@ impl Default for Solver {
                     ConstructorDec (Symbol("false".to_string()),vec![]),
                 ],
                 ),
-            table: DbName("Bool".to_string()),
+            table: TableName("Bool".to_string()),
             row_count: 2};
         sorts.insert(sort("Bool"), bool_decl);
         // LINK src/doc.md#_Infinite
@@ -435,7 +435,7 @@ impl Solver {
 
 
     /// Sanitize a name.  Removes non-alphanumeric characters, and adds a number if empty or ambiguous.
-    pub(crate) fn create_db_name(self: &mut Solver, name: String) -> DbName {
+    pub(crate) fn create_table_name(self: &mut Solver, name: String) -> TableName {
         let re = Regex::new(r"[\+\-/\*=\%\?\!\.\$\&\^<>@]").unwrap();
         let db_name = re.replace_all(&name, "").to_string().to_lowercase();
         let index = self.db_names.len();
@@ -451,6 +451,6 @@ impl Solver {
                 }
             };
         self.db_names.insert(db_name.clone());
-        DbName(db_name)
+        TableName(db_name)
     }
 }

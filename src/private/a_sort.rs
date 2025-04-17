@@ -10,7 +10,7 @@ use crate::api::{ConstructorDec, DatatypeDec, Identifier, Numeral, SelectorDec, 
 use crate::error::{SolverError::{self, InternalError}, Offset};
 use crate::solver::Solver;
 use crate::private::b_fun::FunctionObject;
-use crate::private::e2_ground_query::DbName;
+use crate::private::e2_ground_query::TableName;
 use crate::api::L;
 
 #[allow(unused_imports)]
@@ -29,7 +29,7 @@ pub(crate) enum ParametricObject {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum SortObject{
-    Normal{datatype_dec: DatatypeDec, table: DbName, row_count: usize},  // table name, number of rows
+    Normal{datatype_dec: DatatypeDec, table: TableName, row_count: usize},  // table name, number of rows
     Recursive,
     Infinite,  // Int, Real, and derived
     Unknown
@@ -408,7 +408,7 @@ fn insert_sort(
     sort: Sort,
     decl: Option<DatatypeDec>,
     grounding: TypeInterpretation,
-    alias: Option<(DbName, usize)>,  // name and size of the table that `sort` is an alias for.
+    alias: Option<(TableName, usize)>,  // name and size of the table that `sort` is an alias for.
     solver: &mut Solver,
 ) -> Result<TypeInterpretation, SolverError> {
 
@@ -426,9 +426,9 @@ fn insert_sort(
                                 } else {
                                     let table =
                                         if let Sort::Sort(L(Identifier::Simple(Symbol(ref name)), _)) = sort {
-                                            solver.create_db_name(name.to_string())
+                                            solver.create_table_name(name.to_string())
                                         } else {
-                                            DbName(format!("Sort_{}", i))
+                                            TableName(format!("Sort_{}", i))
                                         };
                                     let row_count = create_table(&table, &constructor_decls, solver)?;
                                     SortObject::Normal{datatype_dec, table, row_count}
@@ -456,7 +456,7 @@ fn insert_sort(
 
 
 fn create_table(
-    table: &DbName,
+    table: &TableName,
     constructor_decls: &Vec<ConstructorDec>,
     solver: &mut Solver
 ) -> Result<usize, SolverError> {
@@ -498,7 +498,7 @@ fn create_table(
         let mut selects: Vec<String> = vec![];
 
         if 0 < nullary.len() {
-            let core = DbName(format!("{table}_core"));
+            let core = TableName(format!("{table}_core"));
             create_core_table(&core, nullary, &mut solver.conn)?;
 
             //  "NULL as first, NULL as second"
@@ -575,7 +575,7 @@ fn create_table(
 
 /// creates a table in the DB containing the nullary constructors
 fn create_core_table(
-    table: &DbName,
+    table: &TableName,
     values: Vec<String>,
     conn: &mut Connection
 ) -> Result<(), SolverError> {

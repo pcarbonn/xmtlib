@@ -10,7 +10,7 @@ use crate::error::{SolverError, Offset};
 use crate::solver::Solver;
 use crate::private::a_sort::instantiate_parent_sort;
 use crate::private::e1_ground_view::Ids;
-use crate::private::e2_ground_query::DbName;
+use crate::private::e2_ground_query::TableName;
 use crate::api::L;
 
 
@@ -28,7 +28,7 @@ pub(crate) enum FunctionObject {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum Interpretation {
-    Table{name: DbName, ids: Ids},
+    Table{name: TableName, ids: Ids},
     Infinite  // for UF, G of interpreted predicate over infinite domain
 }
 

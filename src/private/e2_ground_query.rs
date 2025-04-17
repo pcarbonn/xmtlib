@@ -60,7 +60,7 @@ pub(crate) type ThetaJoin = (TableAlias, Vec<Mapping>);
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct TableAlias {
-    pub(crate) base_table: DbName,  // contains index for views !
+    pub(crate) base_table: TableName,  // contains index for views !
     pub(crate) index: TermId, // to disambiguate interpretation table
 }
 
@@ -74,7 +74,7 @@ pub(crate) struct Column {
 
 /// The name of a table or column in the datase
 #[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash)]
-pub(crate) struct DbName(pub(crate) String);
+pub(crate) struct TableName(pub(crate) String);
 
 
 ///////////////////////////  Display //////////////////////////////////////////
@@ -280,7 +280,7 @@ impl std::fmt::Display for GroundingQuery {
 }
 
 
-impl std::fmt::Display for DbName {
+impl std::fmt::Display for TableName {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
@@ -334,7 +334,7 @@ impl GroundingQuery {
             Some(true) => Some(false),
             Some(false) => Some(true),
         };
-        let base_table = DbName(format!("negate_{index}_{view_type}"));
+        let base_table = TableName(format!("negate_{index}_{view_type}"));
 
         match self {
             GroundingQuery::Join { variables, conditions, grounding,
@@ -360,8 +360,8 @@ impl GroundingQuery {
                     theta_joins: theta_joins.clone(),
                     precise: *precise
                 };
-                let table_name = TableAlias{base_table, index: 0};
-                GroundingView::new(table_name, free_variables, query, exclude, ids.clone(), solver)
+                let table_alias = TableAlias{base_table, index: 0};
+                GroundingView::new(table_alias, free_variables, query, exclude, ids.clone(), solver)
             }
             GroundingQuery::Aggregate { agg, infinite_variables, sub_view, .. } => {
                 let query = GroundingQuery::Aggregate {
@@ -370,8 +370,8 @@ impl GroundingQuery {
                     infinite_variables: infinite_variables.clone(),
                     sub_view: Box::new(sub_view.negate(index, view_type, solver)?)
                 };
-                let table_name = TableAlias{base_table, index: 1};
-                GroundingView::new(table_name, free_variables, query, exclude, ids.clone(), solver)
+                let table_alias = TableAlias{base_table, index: 1};
+                GroundingView::new(table_alias, free_variables, query, exclude, ids.clone(), solver)
             },
             GroundingQuery::Union {..} => unreachable!()  // because negation is pushed down conjunctions and disjunctions
         }
@@ -382,7 +382,7 @@ impl GroundingQuery {
 
 impl TableAlias {
     #[inline]
-    pub(crate) fn new(base_table: DbName, index: usize) -> Self {
+    pub(crate) fn new(base_table: TableName, index: usize) -> Self {
         TableAlias{base_table: base_table, index}
     }
 }

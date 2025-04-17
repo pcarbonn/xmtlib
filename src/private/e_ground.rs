@@ -12,8 +12,8 @@ use crate::solver::{Solver, Backend};
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, Interpretation};
 use crate::private::e1_ground_view::{GroundingView, Ids, ViewType, QueryVariant,
-    query_for_constant, query_for_variable, query_for_compound, query_for_aggregate, query_for_union};
-use crate::private::e2_ground_query::{DbName, TableAlias};
+    view_for_constant, view_for_variable, view_for_compound, query_for_aggregate, view_for_union};
+use crate::private::e2_ground_query::{TableName, TableAlias};
 use crate::api::L;
 
 
@@ -201,7 +201,7 @@ pub(crate) fn ground_term_(
         L(Term::SpecConstant(spec_constant), _) => {
 
             // a number or string; cannot be Boolean
-            let grounding = query_for_constant(spec_constant, solver)?;
+            let grounding = view_for_constant(spec_constant, solver)?;
             Ok(Grounding::NonBoolean(grounding))
         },
         L(Term::XSortedVar(symbol, sort), _) => {
@@ -221,7 +221,7 @@ pub(crate) fn ground_term_(
                 };
 
             let index = solver.groundings.len();
-            let g = query_for_variable(symbol, base_table, index, solver)?;
+            let g = view_for_variable(symbol, base_table, index, solver)?;
 
             match sort {
                 Some(sort) if sort.to_string() == "bool" => {
@@ -248,7 +248,7 @@ pub(crate) fn ground_term_(
                 Grounding::Boolean { tu: _, uf: sub_uf, g: sub_g } => {
 
                     let index = solver.groundings.len();
-                    let table_name = DbName(format!("Agg_{index}"));
+                    let table_name = TableName(format!("Agg_{index}"));
 
                     let (free_variables, infinite_variables) = sub_g.get_free_variables(variables).clone();
 
@@ -258,7 +258,7 @@ pub(crate) fn ground_term_(
                         &infinite_variables,
                         "and",
                         Some(false),
-                        TableAlias{base_table: DbName(format!("{table_name}_TU")), index: 0},
+                        TableAlias{base_table: TableName(format!("{table_name}_TU")), index: 0},
                         solver)?;
 
                     let g = query_for_aggregate(
@@ -267,7 +267,7 @@ pub(crate) fn ground_term_(
                         &infinite_variables,
                         "and",
                         None,
-                        TableAlias{base_table: DbName(format!("{table_name}_G")), index: 0},
+                        TableAlias{base_table: TableName(format!("{table_name}_G")), index: 0},
                         solver)?;
 
                     // the infinite variables may be different for sub_uf
@@ -279,7 +279,7 @@ pub(crate) fn ground_term_(
                         &infinite_variables,
                         if top_level { "" } else { "and" },
                         None,
-                        TableAlias{base_table: DbName(format!("{table_name}_UF")), index: 0},
+                        TableAlias{base_table: TableName(format!("{table_name}_UF")), index: 0},
                         solver)?;
 
                     Ok(Grounding::Boolean{tu, uf, g})
@@ -293,7 +293,7 @@ pub(crate) fn ground_term_(
                 Grounding::Boolean { tu: sub_tu, uf: _, g: sub_g } => {
 
                     let index = solver.groundings.len();
-                    let table_name = DbName(format!("Agg_{index}"));
+                    let table_name = TableName(format!("Agg_{index}"));
 
                     let (free_variables, infinite_variables) = sub_tu.get_free_variables(variables).clone();
 
@@ -303,7 +303,7 @@ pub(crate) fn ground_term_(
                         &infinite_variables,
                         "or",
                         None,
-                        TableAlias{base_table: DbName(format!("{table_name}_TU")), index: 0},
+                        TableAlias{base_table: TableName(format!("{table_name}_TU")), index: 0},
                         solver)?;
 
                     // the infinite variables may be different from sub tu
@@ -315,7 +315,7 @@ pub(crate) fn ground_term_(
                         &infinite_variables,
                         "or",
                         Some(true),
-                        TableAlias{base_table: DbName(format!("{table_name}_UF")), index: 0},
+                        TableAlias{base_table: TableName(format!("{table_name}_UF")), index: 0},
                         solver)?;
 
                     let g = query_for_aggregate(
@@ -324,7 +324,7 @@ pub(crate) fn ground_term_(
                         &infinite_variables,
                         "or",
                         None,
-                        TableAlias{base_table: DbName(format!("{table_name}_G")), index: 0},
+                        TableAlias{base_table: TableName(format!("{table_name}_G")), index: 0},
                         solver)?;
                     Ok(Grounding::Boolean{tu, uf, g})
                 },
@@ -377,7 +377,7 @@ fn ground_compound(
                             ( Grounding::NonBoolean(lg),
                               Grounding::NonBoolean(rg)) => {
                                 let mut sub_queries = vec![ifg, lg, rg];
-                                let g = query_for_compound(qual_identifier, index, &mut sub_queries, &variant, None, solver)?;
+                                let g = view_for_compound(qual_identifier, index, &mut sub_queries, &variant, None, solver)?;
 
                         Ok(Grounding::NonBoolean( g ))
                             },
@@ -385,13 +385,13 @@ fn ground_compound(
                               Grounding::Boolean{tu: rtu, uf: ruf, g: rg, ..}) => {
 
                                 let mut sub_queries = vec![ifg.clone(), ltu, rtu];
-                                let tu = query_for_compound(qual_identifier, index, &mut sub_queries, &variant, None, solver)?;
+                                let tu = view_for_compound(qual_identifier, index, &mut sub_queries, &variant, None, solver)?;
 
                                 let mut sub_queries = vec![ifg.clone(), luf, ruf];
-                                let uf = query_for_compound(qual_identifier, index, &mut sub_queries, &variant, None, solver)?;
+                                let uf = view_for_compound(qual_identifier, index, &mut sub_queries, &variant, None, solver)?;
 
                                 let mut sub_queries = vec![ifg, lg, rg];
-                                let g = query_for_compound(qual_identifier, index, &mut sub_queries, &variant, None, solver)?;
+                                let g = view_for_compound(qual_identifier, index, &mut sub_queries, &variant, None, solver)?;
 
                                 Ok(Grounding::Boolean{tu, uf, g})
                             },
@@ -412,21 +412,21 @@ fn ground_compound(
                 match qual_identifier.to_string().as_str() {
                     "and" => {
 
-                        let tu = query_for_compound(qual_identifier, index, &mut tus, &variant, Some(false), solver)?;
+                        let tu = view_for_compound(qual_identifier, index, &mut tus, &variant, Some(false), solver)?;
 
-                        let uf = query_for_union(ufs, Some(true), "and".to_string(), index, solver)?;
+                        let uf = view_for_union(ufs, Some(true), "and".to_string(), index, solver)?;
 
-                        let g = query_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
+                        let g = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
 
                         Ok(Grounding::Boolean{tu, uf, g})
                     }
                     "or" => {
 
-                        let tu = query_for_union(tus, Some(false), "or".to_string(), index, solver)?;
+                        let tu = view_for_union(tus, Some(false), "or".to_string(), index, solver)?;
 
-                        let uf = query_for_compound(qual_identifier,  index, &mut ufs, &variant, Some(true), solver)?;
+                        let uf = view_for_compound(qual_identifier,  index, &mut ufs, &variant, Some(true), solver)?;
 
-                        let g = query_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
+                        let g = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
 
                         Ok(Grounding::Boolean{tu, uf, g})
 
@@ -452,11 +452,11 @@ fn ground_compound(
                     }
                     "=" => {
                         // LINK src/doc.md#_Equality
-                        let tu = query_for_compound(qual_identifier, index, &mut gqs, &variant, Some(false), solver)?;
+                        let tu = view_for_compound(qual_identifier, index, &mut gqs, &variant, Some(false), solver)?;
 
-                        let uf = query_for_compound(qual_identifier, index, &mut gqs, &variant, Some(true), solver)?;
+                        let uf = view_for_compound(qual_identifier, index, &mut gqs, &variant, Some(true), solver)?;
 
-                        let g = query_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
+                        let g = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
 
                         Ok(Grounding::Boolean{tu, uf, g})
                     }
@@ -465,11 +465,11 @@ fn ground_compound(
                     | ">="
                     | ">"
                     | "distinct" => {
-                        let tu = query_for_compound(qual_identifier, index, &mut gqs, &variant, Some(false), solver)?;
+                        let tu = view_for_compound(qual_identifier, index, &mut gqs, &variant, Some(false), solver)?;
 
-                        let uf = query_for_compound(qual_identifier, index, &mut gqs, &variant, Some(true), solver)?;
+                        let uf = view_for_compound(qual_identifier, index, &mut gqs, &variant, Some(true), solver)?;
 
-                        let g = query_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
+                        let g = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
 
                         Ok(Grounding::Boolean{tu, uf, g})
                     }
@@ -478,7 +478,7 @@ fn ground_compound(
             } else {  // predefined non-boolean function
                 match qual_identifier.to_string().as_str() {
                     "+" | "-" | "*" | "div" | "mod" | "abs" => {
-                        let g = query_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
+                        let g = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
 
                         Ok(Grounding::NonBoolean( g ))
                     }
@@ -491,12 +491,12 @@ fn ground_compound(
             let variant = QueryVariant::Construct;
             if qual_identifier.to_string() == "true"
             || qual_identifier.to_string() == "false" {  // boolean
-                let tu = query_for_compound(qual_identifier, index, &mut vec![], &variant, Some(false), solver)?;
-                let uf = query_for_compound(qual_identifier, index, &mut vec![], &variant, Some(true), solver)?;
-                let g = query_for_compound(qual_identifier, index, &mut vec![], &variant, None, solver)?;
+                let tu = view_for_compound(qual_identifier, index, &mut vec![], &variant, Some(false), solver)?;
+                let uf = view_for_compound(qual_identifier, index, &mut vec![], &variant, Some(true), solver)?;
+                let g = view_for_compound(qual_identifier, index, &mut vec![], &variant, None, solver)?;
                 Ok(Grounding::Boolean{tu, uf, g})
             } else {
-                let grounding_query = query_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
+                let grounding_query = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
                 Ok(Grounding::NonBoolean(grounding_query))
             }
         },
@@ -506,15 +506,15 @@ fn ground_compound(
 
                 // custom boolean function
                 let (mut tus, mut ufs) = collect_tu_uf(&groundings);
-                let  g = query_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
-                let tu = query_for_compound(qual_identifier, index, &mut tus, &variant, Some(false), solver)?;
-                let uf = query_for_compound(qual_identifier, index, &mut ufs, &variant, Some(true), solver)?;
+                let  g = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
+                let tu = view_for_compound(qual_identifier, index, &mut tus, &variant, Some(false), solver)?;
+                let uf = view_for_compound(qual_identifier, index, &mut ufs, &variant, Some(true), solver)?;
 
                 Ok(Grounding::Boolean{tu, uf, g})
             } else {
 
                 // custom non-boolean function
-                let grounding_query = query_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
+                let grounding_query = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
                 Ok(Grounding::NonBoolean(grounding_query))
             }
         },
@@ -540,7 +540,7 @@ fn ground_compound(
                     },
                     Interpretation::Infinite => QueryVariant::Apply
                 };
-                let new_view = query_for_compound(qual_identifier, index, &groundings, &variant, exclude, solver)?;
+                let new_view = view_for_compound(qual_identifier, index, &groundings, &variant, exclude, solver)?;
                 new_queries.push(new_view);
             };
 
@@ -554,7 +554,7 @@ fn ground_compound(
                 },
                 Interpretation::Infinite => QueryVariant::Apply
             };
-            let new_view = query_for_compound(qual_identifier, index, &gqs, &variant, None, solver)?;
+            let new_view = view_for_compound(qual_identifier, index, &gqs, &variant, None, solver)?;
             Ok(Grounding::NonBoolean(new_view))
         }
     }

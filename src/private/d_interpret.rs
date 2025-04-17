@@ -13,7 +13,7 @@ use crate::solver::Solver;
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, Interpretation};
 use crate::private::e1_ground_view::Ids;
-use crate::private::e2_ground_query::DbName;
+use crate::private::e2_ground_query::TableName;
 use crate::api::L;
 
 
@@ -24,7 +24,7 @@ pub(crate) fn interpret_pred(
  ) -> Result<String, SolverError> {
     // get the symbol declaration
     let qual_identifier = QualIdentifier::Identifier(identifier.clone());
-    let table_name = solver.create_db_name(identifier.to_string());
+    let table_name = solver.create_table_name(identifier.to_string());
 
     let function_is = solver.functions.get(&qual_identifier)
         .ok_or(SolverError::IdentifierError("Unknown symbol", identifier.clone()))?;
@@ -92,7 +92,7 @@ pub(crate) fn interpret_pred(
 
                 // create TU view
                 let name_tu = format!("{table_name}_TU");
-                let table_tu = Interpretation::Table{name: DbName(name_tu.clone()), ids: Ids::All};
+                let table_tu = Interpretation::Table{name: TableName(name_tu.clone()), ids: Ids::All};
 
                 let sql = format!("CREATE VIEW {table_name}_TU AS SELECT *, \"true\" as G from {table_name}_T");
                 solver.conn.execute(&sql, ())?;
@@ -109,7 +109,7 @@ pub(crate) fn interpret_pred(
 
                     // create UF view
                     let name_uf = format!("{table_name}_UF");
-                    let table_uf = Interpretation::Table{name: DbName(name_uf.clone()), ids: Ids::All};
+                    let table_uf = Interpretation::Table{name: TableName(name_uf.clone()), ids: Ids::All};
 
                     create_g_view(
                         name_tu,
@@ -119,7 +119,7 @@ pub(crate) fn interpret_pred(
                         table_name.clone(),
                         solver
                     )?;
-                    let  table_g = Interpretation::Table{name: DbName(format!("{table_name}_G")), ids: Ids::All};
+                    let  table_g = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
 
                     // create FunctionObject with boolean interpretations.
                     let function_is = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
@@ -140,11 +140,11 @@ fn interpret_pred_0(
     tuples: Either<XSet, XRange>,
     solver: &mut Solver,
 ) -> Result<String, SolverError> {
-    let table_name = solver.create_db_name(qual_identifier.to_string());
+    let table_name = solver.create_table_name(qual_identifier.to_string());
 
-    let table_tu = Interpretation::Table{name: DbName(format!("{table_name}_TU")), ids: Ids::All};
-    let table_uf = Interpretation::Table{name: DbName(format!("{table_name}_UF")), ids: Ids::All};
-    let table_g  = Interpretation::Table{name: DbName(format!("{table_name}_G")), ids: Ids::All};
+    let table_tu = Interpretation::Table{name: TableName(format!("{table_name}_TU")), ids: Ids::All};
+    let table_uf = Interpretation::Table{name: TableName(format!("{table_name}_UF")), ids: Ids::All};
+    let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
 
     match tuples {
         Left(tuples) => {
@@ -186,7 +186,7 @@ pub(crate) fn interpret_fun(
     _command: String,
     solver: &mut Solver,
 )-> Result<String, SolverError> {
-    let table_name = solver.create_db_name(identifier.to_string());
+    let table_name = solver.create_table_name(identifier.to_string());
 
     // get the symbol declaration
     let qual_identifier = QualIdentifier::Identifier(identifier.clone());
@@ -229,7 +229,7 @@ pub(crate) fn interpret_fun(
                     solver.conn.execute(&sql, ())?;
 
                     // create FunctionObject.
-                    let table_g  = Interpretation::Table{name: DbName(format!("{table_name}_G")), ids: Ids::All};
+                    let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
                     let function_is = FunctionObject::NonBooleanInterpreted { table_g };
                     solver.functions.insert(qual_identifier.clone(), function_is);
 
@@ -265,7 +265,7 @@ pub(crate) fn interpret_fun(
                     }
                     populate_table(&name, tuples_strings, solver)?;
 
-                    let table_g = DbName(format!("{table_name}_G"));
+                    let table_g = TableName(format!("{table_name}_G"));
                     if size == tuples.len() {  // full interpretation
                         if let Some(else_) = else_ {
                             return Err(SolverError::TermError("Unnecessary `else` value", else_.clone()))
@@ -467,7 +467,7 @@ fn create_g_view(
     domain: &Vec<Sort>,
     value: &Option<String>,
     identifier: L<Identifier>,
-    db_name: DbName,
+    db_name: TableName,
     solver: &mut Solver
 ) -> Result<(), SolverError> {
     let to = format!("{db_name}_G");
