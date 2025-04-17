@@ -2,20 +2,25 @@
 
 // cargo run --release --bin triangle
 
+//! This files examplifies the use of `xmt-lib` as a crate.
+
+
 use std::time::Instant;
 
 use rusqlite::params;
 
 use xmtlib::solver::Solver;
 
-fn execute(solver: &mut Solver, commands: &str) -> () {
-    let results = solver.parse_and_execute(&commands);
-    for _result in results {
-        //print!("{}", _result);
-    }
-}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+
+    fn execute(solver: &mut Solver, commands: &str) -> () {
+        let results = solver.parse_and_execute(&commands);
+        for _result in results {
+            //print!("{}", _result);
+        }
+    }
+
     let n = 8000+1;
 
     let start = Instant::now();

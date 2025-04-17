@@ -360,6 +360,7 @@ peg::parser!{
                       / declare_sort()
                       / define_sort()
                       / set_option()
+                      / xinterpret_const()
                       / xinterpret_pred()
                       / xinterpret_fun()
                       / xdebug()
@@ -425,6 +426,17 @@ peg::parser!{
 
 
         // //////////////////////////// X-Commands     ////////////////////////////
+
+        rule xinterpret_const() -> Command
+            = "x-interpret-const" _
+              identifier: identifier() _
+              value: xid() _
+            { match value.to_string().as_str() {
+                "true" => XInterpretPred(identifier, Left(XSet(vec![XTuple(vec![])]))),
+                "false" => XInterpretPred(identifier, Left(XSet(vec![]))),
+                _ => XInterpretFun(identifier, vec![], Some(value))
+              }
+            }
 
         rule xinterpret_pred() -> Command
             = "x-interpret-pred" _

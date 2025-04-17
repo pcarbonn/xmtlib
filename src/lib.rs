@@ -15,9 +15,10 @@
 //!
 //! xmt-lib extends the SMT-Lib 2.6 language with the following commands:
 //!
-//! * `set-option :backend` to specify the SMT solver (if any) used to execute the SMT-Lib 2.6 commands.
-//! * `x-interpret-pred`, to specify the interpretation of a boolean function symbol.
-//! * `x-interpret-fun`, to specify the interpretation of a function symbol.
+//! * `set-option :backend` to specify the SMT solver (if any) used to execute the SMT-Lib 2.6 commands;
+//! * `x-interpret-const`, to specify the interpretation of a constant;
+//! * `x-interpret-pred`, to specify the interpretation of a boolean function symbol;
+//! * `x-interpret-fun`, to specify the interpretation of a function symbol;
 //! * `x-ground`, to ground assertions, i.e., to expand the finite quantifications,
 //! taking into account the known interpretations.
 //!
@@ -131,7 +132,7 @@
 //! Note that, unlike SMT-Lib 2.6, but like the Z3 solver,
 //! xmt-lib accepts negative numbers in terms (e.g., `-1` is accepted for `(- 1)`).
 //!
-//! ## (set-option :backend
+//! ## (set-option :backend ...)
 //!
 //! This command has the following variants:
 //!
@@ -142,7 +143,28 @@
 //! It can only be changed at the start of a session.
 //!
 //!
-//! ## (x-interpret-pred
+//! ## (x-interpret-const ...)
+//!
+//! An `x-interpret-const` command specifies the interpretation of constant.
+//! Such an intepretation can be given only once.
+//!
+//! Example: `(x-interpret-const c 1 )`.
+//! The value of constant `c` is `1`.
+//!
+//! For a proposition `p` (aka a boolean constant), the interpretation can be given as :
+//!
+//! * `(x-interpret-const p true )` if `p` is true;
+//! * `(x-interpret-const p false )` if `p` is false;
+//!
+//! Unlike an assertion about the value of a proposition,
+//! the interpretation of a proposition is used to simplify the grounding.
+//!
+//! Note that a model (obtained by `(get-model)`)
+//! will not have any information about interpreted constants.
+//! So, in our example, `c` may have any value in a model.
+//!
+//!
+//! ## (x-interpret-pred ...)
 //!
 //! An `x-interpret-pred` command specifies the total interpretation of a boolean function symbol (aka a predicate),
 //! by listing all the tuples of arguments that make it true.
@@ -156,20 +178,12 @@
 //! Example: `(x-interpret-pred Row (x-range 1 8) )`.
 //! The values making Row true are 1, 2, 3, 4, 5, 6, 7, 8.
 //!
-//! For a proposition `p` (aka a boolean function of arity 0), the interpretation can be given as :
-//!
-//! * `(x-interpret-pred p (x-set ()) )` if `p` is true;
-//! * `(x-interpret-pred p (x-set   ) )` if `p` is false;
-//!
-//! Unlike an assertion about the value of a proposition,
-//! the interpretation of a proposition is used to simplify the grounding.
-//!
-//! Note that a model of the assertions (obtained by `(get-model)`)
+//! Note that a model (obtained by `(get-model)`)
 //! will not have any information about interpreted predicate symbols.
 //! So, in our example, `(Edge a b)` may have any value in a model.
 //!
 //!
-//! ## (x-interpret-fun
+//! ## (x-interpret-fun ...)
 //!
 //! An `x-interpret-fun` command specifies the interpretation of a function symbol, possibly partially,
 //! by associating a value to tuples of arguments, and by giving a default value.
@@ -209,7 +223,7 @@
 //! and can thus have any interpretation in a model)
 //!
 //!
-//! ## (x-ground
+//! ## (x-ground)
 //!
 //! Use `(x-ground)` to ground the pending assertions,
 //! i.e., to expand the finite quantifications in them,
@@ -221,17 +235,18 @@
 //! then to give the interpretations of symbols,
 //! and then to ground the assertions using those interpretations.
 //!
-//! Note that `(check-sat)` grounds any pending assertions.
+//! Note that `(check-sat)` grounds any pending assertions,
+//! making a prior call to `x-ground` unnecessary.
 //!
 //!
-//! # API
-//!
-//! The programmable interface of xmt-lib is text based: commands are sent as strings,
-//! not as objects constructed in memory.
-//! This is similar to the approach used in interfaces for the web (HTML) and relational databases (SQL).
-//! We believe this is an acceptable compromise between performance and simplicity.
-//! Should we be wrong, we can easily make the memory-based API public.
-//!
+// ! # API
+// !
+// ! The programmable interface of xmt-lib is text based: commands are sent as strings,
+// ! not as objects constructed in memory.
+// ! This is similar to the approach used in interfaces for the web (HTML) and relational databases (SQL).
+// ! We believe this is an acceptable compromise between performance and simplicity.
+// ! Should we be wrong, we can easily make the memory-based API public.
+// !
 
 mod api;
 pub mod error;

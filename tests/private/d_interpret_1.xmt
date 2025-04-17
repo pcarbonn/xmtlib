@@ -2,6 +2,8 @@
 ; arity 0
 (declare-fun p () Bool)
 (x-interpret-pred p (x-set ))
+(declare-const P Bool)
+(x-interpret-const P true)
 (assert p)
 
 ; arity 1
@@ -40,6 +42,7 @@
 (x-interpret-pred dark (x-set (red)))
 -------------------------
 (declare-fun p () Bool)
+(declare-const P Bool)
 (declare-datatype Color ((red ) (green )))
 (declare-fun bright (Color) Bool)
 (declare-fun same (Color Color) Bool)
@@ -112,6 +115,7 @@ Functions:
  - mod: Predefined (false)
  - abs: Predefined (false)
  - p: Boolean (_xmt_p_1_TU Complete, _xmt_p_1_UF Complete, _xmt_p_1_G Complete)
+ - P: Boolean (_xmt_p_3_TU Complete, _xmt_p_3_UF Complete, _xmt_p_3_G Complete)
  - red: Constructor
  - green: Constructor
  - bright: Boolean (_xmt_bright_TU Complete, _xmt_bright_UF Complete, _xmt_bright_G Complete)
@@ -173,6 +177,9 @@ Tables and Views:
  - _xmt_p_1_TU (view)
  - _xmt_p_1_UF (view)
  - _xmt_p_1_G (view)
+ - _xmt_p_3_TU (view)
+ - _xmt_p_3_UF (view)
+ - _xmt_p_3_G (view)
  - _xmt_color (table)
  - _xmt_bright_T (table)
  - _xmt_bright_TU (view)
@@ -190,25 +197,25 @@ Tables and Views:
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
  - _xmt_p_0 (view)
- - _xmt_p_0_8 (view)
- - _xmt_p_0_9 (view)
+ - _xmt_p_0_10 (view)
+ - _xmt_p_0_11 (view)
  - variable_1 (view)
  - _xmt_bright_2 (view)
- - _xmt_bright_2_11 (view)
- - _xmt_bright_2_12 (view)
+ - _xmt_bright_2_13 (view)
+ - _xmt_bright_2_14 (view)
  - Agg_3_TU (view)
  - Agg_3_UF (view)
  - Agg_3_G (view)
  - _xmt_same_4 (view)
- - _xmt_same_4_14 (view)
- - _xmt_same_4_15 (view)
+ - _xmt_same_4_16 (view)
+ - _xmt_same_4_17 (view)
  - Agg_5_TU (view)
  - Agg_5_UF (view)
  - Agg_5_G (view)
  - variable_6 (view)
  - _xmt_same_7 (view)
- - _xmt_same_7_17 (view)
- - _xmt_same_7_18 (view)
+ - _xmt_same_7_19 (view)
+ - _xmt_same_7_20 (view)
  - Agg_8_TU (view)
  - Agg_8_UF (view)
  - Agg_8_G (view)
@@ -217,13 +224,13 @@ Tables and Views:
  - Agg_9_G (view)
  - variable_10 (view)
  - _xmt_dim_11 (view)
- - _xmt_dim_11_20 (view)
- - _xmt_dim_11_21 (view)
+ - _xmt_dim_11_22 (view)
+ - _xmt_dim_11_23 (view)
  - Agg_12_TU (view)
  - Agg_12_UF (view)
  - Agg_12_G (view)
-error: at position (40, 19): Can't interpret a symbol after grounding its use
+error: at position (42, 19): Can't interpret a symbol after grounding its use
    |
-40 | (x-interpret-pred dark (x-set (red)))
+42 | (x-interpret-pred dark (x-set (red)))
    |                   ^ Can't interpret a symbol after grounding its use
    |
