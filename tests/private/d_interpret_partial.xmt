@@ -68,8 +68,8 @@ Groundings:
 Tables and Views:
  - Bool (table)
  - _xmt_color (table)
- - _xmt_mix_U (table)
- - _xmt_mix_UF (view)
+ - _xmt_mix_K (table)
+ - _xmt_mix_U (view)
  - _xmt_mix_G (view)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)

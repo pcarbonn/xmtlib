@@ -1,20 +1,19 @@
 (set-option :backend none)
 (declare-datatype T ( ( a ) ( b ) ))
 (declare-datatype Tf ( ( A ) ( B ) ))
-(declare-datatype bol ( ( TRUE ) ( FALSE )))
-(declare-fun p (T Tf) bol)
+(declare-fun p (T Tf) Bool)
 (x-interpret-fun p
   (x-mapping
-   ((a A) TRUE)
-   ((a B) FALSE)
-   ((b A) FALSE)
+   ((a A) true)
+   ((a B) false)
+   ((b A) false)
   ) ?)
 (declare-fun f (T) Tf)
 (x-interpret-fun f (x-mapping
    ((a) A)
 ) ? )
-(assert (= (p b B) TRUE))
-(assert (forall ((x T)) (= (p x (f x)) TRUE)))
+(assert (p b B))
+(assert (forall ((x T)) (p x (f x)) ))
 (x-ground)
 (x-debug db _xmt_p_g)
 (x-debug solver groundings)
@@ -22,67 +21,64 @@
 -------------------------
 (declare-datatype T ((a ) (b )))
 (declare-datatype Tf ((A ) (B )))
-(declare-datatype bol ((TRUE ) (FALSE )))
-(declare-fun p (T Tf) bol)
+(declare-fun p (T Tf) Bool)
 (declare-fun f (T) Tf)
-(assert (= (p b B) TRUE))
+(assert (p b B))
 (assert (not (= (f b) A)))
-(assert (=> (= (f b) B) (= (p b B) TRUE)))
+(assert (=> (= (f b) B) (p b B)))
  TABLE: _xmt_p_g
 ┌─────┬─────┬───────────┐
 │ a_0 │ a_1 │ G         │
 ├─────┼─────┼───────────┤
-│ "a" │ "A" │ "TRUE"    │
+│ "a" │ "A" │ "true"    │
 ├─────┼─────┼───────────┤
-│ "a" │ "B" │ "FALSE"   │
+│ "a" │ "B" │ "false"   │
 ├─────┼─────┼───────────┤
-│ "b" │ "A" │ "FALSE"   │
+│ "b" │ "A" │ "false"   │
 ├─────┼─────┼───────────┤
 │ "b" │ "B" │ "(p b B)" │
 └─────┴─────┴───────────┘
 Groundings:
  - b: SELECT "b" AS G
  - B: SELECT "B" AS G
- - (p b B): SELECT _xmt_p_G_2.G AS G FROM _xmt_p_G AS _xmt_p_G_2 WHERE "b" = _xmt_p_G_2.a_0 AND "B" = _xmt_p_G_2.a_1
- - TRUE: SELECT "TRUE" AS G
- - (= (p b B) TRUE):
-    TU: SELECT eq_(_xmt_p_G_2.G, "TRUE") AS G FROM _xmt_p_G AS _xmt_p_G_2 WHERE "b" = _xmt_p_G_2.a_0 AND "B" = _xmt_p_G_2.a_1
-    UF: SELECT eq_(_xmt_p_G_2.G, "TRUE") AS G FROM _xmt_p_G AS _xmt_p_G_2 WHERE "b" = _xmt_p_G_2.a_0 AND "B" = _xmt_p_G_2.a_1
-    G : SELECT eq_(_xmt_p_G_2.G, "TRUE") AS G FROM _xmt_p_G AS _xmt_p_G_2 WHERE "b" = _xmt_p_G_2.a_0 AND "B" = _xmt_p_G_2.a_1
- - x: SELECT _xmt_t_5.G AS x, _xmt_t_5.G AS G FROM _xmt_t AS _xmt_t_5
- - (f x): SELECT _xmt_f_G_6.a_0 AS x, _xmt_f_G_6.G AS G FROM _xmt_f_G AS _xmt_f_G_6
- - (p x (f x)): SELECT _xmt_p_G_7.a_0 AS x, if_(_xmt_f_G_6.G, _xmt_p_G_7.a_1) AS if_, _xmt_p_G_7.G AS G FROM _xmt_f_G AS _xmt_f_G_6 JOIN _xmt_p_G AS _xmt_p_G_7 ON join_(_xmt_f_G_6.G, _xmt_p_G_7.a_1) WHERE _xmt_p_G_7.a_0 = _xmt_f_G_6.a_0
- - (= (p x (f x)) TRUE):
-    TU: SELECT _xmt_p_G_7.a_0 AS x, if_(_xmt_f_G_6.G, _xmt_p_G_7.a_1) AS if_, eq_(_xmt_p_G_7.G, "TRUE") AS G FROM _xmt_f_G AS _xmt_f_G_6 JOIN _xmt_p_G AS _xmt_p_G_7 ON join_(_xmt_f_G_6.G, _xmt_p_G_7.a_1) WHERE _xmt_p_G_7.a_0 = _xmt_f_G_6.a_0
-    UF: SELECT _xmt_p_G_7.a_0 AS x, if_(_xmt_f_G_6.G, _xmt_p_G_7.a_1) AS if_, eq_(_xmt_p_G_7.G, "TRUE") AS G FROM _xmt_f_G AS _xmt_f_G_6 JOIN _xmt_p_G AS _xmt_p_G_7 ON join_(_xmt_f_G_6.G, _xmt_p_G_7.a_1) WHERE _xmt_p_G_7.a_0 = _xmt_f_G_6.a_0
-    G : SELECT _xmt_p_G_7.a_0 AS x, if_(_xmt_f_G_6.G, _xmt_p_G_7.a_1) AS if_, eq_(_xmt_p_G_7.G, "TRUE") AS G FROM _xmt_f_G AS _xmt_f_G_6 JOIN _xmt_p_G AS _xmt_p_G_7 ON join_(_xmt_f_G_6.G, _xmt_p_G_7.a_1) WHERE _xmt_p_G_7.a_0 = _xmt_f_G_6.a_0
- - (forall ((x T)) (= (p x (f x)) TRUE)):
-    TU: SELECT and_aggregate(implies_(if_, G)) as G from (SELECT _xmt_p_G_7.a_0 AS x, if_(_xmt_f_G_6.G, _xmt_p_G_7.a_1) AS if_, eq_(_xmt_p_G_7.G, "TRUE") AS G FROM _xmt_f_G AS _xmt_f_G_6 JOIN _xmt_p_G AS _xmt_p_G_7 ON join_(_xmt_f_G_6.G, _xmt_p_G_7.a_1) WHERE _xmt_p_G_7.a_0 = _xmt_f_G_6.a_0)
-    UF: SELECT implies_(if_, G) as G from (SELECT _xmt_p_G_7.a_0 AS x, if_(_xmt_f_G_6.G, _xmt_p_G_7.a_1) AS if_, eq_(_xmt_p_G_7.G, "TRUE") AS G FROM _xmt_f_G AS _xmt_f_G_6 JOIN _xmt_p_G AS _xmt_p_G_7 ON join_(_xmt_f_G_6.G, _xmt_p_G_7.a_1) WHERE _xmt_p_G_7.a_0 = _xmt_f_G_6.a_0)
-    G : SELECT and_aggregate(implies_(if_, G)) as G from (SELECT _xmt_p_G_7.a_0 AS x, if_(_xmt_f_G_6.G, _xmt_p_G_7.a_1) AS if_, eq_(_xmt_p_G_7.G, "TRUE") AS G FROM _xmt_f_G AS _xmt_f_G_6 JOIN _xmt_p_G AS _xmt_p_G_7 ON join_(_xmt_f_G_6.G, _xmt_p_G_7.a_1) WHERE _xmt_p_G_7.a_0 = _xmt_f_G_6.a_0)
+ - (p b B):
+    TU: SELECT _xmt_p_TU_2.G AS G FROM _xmt_p_TU AS _xmt_p_TU_2 WHERE "b" = _xmt_p_TU_2.a_0 AND "B" = _xmt_p_TU_2.a_1
+    UF: SELECT _xmt_p_UF_2.G AS G FROM _xmt_p_UF AS _xmt_p_UF_2 WHERE "b" = _xmt_p_UF_2.a_0 AND "B" = _xmt_p_UF_2.a_1
+    G : SELECT _xmt_p_G_2.G AS G FROM _xmt_p_G AS _xmt_p_G_2 WHERE "b" = _xmt_p_G_2.a_0 AND "B" = _xmt_p_G_2.a_1
+ - x: SELECT _xmt_t_3.G AS x, _xmt_t_3.G AS G FROM _xmt_t AS _xmt_t_3
+ - (f x): SELECT _xmt_f_G_4.a_0 AS x, _xmt_f_G_4.G AS G FROM _xmt_f_G AS _xmt_f_G_4
+ - (p x (f x)):
+    TU: SELECT _xmt_p_TU_5.a_0 AS x, if_(_xmt_f_G_4.G, _xmt_p_TU_5.a_1) AS if_, _xmt_p_TU_5.G AS G FROM _xmt_f_G AS _xmt_f_G_4 JOIN _xmt_p_TU AS _xmt_p_TU_5 ON join_(_xmt_f_G_4.G, _xmt_p_TU_5.a_1) WHERE _xmt_p_TU_5.a_0 = _xmt_f_G_4.a_0
+    UF: SELECT _xmt_p_UF_5.a_0 AS x, if_(_xmt_f_G_4.G, _xmt_p_UF_5.a_1) AS if_, _xmt_p_UF_5.G AS G FROM _xmt_f_G AS _xmt_f_G_4 JOIN _xmt_p_UF AS _xmt_p_UF_5 ON join_(_xmt_f_G_4.G, _xmt_p_UF_5.a_1) WHERE _xmt_p_UF_5.a_0 = _xmt_f_G_4.a_0
+    G : SELECT _xmt_p_G_5.a_0 AS x, if_(_xmt_f_G_4.G, _xmt_p_G_5.a_1) AS if_, _xmt_p_G_5.G AS G FROM _xmt_f_G AS _xmt_f_G_4 JOIN _xmt_p_G AS _xmt_p_G_5 ON join_(_xmt_f_G_4.G, _xmt_p_G_5.a_1) WHERE _xmt_p_G_5.a_0 = _xmt_f_G_4.a_0
+ - (forall ((x T)) (p x (f x))):
+    TU: SELECT and_aggregate(implies_(if_, G)) as G from (SELECT _xmt_p_G_5.a_0 AS x, if_(_xmt_f_G_4.G, _xmt_p_G_5.a_1) AS if_, _xmt_p_G_5.G AS G FROM _xmt_f_G AS _xmt_f_G_4 JOIN _xmt_p_G AS _xmt_p_G_5 ON join_(_xmt_f_G_4.G, _xmt_p_G_5.a_1) WHERE _xmt_p_G_5.a_0 = _xmt_f_G_4.a_0)
+    UF: SELECT implies_(if_, G) as G from (SELECT _xmt_p_UF_5.a_0 AS x, if_(_xmt_f_G_4.G, _xmt_p_UF_5.a_1) AS if_, _xmt_p_UF_5.G AS G FROM _xmt_f_G AS _xmt_f_G_4 JOIN _xmt_p_UF AS _xmt_p_UF_5 ON join_(_xmt_f_G_4.G, _xmt_p_UF_5.a_1) WHERE _xmt_p_UF_5.a_0 = _xmt_f_G_4.a_0)
+    G : SELECT and_aggregate(implies_(if_, G)) as G from (SELECT _xmt_p_G_5.a_0 AS x, if_(_xmt_f_G_4.G, _xmt_p_G_5.a_1) AS if_, _xmt_p_G_5.G AS G FROM _xmt_f_G AS _xmt_f_G_4 JOIN _xmt_p_G AS _xmt_p_G_5 ON join_(_xmt_f_G_4.G, _xmt_p_G_5.a_1) WHERE _xmt_p_G_5.a_0 = _xmt_f_G_4.a_0)
 Tables and Views:
  - Bool (table)
  - _xmt_t (table)
  - _xmt_tf (table)
- - _xmt_bol (table)
- - _xmt_p_U (table)
- - _xmt_p_UF (view)
+ - _xmt_p_TU_K (table)
+ - _xmt_p_UF_K (table)
+ - _xmt_p_K (table)
+ - _xmt_p_U (view)
  - _xmt_p_G (view)
- - _xmt_f_U (table)
- - _xmt_f_UF (view)
+ - _xmt_p_TU (view)
+ - _xmt_p_UF (view)
+ - _xmt_f_K (table)
+ - _xmt_f_U (view)
  - _xmt_f_G (view)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
  - _xmt_p_2 (view)
- - _xmt__4 (view)
- - _xmt__4_10 (view)
- - _xmt__4_11 (view)
- - variable_5 (view)
- - _xmt_f_6 (view)
- - _xmt_p_7 (view)
- - _xmt__8 (view)
- - _xmt__8_15 (view)
- - _xmt__8_16 (view)
- - Agg_9_TU (view)
- - Agg_9_G (view)
- - Agg_9_UF (view)
+ - _xmt_p_2_7 (view)
+ - _xmt_p_2_8 (view)
+ - variable_3 (view)
+ - _xmt_f_4 (view)
+ - _xmt_p_5 (view)
+ - _xmt_p_5_11 (view)
+ - _xmt_p_5_12 (view)
+ - Agg_6_TU (view)
+ - Agg_6_G (view)
+ - Agg_6_UF (view)

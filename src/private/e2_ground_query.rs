@@ -72,7 +72,7 @@ pub(crate) struct Column {
 }
 
 
-/// The name of a table or column in the datase
+/// The name of a table or view in the database
 #[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub(crate) struct TableName(pub(crate) String);
 
