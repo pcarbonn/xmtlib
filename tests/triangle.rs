@@ -47,7 +47,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     execute(&mut solver, r#"
-        (set-option :backend none)
+        (set-option :backend Z3)
         (declare-fun Edge (Int Int) Bool)
         (declare-fun phi (Int Int Int) Bool)
         (x-interpret-pred Edge (x-sql "SELECT * FROM Edges"))
@@ -75,6 +75,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Solving: {:?}", solving.duration_since(grounding));
 
     println!("Total: {:?}", solving.duration_since(start));
+
+    // test of x-sql for functions
+    execute(&mut solver, r#"
+        (declare-datatype Color ( (red) (green) ))
+        (declare-fun Strength (Color) Int)
+        (x-interpret-fun Strength (x-sql "SELECT G as a_1, 1 as G from _xmt_color"))
+        (assert (= (Strength red) 1))
+        (x-ground)
+        (check-sat)
+    "#);
 
     Ok(())
 }

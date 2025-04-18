@@ -155,6 +155,7 @@
 //!
 //! The table may not have duplicate rows,
 //! and the values in the columns must be nullary constructors of the appropriate type.
+//! (note: these rules are not enforced by the xmtlib crate)
 //!
 //!
 //! ## (x-interpret-fun ...)
@@ -190,6 +191,27 @@
 //! (In our triangle example above,
 //! `(Length a b)` can have any interpretation in a model,
 //! but `(Length b c)` will have an interpretation that satisfies the assertions)
+//!
+//!
+//! ## (x-interpret-fun f (x-sql "SELECT .. FROM ..") ..)
+//!
+//! This variation of the `(x-interpret-fun` command
+//! allows specifying the interpretation of a function symbol, e.g.,  `f`,
+//! using an sql SELECT that maps a tuple of ids to their image by `f`.
+//!
+//! The SELECT must return `n+1` columns named `a_0, .. a_n, G`
+//! where `n` is the arity of the symbol being interpreted,
+//! `a_0, .. a_n` contain the tuples of arguments, and `G` the corresponding values.
+//! These columns must be of type INTEGER for integers, REAL for reals, and TEXT otherwise.
+//!
+//! The table may not have duplicate rows,
+//! and the values in the columns must be nullary constructors of the appropriate type
+//! (thus excluding any unknown value).
+//! (note: these rules are not enforced by the xmt-lib crate)
+//!
+//! The default value must be given if the set of tuples in the interpretation
+//! does not cover the domain of the function;
+//! it may not be given otherwise.
 //!
 //!
 //! ## (x-ground)

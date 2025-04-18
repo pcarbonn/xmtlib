@@ -46,7 +46,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     execute(&mut solver, r#"
-        (set-option :backend none)
+        (set-option :backend Z3)
         (declare-fun Edge (Int Int) Bool)
         (declare-fun phi (Int Int Int) Bool)
         (x-interpret-pred Edge (x-sql "SELECT * FROM Edges"))

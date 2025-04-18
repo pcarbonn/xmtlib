@@ -4,6 +4,7 @@
 //! The nodes of the syntax tree are listed in the order given in Appendix B of the SMT-Lib standard.
 
 use peg::{error::ParseError, str::LineCol};
+use itertools::Either::{Left, Right};
 
 use crate::ast::{*, Command::*};
 use crate::error::Offset;
@@ -438,7 +439,7 @@ peg::parser!{
             { match value.to_string().as_str() {
                 "true" => XInterpretPred(identifier, XSet::XSet(vec![XTuple(vec![])])),
                 "false" => XInterpretPred(identifier, XSet::XSet(vec![])),
-                _ => XInterpretFun(identifier, vec![], Some(value))
+                _ => XInterpretFun(identifier, Left(vec![]), Some(value))
               }
             }
 
@@ -463,7 +464,16 @@ peg::parser!{
                 tuples: (ftuple() ** _) _
               ")" _
               else_: term()?
-            { XInterpretFun(identifier, tuples, else_) }
+            { XInterpretFun(identifier, Left(tuples), else_) }
+
+            / "x-interpret-fun" _
+              identifier: identifier() _
+              "(" _
+              "x-sql" _
+                sql: string() _
+              ")" _
+              else_: term()?
+            { XInterpretFun(identifier, Right(sql), else_) }
 
         rule xdebug() -> Command
             = "x-debug" _

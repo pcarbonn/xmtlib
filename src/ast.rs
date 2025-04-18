@@ -12,6 +12,7 @@ use std::fmt::Display;
 use std::hash::Hash;
 
 use itertools::Itertools;
+use itertools::Either::{self, Left, Right};
 
 use crate::error::Offset;
 
@@ -438,7 +439,7 @@ pub enum Command {
     XDebug(L<Identifier>, L<Identifier>),
     XGround,
     XInterpretPred(L<Identifier>, XSet),
-    XInterpretFun(L<Identifier>, Vec<(XTuple, L<Term>)>, Option<L<Term>>),
+    XInterpretFun(L<Identifier>, Either<Vec<(XTuple, L<Term>)>, String_>, Option<L<Term>>),
     Verbatim(String),
 }
 impl Display for Command {
@@ -498,12 +499,22 @@ impl Display for Command {
 
             Self::XInterpretPred(s1, s2 ) => write!(f, "(x-interpret-pred {s1} {s2})\n"),
             Self::XInterpretFun(s1, s2, s3 ) => {
-                let tuples = s2.iter()
-                    .map(|(args, value)| format!("({args} {value})"))
-                    .collect::<Vec<_>>().join(" ");
-                let else_ = if let Some(else_) = s3 { else_.to_string() }
-                    else { "".to_string() };
-                write!(f, "(x-interpret-fun {s1} (x-mapping {tuples} ) {else_})\n")
+                let else_ =
+                    if let Some(else_) = s3 {
+                        else_.to_string()
+                    } else {
+                        "".to_string()
+                    };
+               match s2 {
+                    Left(tuples) => {
+                        let tuples = tuples.iter()
+                            .map(|(args, value)| format!("({args} {value})"))
+                            .collect::<Vec<_>>().join(" ");
+                        write!(f, "(x-interpret-fun {s1} (x-mapping {tuples} ) {else_})\n")
+                    },
+                    Right(s) =>
+                        write!(f, "(x-interpret-fun {s1} (x-sql {s} ) {else_})\n")
+                }
             },
             Self::XDebug(s1, s2) => write!(f, "(x-debug {s1} {s2})\n"),
             Self::XGround => write!(f, "(x-ground)\n"),

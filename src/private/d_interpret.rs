@@ -1,11 +1,12 @@
 // Copyright Pierre Carbonnelle, 2025.
 
+use itertools::Either::{self, Left, Right};
 use rusqlite::params_from_iter;
 use unzip_n::unzip_n;
 
 unzip_n!(pub 4);
 
-use crate::ast::{Identifier, QualIdentifier, Sort, XTuple, XSet, Term, SpecConstant};
+use crate::ast::{Identifier, QualIdentifier, Sort, XTuple, XSet, Term, SpecConstant, String_};
 use crate::error::SolverError::{self, InternalError};
 use crate::solver::Solver;
 
@@ -191,7 +192,7 @@ fn interpret_pred_0(
 
 pub(crate) fn interpret_fun(
     identifier: L<Identifier>,
-    tuples: Vec<(XTuple, L<Term>)>,
+    tuples: Either<Vec<(XTuple, L<Term>)>, String_>,
     else_: Option<L<Term>>,
     _command: String,
     solver: &mut Solver,
@@ -219,14 +220,18 @@ pub(crate) fn interpret_fun(
                 return Err(SolverError::IdentifierError("Can't interpret a symbol after grounding its use", identifier))
             };
             if domain.len() == 0 {  // constant
-                let value =
-                    if tuples.len() == 0 {  // (x-interpret-fun c (x-mapping ) 1)
-                        else_.clone().ok_or(SolverError::IdentifierError("no values", identifier))?
-                    } else if tuples.len() == 1 {   // (x-interpret-fun c (x-mapping () 1))
-                        tuples[0].1.clone()
-                    } else {
-                        return Err(SolverError::IdentifierError("too many tuples", identifier))
-                    };
+                let value = match tuples {
+                    Left(tuples) =>
+                        if tuples.len() == 0 {  // (x-interpret-fun c (x-mapping ) 1)
+                            else_.clone().ok_or(SolverError::IdentifierError("no values", identifier))?
+                        } else if tuples.len() == 1 {   // (x-interpret-fun c (x-mapping () 1))
+                            tuples[0].1.clone()
+                        } else {
+                            return Err(SolverError::IdentifierError("too many tuples", identifier))
+                        },
+                    Right(_) =>
+                        return Err(SolverError::IdentifierError("Can't use x-sql for constants yet", identifier))
+                };
                 if ! *boolean {
                     let value = match value {
                         L(Term::SpecConstant(SpecConstant::Numeral(v)), _) => v.to_string(),
@@ -277,33 +282,47 @@ pub(crate) fn interpret_fun(
                 if ! *boolean {
 
                     let table_g = TableName(format!("{table_name}_G"));
-                    create_interpretation_table(table_g.clone(), &domain, &Some(co_domain), solver)?;
 
                     // populate the table
                     let mut ids = Ids::All;
-                    let mut tuples_strings = vec![];
-                    for (XTuple(tuple), term) in &tuples {
-                        if tuple.len() == domain.len() {
-                            let mut tuples_t = tuple.iter()
-                                .map(|t| construct(t, solver) )
-                                .collect::<Result<Vec<_>, SolverError>>()?;
-                            // value is the identifier or an id
-                            let value = if term.to_string() == "?" {
-                                ids = Ids::Some;
-                                format!("({identifier} {})", tuples_t.join(" "))
-                            } else {
-                                construct(term, solver)?
-                            };
-                            tuples_t.push(value);
-                            tuples_strings.push(tuples_t);
-                        } else {
-                            return Err(SolverError::IdentifierError("Incorrect tuple length", identifier))
+                    let count = match tuples {
+                        Left(tuples) => {
+                            create_interpretation_table(table_g.clone(), &domain, &Some(co_domain), solver)?;
+                            let mut tuples_strings = vec![];
+                            for (XTuple(tuple), term) in &tuples {
+                                if tuple.len() == domain.len() {
+                                    let mut tuples_t = tuple.iter()
+                                        .map(|t| construct(t, solver) )
+                                        .collect::<Result<Vec<_>, SolverError>>()?;
+                                    // value is the identifier or an id
+                                    let value = if term.to_string() == "?" {
+                                        ids = Ids::Some;
+                                        format!("({identifier} {})", tuples_t.join(" "))
+                                    } else {
+                                        construct(term, solver)?
+                                    };
+                                    tuples_t.push(value);
+                                    tuples_strings.push(tuples_t);
+                                } else {
+                                    return Err(SolverError::IdentifierError("Incorrect tuple length", identifier))
+                                }
+                            }
+                            populate_table(&table_g, tuples_strings, solver)?;
+                            tuples.len()
+                        },
+                        Right(sql) => {
+                            let sql = format!("CREATE VIEW {table_g} AS {}", sql.0);  // todo: handle "?"
+                            solver.conn.execute(&sql, ())?;
+                            solver.conn.query_row(
+                                format!("SELECT COUNT(*) FROM {table_g}").as_str(),
+                                [],
+                                |row| row.get(0),
+                            )?
                         }
-                    }
-                    populate_table(&table_g, tuples_strings, solver)?;
+                    };
 
                     let missing = TableName(format!("{table_name}_U"));
-                    if size == tuples.len() {  // full interpretation
+                    if size == count {  // full interpretation
                         if let Some(else_) = else_ {
                             return Err(SolverError::TermError("Unnecessary `else` value", else_.clone()))
                         }
@@ -337,53 +356,72 @@ pub(crate) fn interpret_fun(
                     let table_tu = TableName(format!("{table_name}_TU"));
                     let table_uf = TableName(format!("{table_name}_UF"));
                     let table_g  = TableName(format!("{table_name}_G"));
-                    create_interpretation_table(table_tu.clone(), &domain, &Some(co_domain.clone()), solver)?;
-                    create_interpretation_table(table_uf.clone(), &domain, &Some(co_domain.clone()), solver)?;
-                    create_interpretation_table(table_g .clone(), &domain, &Some(co_domain.clone()), solver)?;
 
                     // populate the table
                     let mut ids = Ids::All;
-                    let mut tuples_tu = vec![];
-                    let mut tuples_uf = vec![];
-                    let mut tuples_g  = vec![];
-                    for (XTuple(tuple), term) in &tuples {
-                        if tuple.len() == domain.len() {
-                            let mut tuples_t = tuple.iter()
-                                .map(|t| construct(t, solver) )
-                                .collect::<Result<Vec<_>, SolverError>>()?;
+                    let count = match tuples {
+                        Left(tuples) => {
+                            create_interpretation_table(table_tu.clone(), &domain, &Some(co_domain.clone()), solver)?;
+                            create_interpretation_table(table_uf.clone(), &domain, &Some(co_domain.clone()), solver)?;
+                            create_interpretation_table(table_g .clone(), &domain, &Some(co_domain.clone()), solver)?;
+                            let mut tuples_tu = vec![];
+                            let mut tuples_uf = vec![];
+                            let mut tuples_g  = vec![];
+                            for (XTuple(tuple), term) in &tuples {
+                                if tuple.len() == domain.len() {
+                                    let mut tuples_t = tuple.iter()
+                                        .map(|t| construct(t, solver) )
+                                        .collect::<Result<Vec<_>, SolverError>>()?;
 
-                            match term.to_string().as_str() {
-                                "?" => {
-                                    ids = Ids::Some;
-                                    let value = format!("({identifier} {})", tuples_t.join(" "));
-                                    tuples_t.push(value);
-                                    tuples_tu.push(tuples_t.clone());
-                                    tuples_uf.push(tuples_t.clone());
-                                    tuples_g .push(tuples_t);
-                                },
-                                "true" => {
-                                    tuples_t.push("true".to_string());
-                                    tuples_tu.push(tuples_t.clone());
-                                    tuples_g .push(tuples_t);
-                                },
-                                "false" => {
-                                    tuples_t.push("false".to_string());
-                                    tuples_uf.push(tuples_t.clone());
-                                    tuples_g .push(tuples_t);
-                                },
-                                _ => {
-                                    return Err(SolverError::TermError("Unexpected value", term.clone()))
+                                    match term.to_string().as_str() {
+                                        "?" => {
+                                            ids = Ids::Some;
+                                            let value = format!("({identifier} {})", tuples_t.join(" "));
+                                            tuples_t.push(value);
+                                            tuples_tu.push(tuples_t.clone());
+                                            tuples_uf.push(tuples_t.clone());
+                                            tuples_g .push(tuples_t);
+                                        },
+                                        "true" => {
+                                            tuples_t.push("true".to_string());
+                                            tuples_tu.push(tuples_t.clone());
+                                            tuples_g .push(tuples_t);
+                                        },
+                                        "false" => {
+                                            tuples_t.push("false".to_string());
+                                            tuples_uf.push(tuples_t.clone());
+                                            tuples_g .push(tuples_t);
+                                        },
+                                        _ => {
+                                            return Err(SolverError::TermError("Unexpected value", term.clone()))
+                                        }
+                                    }
+                                } else {
+                                    return Err(SolverError::IdentifierError("Incorrect tuple length", identifier))
                                 }
                             }
-                        } else {
-                            return Err(SolverError::IdentifierError("Incorrect tuple length", identifier))
-                        }
-                    }
-                    populate_table(&table_tu, tuples_tu, solver)?;
-                    populate_table(&table_uf, tuples_uf, solver)?;
-                    populate_table(&table_g , tuples_g , solver)?;
+                            populate_table(&table_tu, tuples_tu, solver)?;
+                            populate_table(&table_uf, tuples_uf, solver)?;
+                            populate_table(&table_g , tuples_g , solver)?;
+                            tuples.len()
+                        },
+                        Right(sql) => {
+                            let sql = format!("CREATE VIEW {table_g} AS {}", sql.0); // todo: handle "?"
+                            solver.conn.execute(&sql, ())?;
+                            let sql = format!("CREATE VIEW {table_tu} AS SELECT FROM {table_g} WHERE G <> \"false\"");
+                            solver.conn.execute(&sql, ())?;
+                            let sql = format!("CREATE VIEW {table_uf} AS SELECT FROM {table_g} WHERE G <> \"true\"");
+                            solver.conn.execute(&sql, ())?;
 
-                    if size == tuples.len() {  // full interpretation
+                            solver.conn.query_row(
+                                format!("SELECT COUNT(*) FROM {table_g}").as_str(),
+                                [],
+                                |row| row.get(0),
+                            )?
+                        }
+                    };
+
+                    if size == count {  // full interpretation
                         if let Some(else_) = else_ {
                             return Err(SolverError::TermError("Unnecessary `else` value", else_.clone()))
                         }
