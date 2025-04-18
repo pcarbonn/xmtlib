@@ -30,11 +30,13 @@ pub(crate) enum Backend {
 pub(crate) type TermId = usize;
 
 
+/// A solver is used to solve SMT problems.
 pub struct Solver {
+    /// A connection to the sqlite database used for grounding assertions (via the rusqlite crate).
+    pub conn: Connection,
     pub(crate) backend: Backend,
     /// help ensure the backend is not changed after a command has been executed
     pub (crate) started: bool,
-    pub conn: Connection,
 
     /// contains only parametric data type declarations
     pub(crate) parametric_sorts: IndexMap<Symbol, ParametricObject>,
@@ -199,7 +201,7 @@ impl Solver {
     }
 
     /// Execute the SMT-Lib commands and returns a generator of strings containing the results.
-    pub fn execute (
+    pub(crate) fn execute (
         &mut self,
         commands: Vec<Command>
     ) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {
@@ -218,7 +220,7 @@ impl Solver {
     }
 
     /// Execute one command and returns a generator of strings containing the results.
-    pub fn execute1 (
+    pub(crate) fn execute1 (
         &mut self,
         c: Command
     ) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {

@@ -11,7 +11,7 @@ use std::fs::{self, File};
 use std::io::Write;
 use std::path::Path;
 
-use xmtlib::solver::Solver;
+use xmt_lib::solver::Solver;
 
 
 #[test] fn test_a_sorts_1()     { test_file(Path::new("tests/private/a_sorts_1.xmt")) }
