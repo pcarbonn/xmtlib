@@ -3,8 +3,6 @@
 //! This module defines the grammar of XMT-Lib.
 //! The nodes of the syntax tree are listed in the order given in Appendix B of the SMT-Lib standard.
 
-use itertools::Either::{Left, Right};
-
 use peg::{error::ParseError, str::LineCol};
 
 use crate::api::{*, Command::*};
@@ -278,22 +276,28 @@ peg::parser!{
         rule xtuple() -> XTuple
             = "(" _
               terms: ( xid() ** _ ) _
-              ")" _
+              ")"
             { XTuple(terms) }
 
         rule xset() -> XSet
             = "(" _
               "x-set" _
               tuples: (xtuple() ** _) _
-              ")" _
-            { XSet(tuples) }
+              ")"
+            { XSet::XSet(tuples) }
 
-        rule xrange() -> XRange
-            = "(" _
+            / "(" _
               "x-range" _
               boundaries: (term() ** _) _
-              ")" _
-            { XRange(boundaries) }
+              ")"
+            { XSet::XRange(boundaries) }
+
+            / "(" _
+              "x-sql" _
+              sql: string() _
+              ")"
+            { XSet::XSql(sql) }
+
 
         // //////////////////////////// Theories     ////////////////////////////
         // //////////////////////////// Logics       ////////////////////////////
@@ -432,8 +436,8 @@ peg::parser!{
               identifier: identifier() _
               value: xid() _
             { match value.to_string().as_str() {
-                "true" => XInterpretPred(identifier, Left(XSet(vec![XTuple(vec![])]))),
-                "false" => XInterpretPred(identifier, Left(XSet(vec![]))),
+                "true" => XInterpretPred(identifier, XSet::XSet(vec![XTuple(vec![])])),
+                "false" => XInterpretPred(identifier, XSet::XSet(vec![])),
                 _ => XInterpretFun(identifier, vec![], Some(value))
               }
             }
@@ -441,13 +445,8 @@ peg::parser!{
         rule xinterpret_pred() -> Command
             = "x-interpret-pred" _
               identifier: identifier() _
-              xset: xset() _
-            { XInterpretPred(identifier, Left(xset)) }
-
-            / "x-interpret-pred" _
-              identifier: identifier() _
-              xrange: xrange() _
-            { XInterpretPred(identifier, Right(xrange)) }
+              xset: xset()
+            { XInterpretPred(identifier, xset) }
 
         rule ftuple() -> (XTuple, L<Term>)
             = "(" _

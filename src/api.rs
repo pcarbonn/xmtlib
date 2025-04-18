@@ -12,7 +12,6 @@ use std::fmt::Display;
 use std::hash::Hash;
 
 use itertools::Itertools;
-use itertools::Either;
 
 use crate::error::Offset;
 
@@ -338,21 +337,6 @@ impl std::fmt::Display for XTuple {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct XSet(pub Vec<XTuple>);
-impl std::fmt::Display for XSet {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "(x-set {})", self.0.iter().format(" "))
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct XRange(pub Vec<L<Term>>);
-impl std::fmt::Display for XRange {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "(x-range {})", self.0.iter().format(" "))
-    }
-}
 
 // //////////////////////////// Theories     ////////////////////////////
 // //////////////////////////// Logics       ////////////////////////////
@@ -424,6 +408,21 @@ impl Display for DatatypeDec {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum XSet {
+    XSet(Vec<XTuple>),
+    XRange(Vec<L<Term>>),
+    XSql(String_)
+}
+impl std::fmt::Display for XSet {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            XSet::XSet(els) => write!(f, "(x-set {})", els.iter().format(" ")),
+            XSet::XRange(els) => write!(f, "(x-range {})", els.iter().format(" ")),
+            XSet::XSql(sql) => write!(f, "(x-sql {sql})"),  // with quotes around sql
+        }
+    }
+}
 
 #[derive(PartialEq, Eq, Debug)]
 pub enum Command {
@@ -438,7 +437,7 @@ pub enum Command {
     SetOption(Option_),
     XDebug(L<Identifier>, L<Identifier>),
     XGround,
-    XInterpretPred(L<Identifier>, Either<XSet, XRange>),
+    XInterpretPred(L<Identifier>, XSet),
     XInterpretFun(L<Identifier>, Vec<(XTuple, L<Term>)>, Option<L<Term>>),
     Verbatim(String),
 }

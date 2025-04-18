@@ -11,9 +11,10 @@ use rusqlite::params;
 
 use xmtlib::solver::Solver;
 
+#[test]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
 
-    let n = 8000+1;
+    let n = 5+1;
 
     let start = Instant::now();
 
@@ -42,7 +43,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         fn execute(solver: &mut Solver, commands: &str) -> () {
             let results = solver.parse_and_execute(&commands);
             for _result in results {
-                //print!("{}", _result);
+                print!("{}", _result);
             }
         }
 

@@ -1,12 +1,11 @@
 // Copyright Pierre Carbonnelle, 2025.
 
-use itertools::Either::{self, Left, Right};
 use rusqlite::params_from_iter;
 use unzip_n::unzip_n;
 
 unzip_n!(pub 4);
 
-use crate::api::{Identifier, QualIdentifier, Sort, XTuple, XSet, XRange, Term, SpecConstant};
+use crate::api::{Identifier, QualIdentifier, Sort, XTuple, XSet, Term, SpecConstant};
 use crate::error::SolverError::{self, InternalError};
 use crate::solver::Solver;
 
@@ -19,9 +18,9 @@ use crate::api::L;
 
 pub(crate) fn interpret_pred(
     identifier: L<Identifier>,
-    tuples: Either<XSet, XRange>,
+    tuples: XSet,
     solver: &mut Solver,
- ) -> Result<String, SolverError> {
+) -> Result<String, SolverError> {
     // get the symbol declaration
     let qual_identifier = QualIdentifier::Identifier(identifier.clone());
     let table_name = solver.create_table_name(identifier.to_string());
@@ -53,13 +52,13 @@ pub(crate) fn interpret_pred(
 
                 let domain = domain.clone();
                 let table_t = TableName(format!("{table_name}_T"));
-                create_interpretation_table(table_t.clone(), &domain, &None, solver)?;
 
                 // populate the table
-                let mut tuples_strings = vec![];
                 match tuples {
-                    Left(tuples) => {
-                        for XTuple(tuple) in &tuples.0 {
+                    XSet::XSet(tuples) => {
+                        create_interpretation_table(table_t.clone(), &domain, &None, solver)?;
+                        let mut tuples_strings = vec![];
+                        for XTuple(tuple) in &tuples {
                             if tuple.len() == domain.len() {
                                 let tuples_t = tuple.iter()
                                     .map(|t| construct(t, solver) )
@@ -69,12 +68,15 @@ pub(crate) fn interpret_pred(
                                 return Err(SolverError::IdentifierError("Incorrect tuple length", identifier))
                             }
                         }
+                        populate_table(&table_t, tuples_strings, solver)?;
                     }
-                    Right(ranges) => {
-                        if ranges.0.len() % 2 == 1 {
+                    XSet::XRange(ranges) => {
+                        if ranges.len() % 2 == 1 {
                             return Err(SolverError::IdentifierError("Odd number of boundaries in range", identifier))
                         };
-                        for pairs in ranges.0.chunks(2) {
+                        create_interpretation_table(table_t.clone(), &domain, &None, solver)?;
+                        let mut tuples_strings = vec![];
+                        for pairs in ranges.chunks(2) {
                             if let L(Term::SpecConstant(SpecConstant::Numeral(a)), _) = &pairs[0] {
                                 if let L(Term::SpecConstant(SpecConstant::Numeral(b)), _) = &pairs[1] {
                                     for i in a.0..(b.0+1) {
@@ -87,14 +89,18 @@ pub(crate) fn interpret_pred(
                                 return Err(SolverError::TermError("Expecting an integer", pairs[0].clone()))
                             }
                         }
+                        populate_table(&table_t, tuples_strings, solver)?;
+                    }
+                    XSet::XSql(sql) => {
+                        let sql = format!("CREATE VIEW {table_t} AS {}", sql.0);
+                        solver.conn.execute(&sql, ())?;
                     }
                 };
-                populate_table(&table_t, tuples_strings, solver)?;
 
                 // create TU view
                 let table_tu = TableName(format!("{table_name}_TU"));
 
-                let sql = format!("CREATE VIEW {table_name}_TU AS SELECT *, \"true\" as G from {table_name}_T");
+                let sql = format!("CREATE VIEW {table_tu} AS SELECT *, \"true\" as G from {table_t}");
                 solver.conn.execute(&sql, ())?;
 
                 let size = size(&domain, &solver)?;
@@ -140,7 +146,7 @@ pub(crate) fn interpret_pred(
 /// Interpret a predicate of arity 0
 fn interpret_pred_0(
     qual_identifier: QualIdentifier,
-    tuples: Either<XSet, XRange>,
+    tuples: XSet,
     solver: &mut Solver,
 ) -> Result<String, SolverError> {
     let table_name = solver.create_table_name(qual_identifier.to_string());
@@ -150,8 +156,8 @@ fn interpret_pred_0(
     let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
 
     match tuples {
-        Left(tuples) => {
-            if tuples.0.len() == 0 {  // false
+        XSet::XSet(tuples) => {
+            if tuples.len() == 0 {  // false
                 let sql = format!("CREATE VIEW {table_name}_TU AS SELECT 'false' as G WHERE false");  // empty table
                 solver.conn.execute(&sql, ())?;
 
@@ -173,7 +179,8 @@ fn interpret_pred_0(
 
             }
         }
-        Right(_) => todo!()
+        XSet::XRange(_) => unreachable!(),
+        XSet::XSql(_)   => unreachable!()
     };
 
     // create FunctionObject with boolean interpretations.
@@ -457,8 +464,8 @@ fn size(
 }
 
 
-/// Create interpretation table in DB, with foreign keys
-/// (boolean if no co_domain)
+/// Create interpretation table in DB, with foreign keys.
+/// Columns are (a_1, .., a_n, G) if co-domain, else (a_1, .., a_n).
 fn create_interpretation_table(
     table_name: TableName,
     domain: &Vec<Sort>,
