@@ -1,6 +1,6 @@
 // Copyright Pierre Carbonnelle, 2025.
 
-pub mod api;
+pub mod ast;
 pub mod error;
 pub mod grammar;
 pub mod solver;

@@ -2,7 +2,7 @@
 
 use std::cmp::max;
 
-use crate::api::{QualIdentifier, SpecConstant, Symbol};
+use crate::ast::{QualIdentifier, SpecConstant, Symbol};
 use crate::private::e1_ground_view::Ids;
 use crate::private::e2_ground_query::Column;
 use crate::private::z_utilities::OptionMap;

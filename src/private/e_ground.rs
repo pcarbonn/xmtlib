@@ -5,7 +5,7 @@ use std::future::Future;
 use genawaiter::{sync::Gen, sync::gen, yield_};
 use rusqlite::Connection;
 
-use crate::api::{QualIdentifier, Term};
+use crate::ast::{QualIdentifier, Term};
 use crate::error::SolverError::{self, *};
 use crate::solver::{Solver, Backend};
 
@@ -14,7 +14,7 @@ use crate::private::b_fun::{FunctionObject, Interpretation};
 use crate::private::e1_ground_view::{GroundingView, Ids, ViewType, QueryVariant,
     view_for_constant, view_for_variable, view_for_compound, query_for_aggregate, view_for_union};
 use crate::private::e2_ground_query::{TableName, TableAlias};
-use crate::api::L;
+use crate::ast::L;
 
 
 /////////////////////  Data structure for Grounding  //////////////////////////

@@ -5,13 +5,13 @@ use std::fmt::Display;
 
 use indexmap::IndexSet;
 
-use crate::api::{Sort, Symbol, Identifier, QualIdentifier};
+use crate::ast::{Sort, Symbol, Identifier, QualIdentifier};
 use crate::error::{SolverError, Offset};
 use crate::solver::Solver;
 use crate::private::a_sort::instantiate_parent_sort;
 use crate::private::e1_ground_view::Ids;
 use crate::private::e2_ground_query::TableName;
-use crate::api::L;
+use crate::ast::L;
 
 
 /////////////////////  Data structure for Function  ///////////////////////////

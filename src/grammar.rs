@@ -5,9 +5,9 @@
 
 use peg::{error::ParseError, str::LineCol};
 
-use crate::api::{*, Command::*};
+use crate::ast::{*, Command::*};
 use crate::error::Offset;
-use crate::api::L;
+use crate::ast::L;
 
 #[allow(unused_imports)]
 use debug_print::debug_println as dprintln;

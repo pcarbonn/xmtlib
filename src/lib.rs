@@ -248,7 +248,7 @@
 // ! Should we be wrong, we can easily make the memory-based API public.
 // !
 
-mod api;
+mod ast;
 pub mod error;
 mod grammar;
 pub mod solver;

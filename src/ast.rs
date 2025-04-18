@@ -518,7 +518,7 @@ impl Display for Command {
 
 #[test]
 fn parse_test() {
-    use crate::api::Command::*;
+    use crate::ast::Command::*;
     use crate::grammar::parse;
 
     assert_eq!(parse("(check-sat) "),

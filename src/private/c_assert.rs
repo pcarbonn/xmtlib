@@ -2,12 +2,12 @@
 
 use indexmap::{IndexMap, IndexSet};
 
-use crate::api::{Identifier, QualIdentifier, SortedVar, Symbol, Term, VarBinding};
+use crate::ast::{Identifier, QualIdentifier, SortedVar, Symbol, Term, VarBinding};
 use crate::error::{SolverError::{self, *}, Offset};
 use crate::solver::Solver;
 
 use crate::private::a_sort::SortObject;
-use crate::api::L;
+use crate::ast::L;
 
 
 /////////////////////  Command (assert ////////////////////////////////////////

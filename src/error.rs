@@ -4,8 +4,8 @@ use peg::{error::ParseError, str::LineCol};
 use rusqlite::Error as SqlError;
 use thiserror::Error;
 
-use crate::api::{Identifier, Term};
-use crate::api::L;
+use crate::ast::{Identifier, Term};
+use crate::ast::L;
 
 /// The number of characters since the begin of a source file.
 ///

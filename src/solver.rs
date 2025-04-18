@@ -8,7 +8,7 @@ use indexmap::{IndexMap, IndexSet};
 use rusqlite::{Connection, Result};
 use z3_sys::*;
 
-use crate::api::*;
+use crate::ast::*;
 use crate::error::{format_error, SolverError, Offset};
 use crate::grammar::parse;
 use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, ParametricObject, SortObject};
@@ -18,7 +18,7 @@ use crate::private::d_interpret::{interpret_pred, interpret_fun};
 use crate::private::e_ground::{ground, Grounding};
 use crate::private::e2_ground_query::TableName;
 use crate::private::y_db::init_db;
-use crate::api::L;
+use crate::ast::L;
 
 
 #[derive(PartialEq)]

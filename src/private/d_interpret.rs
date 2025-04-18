@@ -5,7 +5,7 @@ use unzip_n::unzip_n;
 
 unzip_n!(pub 4);
 
-use crate::api::{Identifier, QualIdentifier, Sort, XTuple, XSet, Term, SpecConstant};
+use crate::ast::{Identifier, QualIdentifier, Sort, XTuple, XSet, Term, SpecConstant};
 use crate::error::SolverError::{self, InternalError};
 use crate::solver::Solver;
 
@@ -13,7 +13,7 @@ use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, Interpretation};
 use crate::private::e1_ground_view::Ids;
 use crate::private::e2_ground_query::TableName;
-use crate::api::L;
+use crate::ast::L;
 
 
 pub(crate) fn interpret_pred(

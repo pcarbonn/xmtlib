@@ -6,7 +6,7 @@ use std::hash::Hash;
 use indexmap::IndexSet;
 use itertools::Either::{self, Left, Right};
 
-use crate::api::{QualIdentifier, SortedVar, SpecConstant, Symbol, L};
+use crate::ast::{QualIdentifier, SortedVar, SpecConstant, Symbol, L};
 use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 

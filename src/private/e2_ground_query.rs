@@ -4,7 +4,7 @@ use indexmap::IndexSet;
 use itertools::Either::{self, Left, Right};
 use std::fmt::Display;
 
-use crate::api::{SortedVar, Symbol};
+use crate::ast::{SortedVar, Symbol};
 use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 

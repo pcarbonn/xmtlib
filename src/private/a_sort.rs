@@ -6,12 +6,12 @@ use indexmap::{IndexMap, IndexSet};
 use itertools::Itertools;
 use rusqlite::{params, Connection};
 
-use crate::api::{ConstructorDec, DatatypeDec, Identifier, Numeral, SelectorDec, Sort, SortDec, Symbol, QualIdentifier};
+use crate::ast::{ConstructorDec, DatatypeDec, Identifier, Numeral, SelectorDec, Sort, SortDec, Symbol, QualIdentifier};
 use crate::error::{SolverError::{self, InternalError}, Offset};
 use crate::solver::Solver;
 use crate::private::b_fun::FunctionObject;
 use crate::private::e2_ground_query::TableName;
-use crate::api::L;
+use crate::ast::L;
 
 #[allow(unused_imports)]
 use debug_print::debug_println as dprintln;
