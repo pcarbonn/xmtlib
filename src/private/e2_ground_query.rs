@@ -138,14 +138,14 @@ impl std::fmt::Display for GroundingQuery {
                 let naturals = natural_joins.iter().enumerate()
                     .map(|(i, natural_join)| {
 
-                            /// Helper function.  Returns the name of a table, with an optional alias.
-                            fn name(table_name: &TableAlias) -> String {
-                                if table_name.index == 0 {
-                                    format!(" {}", table_name.base_table)
-                                } else {
-                                    format!(" {} AS {table_name}", table_name.base_table)
-                                }
-                            }  // end helper
+                        // Helper function.  Returns the name of a table, with an optional alias.
+                        let name = |table_name: &TableAlias| {
+                            if table_name.index == 0 {
+                                format!(" {}", table_name.base_table)
+                            } else {
+                                format!(" {} AS {table_name}", table_name.base_table)
+                            }
+                        };
 
                         match natural_join {
                             NaturalJoin::Variable(table_name, _) => {

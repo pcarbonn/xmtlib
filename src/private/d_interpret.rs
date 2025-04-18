@@ -473,18 +473,18 @@ fn create_interpretation_table(
     solver: &mut Solver
 ) -> Result<(), SolverError> {
 
-        // Helper function
-        fn column(name: String, sort: &Sort) -> String {
-            // LINK src/doc.md#_Infinite
-            let sort_name = sort.to_string();
-            if sort_name == "Int" {
-                format!("{name} INTEGER")
-            } else if sort_name == "Real" {
-                format!("{name} REAL")
-            } else {
-                format!("{name} TEXT")
-            }
+    // Helper function
+    let column = |name: String, sort: &Sort| {
+        // LINK src/doc.md#_Infinite
+        let sort_name = sort.to_string();
+        if sort_name == "Int" {
+            format!("{name} INTEGER")
+        } else if sort_name == "Real" {
+            format!("{name} REAL")
+        } else {
+            format!("{name} TEXT")
         }
+    };
 
     let (mut columns, foreign_keys): (Vec<String>, Vec<String>) =
         domain.iter().enumerate()

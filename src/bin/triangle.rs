@@ -38,34 +38,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 
     // Declarations
-        // Helper function
-        fn execute(solver: &mut Solver, commands: &str) -> () {
-            let results = solver.parse_and_execute(&commands);
-            for _result in results {
-                //print!("{}", _result);
-            }
+    let execute = |solver: &mut Solver, commands: &str| {
+        let results = solver.parse_and_execute(&commands);
+        for _result in results {
+            //print!("{}", _result);
         }
+    };
 
-    execute(&mut solver, format!(r#"
+    execute(&mut solver, r#"
         (set-option :backend none)
         (declare-fun Edge (Int Int) Bool)
         (declare-fun phi (Int Int Int) Bool)
         (x-interpret-pred Edge (x-sql "SELECT * FROM Edges"))
-    "#).as_str());
+    "#);
 
     let declaration = Instant::now();
     println!("Declarations: {:?}", declaration.duration_since(data_entry));
 
 
     // Grounding
-    let source = r#"
+    execute(&mut solver, r#"
         (assert (forall ((x Int) (y Int) (z Int))
                     (=> (and (Edge x y) (Edge y z) (Edge x z))
                             (phi x y z)
                     )))
         (x-ground)
-    "#;
-    execute(&mut solver, source);
+    "#);
     let grounding = Instant::now();
     println!("Grounding: {:?}", grounding.duration_since(declaration));
 
