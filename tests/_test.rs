@@ -34,6 +34,7 @@ use xmt_lib::solver::Solver;
 #[test] fn test_sandbox()       { test_file(Path::new("tests/sandbox.xmt")) }
 #[test] fn test_triangle_int()  { test_file(Path::new("tests/triangle Int.xmt")) }
 #[test] fn test_triangle()      { test_file(Path::new("tests/triangle.xmt")) }
+#[test] fn test_prime()      { test_file(Path::new("tests/prime.xmt")) }
 
 
 // #[test]

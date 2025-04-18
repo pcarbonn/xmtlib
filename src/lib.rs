@@ -1,8 +1,13 @@
 // cargo watch -x "doc --no-deps"
 
+//! THIS IS NOT READY FOR RELEASE YET !
+//!
 //! xmt-lib denotes:
 //! * an expressive language for interacting with [SMT](https://fr.wikipedia.org/wiki/Satisfiability_modulo_theories) solvers;
 //! * a program that executes commands in that language.
+//!
+//! They are inspired by the [FO(.)](https://fo-dot.readthedocs.io/en/latest/FO-dot.html) language
+//! and [IDP-Z3](https://www.idp-z3.be/) reasoning engine developed by KU Leuven.
 //!
 //! The program can be used to find (optimal) solutions of combinatorial/configuration problems
 //! and perform various reasoning tasks with knowledge represented in logical forms.
@@ -20,6 +25,13 @@
 //! taking into account the known interpretations.
 //!
 //! It supports the Core, Int and Real [theories of SMT-Lib](https://smt-lib.org/theories.shtml).
+//!
+//! Future developments include support for more expressivity:
+//! - [ ] partial functions
+//! - [ ] aggregates
+//! - [ ] inductive definitions
+//! - [ ] intensional logic
+//! - [ ] more reasoning tasks
 //!
 //!
 //! # Usage
@@ -85,10 +97,13 @@
 //! Note that, unlike SMT-Lib 2.6, but like the Z3 solver,
 //! xmt-lib accepts negative numbers in terms (e.g., `-1` is accepted for `(- 1)`).
 //!
-//! A solver instance has a connection to the sqlite database used for grounding assertions.
+//! A solver instance has a connection to a sqlite database used for grounding assertions.
 //! This connection can be used to efficiently load data in the database,
 //! as examplified in the [triangle crate](../triangle/index.html).
-//! The interpretation of a symbol can be specified using an sql statement, as described further below.
+//! The interpretation of a symbol can then be specified using the `(x-sql` construct, as described further below.
+//! The owner of the sqlite database is the solver:
+//! the connection should not be changed to another sqlite database.
+//! To access data in another format, e.g., csv, [virtual tables](https://sqlite.org/vtab.html) should be used.
 //!
 //! The new commands introduced by xmt-lib are listed below.
 //!
@@ -130,45 +145,53 @@
 //! by listing all the tuples of arguments that make it true.
 //! Such an intepretation can be given only once.
 //!
-//! Example: `(x-interpret-pred Edge (x-set (a b) (b c) (c a)) )`.
+//! This list of tuples can be supplied using:
+//!
+//! * `(x-set`, e.g., `(x-interpret-pred Edge (x-set (a b) (b c) (c a)) )`.
 //! The only pairs of nodes that satisfy the `Edge` predicate are `(a b)`, `(b c)`, and `(c a)`.
 //!
-//! For a unary predicate over integers, the set can be given as a (union of) interval with inclusive boundaries:
-//!
-//! Example: `(x-interpret-pred Row (x-range 1 8) )`.
-//! The values making Row true are 1, 2, 3, 4, 5, 6, 7, 8.
-//!
-//! Note that interpreted predicates may take any value in a model obtained by `(get-model)`.
-//! So, in our example, `(Edge a b)` may have any value in a model.
-//!
-//!
-//!
-//! ## (x-interpret-pred p (x-sql "SELECT .. FROM .."))
-//!
-//! This variation of the `(x-interpret-pred` command
-//! allows specifying the interpretation of a symbol, e.g.,  `p`,
-//! using an sql SELECT that returns the tuples that make `p` true.
-//!
+//! * `(x-sql "SELECT .. FROM ..")`.
+//! The SELECT is run using the sqlite connection of the solver.
 //! The SELECT must return `n` columns named `a_0, .. a_n`
 //! where `n` is the arity of the symbol being interpreted.
 //! These columns must be of type INTEGER for integers, REAL for reals, and TEXT otherwise.
 //!
-//! The table may not have duplicate rows,
-//! and the values in the columns must be nullary constructors of the appropriate type.
-//! (note: these rules are not enforced by the xmtlib crate)
+//! * `(x-range`, e.g., `(x-interpret-pred Row (x-range 1 8) )`.
+//! The values making Row true are 1, 2, 3, 4, 5, 6, 7, 8.
+//! The set is the (union of) interval with inclusive boundaries.
+//! This can only be used for unary predicates over Int.
+//!
+//! The list of tuples may not have duplicate tuples,
+//! and the values in the tuples must be of the appropriate type for the predicate.
+//! Furthermore, for the `(x-sql` variant, the values must be nullary constructors.
+//! (note: these rules are not enforced by the xmtlib crate for the `(x-sql` variant)
+//!
+//! Note that interpreted predicates may take any value in a model obtained by `(get-model)`.
+//! So, in our firstexample, `(Edge a b)` may have any value in a model.
 //!
 //!
 //! ## (x-interpret-fun ...)
 //!
 //! An `x-interpret-fun` command specifies the interpretation of a function symbol, possibly partially,
-//! by associating a value to tuples of arguments, and by giving a default value.
+//! by mapping a value to tuples of arguments, and by giving a default value.
 //! (The interpretation of a function with an infinite domain cannot be given)
 //!
-//! Example: `(x-interpret-fun Length (x-mapping ((a b) 2) ((b c) ?) ((c a) 4) ) 999)`.
+//! The mapping can be supplied using:
+//!
+//! * `(x-mapping`, e.g., `(x-interpret-fun Length (x-mapping ((a b) 2) ((b c) ?) ((c a) 4) ) 999)`.
 //! The length of pair `(a b)` is 2, of `(b c)` is unknown, of `(c a)` is 4,
 //! and is 999 for every other pairs in the domain of Length.
 //!
-//! The grammar of this command is :
+//! * `(x-sql "SELECT .. FROM ..")`
+//! The SELECT is run using the sqlite connection of the solver.
+//! The SELECT must return `n+1` columns named `a_0, .. a_n, G`
+//! where `n` is the arity of the symbol being interpreted,
+//! `a_0, .. a_n` contain the tuples of arguments, and `G` the corresponding values.
+//! These columns must be of type INTEGER for integers, REAL for reals, and TEXT otherwise.
+//!
+//!
+//!
+//! The grammar for the `(x-mapping` command is :
 //!
 //! ```text
 //!     '(' 'x-interpret-fun' <symbol> '(' 'x-mapping' <mapping>* ')' <value>? ')'
@@ -187,31 +210,21 @@
 //! does not cover the domain of the function;
 //! it may not be given otherwise.
 //!
+//! The table may not have duplicate tuples,
+//! and the values in the mapping must be of the appropriate type.
+//! Furthermore, for the `(x-sql` variant,
+//! the values in the mappings must be nullary constructors (thus excluding any unknown value).
+//! (note: these rules are not enforced by the xmtlib crate for the `(x-sql` variant)
+//!
+//! The default value must be given if the set of tuples in the interpretation
+//! does not cover the domain of the function;
+//! it may not be given otherwise.
+//!
 //! Note that pre-interpreted terms may take any value in a model obtained by `(get-model)`.
 //! (In our triangle example above,
 //! `(Length a b)` can have any interpretation in a model,
 //! but `(Length b c)` will have an interpretation that satisfies the assertions)
 //!
-//!
-//! ## (x-interpret-fun f (x-sql "SELECT .. FROM ..") ..)
-//!
-//! This variation of the `(x-interpret-fun` command
-//! allows specifying the interpretation of a function symbol, e.g.,  `f`,
-//! using an sql SELECT that maps a tuple of ids to their image by `f`.
-//!
-//! The SELECT must return `n+1` columns named `a_0, .. a_n, G`
-//! where `n` is the arity of the symbol being interpreted,
-//! `a_0, .. a_n` contain the tuples of arguments, and `G` the corresponding values.
-//! These columns must be of type INTEGER for integers, REAL for reals, and TEXT otherwise.
-//!
-//! The table may not have duplicate rows,
-//! and the values in the columns must be nullary constructors of the appropriate type
-//! (thus excluding any unknown value).
-//! (note: these rules are not enforced by the xmt-lib crate)
-//!
-//! The default value must be given if the set of tuples in the interpretation
-//! does not cover the domain of the function;
-//! it may not be given otherwise.
 //!
 //!
 //! ## (x-ground)

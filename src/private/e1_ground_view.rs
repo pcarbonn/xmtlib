@@ -210,7 +210,9 @@ pub(crate) fn view_for_compound(
                     .map(|(k, v)| (k.clone(), v.clone()));
                 free_variables.extend(to_add);
                 ids = max(ids, sub_ids.clone());
+                ids_.push(sub_ids.clone());
 
+                // if the sub-query is a Join
                 if let GroundingQuery::Join { variables: sub_variables, conditions: sub_conditions,
                     grounding: sub_grounding, natural_joins: sub_natural_joins,
                     theta_joins: sub_theta_joins, precise: sub_precise,.. } = query {
@@ -239,7 +241,6 @@ pub(crate) fn view_for_compound(
 
                     conditions.extend(sub_conditions.iter().cloned());
                     groundings.push(sub_grounding.clone());
-                    ids_.push(sub_ids.clone());
                     natural_joins.extend(sub_natural_joins.iter().cloned());
                     theta_joins.extend(sub_theta_joins.iter().cloned());
                     precise &= *sub_precise;

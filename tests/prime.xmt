@@ -1,0 +1,84 @@
+(set-option :backend none)
+(declare-fun domain (Int) Bool)
+(declare-fun prime (Int) Bool)
+(assert (forall ((x Int)) (=> (domain x)
+                              (= (prime x)
+                                 (forall ((y Int)) (=>  (and (domain y)
+                                                             (< y x))
+                                                        (> (mod x y) 0)))))))
+
+(x-interpret-pred domain (x-range 1 10))
+(x-ground)
+(x-debug db-view Agg_13_G)
+(x-debug solver groundings)
+-------------------------
+(declare-fun domain (Int) Bool)
+(declare-fun prime (Int) Bool)
+(assert (= (prime 1) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
+(assert (= (prime 2) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
+(assert (= (prime 3) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
+(assert (= (prime 4) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
+(assert (= (prime 5) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
+(assert (= (prime 6) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
+(assert (= (prime 7) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
+(assert (= (prime 8) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
+(assert (= (prime 9) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
+(assert (= (prime 10) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
+CREATE VIEW Agg_13_G AS SELECT x, "(forall ((y Int)) " || and_aggregate(G) || ")" as G from (SELECT "y" AS y, "x" AS x, apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
+Groundings:
+ - x: SELECT "x" AS x, "x" AS G
+ - (domain x):
+    T: SELECT _xmt_domain_TU_1.a_1 AS x, "true" AS G FROM _xmt_domain_TU AS _xmt_domain_TU_1
+    UF: SELECT "x" AS x, apply("domain", "x") AS G
+    G : SELECT "x" AS x, apply("domain", "x") AS G
+ - (not (domain x)):
+    TU: SELECT "x" AS x, apply("not", apply("domain", "x")) AS G
+    F: SELECT _xmt_domain_TU_1.a_1 AS x, "false" AS G FROM _xmt_domain_TU AS _xmt_domain_TU_1
+    G : SELECT "x" AS x, apply("not", apply("domain", "x")) AS G
+ - (prime x):
+    TU: SELECT "x" AS x, apply("prime", "x") AS G
+    UF: SELECT "x" AS x, apply("prime", "x") AS G
+    G : SELECT "x" AS x, apply("prime", "x") AS G
+ - y: SELECT "y" AS y, "y" AS G
+ - (domain y):
+    T: SELECT _xmt_domain_TU_5.a_1 AS y, "true" AS G FROM _xmt_domain_TU AS _xmt_domain_TU_5
+    UF: SELECT "y" AS y, apply("domain", "y") AS G
+    G : SELECT "y" AS y, apply("domain", "y") AS G
+ - (not (domain y)):
+    TU: SELECT "y" AS y, apply("not", apply("domain", "y")) AS G
+    F: SELECT _xmt_domain_TU_5.a_1 AS y, "false" AS G FROM _xmt_domain_TU AS _xmt_domain_TU_5
+    G : SELECT "y" AS y, apply("not", apply("domain", "y")) AS G
+ - (< y x):
+    TU: SELECT "y" AS y, "x" AS x, apply("<", "y", "x") AS G
+    UF: SELECT "y" AS y, "x" AS x, apply("<", "y", "x") AS G
+    G : SELECT "y" AS y, "x" AS x, apply("<", "y", "x") AS G
+ - (not (< y x)):
+    TU: SELECT "y" AS y, "x" AS x, apply("not", apply("<", "y", "x")) AS G
+    UF: SELECT "y" AS y, "x" AS x, apply("not", apply("<", "y", "x")) AS G
+    G : SELECT "y" AS y, "x" AS x, apply("not", apply("<", "y", "x")) AS G
+ - (mod x y): SELECT "x" AS x, "y" AS y, apply("mod", "x", "y") AS G
+ - 0: SELECT 0 AS G
+ - (> (mod x y) 0):
+    TU: SELECT "x" AS x, "y" AS y, apply(">", apply("mod", "x", "y"), 0) AS G
+    UF: SELECT "x" AS x, "y" AS y, apply(">", apply("mod", "x", "y"), 0) AS G
+    G : SELECT "x" AS x, "y" AS y, apply(">", apply("mod", "x", "y"), 0) AS G
+ - (or (not (domain y)) (not (< y x)) (> (mod x y) 0)):
+    TU: SELECT y, x, or_aggregate(G) as G from (SELECT "y" AS y, "x" AS x, apply("not", apply("domain", "y")) AS G UNION SELECT "y" AS y, "x" AS x, apply("not", apply("<", "y", "x")) AS G UNION SELECT "y" AS y, "x" AS x, apply(">", apply("mod", "x", "y"), 0) AS G)
+    UF: SELECT _xmt_domain_TU_5.a_1 AS y, "x" AS x, apply("or", apply("not", apply("<", _xmt_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_domain_TU_5.a_1), 0)) AS G FROM _xmt_domain_TU AS _xmt_domain_TU_5
+    G : SELECT "y" AS y, "x" AS x, apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G
+ - (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0))):
+    TU: SELECT x, "(forall ((y Int)) " || and_aggregate(G) || ")" as G from (SELECT "y" AS y, "x" AS x, apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
+    UF: SELECT x, and_aggregate(G) as G from (SELECT _xmt_domain_TU_5.a_1 AS y, "x" AS x, apply("or", apply("not", apply("<", _xmt_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_domain_TU_5.a_1), 0)) AS G FROM _xmt_domain_TU AS _xmt_domain_TU_5)
+    G : SELECT x, "(forall ((y Int)) " || and_aggregate(G) || ")" as G from (SELECT "y" AS y, "x" AS x, apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
+ - (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))):
+    TU: SELECT Agg_13_G.x AS x, apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G) AS G FROM Agg_13_G
+    UF: SELECT Agg_13_G.x AS x, apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G) AS G FROM Agg_13_G
+    G : SELECT Agg_13_G.x AS x, apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G) AS G FROM Agg_13_G
+ - (or (not (domain x)) (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0))))):
+    TU: SELECT x, or_aggregate(G) as G from (SELECT "x" AS x, apply("not", apply("domain", "x")) AS G UNION SELECT _xmt__14.x AS x, _xmt__14.G AS G FROM _xmt__14)
+    UF: SELECT _xmt_domain_TU_1.a_1 AS x, apply("=", apply("prime", _xmt_domain_TU_1.a_1), Agg_13_G.G) AS G FROM Agg_13_G JOIN _xmt_domain_TU AS _xmt_domain_TU_1
+    G : SELECT Agg_13_G.x AS x, apply("or", apply("not", apply("domain", Agg_13_G.x)), apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G)) AS G FROM Agg_13_G
+ - (forall ((x Int)) (or (not (domain x)) (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))):
+    TU: SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G from (SELECT Agg_13_G.x AS x, apply("or", apply("not", apply("domain", Agg_13_G.x)), apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G)) AS G FROM Agg_13_G)
+    UF: SELECT G as G from (SELECT _xmt_domain_TU_1.a_1 AS x, apply("=", apply("prime", _xmt_domain_TU_1.a_1), Agg_13_G.G) AS G FROM Agg_13_G JOIN _xmt_domain_TU AS _xmt_domain_TU_1)
+    G : SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G from (SELECT Agg_13_G.x AS x, apply("or", apply("not", apply("domain", Agg_13_G.x)), apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G)) AS G FROM Agg_13_G)
