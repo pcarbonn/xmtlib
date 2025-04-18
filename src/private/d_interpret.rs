@@ -482,10 +482,10 @@ fn create_interpretation_table(
     let (mut columns, foreign_keys): (Vec<String>, Vec<String>) =
         domain.iter().enumerate()
         .map( |(i, sort)| {
-            let col = column(format!("a_{i}"), sort);
+            let col = column(format!("a_{}", i+1), sort);
             match solver.sorts.get(sort) {
                 Some(SortObject::Normal{table, ..}) =>
-                    Ok((col, format!("FOREIGN KEY (a_{i}) REFERENCES {table}(G)"))),
+                    Ok((col, format!("FOREIGN KEY (a_{}) REFERENCES {table}(G)", i+1))),
                 Some(_) => // infinite domain
                     Ok((col, "".to_string())),
                 None =>
@@ -506,7 +506,7 @@ fn create_interpretation_table(
     if 0 < domain.len() {
         let primary_key = format!("PRIMARY KEY ({})",
             (0..domain.len())
-            .map(|i| format!("a_{i}"))
+            .map(|i| format!("a_{}", i+1))
             .collect::<Vec<_>>().join(", "));
         columns.push(primary_key);
     }
@@ -617,10 +617,10 @@ fn create_missing_views(
         .map( |(i, sort)| {
             match solver.sorts.get(sort) {
                 Some(SortObject::Normal{table, ..}) =>
-                    Ok((format!("{table}_{i}.G AS a_{i}"),
+                    Ok((format!("{table}_{i}.G AS a_{}", i+1),
                         format!("{table}_{i}.G"),
                         format!("{table} AS {table}_{i}"),
-                        format!("{table}_{i}.G = {from}.a_{i}"))),
+                        format!("{table}_{i}.G = {from}.a_{}", i+1))),
                 Some(_) => // infinite domain
                     Err(SolverError::IdentifierError("Cannot interpret a symbol with infinite domain", identifier.clone())),
                 None =>

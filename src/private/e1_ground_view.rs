@@ -219,7 +219,7 @@ pub(crate) fn view_for_compound(
                     match sub_grounding {
                         SQLExpr::Variable(symbol) => {
                             if let QueryVariant::Interpretation(table_name, _) = variant {
-                                let column = Column::new(table_name, &format!("a_{i}"));
+                                let column = Column::new(table_name, &format!("a_{}", i+1));
 
                                 //  update the query in progress
                                 free_variables.insert(symbol.clone(), Some(table_name.clone()));
@@ -252,7 +252,7 @@ pub(crate) fn view_for_compound(
                     // compute the join conditions, for later use
                     match variant {
                         QueryVariant::Interpretation(table_name, ..) => {
-                            let column = Column::new(table_name, &format!("a_{i}"));
+                            let column = Column::new(table_name, &format!("a_{}", i+1));
 
                             // push `sub_grounding = column` to conditions and thetas
                             let if_ = Mapping(sub_ids.clone(), sub_grounding.clone(), column);

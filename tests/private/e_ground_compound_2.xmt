@@ -28,32 +28,32 @@ Groundings:
  - a: SELECT "a" AS G
  - (f a): SELECT apply("f", "a") AS G
  - (p x (f a)):
-    TU: SELECT _xmt_p_TU_3.a_0 AS x, apply("=",apply("f", "a"), _xmt_p_TU_3.a_1) AS if_, _xmt_p_TU_3.G AS G FROM _xmt_p_TU AS _xmt_p_TU_3
-    UF: SELECT _xmt_p_UF_3.a_0 AS x, apply("=",apply("f", "a"), _xmt_p_UF_3.a_1) AS if_, _xmt_p_UF_3.G AS G FROM _xmt_p_UF AS _xmt_p_UF_3
-    G : SELECT _xmt_p_G_3.a_0 AS x, apply("=",apply("f", "a"), _xmt_p_G_3.a_1) AS if_, _xmt_p_G_3.G AS G FROM _xmt_p_G AS _xmt_p_G_3
+    TU: SELECT _xmt_p_TU_3.a_1 AS x, apply("=",apply("f", "a"), _xmt_p_TU_3.a_2) AS if_, _xmt_p_TU_3.G AS G FROM _xmt_p_TU AS _xmt_p_TU_3
+    UF: SELECT _xmt_p_UF_3.a_1 AS x, apply("=",apply("f", "a"), _xmt_p_UF_3.a_2) AS if_, _xmt_p_UF_3.G AS G FROM _xmt_p_UF AS _xmt_p_UF_3
+    G : SELECT _xmt_p_G_3.a_1 AS x, apply("=",apply("f", "a"), _xmt_p_G_3.a_2) AS if_, _xmt_p_G_3.G AS G FROM _xmt_p_G AS _xmt_p_G_3
  - b: SELECT "b" AS G
  - (f b): SELECT apply("f", "b") AS G
  - (p x (f b)):
-    TU: SELECT _xmt_p_TU_6.a_0 AS x, apply("=",apply("f", "b"), _xmt_p_TU_6.a_1) AS if_, _xmt_p_TU_6.G AS G FROM _xmt_p_TU AS _xmt_p_TU_6
-    UF: SELECT _xmt_p_UF_6.a_0 AS x, apply("=",apply("f", "b"), _xmt_p_UF_6.a_1) AS if_, _xmt_p_UF_6.G AS G FROM _xmt_p_UF AS _xmt_p_UF_6
-    G : SELECT _xmt_p_G_6.a_0 AS x, apply("=",apply("f", "b"), _xmt_p_G_6.a_1) AS if_, _xmt_p_G_6.G AS G FROM _xmt_p_G AS _xmt_p_G_6
+    TU: SELECT _xmt_p_TU_6.a_1 AS x, apply("=",apply("f", "b"), _xmt_p_TU_6.a_2) AS if_, _xmt_p_TU_6.G AS G FROM _xmt_p_TU AS _xmt_p_TU_6
+    UF: SELECT _xmt_p_UF_6.a_1 AS x, apply("=",apply("f", "b"), _xmt_p_UF_6.a_2) AS if_, _xmt_p_UF_6.G AS G FROM _xmt_p_UF AS _xmt_p_UF_6
+    G : SELECT _xmt_p_G_6.a_1 AS x, apply("=",apply("f", "b"), _xmt_p_G_6.a_2) AS if_, _xmt_p_G_6.G AS G FROM _xmt_p_G AS _xmt_p_G_6
  - (and (p x (f a)) (p x (f b))):
-    TU: SELECT _xmt_p_TU_3.a_0 AS x, and_(apply("=",apply("f", "a"), _xmt_p_TU_3.a_1), apply("=",apply("f", "b"), _xmt_p_TU_6.a_1)) AS if_, and_(_xmt_p_TU_3.G, _xmt_p_TU_6.G) AS G FROM _xmt_p_TU AS _xmt_p_TU_3 JOIN _xmt_p_TU AS _xmt_p_TU_6 ON _xmt_p_TU_3.a_0 = _xmt_p_TU_6.a_0
+    TU: SELECT _xmt_p_TU_3.a_1 AS x, and_(apply("=",apply("f", "a"), _xmt_p_TU_3.a_2), apply("=",apply("f", "b"), _xmt_p_TU_6.a_2)) AS if_, and_(_xmt_p_TU_3.G, _xmt_p_TU_6.G) AS G FROM _xmt_p_TU AS _xmt_p_TU_3 JOIN _xmt_p_TU AS _xmt_p_TU_6 ON _xmt_p_TU_3.a_1 = _xmt_p_TU_6.a_1
     UF: SELECT x, and_aggregate(implies_(if_, G)) as G from (SELECT _xmt_p_3_6.x AS x, _xmt_p_3_6.if_ AS if_, _xmt_p_3_6.G AS G FROM _xmt_p_3_6 UNION SELECT _xmt_p_6_11.x AS x, _xmt_p_6_11.if_ AS if_, _xmt_p_6_11.G AS G FROM _xmt_p_6_11) GROUP BY x
-    G : SELECT _xmt_p_G_3.a_0 AS x, and_(apply("=",apply("f", "a"), _xmt_p_G_3.a_1), apply("=",apply("f", "b"), _xmt_p_G_6.a_1)) AS if_, and_(_xmt_p_G_3.G, _xmt_p_G_6.G) AS G FROM _xmt_p_G AS _xmt_p_G_3 JOIN _xmt_p_G AS _xmt_p_G_6 ON _xmt_p_G_3.a_0 = _xmt_p_G_6.a_0
+    G : SELECT _xmt_p_G_3.a_1 AS x, and_(apply("=",apply("f", "a"), _xmt_p_G_3.a_2), apply("=",apply("f", "b"), _xmt_p_G_6.a_2)) AS if_, and_(_xmt_p_G_3.G, _xmt_p_G_6.G) AS G FROM _xmt_p_G AS _xmt_p_G_3 JOIN _xmt_p_G AS _xmt_p_G_6 ON _xmt_p_G_3.a_1 = _xmt_p_G_6.a_1
  - (forall ((x T)) (and (p x (f a)) (p x (f b)))):
-    TU: SELECT and_aggregate(implies_(if_, G)) as G from (SELECT _xmt_p_G_3.a_0 AS x, and_(apply("=",apply("f", "a"), _xmt_p_G_3.a_1), apply("=",apply("f", "b"), _xmt_p_G_6.a_1)) AS if_, and_(_xmt_p_G_3.G, _xmt_p_G_6.G) AS G FROM _xmt_p_G AS _xmt_p_G_3 JOIN _xmt_p_G AS _xmt_p_G_6 ON _xmt_p_G_3.a_0 = _xmt_p_G_6.a_0)
+    TU: SELECT and_aggregate(implies_(if_, G)) as G from (SELECT _xmt_p_G_3.a_1 AS x, and_(apply("=",apply("f", "a"), _xmt_p_G_3.a_2), apply("=",apply("f", "b"), _xmt_p_G_6.a_2)) AS if_, and_(_xmt_p_G_3.G, _xmt_p_G_6.G) AS G FROM _xmt_p_G AS _xmt_p_G_3 JOIN _xmt_p_G AS _xmt_p_G_6 ON _xmt_p_G_3.a_1 = _xmt_p_G_6.a_1)
     UF: SELECT G as G from (SELECT x, and_aggregate(implies_(if_, G)) as G from (SELECT _xmt_p_3_6.x AS x, _xmt_p_3_6.if_ AS if_, _xmt_p_3_6.G AS G FROM _xmt_p_3_6 UNION SELECT _xmt_p_6_11.x AS x, _xmt_p_6_11.if_ AS if_, _xmt_p_6_11.G AS G FROM _xmt_p_6_11) GROUP BY x)
-    G : SELECT and_aggregate(implies_(if_, G)) as G from (SELECT _xmt_p_G_3.a_0 AS x, and_(apply("=",apply("f", "a"), _xmt_p_G_3.a_1), apply("=",apply("f", "b"), _xmt_p_G_6.a_1)) AS if_, and_(_xmt_p_G_3.G, _xmt_p_G_6.G) AS G FROM _xmt_p_G AS _xmt_p_G_3 JOIN _xmt_p_G AS _xmt_p_G_6 ON _xmt_p_G_3.a_0 = _xmt_p_G_6.a_0)
+    G : SELECT and_aggregate(implies_(if_, G)) as G from (SELECT _xmt_p_G_3.a_1 AS x, and_(apply("=",apply("f", "a"), _xmt_p_G_3.a_2), apply("=",apply("f", "b"), _xmt_p_G_6.a_2)) AS if_, and_(_xmt_p_G_3.G, _xmt_p_G_6.G) AS G FROM _xmt_p_G AS _xmt_p_G_3 JOIN _xmt_p_G AS _xmt_p_G_6 ON _xmt_p_G_3.a_1 = _xmt_p_G_6.a_1)
  - (f x): SELECT _xmt_t.G AS x, apply("f", _xmt_t.G) AS G FROM _xmt_t
  - (p (f x) (f x)):
-    TU: SELECT _xmt_t.G AS x, and_(apply("=",apply("f", _xmt_t.G), _xmt_p_TU_10.a_0), apply("=",apply("f", _xmt_t.G), _xmt_p_TU_10.a_1)) AS if_, _xmt_p_TU_10.G AS G FROM _xmt_t JOIN _xmt_p_TU AS _xmt_p_TU_10
-    UF: SELECT _xmt_t.G AS x, and_(apply("=",apply("f", _xmt_t.G), _xmt_p_UF_10.a_0), apply("=",apply("f", _xmt_t.G), _xmt_p_UF_10.a_1)) AS if_, _xmt_p_UF_10.G AS G FROM _xmt_t JOIN _xmt_p_UF AS _xmt_p_UF_10
-    G : SELECT _xmt_t.G AS x, and_(apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_0), apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_1)) AS if_, _xmt_p_G_10.G AS G FROM _xmt_t JOIN _xmt_p_G AS _xmt_p_G_10
+    TU: SELECT _xmt_t.G AS x, and_(apply("=",apply("f", _xmt_t.G), _xmt_p_TU_10.a_1), apply("=",apply("f", _xmt_t.G), _xmt_p_TU_10.a_2)) AS if_, _xmt_p_TU_10.G AS G FROM _xmt_t JOIN _xmt_p_TU AS _xmt_p_TU_10
+    UF: SELECT _xmt_t.G AS x, and_(apply("=",apply("f", _xmt_t.G), _xmt_p_UF_10.a_1), apply("=",apply("f", _xmt_t.G), _xmt_p_UF_10.a_2)) AS if_, _xmt_p_UF_10.G AS G FROM _xmt_t JOIN _xmt_p_UF AS _xmt_p_UF_10
+    G : SELECT _xmt_t.G AS x, and_(apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_1), apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_2)) AS if_, _xmt_p_G_10.G AS G FROM _xmt_t JOIN _xmt_p_G AS _xmt_p_G_10
  - (forall ((x T)) (p (f x) (f x))):
-    TU: SELECT and_aggregate(implies_(if_, G)) as G from (SELECT _xmt_t.G AS x, and_(apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_0), apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_1)) AS if_, _xmt_p_G_10.G AS G FROM _xmt_t JOIN _xmt_p_G AS _xmt_p_G_10)
-    UF: SELECT implies_(if_, G) as G from (SELECT _xmt_t.G AS x, and_(apply("=",apply("f", _xmt_t.G), _xmt_p_UF_10.a_0), apply("=",apply("f", _xmt_t.G), _xmt_p_UF_10.a_1)) AS if_, _xmt_p_UF_10.G AS G FROM _xmt_t JOIN _xmt_p_UF AS _xmt_p_UF_10)
-    G : SELECT and_aggregate(implies_(if_, G)) as G from (SELECT _xmt_t.G AS x, and_(apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_0), apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_1)) AS if_, _xmt_p_G_10.G AS G FROM _xmt_t JOIN _xmt_p_G AS _xmt_p_G_10)
+    TU: SELECT and_aggregate(implies_(if_, G)) as G from (SELECT _xmt_t.G AS x, and_(apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_1), apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_2)) AS if_, _xmt_p_G_10.G AS G FROM _xmt_t JOIN _xmt_p_G AS _xmt_p_G_10)
+    UF: SELECT implies_(if_, G) as G from (SELECT _xmt_t.G AS x, and_(apply("=",apply("f", _xmt_t.G), _xmt_p_UF_10.a_1), apply("=",apply("f", _xmt_t.G), _xmt_p_UF_10.a_2)) AS if_, _xmt_p_UF_10.G AS G FROM _xmt_t JOIN _xmt_p_UF AS _xmt_p_UF_10)
+    G : SELECT and_aggregate(implies_(if_, G)) as G from (SELECT _xmt_t.G AS x, and_(apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_1), apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_2)) AS if_, _xmt_p_G_10.G AS G FROM _xmt_t JOIN _xmt_p_G AS _xmt_p_G_10)
 Tables and Views:
  - Bool (table)
  - _xmt_t (table)

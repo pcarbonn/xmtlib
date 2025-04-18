@@ -132,7 +132,7 @@ Tables and Views:
  - sqlite_stat4 (table)
  TABLE: _xmt_row_t
 ┌─────┐
-│ a_0 │
+│ a_1 │
 ├─────┤
 │ 1   │
 ├─────┤
