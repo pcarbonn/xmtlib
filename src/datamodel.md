@@ -43,7 +43,7 @@ pub(crate) enum GroundingView {
     View {
         free_variables: OptionMap<Symbol, TableAlias>,
         condition: bool,
-        grounding: Either<SQLExpr, TableAlias>,
+        grounding: Either<SQLExpr, (TableAlias, Ids)>,
         exclude: Option<bool>,
         query: GroundingQuery,
         ids: Ids,
@@ -74,14 +74,14 @@ pub(crate) enum NaturalJoin {
     ViewType(TableAlias, Vec<Symbol>),
 }
 pub(crate) type ThetaJoin = (TableAlias, Vec<Mapping>);
-pub(crate) struct Mapping (pub Ids, pub SQLExpr, pub Column);
+pub(crate) struct Mapping (pub SQLExpr, pub Column);
 pub(crate) enum SQLExpr {
     Boolean(bool),
     Constant(SpecConstant),
     Variable(Symbol),
-    Value(Column),
+    Value(Column, Ids),
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
     Construct(QualIdentifier, Box<Vec<SQLExpr>>),
-    Predefined(Predefined, Box<Vec<(Ids, SQLExpr)>>),
+    Predefined(Predefined, Box<Vec<SQLExpr>>),
 }
 ```

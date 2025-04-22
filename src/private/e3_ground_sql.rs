@@ -12,7 +12,7 @@ use crate::private::z_utilities::OptionMap;
 
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub(crate) struct Mapping (pub Ids, pub SQLExpr, pub Column);
+pub(crate) struct Mapping (pub SQLExpr, pub Column);
 
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -20,10 +20,10 @@ pub(crate) enum SQLExpr {
     Boolean(bool),
     Constant(SpecConstant),
     Variable(Symbol),
-    Value(Column),
+    Value(Column, Ids),
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
     Construct(QualIdentifier, Box<Vec<SQLExpr>>),  // constructor
-    Predefined(Predefined, Box<Vec<(Ids, SQLExpr)>>),
+    Predefined(Predefined, Box<Vec<SQLExpr>>),
 }
 
 #[derive(Debug, strum_macros::Display, Clone, PartialEq, Eq, Hash)]
@@ -79,12 +79,12 @@ impl Mapping {
         &self,
         variables: &OptionMap<Symbol, Column>
     ) -> Option<String> {
-        let exp = self.1.to_sql(variables);
-        let col = self.2.to_string();
+        let (exp, ids) = self.0.to_sql(variables);
+        let col = self.1.to_string();
         if exp == col {
             None
         } else {
-            match self.0 {
+            match ids {
                 Ids::All => None,
                 Ids::Some => Some(format!("if_({}, {})", exp, col)),  // is_id(exp) or exp = col
                 Ids::None => Some(format!("apply(\"=\",{}, {})", exp, col))
@@ -96,16 +96,16 @@ impl Mapping {
         &self,
         variables: &OptionMap<Symbol, Column>
     ) -> Option<String> {
-        let exp = self.1.to_sql(variables);
-        let col = self.2.to_string();
+        let (exp, ids) = self.0.to_sql(variables);
+        let col = self.1.to_string();
         if exp == col {
             None
         } else {
-            match self.0 {
+            match ids {
                 Ids::All => Some(format!("{} = {}", exp, col)),
                 Ids::Some => Some(format!("join_({}, {})", exp, col)),  // NOT is_id(exp) or exp = col
                 Ids::None => {
-                    if let SQLExpr::Variable(_) = self.1 {  // an infinite variable mapped to an interpretation
+                    if let SQLExpr::Variable(_) = self.0 {  // an infinite variable mapped to an interpretation
                         // Variable + Ids::None describe an infinite variable
                         Some(format!("{exp} = {col}"))
                     } else {
@@ -123,29 +123,29 @@ impl SQLExpr {
     pub(crate) fn to_sql(
         &self,
         variables: &OptionMap<Symbol, Column>
-    ) -> String {
+    ) -> (String, Ids) {
 
         match self {
-            SQLExpr::Boolean(value) => format!("\"{value}\""),
+            SQLExpr::Boolean(value) => (format!("\"{value}\""), Ids::All),
 
             SQLExpr::Constant(spec_constant) => {
                 match spec_constant {
-                    SpecConstant::Numeral(s) => format!("{s}"),
-                    SpecConstant::Decimal(s) => format!("{s}"),
-                    SpecConstant::Hexadecimal(s) => format!("\"{s}\""),
-                    SpecConstant::Binary(s) => format!("\"{s}\""),
-                    SpecConstant::String(s) => format!("\"{s}\""),
+                    SpecConstant::Numeral(s) => (format!("{s}"), Ids::All),
+                    SpecConstant::Decimal(s) => (format!("{s}"), Ids::All),
+                    SpecConstant::Hexadecimal(s) => (format!("\"{s}\""), Ids::All),
+                    SpecConstant::Binary(s) => (format!("\"{s}\""), Ids::All),
+                    SpecConstant::String(s) => (format!("\"{s}\""), Ids::All),
                 }
             },
             SQLExpr::Variable(symbol) => {
                 let column = variables.get(symbol).unwrap();
                 if let Some(column) = column {
-                    column.to_string()
+                    (column.to_string(), Ids::All)
                 } else {
-                    format!("\"{symbol}\"")
+                    (format!("\"{symbol}\""), Ids::None)
                 }
             },
-            SQLExpr::Value(column) => column.to_string(),
+            SQLExpr::Value(column, ids) => (column.to_string(), ids.clone()),
             SQLExpr::Apply(qual_identifier, exprs) => {
                 sql_for("apply", qual_identifier.to_string(), exprs, variables)
             },
@@ -156,19 +156,34 @@ impl SQLExpr {
             SQLExpr::Predefined(function, exprs) => {
                 if UNARY.contains(function) {
                     // NOT, abs
-                    let (id, e) = exprs.first().unwrap();
-                    let expr = e.to_sql(variables);
-                    if *id == Ids::None {
-                        format!("apply(\"{function}\", {expr})")
+                    let e = exprs.first().unwrap();
+                    let (expr, ids) = e.to_sql(variables);
+                    if ids == Ids::None {
+                        (format!("apply(\"{function}\", {expr})"), Ids::None)
                     } else if *function == Predefined::Not {
-                        format!("not_({expr})")
+                        (format!("not_({expr})"), ids)
                     } else {
-                        format!("abs_({expr})")
+                        (format!("abs_({expr})"), ids)
                     }
                 } else if BINARY.contains(function) {
                     // mod
-                    if let [(_, a), (_, b)] = &exprs[..] {
-                        format!("apply(\"{function}\", {}, {})", a.to_sql(variables), b.to_sql(variables))
+
+                    let mut ids = Ids::All;
+                    let terms = exprs.iter()
+                        .map(|e| {
+                            let (e, ids_) = e.to_sql(variables);
+                            ids = max(ids.clone(), ids_.clone());
+                            e
+                        }).collect::<Vec<_>>();
+
+                    if let [a, b] = &terms[..] {
+                        if ids == Ids::None {
+                            (format!("apply(\"{function}\", {a}, {b})"),
+                            ids.clone())
+                        } else {
+                            (format!("left_(\"{function}\", {a}, {b})"),
+                            ids.clone())
+                        }
                     } else {
                         panic!("incorrect number of arguments for mod")
                     }
@@ -177,108 +192,103 @@ impl SQLExpr {
                     let name = function.to_string();
                     let mut ids = Ids::All;
                     let exprs =
-                        exprs.iter().cloned().filter_map( |(id, e)| {
-                            ids = max(ids.clone(), id.clone());
+                        exprs.iter().cloned().filter_map( |e| {
+                            let (e_, ids_) = e.to_sql(variables);
+                            ids = max(ids.clone(), ids_.clone());
                             // try to simplify
                             match e {
-                                SQLExpr::Boolean(b) => {
+                                SQLExpr::Boolean(b) =>
                                     if name == "and" && b { None }
                                     else if name == "or" && !b { None }
-                                    else { Some(e.to_sql(variables)) }
-                                },
-                                _ => Some(e.to_sql(variables))
+                                    else { Some(e_) },
+                                _ => Some(e_)
                             }
-                        }).collect::<Vec<_>>();
+                        }).collect::<Vec<String>>();
                     if exprs.len() == 0 {
-                        if name == "and" { "\"true\"".to_string() } else { "\"false\"".to_string()}
+                        if name == "and" {
+                            ("\"true\"".to_string(), Ids::All)
+                        } else {
+                            ("\"false\"".to_string(), Ids::All)
+                        }
                     } else if exprs.len() == 1 {
-                        exprs.first().unwrap().to_string()
+                        (exprs.first().unwrap().clone(), ids)
                     } else {
                         if ids == Ids::None {
-                            format!("apply(\"{name}\", {})", exprs.join(", "))
+                            (format!("apply(\"{name}\", {})", exprs.join(", ")), ids)
                         } else {
-                            format!("{name}_({})", exprs.join(", "))
+                            (format!("{name}_({})", exprs.join(", ")), ids)
                         }
                     }
                 } else if CHAINABLE.contains(function) {
                     // LINK src/doc.md#_Equality
                     // Eq, comparisons
 
-                    let mut ids = Ids::All;
-                    let terms = exprs.iter()
-                        .map(|(ids_, e)| {
-                            ids = max(ids.clone(), ids_.clone());
-                            e.to_sql(variables)
-                        }).collect::<Vec<_>>().join(", ");
+                    let (terms, ids) = collect_args(Ids::All, exprs, variables);
 
                     // simplify
                     match function {
                         Predefined::Eq => {
                             let equal = exprs.iter().zip(exprs.iter().skip(1))
-                                    .all(|((_, a), (_, b))| *a == *b);
+                                    .all(|(a, b)| *a == *b);
                             if equal {
-                                return "\"true\"".to_string()
+                                return ("\"true\"".to_string(), Ids::All)
                             }
                         }
                         _ => {}
                     }
 
                     if ids == Ids::None {
-                        format!("apply(\"{function}\", {terms})")
+                        (format!("apply(\"{function}\", {terms})"), ids)
                     } else {
                         match function {
-                            Predefined::Eq      => format!("eq_({terms})"),
+                            Predefined::Eq      => (format!("eq_({terms})"), ids),
                             Predefined::Less
                             | Predefined::LE
                             | Predefined::GE
-                            | Predefined::Greater => format!("compare_(\"{function}\", {terms})"),
+                            | Predefined::Greater => (format!("compare_(\"{function}\", {terms})"), ids),
                             _ => unreachable!()
                         }
                     }
                 } else if PAIRWISE.contains(function) { // distinct
 
-                    let mut ids = Ids::All;
-                    let terms = exprs.iter()
-                        .map(|(ids_, e)| {
-                            ids = max(ids.clone(), ids_.clone());
-                            e.to_sql(variables)
-                        }).collect::<Vec<_>>().join(", ");
+                    let (terms, ids) = collect_args(Ids::All, exprs, variables);
 
                     if ids == Ids::None {
-                        format!("apply(\"distinct\", {terms})")
+                        (format!("apply(\"distinct\", {terms})"), ids)
                     } else {
-                        format!("compare_(\"distinct\", {terms})")
+                        (format!("compare_(\"distinct\", {terms})"), ids)
                     }
                 } else if LEFT_ASSOC.contains(function) {
                     // + - * div
 
-                    let mut ids = Ids::All;
-                    let terms = exprs.iter()
-                        .map(|(ids_, e)| {
-                            ids = max(ids.clone(), ids_.clone());
-                            e.to_sql(variables)
-                        }).collect::<Vec<_>>().join(", ");
+                    let (terms, ids) = collect_args(Ids::All, exprs, variables);
 
                     if ids == Ids::None {
-                        format!("apply(\"{function}\", {terms})")
+                        (format!("apply(\"{function}\", {terms})"), ids)
                     } else {
-                        format!("left_(\"{function}\", {terms})")
+                        (format!("left_(\"{function}\", {terms})"), ids)
                     }
                 } else if *function == Predefined::Ite {
+                    let mut ids = Ids::All;
                     let terms = exprs.iter()
-                        .map(|(_, e)| {
-                            e.to_sql(variables)
+                        .map(|e| {
+                            let (e, ids_) = e.to_sql(variables);
+                            ids = max(ids.clone(), ids_.clone());
+                            e
                         }).collect::<Vec<_>>();
 
                     if terms[1] == terms[2] {  // condition is irrelevant
-                        terms[1].clone()
+                        (terms[1].clone(), ids.clone())
+                    } else if terms[0] == "\"true\"" {
+                        (terms[1].clone(), ids.clone())
+                    } else if terms[1] == "\"false\"" {
+                        (terms[2].clone(), ids.clone())
                     } else {
                         let terms = terms.join(", ");
-                        let ids = &exprs[0].0;
-                        if *ids == Ids::None {
-                            format!("apply(\"{function}\", {terms})")
+                        if ids == Ids::None {
+                            (format!("apply(\"{function}\", {terms})"), ids.clone())
                         } else {
-                            format!("ite_({terms})")
+                            (format!("ite_({terms})"), ids.clone())
                         }
                     }
                 } else {
@@ -301,13 +311,34 @@ fn sql_for(
     function: String,
     exprs: &Box<Vec<SQLExpr>>,
     variables: &OptionMap<Symbol, Column>,
-) -> String {
+) -> (String, Ids) {
+    let ids =
+        if application == "construct2" {
+            Ids::All
+        } else {
+            Ids::None
+        };
     if exprs.len() == 0 {
-        format!("\"{function}\"")
+        (format!("\"{function}\""), ids)
     } else {
-        let terms = exprs.iter()
-            .map(|e| e.to_sql(variables))
-            .collect::<Vec<_>>().join(", ");
-        format!("{application}(\"{function}\", {terms})")
+        let (terms, ids) = collect_args(ids, exprs, variables);
+        (format!("{application}(\"{function}\", {terms})"), ids)
     }
+}
+
+/// converts each exprs to a string, join them by ", ", and determines Ids for the result
+fn collect_args(
+    ids: Ids,
+    exprs: &Box<Vec<SQLExpr>>,
+    variables: &OptionMap<Symbol, Column>
+) -> (String, Ids) {
+    let mut ids = ids;
+    let terms = exprs.iter()
+        .map(|e| {
+            let (e, ids_) = e.to_sql(variables);
+            ids = max(ids.clone(), ids_.clone());
+            e
+        })
+        .collect::<Vec<_>>().join(", ");
+    (terms, ids)
 }

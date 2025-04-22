@@ -467,6 +467,17 @@ pub(crate) fn init_db(
                             }
                         }
                     }
+                    "mod" => {
+                        if let [a, b] = &ints[..] {
+                            return Ok((a % b).to_string())
+                        } else if let rusqlite::types::ValueRef::Integer(val) = ctx.get_raw(1) {
+                            strs.insert(0, val.to_string())
+                        } else if let rusqlite::types::ValueRef::Integer(val) = ctx.get_raw(2){
+                            strs.push(val.to_string())
+                        } else {
+                            unreachable!()
+                        }
+                    }
                     _ => unreachable!()
                 }
             }

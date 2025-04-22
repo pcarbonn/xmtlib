@@ -130,7 +130,7 @@ impl std::fmt::Display for GroundingQuery {
                     };
 
                 // grounding
-                let grounding_ = grounding.to_sql(&variables);
+                let grounding_ = grounding.to_sql(&variables).0;
                 let grounding_ = format!("{grounding_} AS G");
 
                 // natural joins
@@ -347,10 +347,10 @@ impl GroundingQuery {
                         } else if view_type == ViewType::UF {
                             SQLExpr::Boolean(true)  // all ids were false
                         } else {
-                            SQLExpr::Predefined(Predefined::Not, Box::new(vec![(ids.clone(), grounding.clone())]))
+                            SQLExpr::Predefined(Predefined::Not, Box::new(vec![grounding.clone()]))
                         }
                     } else {
-                        SQLExpr::Predefined(Predefined::Not, Box::new(vec![(ids.clone(), grounding.clone())]))
+                        SQLExpr::Predefined(Predefined::Not, Box::new(vec![grounding.clone()]))
                     };
                 let query = GroundingQuery::Join {
                     variables: variables.clone(),

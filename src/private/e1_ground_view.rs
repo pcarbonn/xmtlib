@@ -25,7 +25,7 @@ pub(crate) enum GroundingView {
     View {  // SELECT vars, cond, grounding (from view) WHERE val <> exclude
         free_variables: OptionMap<Symbol, TableAlias>,  // None for infinite variables, sort interpretation table otherwise
         condition: bool,
-        grounding: Either<SQLExpr, TableAlias>, // Left for SpecConstant, Boolean without table. Right for grounding field in table.
+        grounding: Either<SQLExpr, (TableAlias, Ids)>, // Left for SpecConstant, Boolean without table. Right for grounding field in table.
         exclude: Option<bool>, // e.g., "false" in TU view
 
         query: GroundingQuery,  // the underlying query
@@ -60,8 +60,8 @@ impl std::fmt::Debug for GroundingView {
                 let vars = if vars == "" { vars } else { vars + ", " };
                 let if_= if *condition { "if_, " } else { "" };
                 let g_v = match grounding {
-                    Either::Left(c) => format!("{}", c.to_sql(&OptionMap::new())),
-                    Either::Right(view) => format!("G from {view}")
+                    Either::Left(c) => format!("{}", c.to_sql(&OptionMap::new()).0),
+                    Either::Right((view, _)) => format!("G from {view}")
                 };
                 // make the view precise if the query is not
                 // todo perf: is this usefull ?
@@ -194,7 +194,6 @@ pub(crate) fn view_for_compound(
     let mut theta_joins = IndexSet::new();
     let mut thetas = vec![];
     let mut ids = Ids::All;
-    let mut ids_ = vec![];
     let mut precise = true;
 
     for (i, sub_q) in sub_queries.iter().enumerate() {
@@ -210,7 +209,6 @@ pub(crate) fn view_for_compound(
                     .map(|(k, v)| (k.clone(), v.clone()));
                 free_variables.extend(to_add);
                 ids = max(ids, sub_ids.clone());
-                ids_.push(sub_ids.clone());
 
                 // if the sub-query is a Join
                 if let GroundingQuery::Join { variables: sub_variables, conditions: sub_conditions,
@@ -230,7 +228,7 @@ pub(crate) fn view_for_compound(
                                 groundings.push(sub_grounding.clone());
                                 // do not push to natural_joins
                                 // push `sub_grounding = column` to thetas
-                                let if_ = Mapping(sub_ids.clone(), sub_grounding.clone(), column);
+                                let if_ = Mapping(sub_grounding.clone(), column);
                                 thetas.push(if_);
 
                                 continue  // to the next sub-query
@@ -256,7 +254,7 @@ pub(crate) fn view_for_compound(
                             let column = Column::new(table_name, &format!("a_{}", i+1));
 
                             // push `sub_grounding = column` to conditions and thetas
-                            let if_ = Mapping(sub_ids.clone(), sub_grounding.clone(), column);
+                            let if_ = Mapping(sub_grounding.clone(), column);
                             if *sub_ids != Ids::All {
                                 conditions.push(Left(if_.clone()));
                             }
@@ -272,7 +270,7 @@ pub(crate) fn view_for_compound(
                         Either::Left(constant) =>
                             groundings.push(constant.clone()),
 
-                        Either::Right(table_name) => {
+                        Either::Right((table_name, ids)) => {
 
                             // merge the variables
                             for (symbol, _) in sub_free_variables.clone().iter() {
@@ -283,7 +281,7 @@ pub(crate) fn view_for_compound(
                             if *sub_condition {
                                 conditions.push(Right(Some(table_name.clone())));
                             }
-                            groundings.push(SQLExpr::Value(Column::new(table_name, "G")));
+                            groundings.push(SQLExpr::Value(Column::new(table_name, "G"), ids.clone()));
 
                             let map_variables = sub_free_variables.iter()
                                 .filter_map( |(symbol, table_name)| {
@@ -333,7 +331,7 @@ pub(crate) fn view_for_compound(
                 match (ids_, exclude) {
                     (Ids::All, Some(false)) => SQLExpr::Boolean(true),  // complete TU view_
                     (Ids::All, Some(true)) => SQLExpr::Boolean(false),  // complete UF view
-                    _ => SQLExpr::Value(Column::new(table_name, "G"))
+                    _ => SQLExpr::Value(Column::new(table_name, "G"), ids_.clone())
                 }
             },
             QueryVariant::Apply => {
@@ -386,9 +384,7 @@ pub(crate) fn view_for_compound(
                     precise = false
                 };
 
-                let ops: Vec<_> = ids_.iter().cloned().zip(groundings.iter().cloned()).collect();
-
-                SQLExpr::Predefined(function, Box::new(ops))
+                SQLExpr::Predefined(function, Box::new(groundings))
             }
         };
 
@@ -504,7 +500,7 @@ pub(crate) fn view_for_union(
                             precise: true
                         })
                     },
-                    Either::Right(table_name) => {
+                    Either::Right((table_name, ids)) => {
                         // add the cross-product of missing variables
                         let mut q_variables = OptionMap::new();
                         let join_vars = sub_free_variables.iter()
@@ -543,7 +539,7 @@ pub(crate) fn view_for_union(
                         Some(GroundingQuery::Join {
                             variables: q_variables,
                             conditions,
-                            grounding: SQLExpr::Value(Column::new(table_name, "G")),
+                            grounding: SQLExpr::Value(Column::new(table_name, "G"), ids.clone()),
                             natural_joins,
                             theta_joins: IndexSet::new(),
                             precise: true  // because it is based on a view
@@ -572,7 +568,7 @@ pub(crate) fn view_for_union(
     let sub_view = GroundingView::View {
         free_variables: free_variables.clone(),
         condition,
-        grounding: Either::Right(table_alias),
+        grounding: Either::Right((table_alias, ids.clone())),
         query,
         exclude,
         ids: ids.clone()
@@ -636,7 +632,7 @@ impl GroundingView {
                     Ok(GroundingView::View{
                         free_variables,
                         condition,
-                        grounding: Either::Right(table_alias),
+                        grounding: Either::Right((table_alias, ids.clone())),
                         query,
                         exclude,
                         ids})
@@ -650,7 +646,7 @@ impl GroundingView {
                 Ok(GroundingView::View {
                         free_variables,
                         condition: false,
-                        grounding: Either::Right(table_alias),
+                        grounding: Either::Right((table_alias, Ids::None)),
                         query,
                         exclude,
                         ids: Ids::None
@@ -670,7 +666,7 @@ impl GroundingView {
                             false
                         }
                     }),
-                    grounding: Either::Right(table_alias),
+                    grounding: Either::Right((table_alias, ids.clone())),
                     query,
                     exclude,
                     ids

@@ -22,11 +22,11 @@ Groundings:
     F: SELECT "true" AS G WHERE FALSE
     G : SELECT "true" AS G
  - 1: SELECT 1 AS G
- - (ite true 1 2): SELECT ite_("true", 1, 2) AS G
+ - (ite true 1 2): SELECT 1 AS G
  - (= 2 (ite true 1 2)):
-    T: SELECT eq_(2, ite_("true", 1, 2)) AS G
-    F: SELECT eq_(2, ite_("true", 1, 2)) AS G
-    G : SELECT eq_(2, ite_("true", 1, 2)) AS G
+    T: SELECT eq_(2, 1) AS G
+    F: SELECT eq_(2, 1) AS G
+    G : SELECT eq_(2, 1) AS G
  - p:
     TU: SELECT "p" AS G
     UF: SELECT "p" AS G
@@ -55,9 +55,9 @@ Groundings:
     UF: SELECT apply("p", 3) AS G
     G : SELECT apply("p", 3) AS G
  - (ite true (p 2) (p 3)):
-    TU: SELECT ite_("true", apply("p", 2), apply("p", 3)) AS G
-    UF: SELECT ite_("true", apply("p", 2), apply("p", 3)) AS G
-    G : SELECT ite_("true", apply("p", 2), apply("p", 3)) AS G
+    TU: SELECT apply("p", 2) AS G
+    UF: SELECT apply("p", 2) AS G
+    G : SELECT apply("p", 2) AS G
 Tables and Views:
  - Bool (table)
  - sqlite_stat1 (table)
