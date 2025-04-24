@@ -32,7 +32,6 @@
 (x-debug solver groundings)
 (x-debug db tables)
 (x-debug db _xmt_p_UF)
-(x-debug db-view _xmt_c_G)
 (x-debug db _xmt_mix_g)
 
 ; infinite
@@ -115,19 +114,19 @@ Groundings:
  - (exists ((x Color)) (= (mix x x) x)):
     TU: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_mix_G_4.a_1 AS x,
-       eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1) AS G
-  FROM _xmt_mix_G AS _xmt_mix_G_4
- WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
+              eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1) AS G
+         FROM _xmt_mix_G AS _xmt_mix_G_4
+        WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
     UF: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_mix_G_4.a_1 AS x,
-       eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1) AS G
-  FROM _xmt_mix_G AS _xmt_mix_G_4
- WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
+              eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1) AS G
+         FROM _xmt_mix_G AS _xmt_mix_G_4
+        WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
     G : SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_mix_G_4.a_1 AS x,
-       eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1) AS G
-  FROM _xmt_mix_G AS _xmt_mix_G_4
- WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
+              eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1) AS G
+         FROM _xmt_mix_G AS _xmt_mix_G_4
+        WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
  - (= (mix x x) x green):
     TU: SELECT _xmt_mix_G_4.a_1 AS x,
        eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1, "green") AS G
@@ -144,19 +143,19 @@ Groundings:
  - (exists ((x Color)) (= (mix x x) x green)):
     TU: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_mix_G_4.a_1 AS x,
-       eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1, "green") AS G
-  FROM _xmt_mix_G AS _xmt_mix_G_4
- WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
+              eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1, "green") AS G
+         FROM _xmt_mix_G AS _xmt_mix_G_4
+        WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
     UF: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_mix_G_4.a_1 AS x,
-       eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1, "green") AS G
-  FROM _xmt_mix_G AS _xmt_mix_G_4
- WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
+              eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1, "green") AS G
+         FROM _xmt_mix_G AS _xmt_mix_G_4
+        WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
     G : SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_mix_G_4.a_1 AS x,
-       eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1, "green") AS G
-  FROM _xmt_mix_G AS _xmt_mix_G_4
- WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
+              eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1, "green") AS G
+         FROM _xmt_mix_G AS _xmt_mix_G_4
+        WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
 Tables and Views:
  - Bool (table)
  - _xmt_color (table)
@@ -171,29 +170,10 @@ Tables and Views:
  - _xmt_mix_5_G (view)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
- - _xmt_c_0 (view)
- - _xmt__2 (view)
- - _xmt__2_9 (view)
- - _xmt__2_10 (view)
- - variable_3 (view)
- - _xmt_mix_4 (view)
- - _xmt__5 (view)
- - _xmt__5_13 (view)
- - _xmt__5_14 (view)
- - Agg_6_TU (view)
- - Agg_6_UF (view)
- - Agg_6_G (view)
- - _xmt__7 (view)
- - _xmt__7_16 (view)
- - _xmt__7_17 (view)
- - Agg_8_TU (view)
- - Agg_8_UF (view)
- - Agg_8_G (view)
  TABLE: _xmt_p_uf
 ┌───┐
 │ G │
 └───┘
-CREATE VIEW _xmt_c_G AS SELECT "red" as G
  TABLE: _xmt_mix_g
 ┌─────────┬─────────┬─────────────────────┐
 │ a_1     │ a_2     │ G                   │
@@ -207,8 +187,8 @@ CREATE VIEW _xmt_c_G AS SELECT "red" as G
 │ "green" │ "red"   │ "green"             │
 └─────────┴─────────┴─────────────────────┘
 (declare-fun RGB (Int) Color)
-error: at position (40, 18): Cannot interpret a symbol with infinite domain
+error: at position (39, 18): Cannot interpret a symbol with infinite domain
    |
-40 | (x-interpret-fun RGB
+39 | (x-interpret-fun RGB
    |                  ^ Cannot interpret a symbol with infinite domain
    |

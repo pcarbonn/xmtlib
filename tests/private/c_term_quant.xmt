@@ -16,7 +16,6 @@
 (x-ground)
 (x-debug solver groundings)
 (x-debug db tables)
-(x-debug db-view negate_16_UF)
 -------------------------
 (declare-datatype Color ((red ) (green )))
 (declare-fun p (Color) Bool)
@@ -76,29 +75,29 @@ Groundings:
  - (forall ((x Color)) (p x)):
     TU: SELECT and_aggregate(G) as G
  FROM (SELECT _xmt_color_5.G AS x,
-       apply("p", _xmt_color_5.G) AS G
-  FROM _xmt_color AS _xmt_color_5)
+              apply("p", _xmt_color_5.G) AS G
+         FROM _xmt_color AS _xmt_color_5)
     UF: SELECT G as G
  FROM (SELECT _xmt_color_5.G AS x,
-       apply("p", _xmt_color_5.G) AS G
-  FROM _xmt_color AS _xmt_color_5)
+              apply("p", _xmt_color_5.G) AS G
+         FROM _xmt_color AS _xmt_color_5)
     G : SELECT and_aggregate(G) as G
  FROM (SELECT _xmt_color_5.G AS x,
-       apply("p", _xmt_color_5.G) AS G
-  FROM _xmt_color AS _xmt_color_5)
+              apply("p", _xmt_color_5.G) AS G
+         FROM _xmt_color AS _xmt_color_5)
  - (exists ((x Color)) (p x)):
     TU: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_color_5.G AS x,
-       apply("p", _xmt_color_5.G) AS G
-  FROM _xmt_color AS _xmt_color_5)
+              apply("p", _xmt_color_5.G) AS G
+         FROM _xmt_color AS _xmt_color_5)
     UF: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_color_5.G AS x,
-       apply("p", _xmt_color_5.G) AS G
-  FROM _xmt_color AS _xmt_color_5)
+              apply("p", _xmt_color_5.G) AS G
+         FROM _xmt_color AS _xmt_color_5)
     G : SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_color_5.G AS x,
-       apply("p", _xmt_color_5.G) AS G
-  FROM _xmt_color AS _xmt_color_5)
+              apply("p", _xmt_color_5.G) AS G
+         FROM _xmt_color AS _xmt_color_5)
  - x: SELECT "x" AS x,
        "x" AS G
  - (q x):
@@ -111,13 +110,13 @@ Groundings:
  - (forall ((x Int)) (q x)):
     TU: SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
  FROM (SELECT "x" AS x,
-       apply("q", "x") AS G)
+              apply("q", "x") AS G)
     UF: SELECT "(forall ((x Int)) " || G || ")" as G
  FROM (SELECT "x" AS x,
-       apply("q", "x") AS G)
+              apply("q", "x") AS G)
     G : SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
  FROM (SELECT "x" AS x,
-       apply("q", "x") AS G)
+              apply("q", "x") AS G)
  - x: SELECT Bool_12.G AS x,
        Bool_12.G AS G
   FROM Bool AS Bool_12
@@ -134,29 +133,29 @@ Groundings:
  - (exists ((x Bool)) (r x)):
     TU: SELECT or_aggregate(G) as G
  FROM (SELECT Bool_12.G AS x,
-       apply("r", Bool_12.G) AS G
-  FROM Bool AS Bool_12)
+              apply("r", Bool_12.G) AS G
+         FROM Bool AS Bool_12)
     UF: SELECT or_aggregate(G) as G
  FROM (SELECT Bool_12.G AS x,
-       apply("r", Bool_12.G) AS G
-  FROM Bool AS Bool_12)
+              apply("r", Bool_12.G) AS G
+         FROM Bool AS Bool_12)
     G : SELECT or_aggregate(G) as G
  FROM (SELECT Bool_12.G AS x,
-       apply("r", Bool_12.G) AS G
-  FROM Bool AS Bool_12)
+              apply("r", Bool_12.G) AS G
+         FROM Bool AS Bool_12)
  - (not (exists ((x Bool)) (r x))):
     TU: SELECT and_aggregate(G) as G
  FROM (SELECT Bool_12.G AS x,
-       apply("not", apply("r", Bool_12.G)) AS G
-  FROM Bool AS Bool_12)
+              apply("not", apply("r", Bool_12.G)) AS G
+         FROM Bool AS Bool_12)
     UF: SELECT and_aggregate(G) as G
  FROM (SELECT Bool_12.G AS x,
-       apply("not", apply("r", Bool_12.G)) AS G
-  FROM Bool AS Bool_12)
+              apply("not", apply("r", Bool_12.G)) AS G
+         FROM Bool AS Bool_12)
     G : SELECT and_aggregate(G) as G
  FROM (SELECT Bool_12.G AS x,
-       apply("not", apply("r", Bool_12.G)) AS G
-  FROM Bool AS Bool_12)
+              apply("not", apply("r", Bool_12.G)) AS G
+         FROM Bool AS Bool_12)
  - (not (r x)):
     TU: SELECT Bool_12.G AS x,
        apply("not", apply("r", Bool_12.G)) AS G
@@ -174,7 +173,10 @@ Groundings:
  - (or (not (r x)) false):
     TU: SELECT negate_16_UF.x AS x,
        negate_16_UF.G AS G
-  FROM negate_16_UF
+  FROM (SELECT Bool_12.G AS x,
+               apply("not", apply("r", Bool_12.G)) AS G
+          FROM Bool AS Bool_12
+        ) AS negate_16_UF
     UF: SELECT Bool_12.G AS x,
        apply("not", apply("r", Bool_12.G)) AS G
   FROM Bool AS Bool_12
@@ -184,66 +186,18 @@ Groundings:
  - (forall ((x Bool)) (or (not (r x)) false)):
     TU: SELECT and_aggregate(G) as G
  FROM (SELECT Bool_12.G AS x,
-       apply("not", apply("r", Bool_12.G)) AS G
-  FROM Bool AS Bool_12)
+              apply("not", apply("r", Bool_12.G)) AS G
+         FROM Bool AS Bool_12)
     UF: SELECT G as G
  FROM (SELECT Bool_12.G AS x,
-       apply("not", apply("r", Bool_12.G)) AS G
-  FROM Bool AS Bool_12)
+              apply("not", apply("r", Bool_12.G)) AS G
+         FROM Bool AS Bool_12)
     G : SELECT and_aggregate(G) as G
  FROM (SELECT Bool_12.G AS x,
-       apply("not", apply("r", Bool_12.G)) AS G
-  FROM Bool AS Bool_12)
+              apply("not", apply("r", Bool_12.G)) AS G
+         FROM Bool AS Bool_12)
 Tables and Views:
  - Bool (table)
  - _xmt_color (table)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
- - Agg_1_TU (view)
- - Agg_1_G (view)
- - Agg_2_TU (view)
- - Agg_2_UF (view)
- - Agg_2_G (view)
- - Agg_3_TU (view)
- - Agg_3_G (view)
- - Agg_4_TU (view)
- - Agg_4_UF (view)
- - Agg_4_G (view)
- - variable_5 (view)
- - _xmt_p_6 (view)
- - _xmt_p_6_4 (view)
- - _xmt_p_6_5 (view)
- - Agg_7_TU (view)
- - Agg_7_G (view)
- - Agg_7_UF (view)
- - Agg_8_TU (view)
- - Agg_8_UF (view)
- - Agg_8_G (view)
- - Agg_11_TU (view)
- - Agg_11_G (view)
- - Agg_11_UF (view)
- - variable_12 (view)
- - _xmt_r_13 (view)
- - _xmt_r_13_10 (view)
- - _xmt_r_13_11 (view)
- - Agg_14_TU (view)
- - Agg_14_UF (view)
- - Agg_14_G (view)
- - negate_15_UF (view)
- - negate_15_UF_1 (view)
- - negate_15_TU (view)
- - negate_15_TU_1 (view)
- - negate_15_G (view)
- - negate_15_G_1 (view)
- - negate_16_UF (view)
- - negate_16_TU (view)
- - negate_16_G (view)
- - union_18 (view)
- - _xmt_or_18 (view)
- - _xmt_or_18_15 (view)
- - Agg_19_TU (view)
- - Agg_19_G (view)
- - Agg_19_UF (view)
-CREATE VIEW negate_16_UF AS SELECT x, G FROM (SELECT Bool_12.G AS x,
-       apply("not", apply("r", Bool_12.G)) AS G
-  FROM Bool AS Bool_12)

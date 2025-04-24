@@ -3,6 +3,7 @@
 use indexmap::IndexSet;
 use itertools::Either::{self, Left, Right};
 use std::fmt::Display;
+use std::hash::{Hash, Hasher};
 
 use crate::ast::{SortedVar, Symbol};
 use crate::error::SolverError;
@@ -47,12 +48,30 @@ pub(crate) enum GroundingQuery {
 
 
 /// Natural join with a table interpreting a variable or a quantification.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, PartialEq, Eq)]
 pub(crate) enum NaturalJoin {
     Variable(TableAlias, Symbol),  // natural join with a table interpreting a variable
-    ViewType(TableAlias, Vec<Symbol>),  // natural join with a table interpreting, e.g., a quantification
+    ViewType(GroundingQuery, TableAlias, Vec<Symbol>),  // natural join with a table interpreting, e.g., a quantification
 }
-
+// Custom Hash to avoid hashing a GroundingQuery
+impl Hash for NaturalJoin {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        // You can use a tag to differentiate variants
+        match self {
+            NaturalJoin::Variable(alias, symbol) => {
+                0u8.hash(state);
+                alias.hash(state);
+                symbol.hash(state);
+            }
+            NaturalJoin::ViewType(_query, alias, symbols) => {
+                1u8.hash(state);
+                // query is ignored
+                alias.hash(state);
+                symbols.hash(state);
+            }
+        }
+    }
+}
 
 /// indexed table name + mapping of (gated) expressions to value column
 pub(crate) type ThetaJoin = (TableAlias, Vec<Mapping>);
@@ -167,7 +186,7 @@ impl GroundingQuery {
                                 // a variable table never has join conditions
                                 name(table_name)
                             },
-                            NaturalJoin::ViewType(table_name, symbols) => {
+                            NaturalJoin::ViewType(query, table_name, symbols) => {
                                 let name = name(table_name);
                                 let on = symbols.iter()
                                     .filter_map( | symbol | {
@@ -183,12 +202,16 @@ impl GroundingQuery {
                                             unreachable!("348595")
                                         }
                                     }).collect::<Vec<_>>().join(" AND ");
-                                if on == "" { name  } else {
+                                let indent1 = format!("{indent}{INDENT} ").to_string();
+                                let query = query.to_sql(variables, &indent1).0;
+                                if on == "" {
+                                    format!("({query}\n{indent1}) AS {name}")
+                                } else {
                                     if i == 0 {
-                                        where_ = if on == "" { on } else { format!("\n{indent} WHERE {on}")};
-                                        name
+                                        where_ = if on == "" { on } else { format!("\n{indent1}{INDENT} WHERE {on}")};
+                                        format!("({query}\n{indent1}) AS {name}")
                                     } else {
-                                        format!("{name}\n{indent}{INDENT}ON {on}")
+                                        format!("({query}\n{indent1}) AS {name} ON {on}")
                                     }
                                 }
                             }
@@ -380,7 +403,7 @@ impl GroundingQuery {
                     precise: *precise
                 };
                 let table_alias = TableAlias{base_table, index: 0};
-                GroundingView::new(table_alias, free_variables, query, exclude, ids.clone(), solver)
+                GroundingView::new(table_alias, free_variables, query, exclude, ids.clone())
             }
             GroundingQuery::Aggregate { agg, infinite_variables, sub_view, .. } => {
                 let query = GroundingQuery::Aggregate {
@@ -390,7 +413,7 @@ impl GroundingQuery {
                     sub_view: Box::new(sub_view.negate(index, view_type, solver)?)
                 };
                 let table_alias = TableAlias{base_table, index: 1};
-                GroundingView::new(table_alias, free_variables, query, exclude, ids.clone(), solver)
+                GroundingView::new(table_alias, free_variables, query, exclude, ids.clone())
             },
             GroundingQuery::Union {..} => unreachable!()  // because negation is pushed down conjunctions and disjunctions
         }

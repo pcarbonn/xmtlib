@@ -84,13 +84,13 @@ Groundings:
  - (exists ((x Hue)) (dim x)):
     TU: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_dim_TU_1.a_1 AS x,
-       "true" AS G
-  FROM _xmt_dim_TU AS _xmt_dim_TU_1)
+              "true" AS G
+         FROM _xmt_dim_TU AS _xmt_dim_TU_1)
     UF: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_dim_G_1.a_1 AS x,
-       _xmt_dim_G_1.G AS G
-  FROM _xmt_dim_G AS _xmt_dim_G_1)
+              _xmt_dim_G_1.G AS G
+         FROM _xmt_dim_G AS _xmt_dim_G_1)
     G : SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_dim_G_1.a_1 AS x,
-       _xmt_dim_G_1.G AS G
-  FROM _xmt_dim_G AS _xmt_dim_G_1)
+              _xmt_dim_G_1.G AS G
+         FROM _xmt_dim_G AS _xmt_dim_G_1)

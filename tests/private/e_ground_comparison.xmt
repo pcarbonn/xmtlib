@@ -57,8 +57,8 @@ Groundings:
     T: SELECT compare_("<=", 2, 2) AS G
     UF: SELECT and_aggregate(G) as G
  FROM (SELECT compare_("<=", 2, 2) AS G
-UNION
-SELECT "false" AS G)
+       UNION
+       SELECT "false" AS G)
     G : SELECT and_(compare_("<=", 2, 2), not_(compare_("<=", 3, 3))) AS G
  - (distinct 1 2 3):
     T: SELECT compare_("distinct", 1, 2, 3) AS G
@@ -82,8 +82,8 @@ SELECT "false" AS G)
     T: SELECT compare_("<=", 2.0, 2.0) AS G
     UF: SELECT and_aggregate(G) as G
  FROM (SELECT compare_("<=", 2.0, 2.0) AS G
-UNION
-SELECT "false" AS G)
+       UNION
+       SELECT "false" AS G)
     G : SELECT and_(compare_("<=", 2.0, 2.0), not_(compare_("<=", 3.0, 3.0))) AS G
  - 1.0: SELECT 1.0 AS G
  - (distinct 1.0 2.0 3.0):
@@ -94,7 +94,3 @@ Tables and Views:
  - Bool (table)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
- - union_11 (view)
- - agg_union_11 (view)
- - union_18 (view)
- - agg_union_18 (view)

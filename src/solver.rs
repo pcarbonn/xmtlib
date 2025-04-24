@@ -346,16 +346,6 @@ impl Solver {
                                 yield_!(Err(SolverError::IdentifierError("Unknown table\n", typ)))
                             }
                         },
-                        "db-view" => {
-                            // helper function
-                            let query = || {
-                                let mut stmt = self.conn.prepare("SELECT sql FROM sqlite_master WHERE type='view' AND name=?1")?;
-                                let res = stmt.query_row([obj.to_string()], |row| row.get::<_, String>(0))?;
-                                Ok(res)
-                            };
-                            yield_!(query());
-                            yield_!(Ok(format!("\n")))
-                        },
                         _ => yield_!(Err(SolverError::IdentifierError("Unknown 'x-debug' parameter\n", typ)))
                     }
                 },

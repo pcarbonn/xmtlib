@@ -70,7 +70,10 @@ Groundings:
  WHERE "false" = _xmt_is_true_G_6.a_1
  - (or (not (is_true true)) (not (is_true false))):
     T: SELECT negate_7_UF.G AS G
-  FROM negate_7_UF
+  FROM (SELECT "true" AS G
+          FROM _xmt_is_true_UF AS _xmt_is_true_UF_6
+         WHERE "false" = _xmt_is_true_UF_6.a_1
+        ) AS negate_7_UF
     F: SELECT "true" AS G WHERE FALSE
     G : SELECT or_(not_(_xmt_is_true_G_4.G), not_(_xmt_is_true_G_6.G)) AS G
   FROM _xmt_is_true_G AS _xmt_is_true_G_4
@@ -93,40 +96,64 @@ Groundings:
  - (exists ((x Bool)) (is_true x)):
     TU: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_is_true_TU_10.a_1 AS x,
-       "true" AS G
-  FROM _xmt_is_true_TU AS _xmt_is_true_TU_10)
+              "true" AS G
+         FROM _xmt_is_true_TU AS _xmt_is_true_TU_10)
     UF: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_is_true_G_10.a_1 AS x,
-       _xmt_is_true_G_10.G AS G
-  FROM _xmt_is_true_G AS _xmt_is_true_G_10)
+              _xmt_is_true_G_10.G AS G
+         FROM _xmt_is_true_G AS _xmt_is_true_G_10)
     G : SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_is_true_G_10.a_1 AS x,
-       _xmt_is_true_G_10.G AS G
-  FROM _xmt_is_true_G AS _xmt_is_true_G_10)
+              _xmt_is_true_G_10.G AS G
+         FROM _xmt_is_true_G AS _xmt_is_true_G_10)
  - (is_true (exists ((x Bool)) (is_true x))):
     T: SELECT "true" AS G
-  FROM Agg_11_TU
+  FROM (SELECT or_aggregate(G) as G
+         FROM (SELECT _xmt_is_true_TU_10.a_1 AS x,
+                      "true" AS G
+                 FROM _xmt_is_true_TU AS _xmt_is_true_TU_10)
+        ) AS Agg_11_TU
   JOIN _xmt_is_true_TU AS _xmt_is_true_TU_12
        
     F: SELECT "false" AS G
-  FROM Agg_11_UF
+  FROM (SELECT or_aggregate(G) as G
+         FROM (SELECT _xmt_is_true_G_10.a_1 AS x,
+                      _xmt_is_true_G_10.G AS G
+                 FROM _xmt_is_true_G AS _xmt_is_true_G_10)
+        ) AS Agg_11_UF
   JOIN _xmt_is_true_UF AS _xmt_is_true_UF_12
        
     G : SELECT _xmt_is_true_G_12.G AS G
-  FROM Agg_11_G
+  FROM (SELECT or_aggregate(G) as G
+         FROM (SELECT _xmt_is_true_G_10.a_1 AS x,
+                      _xmt_is_true_G_10.G AS G
+                 FROM _xmt_is_true_G AS _xmt_is_true_G_10)
+        ) AS Agg_11_G
   JOIN _xmt_is_true_G AS _xmt_is_true_G_12
        
  - (not (is_true (exists ((x Bool)) (is_true x)))):
     T: SELECT "true" AS G
-  FROM Agg_11_UF
+  FROM (SELECT or_aggregate(G) as G
+         FROM (SELECT _xmt_is_true_G_10.a_1 AS x,
+                      _xmt_is_true_G_10.G AS G
+                 FROM _xmt_is_true_G AS _xmt_is_true_G_10)
+        ) AS Agg_11_UF
   JOIN _xmt_is_true_UF AS _xmt_is_true_UF_12
        
     F: SELECT "false" AS G
-  FROM Agg_11_TU
+  FROM (SELECT or_aggregate(G) as G
+         FROM (SELECT _xmt_is_true_TU_10.a_1 AS x,
+                      "true" AS G
+                 FROM _xmt_is_true_TU AS _xmt_is_true_TU_10)
+        ) AS Agg_11_TU
   JOIN _xmt_is_true_TU AS _xmt_is_true_TU_12
        
     G : SELECT not_(_xmt_is_true_G_12.G) AS G
-  FROM Agg_11_G
+  FROM (SELECT or_aggregate(G) as G
+         FROM (SELECT _xmt_is_true_G_10.a_1 AS x,
+                      _xmt_is_true_G_10.G AS G
+                 FROM _xmt_is_true_G AS _xmt_is_true_G_10)
+        ) AS Agg_11_G
   JOIN _xmt_is_true_G AS _xmt_is_true_G_12
        
 Tables and Views:
@@ -137,29 +164,6 @@ Tables and Views:
  - _xmt_is_true_G (view)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
- - _xmt_is_true_4 (view)
- - _xmt_is_true_4_10 (view)
- - negate_5_TU (view)
- - negate_5_G (view)
- - _xmt_is_true_6 (view)
- - _xmt_is_true_6_12 (view)
- - negate_7_UF (view)
- - negate_7_G (view)
- - union_8 (view)
- - _xmt_or_8 (view)
- - variable_9 (view)
- - _xmt_is_true_10 (view)
- - _xmt_is_true_10_15 (view)
- - _xmt_is_true_10_16 (view)
- - Agg_11_TU (view)
- - Agg_11_UF (view)
- - Agg_11_G (view)
- - _xmt_is_true_12 (view)
- - _xmt_is_true_12_18 (view)
- - _xmt_is_true_12_19 (view)
- - negate_13_UF (view)
- - negate_13_TU (view)
- - negate_13_G (view)
  TABLE: _xmt_is_true_uf
 ┌─────────┬─────────┐
 │ a_1     │ G       │
