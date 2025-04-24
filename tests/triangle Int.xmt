@@ -135,24 +135,24 @@ Groundings:
     TU: SELECT x, y, z,
        or_aggregate(G) as G
  FROM (SELECT "x" AS x,
-              "y" AS y,
-              "z" AS z,
-              apply("not", apply("Edge", "x", "y")) AS G
-       UNION
-       SELECT "x" AS x,
-              "y" AS y,
-              "z" AS z,
-              apply("not", apply("Edge", "y", "z")) AS G
-       UNION
-       SELECT "x" AS x,
-              "y" AS y,
-              "z" AS z,
-              apply("not", apply("Edge", "x", "z")) AS G
-       UNION
-       SELECT "x" AS x,
-              "y" AS y,
-              "z" AS z,
-              apply("phi", "x", "y", "z") AS G)
+       "y" AS y,
+       "z" AS z,
+       apply("not", apply("Edge", "x", "y")) AS G
+UNION
+SELECT "x" AS x,
+       "y" AS y,
+       "z" AS z,
+       apply("not", apply("Edge", "y", "z")) AS G
+UNION
+SELECT "x" AS x,
+       "y" AS y,
+       "z" AS z,
+       apply("not", apply("Edge", "x", "z")) AS G
+UNION
+SELECT "x" AS x,
+       "y" AS y,
+       "z" AS z,
+       apply("phi", "x", "y", "z") AS G)
     UF: SELECT _xmt_edge_TU_2.a_1 AS x,
        _xmt_edge_TU_2.a_2 AS y,
        _xmt_edge_TU_5.a_2 AS z,
@@ -169,22 +169,22 @@ Groundings:
  - (forall ((x Int) (y Int) (z Int)) (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z))):
     TU: SELECT "(forall ((x Int) (y Int) (z Int)) " || and_aggregate(G) || ")" as G
  FROM (SELECT "x" AS x,
-              "y" AS y,
-              "z" AS z,
-              apply("or", apply("not", apply("Edge", "x", "y")), apply("not", apply("Edge", "y", "z")), apply("not", apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G)
+       "y" AS y,
+       "z" AS z,
+       apply("or", apply("not", apply("Edge", "x", "y")), apply("not", apply("Edge", "y", "z")), apply("not", apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G)
     UF: SELECT G as G
  FROM (SELECT _xmt_edge_TU_2.a_1 AS x,
-              _xmt_edge_TU_2.a_2 AS y,
-              _xmt_edge_TU_5.a_2 AS z,
-              apply("phi", _xmt_edge_TU_2.a_1, _xmt_edge_TU_2.a_2, _xmt_edge_TU_5.a_2) AS G
-         FROM _xmt_edge_TU AS _xmt_edge_TU_2
-         JOIN _xmt_edge_TU AS _xmt_edge_TU_5
-               ON _xmt_edge_TU_2.a_2 = _xmt_edge_TU_5.a_1
-         JOIN _xmt_edge_TU AS _xmt_edge_TU_7
-               ON _xmt_edge_TU_2.a_1 = _xmt_edge_TU_7.a_1 AND _xmt_edge_TU_5.a_2 = _xmt_edge_TU_7.a_2)
+       _xmt_edge_TU_2.a_2 AS y,
+       _xmt_edge_TU_5.a_2 AS z,
+       apply("phi", _xmt_edge_TU_2.a_1, _xmt_edge_TU_2.a_2, _xmt_edge_TU_5.a_2) AS G
+  FROM _xmt_edge_TU AS _xmt_edge_TU_2
+  JOIN _xmt_edge_TU AS _xmt_edge_TU_5
+        ON _xmt_edge_TU_2.a_2 = _xmt_edge_TU_5.a_1
+  JOIN _xmt_edge_TU AS _xmt_edge_TU_7
+        ON _xmt_edge_TU_2.a_1 = _xmt_edge_TU_7.a_1 AND _xmt_edge_TU_5.a_2 = _xmt_edge_TU_7.a_2)
     G : SELECT "(forall ((x Int) (y Int) (z Int)) " || and_aggregate(G) || ")" as G
  FROM (SELECT "x" AS x,
-              "y" AS y,
-              "z" AS z,
-              apply("or", apply("not", apply("Edge", "x", "y")), apply("not", apply("Edge", "y", "z")), apply("not", apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G)
+       "y" AS y,
+       "z" AS z,
+       apply("or", apply("not", apply("Edge", "x", "y")), apply("not", apply("Edge", "y", "z")), apply("not", apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G)
 (check-sat)

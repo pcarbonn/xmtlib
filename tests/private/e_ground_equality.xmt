@@ -41,8 +41,8 @@ Groundings:
     T: SELECT "true" AS G
     UF: SELECT and_aggregate(G) as G
  FROM (SELECT "true" AS G
-       UNION
-       SELECT "false" AS G)
+UNION
+SELECT "false" AS G)
     G : SELECT and_("true", not_("true")) AS G
 Tables and Views:
  - Bool (table)

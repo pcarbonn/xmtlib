@@ -18,7 +18,7 @@ use crate::private::z_utilities::OptionMap;
 
 
 /// Contains what is needed to construct the grounding query of a term, in a composable way.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub(crate) enum GroundingQuery {
     Join {
         /// maps variables to None if its domain is infinite or to a Column in a Type or Interpretation table.
@@ -79,7 +79,7 @@ pub(crate) struct TableName(pub(crate) String);
 
 ///////////////////////////  Display //////////////////////////////////////////
 
-const INDENT: &str = "       ";
+pub(crate) const INDENT: &str = "       ";
 
 
 impl std::fmt::Display for GroundingQuery {

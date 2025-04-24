@@ -93,8 +93,8 @@
 └──────────────────┘
 CREATE VIEW Agg_3_UF AS SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_bright_G_2.a_1 AS x,
-              _xmt_bright_G_2.G AS G
-         FROM _xmt_bright_G AS _xmt_bright_G_2)
+       _xmt_bright_G_2.G AS G
+  FROM _xmt_bright_G AS _xmt_bright_G_2)
 Functions:
  - true: Constructor
  - false: Constructor
@@ -150,16 +150,16 @@ Groundings:
  - (exists ((x Color)) (bright x)):
     TU: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_bright_TU_2.a_1 AS x,
-              "true" AS G
-         FROM _xmt_bright_TU AS _xmt_bright_TU_2)
+       "true" AS G
+  FROM _xmt_bright_TU AS _xmt_bright_TU_2)
     UF: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_bright_G_2.a_1 AS x,
-              _xmt_bright_G_2.G AS G
-         FROM _xmt_bright_G AS _xmt_bright_G_2)
+       _xmt_bright_G_2.G AS G
+  FROM _xmt_bright_G AS _xmt_bright_G_2)
     G : SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_bright_G_2.a_1 AS x,
-              _xmt_bright_G_2.G AS G
-         FROM _xmt_bright_G AS _xmt_bright_G_2)
+       _xmt_bright_G_2.G AS G
+  FROM _xmt_bright_G AS _xmt_bright_G_2)
  - (same x x):
     T: SELECT _xmt_same_TU_4.a_1 AS x,
        "true" AS G
@@ -176,19 +176,19 @@ Groundings:
  - (exists ((x Color)) (same x x)):
     TU: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_same_TU_4.a_1 AS x,
-              "true" AS G
-         FROM _xmt_same_TU AS _xmt_same_TU_4
-        WHERE _xmt_same_TU_4.a_1 = _xmt_same_TU_4.a_2)
+       "true" AS G
+  FROM _xmt_same_TU AS _xmt_same_TU_4
+ WHERE _xmt_same_TU_4.a_1 = _xmt_same_TU_4.a_2)
     UF: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_same_G_4.a_1 AS x,
-              _xmt_same_G_4.G AS G
-         FROM _xmt_same_G AS _xmt_same_G_4
-        WHERE _xmt_same_G_4.a_1 = _xmt_same_G_4.a_2)
+       _xmt_same_G_4.G AS G
+  FROM _xmt_same_G AS _xmt_same_G_4
+ WHERE _xmt_same_G_4.a_1 = _xmt_same_G_4.a_2)
     G : SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_same_G_4.a_1 AS x,
-              _xmt_same_G_4.G AS G
-         FROM _xmt_same_G AS _xmt_same_G_4
-        WHERE _xmt_same_G_4.a_1 = _xmt_same_G_4.a_2)
+       _xmt_same_G_4.G AS G
+  FROM _xmt_same_G AS _xmt_same_G_4
+ WHERE _xmt_same_G_4.a_1 = _xmt_same_G_4.a_2)
  - y: SELECT _xmt_color_6.G AS y,
        _xmt_color_6.G AS G
   FROM _xmt_color AS _xmt_color_6
@@ -209,40 +209,40 @@ Groundings:
     TU: SELECT x,
        or_aggregate(G) as G
  FROM (SELECT _xmt_same_TU_7.a_1 AS x,
-              _xmt_same_TU_7.a_2 AS y,
-              "true" AS G
-         FROM _xmt_same_TU AS _xmt_same_TU_7)
+       _xmt_same_TU_7.a_2 AS y,
+       "true" AS G
+  FROM _xmt_same_TU AS _xmt_same_TU_7)
  GROUP BY x
     UF: SELECT x,
        or_aggregate(G) as G
  FROM (SELECT _xmt_same_G_7.a_1 AS x,
-              _xmt_same_G_7.a_2 AS y,
-              _xmt_same_G_7.G AS G
-         FROM _xmt_same_G AS _xmt_same_G_7)
+       _xmt_same_G_7.a_2 AS y,
+       _xmt_same_G_7.G AS G
+  FROM _xmt_same_G AS _xmt_same_G_7)
  GROUP BY x
     G : SELECT x,
        or_aggregate(G) as G
  FROM (SELECT _xmt_same_G_7.a_1 AS x,
-              _xmt_same_G_7.a_2 AS y,
-              _xmt_same_G_7.G AS G
-         FROM _xmt_same_G AS _xmt_same_G_7)
+       _xmt_same_G_7.a_2 AS y,
+       _xmt_same_G_7.G AS G
+  FROM _xmt_same_G AS _xmt_same_G_7)
  GROUP BY x
  - (exists ((x Color)) (exists ((y Color)) (same x y))):
     TU: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_same_TU_7.a_1 AS x,
-              _xmt_same_TU_7.a_2 AS y,
-              "true" AS G
-         FROM _xmt_same_TU AS _xmt_same_TU_7)
+       _xmt_same_TU_7.a_2 AS y,
+       "true" AS G
+  FROM _xmt_same_TU AS _xmt_same_TU_7)
     UF: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_same_G_7.a_1 AS x,
-              _xmt_same_G_7.a_2 AS y,
-              _xmt_same_G_7.G AS G
-         FROM _xmt_same_G AS _xmt_same_G_7)
+       _xmt_same_G_7.a_2 AS y,
+       _xmt_same_G_7.G AS G
+  FROM _xmt_same_G AS _xmt_same_G_7)
     G : SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_same_G_7.a_1 AS x,
-              _xmt_same_G_7.a_2 AS y,
-              _xmt_same_G_7.G AS G
-         FROM _xmt_same_G AS _xmt_same_G_7)
+       _xmt_same_G_7.a_2 AS y,
+       _xmt_same_G_7.G AS G
+  FROM _xmt_same_G AS _xmt_same_G_7)
  - x: SELECT _xmt_hue_10.G AS x,
        _xmt_hue_10.G AS G
   FROM _xmt_hue AS _xmt_hue_10
@@ -259,16 +259,16 @@ Groundings:
  - (exists ((x Hue)) (dim x)):
     TU: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_dim_TU_11.a_1 AS x,
-              "true" AS G
-         FROM _xmt_dim_TU AS _xmt_dim_TU_11)
+       "true" AS G
+  FROM _xmt_dim_TU AS _xmt_dim_TU_11)
     UF: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_dim_G_11.a_1 AS x,
-              _xmt_dim_G_11.G AS G
-         FROM _xmt_dim_G AS _xmt_dim_G_11)
+       _xmt_dim_G_11.G AS G
+  FROM _xmt_dim_G AS _xmt_dim_G_11)
     G : SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_dim_G_11.a_1 AS x,
-              _xmt_dim_G_11.G AS G
-         FROM _xmt_dim_G AS _xmt_dim_G_11)
+       _xmt_dim_G_11.G AS G
+  FROM _xmt_dim_G AS _xmt_dim_G_11)
  - red: SELECT "red" AS G
  - (dark red):
     TU: SELECT apply("dark", "red") AS G

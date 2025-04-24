@@ -93,16 +93,16 @@ Groundings:
  - (exists ((x Bool)) (is_true x)):
     TU: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_is_true_TU_10.a_1 AS x,
-              "true" AS G
-         FROM _xmt_is_true_TU AS _xmt_is_true_TU_10)
+       "true" AS G
+  FROM _xmt_is_true_TU AS _xmt_is_true_TU_10)
     UF: SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_is_true_G_10.a_1 AS x,
-              _xmt_is_true_G_10.G AS G
-         FROM _xmt_is_true_G AS _xmt_is_true_G_10)
+       _xmt_is_true_G_10.G AS G
+  FROM _xmt_is_true_G AS _xmt_is_true_G_10)
     G : SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_is_true_G_10.a_1 AS x,
-              _xmt_is_true_G_10.G AS G
-         FROM _xmt_is_true_G AS _xmt_is_true_G_10)
+       _xmt_is_true_G_10.G AS G
+  FROM _xmt_is_true_G AS _xmt_is_true_G_10)
  - (is_true (exists ((x Bool)) (is_true x))):
     T: SELECT "true" AS G
   FROM Agg_11_TU

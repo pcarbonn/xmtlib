@@ -20,7 +20,7 @@ use crate::ast::L;
 /////////////////////  Data structure for Grounding  //////////////////////////
 
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub(crate) enum Grounding {
     NonBoolean(GroundingView),
     Boolean{tu: GroundingView, uf: GroundingView, g: GroundingView}

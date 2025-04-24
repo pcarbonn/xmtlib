@@ -10,7 +10,7 @@ use crate::ast::{QualIdentifier, SortedVar, SpecConstant, Symbol, L};
 use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 
-use crate::private::e2_ground_query::{GroundingQuery, NaturalJoin, TableName, TableAlias, Column};
+use crate::private::e2_ground_query::{GroundingQuery, NaturalJoin, TableName, TableAlias, Column, INDENT};
 use crate::private::e3_ground_sql::{Mapping, SQLExpr, Predefined};
 use crate::private::z_utilities::OptionMap;
 
@@ -46,38 +46,6 @@ pub(crate) enum Ids {
 ///////////////////////////  Display //////////////////////////////////////////
 
 
-// SQL of the view
-impl std::fmt::Debug for GroundingView {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            GroundingView::Empty => write!(f, "SELECT \"true\" AS G WHERE FALSE"),
-            GroundingView::View { free_variables, condition, grounding, exclude, .. } => {
-
-                let vars = free_variables.iter()
-                    .map(|(symbol, _)| symbol.to_string())
-                    .collect::<Vec<_>>()
-                    .join(", ");
-                let vars = if vars == "" { vars } else { vars + ", " };
-                let if_= if *condition { "if_, " } else { "" };
-                let g_v = match grounding {
-                    Either::Left(c) => format!("{}", c.to_sql(&OptionMap::new()).0),
-                    Either::Right((view, _)) => format!("G from {view}")
-                };
-                // make the view precise if the query is not
-                // todo perf: is this usefull ?
-                let where_ = match exclude {
-                    Some(true) => format!("WHERE {g_v} <> \"true\""),
-                    Some(false) => format!("WHERE {g_v} <> \"false\""),
-                    None => "".to_string(),
-                };
-
-                write!(f,"SELECT {vars}{if_}{g_v}{where_}")
-            }
-        }
-    }
-}
-
-
 // SQL of the underlying select
 impl std::fmt::Display for GroundingView {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -96,7 +64,10 @@ impl GroundingView {
     ) -> (String, Ids) {
         match self {
             GroundingView::Empty => (format!("SELECT \"true\" AS G\n{indent} WHERE FALSE"), Ids::All),
-            GroundingView::View { query, .. } => query.to_sql(variables, indent)
+            GroundingView::View { query, .. } =>
+
+                (format!("{query}"),
+                Ids::All)
         }
     }
 }
