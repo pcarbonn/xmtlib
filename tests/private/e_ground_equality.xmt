@@ -39,7 +39,10 @@ Groundings:
     G : SELECT eq_("true", not_("true")) AS G
  - (and (= 2 2) (not (= 3 3))):
     T: SELECT "true" AS G
-    UF: SELECT and_aggregate(G) as G from (SELECT "true" AS G UNION SELECT "false" AS G)
+    UF: SELECT and_aggregate(G) as G
+ FROM (SELECT "true" AS G
+       UNION
+       SELECT "false" AS G)
     G : SELECT and_("true", not_("true")) AS G
 Tables and Views:
  - Bool (table)

@@ -68,12 +68,29 @@ Functions:
  - hue: Constructor
  - dim: Boolean (_xmt_dim_TU Complete, _xmt_dim_UF Complete, _xmt_dim_G Complete)
 Groundings:
- - x: SELECT _xmt_hue.G AS x, _xmt_hue.G AS G FROM _xmt_hue
+ - x: SELECT _xmt_hue.G AS x,
+       _xmt_hue.G AS G
+  FROM _xmt_hue
  - (dim x):
-    T: SELECT _xmt_dim_TU_1.a_1 AS x, "true" AS G FROM _xmt_dim_TU AS _xmt_dim_TU_1
-    F: SELECT _xmt_dim_UF_1.a_1 AS x, "false" AS G FROM _xmt_dim_UF AS _xmt_dim_UF_1
-    G : SELECT _xmt_dim_G_1.a_1 AS x, _xmt_dim_G_1.G AS G FROM _xmt_dim_G AS _xmt_dim_G_1
+    T: SELECT _xmt_dim_TU_1.a_1 AS x,
+       "true" AS G
+  FROM _xmt_dim_TU AS _xmt_dim_TU_1
+    F: SELECT _xmt_dim_UF_1.a_1 AS x,
+       "false" AS G
+  FROM _xmt_dim_UF AS _xmt_dim_UF_1
+    G : SELECT _xmt_dim_G_1.a_1 AS x,
+       _xmt_dim_G_1.G AS G
+  FROM _xmt_dim_G AS _xmt_dim_G_1
  - (exists ((x Hue)) (dim x)):
-    TU: SELECT or_aggregate(G) as G from (SELECT _xmt_dim_TU_1.a_1 AS x, "true" AS G FROM _xmt_dim_TU AS _xmt_dim_TU_1)
-    UF: SELECT or_aggregate(G) as G from (SELECT _xmt_dim_G_1.a_1 AS x, _xmt_dim_G_1.G AS G FROM _xmt_dim_G AS _xmt_dim_G_1)
-    G : SELECT or_aggregate(G) as G from (SELECT _xmt_dim_G_1.a_1 AS x, _xmt_dim_G_1.G AS G FROM _xmt_dim_G AS _xmt_dim_G_1)
+    TU: SELECT or_aggregate(G) as G
+ FROM (SELECT _xmt_dim_TU_1.a_1 AS x,
+              "true" AS G
+         FROM _xmt_dim_TU AS _xmt_dim_TU_1)
+    UF: SELECT or_aggregate(G) as G
+ FROM (SELECT _xmt_dim_G_1.a_1 AS x,
+              _xmt_dim_G_1.G AS G
+         FROM _xmt_dim_G AS _xmt_dim_G_1)
+    G : SELECT or_aggregate(G) as G
+ FROM (SELECT _xmt_dim_G_1.a_1 AS x,
+              _xmt_dim_G_1.G AS G
+         FROM _xmt_dim_G AS _xmt_dim_G_1)

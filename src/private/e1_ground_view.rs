@@ -88,6 +88,20 @@ impl std::fmt::Display for GroundingView {
     }
 }
 
+impl GroundingView {
+    pub(crate) fn to_sql(
+        &self,
+        variables: &OptionMap<Symbol, Column>,
+        indent: &str
+    ) -> (String, Ids) {
+        match self {
+            GroundingView::Empty => (format!("SELECT \"true\" AS G\n{indent} WHERE FALSE"), Ids::All),
+            GroundingView::View { query, .. } => query.to_sql(variables, indent)
+        }
+    }
+}
+
+
 impl std::fmt::Display for Ids {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {

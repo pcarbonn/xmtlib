@@ -79,10 +79,23 @@ pub(crate) struct TableName(pub(crate) String);
 
 ///////////////////////////  Display //////////////////////////////////////////
 
+const INDENT: &str = "       ";
+
 
 impl std::fmt::Display for GroundingQuery {
 
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.to_sql(&OptionMap::new(), "").0)
+    }
+}
+
+
+impl GroundingQuery {
+    pub(crate) fn to_sql(
+        &self,
+        variables: &OptionMap<Symbol, Column>,
+        indent: &str
+    ) -> (String, Ids) {
         match self {
             GroundingQuery::Join{variables, conditions, grounding,
             natural_joins, theta_joins, ..} => {
@@ -103,8 +116,10 @@ impl std::fmt::Display for GroundingQuery {
                         }
 
                     }).collect::<Vec<_>>()
-                    .join(", ");
-                let variables_ = if variables_ == "" { variables_ } else { variables_ + ", "};
+                    .join(format!(",\n{indent}{INDENT}").as_str());
+                let variables_ =
+                    if variables_ == "" { variables_ }
+                    else { format!("{variables_},\n{indent}{INDENT}") };
 
                 // condition
                 let condition = conditions.iter()
@@ -124,9 +139,9 @@ impl std::fmt::Display for GroundingQuery {
                     if condition.len() == 0 {
                         "".to_string()
                     } else if condition.len() == 1 {
-                        format!("{} AS if_, ", condition[0])
+                        format!("{} AS if_, \n{indent}{INDENT}", condition[0])
                     } else {
-                        format!("and_({}) AS if_, ", condition.join(", "))
+                        format!("and_({}) AS if_,\n{indent}{INDENT}", condition.join(", "))
                     };
 
                 // grounding
@@ -141,9 +156,9 @@ impl std::fmt::Display for GroundingQuery {
                         // Helper function.  Returns the name of a table, with an optional alias.
                         let name = |table_name: &TableAlias| {
                             if table_name.index == 0 {
-                                format!(" {}", table_name.base_table)
+                                format!("{}", table_name.base_table)
                             } else {
-                                format!(" {} AS {table_name}", table_name.base_table)
+                                format!("{} AS {table_name}", table_name.base_table)
                             }
                         };
 
@@ -170,17 +185,17 @@ impl std::fmt::Display for GroundingQuery {
                                     }).collect::<Vec<_>>().join(" AND ");
                                 if on == "" { name  } else {
                                     if i == 0 {
-                                        where_ = if on == "" { on } else { format!(" WHERE {on}")};
+                                        where_ = if on == "" { on } else { format!("\n{indent} WHERE {on}")};
                                         name
                                     } else {
-                                        format!("{name} ON {on}")
+                                        format!("{name}\n{indent}{INDENT}ON {on}")
                                     }
                                 }
                             }
                         }
                     })
                     .collect::<Vec<_>>()
-                    .join(" JOIN");
+                    .join(format!("\n{indent}  JOIN ").as_str());
 
                 // theta joins
                 let thetas = theta_joins.iter().enumerate()
@@ -189,23 +204,24 @@ impl std::fmt::Display for GroundingQuery {
                             .filter_map( | expr | expr.to_join(variables))
                             .collect::<Vec<_>>().join(" AND ");
                         if i == 0 && naturals.len() == 0 {
-                            where_ = if on == "" { on } else { format!(" WHERE {on}")};
-                            format!(" {} AS {table_name}", table_name.base_table)
+                            where_ = if on == "" { on } else { format!("\n{indent} WHERE {on}")};
+                            format!("{} AS {table_name}", table_name.base_table)
                         } else {
                             let on = if on == "" { on } else { format!(" ON {on}")};
-                            format!(" JOIN {} AS {table_name}{on}", table_name.base_table)
+                            format!("\n{indent}  JOIN {} AS {table_name}\n{indent}{INDENT}{on}", table_name.base_table)
                         }
                     }).collect::<Vec<_>>()
                     .join("");
 
                 // naturals + thetas + empty
                 let tables = if 0 < naturals.len() + thetas.len() {
-                        format!(" FROM{naturals}{thetas}{where_}")
+                        format!("\n{indent}  FROM {naturals}{thetas}{where_}")
                     } else {
                         "".to_string()
                     };
 
-                write!(f, "SELECT {variables_}{condition}{grounding_}{tables}")
+               (format!("SELECT {variables_}{condition}{grounding_}{tables}"),
+                Ids::All)
             }
             GroundingQuery::Aggregate { agg, free_variables, infinite_variables, sub_view, .. } => {
                 if let GroundingView::View { condition, ..} = **sub_view {
@@ -217,7 +233,7 @@ impl std::fmt::Display for GroundingQuery {
                     let free = free_variables.iter()
                         .map( |(symbol, _)| symbol.to_string() )
                         .collect::<Vec<_>>().join(", ");
-                    let free = if free == "" { free } else { free + ", " };
+                    let free = if free == "" { free } else { format!("{free},\n{indent}{INDENT}") };
 
                     // group-by is free minus the infinite variables
                     let group_by = free_variables.iter()
@@ -228,7 +244,7 @@ impl std::fmt::Display for GroundingQuery {
                         if group_by == "" || agg == "" {
                             "".to_string()
                         } else {
-                            format!(" GROUP BY {group_by}")
+                            format!("\n{indent} GROUP BY {group_by}")
                         };
 
                     // compute the grounding
@@ -264,16 +280,19 @@ impl std::fmt::Display for GroundingQuery {
                             }
                         };
 
-                    write!(f, "SELECT {free}{grounding} as G from ({sub_view}){group_by}")
+                    let sub_view = sub_view.to_sql(variables, format!("{indent}{INDENT}").as_str()).0;
+
+                    (format!("SELECT {free}{grounding} as G\n{indent} FROM ({sub_view}){group_by}"),
+                     Ids::All)
                 } else {  // empty view
-                    write!(f, "{}", sub_view)
+                    ("{}".to_string(), Ids::All)
                 }
             },
             GroundingQuery::Union { sub_queries, .. } => {
                 let view = sub_queries.iter()
-                    .map( |query| query.to_string() )
-                    .collect::<Vec<_>>().join(" UNION ");
-                write!(f, "{}", view)
+                    .map( |query| query.to_sql(variables, indent).0 )
+                    .collect::<Vec<_>>().join(format!("\n{indent}UNION\n{indent}").as_str());
+                (view, Ids::All)
             }
         }
     }
