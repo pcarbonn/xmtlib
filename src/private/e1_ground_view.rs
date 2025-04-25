@@ -25,7 +25,7 @@ pub(crate) enum GroundingView {
     View {  // SELECT vars, cond, grounding (from view) WHERE val <> exclude
         free_variables: OptionMap<Symbol, TableAlias>,  // None for infinite variables, sort interpretation table otherwise
         condition: bool,
-        grounding: Either<SQLExpr, (TableAlias, Ids)>, // Left for SpecConstant, Boolean without table. Right for grounding field in table.
+        grounding: Either<SQLExpr, TableAlias>, // Left for SpecConstant, Boolean without table. Right for grounding field in table.
         exclude: Option<bool>, // e.g., "false" in TU view
 
         query: GroundingQuery,  // the underlying query
@@ -252,7 +252,7 @@ pub(crate) fn view_for_compound(
                         Either::Left(constant) =>
                             groundings.push(constant.clone()),
 
-                        Either::Right((table_name, ids)) => {
+                        Either::Right(table_name) => {
 
                             // merge the variables
                             for (symbol, _) in sub_free_variables.clone().iter() {
@@ -263,7 +263,7 @@ pub(crate) fn view_for_compound(
                             if *sub_condition {
                                 conditions.push(Right(Some(table_name.clone())));
                             }
-                            groundings.push(SQLExpr::Value(Column::new(table_name, "G"), ids.clone()));
+                            groundings.push(SQLExpr::G(table_name.clone()));
 
                             let map_variables = sub_free_variables.iter()
                                 .filter_map( |(symbol, table_name)| {
@@ -480,7 +480,7 @@ pub(crate) fn view_for_union(
                             precise: true
                         })
                     },
-                    Either::Right((table_name, ids)) => {
+                    Either::Right(table_name) => {
                         // add the cross-product of missing variables
                         let mut q_variables = OptionMap::new();
                         let join_vars = sub_free_variables.iter()
@@ -519,7 +519,7 @@ pub(crate) fn view_for_union(
                         Some(GroundingQuery::Join {
                             variables: q_variables,
                             conditions,
-                            grounding: SQLExpr::Value(Column::new(table_name, "G"), ids.clone()),
+                            grounding: SQLExpr::G(table_name.clone()),
                             natural_joins,
                             theta_joins: IndexSet::new(),
                             precise: true  // because it is based on a view
@@ -545,7 +545,7 @@ pub(crate) fn view_for_union(
     let sub_view = GroundingView::View {
         free_variables: free_variables.clone(),
         condition,
-        grounding: Either::Right((table_alias, ids.clone())),
+        grounding: Either::Right(table_alias),
         query,
         exclude,
         ids: ids.clone()
@@ -597,7 +597,7 @@ impl GroundingView {
                     Ok(GroundingView::View{
                         free_variables,
                         condition,
-                        grounding: Either::Right((table_alias, ids.clone())),
+                        grounding: Either::Right(table_alias),
                         query,
                         exclude,
                         ids})
@@ -608,7 +608,7 @@ impl GroundingView {
                 Ok(GroundingView::View {
                         free_variables,
                         condition: false,
-                        grounding: Either::Right((table_alias, Ids::None)),
+                        grounding: Either::Right(table_alias),
                         query,
                         exclude,
                         ids: Ids::None
@@ -625,7 +625,7 @@ impl GroundingView {
                             false
                         }
                     }),
-                    grounding: Either::Right((table_alias, ids.clone())),
+                    grounding: Either::Right(table_alias),
                     query,
                     exclude,
                     ids

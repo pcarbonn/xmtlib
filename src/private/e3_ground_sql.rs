@@ -4,7 +4,7 @@ use std::cmp::max;
 
 use crate::ast::{QualIdentifier, SpecConstant, Symbol};
 use crate::private::e1_ground_view::Ids;
-use crate::private::e2_ground_query::Column;
+use crate::private::e2_ground_query::{TableAlias, Column};
 use crate::private::z_utilities::OptionMap;
 
 
@@ -21,6 +21,7 @@ pub(crate) enum SQLExpr {
     Constant(SpecConstant),
     Variable(Symbol),
     Value(Column, Ids),
+    G(TableAlias),
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
     Construct(QualIdentifier, Box<Vec<SQLExpr>>),  // constructor
     Predefined(Predefined, Box<Vec<SQLExpr>>),
@@ -146,9 +147,9 @@ impl SQLExpr {
                 }
             },
             SQLExpr::Value(column, ids) => (column.to_string(), ids.clone()),
-            SQLExpr::Apply(qual_identifier, exprs) => {
-                sql_for("apply", qual_identifier.to_string(), exprs, variables)
-            },
+            SQLExpr::Apply(qual_identifier, exprs) =>
+                sql_for("apply", qual_identifier.to_string(), exprs, variables),
+            SQLExpr::G(table_alias) => (format!("{table_alias}.G"), Ids::None),
             SQLExpr::Construct(qual_identifier, exprs) => {
                 // LINK src/doc.md#_Constructor
                 sql_for("construct2", qual_identifier.to_string(), exprs, variables)

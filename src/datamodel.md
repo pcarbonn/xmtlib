@@ -43,7 +43,7 @@ pub(crate) enum GroundingView {
     View {
         free_variables: OptionMap<Symbol, TableAlias>,
         condition: bool,
-        grounding: Either<SQLExpr, (TableAlias, Ids)>,
+        grounding: Either<SQLExpr, TableAlias>,
         exclude: Option<bool>,
         query: GroundingQuery,
         ids: Ids,
