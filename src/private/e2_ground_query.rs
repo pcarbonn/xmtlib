@@ -2,6 +2,7 @@
 
 use indexmap::IndexSet;
 use itertools::Either::{self, Left, Right};
+use std::cmp::max;
 use std::fmt::Display;
 use std::hash::{Hash, Hasher};
 
@@ -164,7 +165,7 @@ impl GroundingQuery {
                     };
 
                 // grounding
-                let grounding_ = grounding.to_sql(&variables).0;
+                let (grounding_, ids) = grounding.to_sql(&variables);
                 let grounding_ = format!("{grounding_} AS G");
 
                 // natural joins
@@ -244,7 +245,7 @@ impl GroundingQuery {
                     };
 
                (format!("SELECT {variables_}{condition}{grounding_}{tables}"),
-                Ids::All)
+                ids)
             }
             GroundingQuery::Aggregate { agg, free_variables, infinite_variables, sub_view, .. } => {
                 if let GroundingView::View { condition, ..} = **sub_view {
@@ -303,19 +304,23 @@ impl GroundingQuery {
                             }
                         };
 
-                    let sub_view = sub_view.to_sql(variables, format!("{indent}{INDENT}").as_str()).0;
+                    let (sub_view, ids) = sub_view.to_sql(variables, format!("{indent}{INDENT}").as_str());
 
                     (format!("SELECT {free}{grounding} as G\n{indent} FROM ({sub_view}){group_by}"),
-                     Ids::All)
+                     ids)
                 } else {  // empty view
                     ("{}".to_string(), Ids::All)
                 }
             },
             GroundingQuery::Union { sub_queries, .. } => {
+                let mut ids = Ids::All;
                 let view = sub_queries.iter()
-                    .map( |query| query.to_sql(variables, indent).0 )
-                    .collect::<Vec<_>>().join(format!("\n{indent}UNION\n{indent}").as_str());
-                (view, Ids::All)
+                    .map( |query| {
+                        let (sql, ids_) = query.to_sql(variables, indent);
+                        ids = max(ids.clone(), ids_);
+                        sql
+                    }).collect::<Vec<_>>().join(format!("\n{indent}UNION\n{indent}").as_str());
+                (view, ids)
             }
         }
     }
