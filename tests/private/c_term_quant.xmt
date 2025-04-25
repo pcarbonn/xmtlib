@@ -29,7 +29,7 @@
 (assert (not (r true)))
 (assert (not (r false)))
 Groundings:
-=== true ======================================
+===  true ======================================
 ----- T ------------------------------------------------------------
 SELECT "true" AS G
 ----- U ------------------------------------------------------------
@@ -37,7 +37,7 @@ SELECT "true" AS G WHERE FALSE
 ----- G ------------------------------------------------------------
 SELECT "true" AS G
 
-=== (forall ((x Int)) true) ======================================
+=== (top) (forall ((x Int)) true) ======================================
 ----- TU -----------------------------------------------------------
 SELECT and_aggregate(G) as G
  FROM (SELECT "true" AS G)
@@ -47,7 +47,7 @@ SELECT "true" AS G WHERE FALSE
 SELECT and_aggregate(G) as G
  FROM (SELECT "true" AS G)
 
-=== (exists ((x Int)) true) ======================================
+=== (top) (exists ((x Int)) true) ======================================
 ----- TU -----------------------------------------------------------
 SELECT or_aggregate(G) as G
  FROM (SELECT "true" AS G)
@@ -58,7 +58,7 @@ SELECT or_aggregate(G) as G
 SELECT or_aggregate(G) as G
  FROM (SELECT "true" AS G)
 
-=== (forall ((x Color)) true) ======================================
+=== (top) (forall ((x Color)) true) ======================================
 ----- TU -----------------------------------------------------------
 SELECT and_aggregate(G) as G
  FROM (SELECT "true" AS G)
@@ -68,7 +68,7 @@ SELECT "true" AS G WHERE FALSE
 SELECT and_aggregate(G) as G
  FROM (SELECT "true" AS G)
 
-=== (exists ((x Color)) true) ======================================
+=== (top) (exists ((x Color)) true) ======================================
 ----- TU -----------------------------------------------------------
 SELECT or_aggregate(G) as G
  FROM (SELECT "true" AS G)
@@ -79,11 +79,11 @@ SELECT or_aggregate(G) as G
 SELECT or_aggregate(G) as G
  FROM (SELECT "true" AS G)
 
-=== x ======================================
+===  x ======================================
  SELECT _xmt_color_5.G AS x,
        _xmt_color_5.G AS G
   FROM _xmt_color AS _xmt_color_5
-=== (p x) ======================================
+===  (p x) ======================================
 ----- TU -----------------------------------------------------------
 SELECT _xmt_color_5.G AS x,
        apply("p", _xmt_color_5.G) AS G
@@ -97,7 +97,7 @@ SELECT _xmt_color_5.G AS x,
        apply("p", _xmt_color_5.G) AS G
   FROM _xmt_color AS _xmt_color_5
 
-=== (forall ((x Color)) (p x)) ======================================
+=== (top) (forall ((x Color)) (p x)) ======================================
 ----- TU -----------------------------------------------------------
 SELECT and_aggregate(G) as G
  FROM (SELECT _xmt_color_5.G AS x,
@@ -114,7 +114,7 @@ SELECT and_aggregate(G) as G
               apply("p", _xmt_color_5.G) AS G
          FROM _xmt_color AS _xmt_color_5)
 
-=== (exists ((x Color)) (p x)) ======================================
+=== (top) (exists ((x Color)) (p x)) ======================================
 ----- TU -----------------------------------------------------------
 SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_color_5.G AS x,
@@ -131,10 +131,10 @@ SELECT or_aggregate(G) as G
               apply("p", _xmt_color_5.G) AS G
          FROM _xmt_color AS _xmt_color_5)
 
-=== x ======================================
+===  x ======================================
  SELECT "x" AS x,
        "x" AS G
-=== (q x) ======================================
+===  (q x) ======================================
 ----- TU -----------------------------------------------------------
 SELECT "x" AS x,
        apply("q", "x") AS G
@@ -145,7 +145,7 @@ SELECT "x" AS x,
 SELECT "x" AS x,
        apply("q", "x") AS G
 
-=== (forall ((x Int)) (q x)) ======================================
+=== (top) (forall ((x Int)) (q x)) ======================================
 ----- TU -----------------------------------------------------------
 SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
  FROM (SELECT "x" AS x,
@@ -159,11 +159,11 @@ SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
  FROM (SELECT "x" AS x,
               apply("q", "x") AS G)
 
-=== x ======================================
+===  x ======================================
  SELECT Bool_12.G AS x,
        Bool_12.G AS G
   FROM Bool AS Bool_12
-=== (r x) ======================================
+===  (r x) ======================================
 ----- TU -----------------------------------------------------------
 SELECT Bool_12.G AS x,
        apply("r", Bool_12.G) AS G
@@ -177,7 +177,7 @@ SELECT Bool_12.G AS x,
        apply("r", Bool_12.G) AS G
   FROM Bool AS Bool_12
 
-=== (exists ((x Bool)) (r x)) ======================================
+===  (exists ((x Bool)) (r x)) ======================================
 ----- TU -----------------------------------------------------------
 SELECT or_aggregate(G) as G
  FROM (SELECT Bool_12.G AS x,
@@ -194,7 +194,7 @@ SELECT or_aggregate(G) as G
               apply("r", Bool_12.G) AS G
          FROM Bool AS Bool_12)
 
-=== (not (exists ((x Bool)) (r x))) ======================================
+=== (top) (not (exists ((x Bool)) (r x))) ======================================
 ----- TU -----------------------------------------------------------
 SELECT and_aggregate(G) as G
  FROM (SELECT Bool_12.G AS x,
@@ -211,7 +211,7 @@ SELECT and_aggregate(G) as G
               apply("not", apply("r", Bool_12.G)) AS G
          FROM Bool AS Bool_12)
 
-=== (not (r x)) ======================================
+===  (not (r x)) ======================================
 ----- TU -----------------------------------------------------------
 SELECT Bool_12.G AS x,
        apply("not", apply("r", Bool_12.G)) AS G
@@ -225,7 +225,7 @@ SELECT Bool_12.G AS x,
        apply("not", apply("r", Bool_12.G)) AS G
   FROM Bool AS Bool_12
 
-=== false ======================================
+===  false ======================================
 ----- T ------------------------------------------------------------
 SELECT "true" AS G WHERE FALSE
 ----- U ------------------------------------------------------------
@@ -233,7 +233,7 @@ SELECT "false" AS G
 ----- G ------------------------------------------------------------
 SELECT "false" AS G
 
-=== (or (not (r x)) false) ======================================
+===  (or (not (r x)) false) ======================================
 ----- TU -----------------------------------------------------------
 SELECT negate_16_UF.x AS x,
        negate_16_UF.G AS G
@@ -250,7 +250,7 @@ SELECT Bool_12.G AS x,
        apply("not", apply("r", Bool_12.G)) AS G
   FROM Bool AS Bool_12
 
-=== (forall ((x Bool)) (or (not (r x)) false)) ======================================
+=== (top) (forall ((x Bool)) (or (not (r x)) false)) ======================================
 ----- TU -----------------------------------------------------------
 SELECT and_aggregate(G) as G
  FROM (SELECT Bool_12.G AS x,

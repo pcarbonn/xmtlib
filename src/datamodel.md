@@ -9,7 +9,9 @@ pub struct Solver {
     pub(crate) functions: IndexMap<QualIdentifier, FunctionObject>,
     // pub(crate) qualified_functions: IndexMap<QualIdentifier, FunctionObject>,
     pub(crate) assertions_to_ground: Vec<(String, Term)>,
-    pub(crate) groundings: IndexMap<Term, Grounding>,
+    pub(crate) groundings: IndexMap<(L<Term>, bool), Grounding>,
+    pub(crate) grounded: IndexSet<Identifier>,
+    pub(crate) db_names: IndexSet<String>,
 }
 pub(crate) enum ParametricObject {
     Datatype(DatatypeDec),

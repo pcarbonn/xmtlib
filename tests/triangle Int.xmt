@@ -46,13 +46,13 @@ Functions:
  - Edge: Boolean (_xmt_edge_TU Complete, (infinite), (infinite))
  - phi: Int * Int * Int -> Bool (true)
 Groundings:
-=== x ======================================
+===  x ======================================
  SELECT "x" AS x,
        "x" AS G
-=== y ======================================
+===  y ======================================
  SELECT "y" AS y,
        "y" AS G
-=== (Edge x y) ======================================
+===  (Edge x y) ======================================
 ----- T ------------------------------------------------------------
 SELECT _xmt_edge_TU_2.a_1 AS x,
        _xmt_edge_TU_2.a_2 AS y,
@@ -67,7 +67,7 @@ SELECT "x" AS x,
        "y" AS y,
        apply("Edge", "x", "y") AS G
 
-=== (not (Edge x y)) ======================================
+===  (not (Edge x y)) ======================================
 ----- TU -----------------------------------------------------------
 SELECT "x" AS x,
        "y" AS y,
@@ -82,10 +82,10 @@ SELECT "x" AS x,
        "y" AS y,
        apply("not", apply("Edge", "x", "y")) AS G
 
-=== z ======================================
+===  z ======================================
  SELECT "z" AS z,
        "z" AS G
-=== (Edge y z) ======================================
+===  (Edge y z) ======================================
 ----- T ------------------------------------------------------------
 SELECT _xmt_edge_TU_5.a_1 AS y,
        _xmt_edge_TU_5.a_2 AS z,
@@ -100,7 +100,7 @@ SELECT "y" AS y,
        "z" AS z,
        apply("Edge", "y", "z") AS G
 
-=== (not (Edge y z)) ======================================
+===  (not (Edge y z)) ======================================
 ----- TU -----------------------------------------------------------
 SELECT "y" AS y,
        "z" AS z,
@@ -115,7 +115,7 @@ SELECT "y" AS y,
        "z" AS z,
        apply("not", apply("Edge", "y", "z")) AS G
 
-=== (Edge x z) ======================================
+===  (Edge x z) ======================================
 ----- T ------------------------------------------------------------
 SELECT _xmt_edge_TU_7.a_1 AS x,
        _xmt_edge_TU_7.a_2 AS z,
@@ -130,7 +130,7 @@ SELECT "x" AS x,
        "z" AS z,
        apply("Edge", "x", "z") AS G
 
-=== (not (Edge x z)) ======================================
+===  (not (Edge x z)) ======================================
 ----- TU -----------------------------------------------------------
 SELECT "x" AS x,
        "z" AS z,
@@ -145,7 +145,7 @@ SELECT "x" AS x,
        "z" AS z,
        apply("not", apply("Edge", "x", "z")) AS G
 
-=== (phi x y z) ======================================
+===  (phi x y z) ======================================
 ----- TU -----------------------------------------------------------
 SELECT "x" AS x,
        "y" AS y,
@@ -162,7 +162,7 @@ SELECT "x" AS x,
        "z" AS z,
        apply("phi", "x", "y", "z") AS G
 
-=== (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z)) ======================================
+===  (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z)) ======================================
 ----- TU -----------------------------------------------------------
 SELECT x, y, z,
        or_aggregate(G) as G
@@ -201,7 +201,7 @@ SELECT "x" AS x,
        "z" AS z,
        apply("or", apply("not", apply("Edge", "x", "y")), apply("not", apply("Edge", "y", "z")), apply("not", apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G
 
-=== (forall ((x Int) (y Int) (z Int)) (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z))) ======================================
+=== (top) (forall ((x Int) (y Int) (z Int)) (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z))) ======================================
 ----- TU -----------------------------------------------------------
 SELECT "(forall ((x Int) (y Int) (z Int)) " || and_aggregate(G) || ")" as G
  FROM (SELECT "x" AS x,

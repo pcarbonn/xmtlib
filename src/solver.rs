@@ -52,8 +52,8 @@ pub struct Solver {
     /// The string is the original assertion command.
     /// The first element is the annotated term
     pub(crate) assertions_to_ground: Vec<(String, L<Term>)>,
-    /// a mapping from a term to a composable representation of its grounding
-    pub(crate) groundings: IndexMap<L<Term>, Grounding>,
+    /// a mapping from a term (top-level?) to a composable representation of its grounding
+    pub(crate) groundings: IndexMap<(L<Term>, bool), Grounding>,
 
     /// to convert interpretations to definitions when given late
     /// (i.e., make an assertion with p, x-ground, interpret p
@@ -316,8 +316,9 @@ impl Solver {
                                 },
                                 "groundings" => {
                                     yield_!(Ok("Groundings:\n".to_string()));
-                                    for (term, grounding) in &self.groundings {
-                                        yield_!(Ok(format!("=== {term} ======================================\n{grounding}\n")))
+                                    for ((term, top), grounding) in &self.groundings {
+                                        let top = if *top { "(top)" } else { "" };
+                                        yield_!(Ok(format!("=== {top} {term} ======================================\n{grounding}\n")))
                                     }
                                     yield_!(Ok("===========================================\n".to_string()))
                                 },

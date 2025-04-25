@@ -175,11 +175,11 @@ fn ground_term(
     solver: &mut Solver
 ) -> Result<Grounding, SolverError> {
 
-    if let Some(grounding) = solver.groundings.get(term) {
+    if let Some(grounding) = solver.groundings.get(&(term.clone(), top_level)) {
         Ok(grounding.clone())
     } else {
         let grounding = ground_term_(term, top_level, solver)?;
-        solver.groundings.insert(term.clone(), grounding.clone());
+        solver.groundings.insert((term.clone(), top_level), grounding.clone());
         Ok(grounding)
     }
 }

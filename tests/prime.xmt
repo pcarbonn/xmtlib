@@ -24,10 +24,10 @@
 (assert (= (prime 9) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
 (assert (= (prime 10) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
 Groundings:
-=== x ======================================
+===  x ======================================
  SELECT "x" AS x,
        "x" AS G
-=== (domain x) ======================================
+===  (domain x) ======================================
 ----- T ------------------------------------------------------------
 SELECT _xmt_domain_TU_1.a_1 AS x,
        "true" AS G
@@ -39,7 +39,7 @@ SELECT "x" AS x,
 SELECT "x" AS x,
        apply("domain", "x") AS G
 
-=== (not (domain x)) ======================================
+===  (not (domain x)) ======================================
 ----- TU -----------------------------------------------------------
 SELECT "x" AS x,
        apply("not", apply("domain", "x")) AS G
@@ -51,7 +51,7 @@ SELECT _xmt_domain_TU_1.a_1 AS x,
 SELECT "x" AS x,
        apply("not", apply("domain", "x")) AS G
 
-=== (prime x) ======================================
+===  (prime x) ======================================
 ----- TU -----------------------------------------------------------
 SELECT "x" AS x,
        apply("prime", "x") AS G
@@ -62,10 +62,10 @@ SELECT "x" AS x,
 SELECT "x" AS x,
        apply("prime", "x") AS G
 
-=== y ======================================
+===  y ======================================
  SELECT "y" AS y,
        "y" AS G
-=== (domain y) ======================================
+===  (domain y) ======================================
 ----- T ------------------------------------------------------------
 SELECT _xmt_domain_TU_5.a_1 AS y,
        "true" AS G
@@ -77,7 +77,7 @@ SELECT "y" AS y,
 SELECT "y" AS y,
        apply("domain", "y") AS G
 
-=== (not (domain y)) ======================================
+===  (not (domain y)) ======================================
 ----- TU -----------------------------------------------------------
 SELECT "y" AS y,
        apply("not", apply("domain", "y")) AS G
@@ -89,7 +89,7 @@ SELECT _xmt_domain_TU_5.a_1 AS y,
 SELECT "y" AS y,
        apply("not", apply("domain", "y")) AS G
 
-=== (< y x) ======================================
+===  (< y x) ======================================
 ----- TU -----------------------------------------------------------
 SELECT "y" AS y,
        "x" AS x,
@@ -103,7 +103,7 @@ SELECT "y" AS y,
        "x" AS x,
        apply("<", "y", "x") AS G
 
-=== (not (< y x)) ======================================
+===  (not (< y x)) ======================================
 ----- TU -----------------------------------------------------------
 SELECT "y" AS y,
        "x" AS x,
@@ -117,13 +117,13 @@ SELECT "y" AS y,
        "x" AS x,
        apply("not", apply("<", "y", "x")) AS G
 
-=== (mod x y) ======================================
+===  (mod x y) ======================================
  SELECT "x" AS x,
        "y" AS y,
        apply("mod", "x", "y") AS G
-=== 0 ======================================
+===  0 ======================================
  SELECT 0 AS G
-=== (> (mod x y) 0) ======================================
+===  (> (mod x y) 0) ======================================
 ----- TU -----------------------------------------------------------
 SELECT "x" AS x,
        "y" AS y,
@@ -137,7 +137,7 @@ SELECT "x" AS x,
        "y" AS y,
        apply(">", apply("mod", "x", "y"), 0) AS G
 
-=== (or (not (domain y)) (not (< y x)) (> (mod x y) 0)) ======================================
+===  (or (not (domain y)) (not (< y x)) (> (mod x y) 0)) ======================================
 ----- TU -----------------------------------------------------------
 SELECT y, x,
        or_aggregate(G) as G
@@ -162,7 +162,7 @@ SELECT "y" AS y,
        "x" AS x,
        apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G
 
-=== (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0))) ======================================
+===  (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0))) ======================================
 ----- TU -----------------------------------------------------------
 SELECT x,
        "(forall ((y Int)) " || and_aggregate(G) || ")" as G
@@ -183,7 +183,7 @@ SELECT x,
               "x" AS x,
               apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
 
-=== (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))) ======================================
+===  (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))) ======================================
 ----- TU -----------------------------------------------------------
 SELECT Agg_13_G.x AS x,
        apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G) AS G
@@ -212,7 +212,7 @@ SELECT Agg_13_G.x AS x,
                       apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
         ) AS Agg_13_G
 
-=== (or (not (domain x)) (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0))))) ======================================
+===  (or (not (domain x)) (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0))))) ======================================
 ----- TU -----------------------------------------------------------
 SELECT x,
        or_aggregate(G) as G
@@ -251,7 +251,7 @@ SELECT Agg_13_G.x AS x,
                       apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
         ) AS Agg_13_G
 
-=== (forall ((x Int)) (or (not (domain x)) (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))) ======================================
+=== (top) (forall ((x Int)) (or (not (domain x)) (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))) ======================================
 ----- TU -----------------------------------------------------------
 SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
  FROM (SELECT Agg_13_G.x AS x,

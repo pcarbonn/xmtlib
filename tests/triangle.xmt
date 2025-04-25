@@ -25,15 +25,15 @@
 (assert (phi |1| |2| |3|))
 (assert false)
 Groundings:
-=== x ======================================
+===  x ======================================
  SELECT _xmt_node.G AS x,
        _xmt_node.G AS G
   FROM _xmt_node
-=== y ======================================
+===  y ======================================
  SELECT _xmt_node_1.G AS y,
        _xmt_node_1.G AS G
   FROM _xmt_node AS _xmt_node_1
-=== (Edge x y) ======================================
+===  (Edge x y) ======================================
 ----- T ------------------------------------------------------------
 SELECT _xmt_edge_TU_2.a_1 AS x,
        _xmt_edge_TU_2.a_2 AS y,
@@ -50,7 +50,7 @@ SELECT _xmt_edge_G_2.a_1 AS x,
        _xmt_edge_G_2.G AS G
   FROM _xmt_edge_G AS _xmt_edge_G_2
 
-=== (not (Edge x y)) ======================================
+===  (not (Edge x y)) ======================================
 ----- T ------------------------------------------------------------
 SELECT _xmt_edge_UF_2.a_1 AS x,
        _xmt_edge_UF_2.a_2 AS y,
@@ -67,11 +67,11 @@ SELECT _xmt_edge_G_2.a_1 AS x,
        not_(_xmt_edge_G_2.G) AS G
   FROM _xmt_edge_G AS _xmt_edge_G_2
 
-=== z ======================================
+===  z ======================================
  SELECT _xmt_node_4.G AS z,
        _xmt_node_4.G AS G
   FROM _xmt_node AS _xmt_node_4
-=== (Edge y z) ======================================
+===  (Edge y z) ======================================
 ----- T ------------------------------------------------------------
 SELECT _xmt_edge_TU_5.a_1 AS y,
        _xmt_edge_TU_5.a_2 AS z,
@@ -88,7 +88,7 @@ SELECT _xmt_edge_G_5.a_1 AS y,
        _xmt_edge_G_5.G AS G
   FROM _xmt_edge_G AS _xmt_edge_G_5
 
-=== (not (Edge y z)) ======================================
+===  (not (Edge y z)) ======================================
 ----- T ------------------------------------------------------------
 SELECT _xmt_edge_UF_5.a_1 AS y,
        _xmt_edge_UF_5.a_2 AS z,
@@ -105,7 +105,7 @@ SELECT _xmt_edge_G_5.a_1 AS y,
        not_(_xmt_edge_G_5.G) AS G
   FROM _xmt_edge_G AS _xmt_edge_G_5
 
-=== (Edge x z) ======================================
+===  (Edge x z) ======================================
 ----- T ------------------------------------------------------------
 SELECT _xmt_edge_TU_7.a_1 AS x,
        _xmt_edge_TU_7.a_2 AS z,
@@ -122,7 +122,7 @@ SELECT _xmt_edge_G_7.a_1 AS x,
        _xmt_edge_G_7.G AS G
   FROM _xmt_edge_G AS _xmt_edge_G_7
 
-=== (not (Edge x z)) ======================================
+===  (not (Edge x z)) ======================================
 ----- T ------------------------------------------------------------
 SELECT _xmt_edge_UF_7.a_1 AS x,
        _xmt_edge_UF_7.a_2 AS z,
@@ -139,7 +139,7 @@ SELECT _xmt_edge_G_7.a_1 AS x,
        not_(_xmt_edge_G_7.G) AS G
   FROM _xmt_edge_G AS _xmt_edge_G_7
 
-=== (phi x y z) ======================================
+===  (phi x y z) ======================================
 ----- TU -----------------------------------------------------------
 SELECT _xmt_node.G AS x,
        _xmt_node_1.G AS y,
@@ -165,7 +165,7 @@ SELECT _xmt_node.G AS x,
   JOIN _xmt_node AS _xmt_node_1
   JOIN _xmt_node AS _xmt_node_4
 
-=== (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z)) ======================================
+===  (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z)) ======================================
 ----- TU -----------------------------------------------------------
 SELECT x, y, z,
        or_aggregate(G) as G
@@ -236,7 +236,7 @@ SELECT _xmt_edge_G_2.a_1 AS x,
   JOIN _xmt_edge_G AS _xmt_edge_G_7
         ON _xmt_edge_G_2.a_1 = _xmt_edge_G_7.a_1 AND _xmt_edge_G_5.a_2 = _xmt_edge_G_7.a_2
 
-=== (forall ((x Node) (y Node) (z Node)) (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z))) ======================================
+=== (top) (forall ((x Node) (y Node) (z Node)) (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z))) ======================================
 ----- TU -----------------------------------------------------------
 SELECT and_aggregate(G) as G
  FROM (SELECT _xmt_edge_G_2.a_1 AS x,
@@ -271,7 +271,7 @@ SELECT and_aggregate(G) as G
          JOIN _xmt_edge_G AS _xmt_edge_G_7
                ON _xmt_edge_G_2.a_1 = _xmt_edge_G_7.a_1 AND _xmt_edge_G_5.a_2 = _xmt_edge_G_7.a_2)
 
-=== (Edge x x) ======================================
+===  (Edge x x) ======================================
 ----- T ------------------------------------------------------------
 SELECT _xmt_edge_TU_12.a_1 AS x,
        "true" AS G
@@ -288,7 +288,7 @@ SELECT _xmt_edge_G_12.a_1 AS x,
   FROM _xmt_edge_G AS _xmt_edge_G_12
  WHERE _xmt_edge_G_12.a_1 = _xmt_edge_G_12.a_2
 
-=== (forall ((x Node)) (Edge x x)) ======================================
+=== (top) (forall ((x Node)) (Edge x x)) ======================================
 ----- TU -----------------------------------------------------------
 SELECT and_aggregate(G) as G
  FROM (SELECT _xmt_edge_G_12.a_1 AS x,
@@ -308,7 +308,7 @@ SELECT and_aggregate(G) as G
          FROM _xmt_edge_G AS _xmt_edge_G_12
         WHERE _xmt_edge_G_12.a_1 = _xmt_edge_G_12.a_2)
 
-=== (exists ((x Node) (y Node)) (Edge x y)) ======================================
+=== (top) (exists ((x Node) (y Node)) (Edge x y)) ======================================
 ----- TU -----------------------------------------------------------
 SELECT or_aggregate(G) as G
  FROM (SELECT _xmt_edge_TU_2.a_1 AS x,
