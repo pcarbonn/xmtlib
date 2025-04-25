@@ -69,37 +69,47 @@ Functions:
  - dim: Boolean (_xmt_dim_TU Complete, _xmt_dim_UF Complete, _xmt_dim_G Complete)
 Groundings:
 ===  x ======================================
- SELECT _xmt_hue.G AS x,
+ -- Join(0)
+SELECT _xmt_hue.G AS x,
        _xmt_hue.G AS G
   FROM _xmt_hue
 ===  (dim x) ======================================
 ----- T ------------------------------------------------------------
+-- Join(0)
 SELECT _xmt_dim_TU_1.a_1 AS x,
        "true" AS G
   FROM _xmt_dim_TU AS _xmt_dim_TU_1
 ----- U ------------------------------------------------------------
+-- Join(0)
 SELECT _xmt_dim_UF_1.a_1 AS x,
        "false" AS G
   FROM _xmt_dim_UF AS _xmt_dim_UF_1
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT _xmt_dim_G_1.a_1 AS x,
        _xmt_dim_G_1.G AS G
   FROM _xmt_dim_G AS _xmt_dim_G_1
 
 === (top) (exists ((x Hue)) (dim x)) ======================================
 ----- TU -----------------------------------------------------------
+-- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT _xmt_dim_TU_1.a_1 AS x,
+ FROM (-- Join(7)
+       SELECT _xmt_dim_TU_1.a_1 AS x,
               "true" AS G
          FROM _xmt_dim_TU AS _xmt_dim_TU_1)
 ----- UF -----------------------------------------------------------
+-- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT _xmt_dim_G_1.a_1 AS x,
+ FROM (-- Join(7)
+       SELECT _xmt_dim_G_1.a_1 AS x,
               _xmt_dim_G_1.G AS G
          FROM _xmt_dim_G AS _xmt_dim_G_1)
 ----- G ------------------------------------------------------------
+-- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT _xmt_dim_G_1.a_1 AS x,
+ FROM (-- Join(7)
+       SELECT _xmt_dim_G_1.a_1 AS x,
               _xmt_dim_G_1.G AS G
          FROM _xmt_dim_G AS _xmt_dim_G_1)
 

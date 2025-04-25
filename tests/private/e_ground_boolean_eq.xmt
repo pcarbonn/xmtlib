@@ -26,95 +26,122 @@
 (assert (= (P 10) (Q 10)))
 Groundings:
 ===  x ======================================
- SELECT "x" AS x,
+ -- Join(0)
+SELECT "x" AS x,
        "x" AS G
 ===  (domain x) ======================================
 ----- T ------------------------------------------------------------
+-- Join(0)
 SELECT _xmt_domain_TU_1.a_1 AS x,
        "true" AS G
   FROM _xmt_domain_TU AS _xmt_domain_TU_1
 ----- UF -----------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("domain", "x") AS G
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("domain", "x") AS G
 
 ===  (not (domain x)) ======================================
 ----- TU -----------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("not", apply("domain", "x")) AS G
 ----- U ------------------------------------------------------------
+-- Join(0)
 SELECT _xmt_domain_TU_1.a_1 AS x,
        "false" AS G
   FROM _xmt_domain_TU AS _xmt_domain_TU_1
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("not", apply("domain", "x")) AS G
 
 ===  (P x) ======================================
 ----- TU -----------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("P", "x") AS G
 ----- UF -----------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("P", "x") AS G
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("P", "x") AS G
 
 ===  (Q x) ======================================
 ----- TU -----------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("Q", "x") AS G
 ----- UF -----------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("Q", "x") AS G
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("Q", "x") AS G
 
 ===  (= (P x) (Q x)) ======================================
 ----- TU -----------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("=", apply("P", "x"), apply("Q", "x")) AS G
 ----- UF -----------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("=", apply("P", "x"), apply("Q", "x")) AS G
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("=", apply("P", "x"), apply("Q", "x")) AS G
 
 ===  (or (not (domain x)) (= (P x) (Q x))) ======================================
 ----- TU -----------------------------------------------------------
+-- Agg (0)
 SELECT x,
        or_aggregate(G) as G
- FROM (SELECT "x" AS x,
+ FROM (-- Join(7)
+       SELECT "x" AS x,
               apply("not", apply("domain", "x")) AS G
        UNION
+       -- Join(7)
        SELECT "x" AS x,
               apply("=", apply("P", "x"), apply("Q", "x")) AS G)
 ----- UF -----------------------------------------------------------
+-- Join(0)
 SELECT _xmt_domain_TU_1.a_1 AS x,
        apply("=", apply("P", _xmt_domain_TU_1.a_1), apply("Q", _xmt_domain_TU_1.a_1)) AS G
   FROM _xmt_domain_TU AS _xmt_domain_TU_1
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("or", apply("not", apply("domain", "x")), apply("=", apply("P", "x"), apply("Q", "x"))) AS G
 
 === (top) (forall ((x Int)) (or (not (domain x)) (= (P x) (Q x)))) ======================================
 ----- TU -----------------------------------------------------------
+-- Agg (0)
 SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
- FROM (SELECT "x" AS x,
+ FROM (-- Join(7)
+       SELECT "x" AS x,
               apply("or", apply("not", apply("domain", "x")), apply("=", apply("P", "x"), apply("Q", "x"))) AS G)
 ----- UF -----------------------------------------------------------
+-- Agg (0)
 SELECT G as G
- FROM (SELECT _xmt_domain_TU_1.a_1 AS x,
+ FROM (-- Join(7)
+       SELECT _xmt_domain_TU_1.a_1 AS x,
               apply("=", apply("P", _xmt_domain_TU_1.a_1), apply("Q", _xmt_domain_TU_1.a_1)) AS G
          FROM _xmt_domain_TU AS _xmt_domain_TU_1)
 ----- G ------------------------------------------------------------
+-- Agg (0)
 SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
- FROM (SELECT "x" AS x,
+ FROM (-- Join(7)
+       SELECT "x" AS x,
               apply("or", apply("not", apply("domain", "x")), apply("=", apply("P", "x"), apply("Q", "x"))) AS G)
 
 ===========================================

@@ -116,6 +116,7 @@ impl GroundingQuery {
         variables: &OptionMap<Symbol, Column>,
         indent: &str
     ) -> (String, Ids) {
+        let comment = "".to_string();
         match self {
             GroundingQuery::Join{variables, conditions, grounding,
             natural_joins, theta_joins, ..} => {
@@ -244,7 +245,8 @@ impl GroundingQuery {
                         "".to_string()
                     };
 
-               (format!("SELECT {variables_}{condition}{grounding_}{tables}"),
+                let comment = format!("-- Join({})\n{indent}", indent.len());
+               (format!("{comment}SELECT {variables_}{condition}{grounding_}{tables}"),
                 ids)
             }
             GroundingQuery::Aggregate { agg, free_variables, infinite_variables, sub_view, .. } => {
@@ -306,7 +308,8 @@ impl GroundingQuery {
 
                     let (sub_view, ids) = sub_view.to_sql(variables, format!("{indent}{INDENT}").as_str());
 
-                    (format!("SELECT {free}{grounding} as G\n{indent} FROM ({sub_view}){group_by}"),
+                    let comment = format!("-- Agg ({})\n{indent}", indent.len());
+                    (format!("{comment}SELECT {free}{grounding} as G\n{indent} FROM ({sub_view}){group_by}"),
                      ids)
                 } else {  // empty view
                     ("{}".to_string(), Ids::All)

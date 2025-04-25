@@ -82,42 +82,52 @@ Functions:
  - mix: Non Boolean (_xmt_mix_G Partial)
 Groundings:
 ===  c ======================================
- SELECT _xmt_c_2_G.G AS G
+ -- Join(0)
+SELECT _xmt_c_2_G.G AS G
   FROM _xmt_c_2_G AS _xmt_c_2_G
 ===  green ======================================
- SELECT "green" AS G
+ -- Join(0)
+SELECT "green" AS G
 === (top) (= c green) ======================================
 ----- T ------------------------------------------------------------
+-- Join(0)
 SELECT eq_(_xmt_c_2_G.G, "green") AS G
   FROM _xmt_c_2_G AS _xmt_c_2_G
 ----- U ------------------------------------------------------------
+-- Join(0)
 SELECT eq_(_xmt_c_2_G.G, "green") AS G
   FROM _xmt_c_2_G AS _xmt_c_2_G
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT eq_(_xmt_c_2_G.G, "green") AS G
   FROM _xmt_c_2_G AS _xmt_c_2_G
 
 ===  x ======================================
- SELECT _xmt_color_3.G AS x,
+ -- Join(0)
+SELECT _xmt_color_3.G AS x,
        _xmt_color_3.G AS G
   FROM _xmt_color AS _xmt_color_3
 ===  (mix x x) ======================================
- SELECT _xmt_mix_G_4.a_1 AS x,
+ -- Join(0)
+SELECT _xmt_mix_G_4.a_1 AS x,
        _xmt_mix_G_4.G AS G
   FROM _xmt_mix_G AS _xmt_mix_G_4
  WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2
 ===  (= (mix x x) x) ======================================
 ----- TU -----------------------------------------------------------
+-- Join(0)
 SELECT _xmt_mix_G_4.a_1 AS x,
        eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1) AS G
   FROM _xmt_mix_G AS _xmt_mix_G_4
  WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2
 ----- UF -----------------------------------------------------------
+-- Join(0)
 SELECT _xmt_mix_G_4.a_1 AS x,
        eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1) AS G
   FROM _xmt_mix_G AS _xmt_mix_G_4
  WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT _xmt_mix_G_4.a_1 AS x,
        eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1) AS G
   FROM _xmt_mix_G AS _xmt_mix_G_4
@@ -125,36 +135,45 @@ SELECT _xmt_mix_G_4.a_1 AS x,
 
 === (top) (exists ((x Color)) (= (mix x x) x)) ======================================
 ----- TU -----------------------------------------------------------
+-- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT _xmt_mix_G_4.a_1 AS x,
+ FROM (-- Join(7)
+       SELECT _xmt_mix_G_4.a_1 AS x,
               eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1) AS G
          FROM _xmt_mix_G AS _xmt_mix_G_4
         WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
 ----- UF -----------------------------------------------------------
+-- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT _xmt_mix_G_4.a_1 AS x,
+ FROM (-- Join(7)
+       SELECT _xmt_mix_G_4.a_1 AS x,
               eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1) AS G
          FROM _xmt_mix_G AS _xmt_mix_G_4
         WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
 ----- G ------------------------------------------------------------
+-- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT _xmt_mix_G_4.a_1 AS x,
+ FROM (-- Join(7)
+       SELECT _xmt_mix_G_4.a_1 AS x,
               eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1) AS G
          FROM _xmt_mix_G AS _xmt_mix_G_4
         WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
 
 ===  (= (mix x x) x green) ======================================
 ----- TU -----------------------------------------------------------
+-- Join(0)
 SELECT _xmt_mix_G_4.a_1 AS x,
        eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1, "green") AS G
   FROM _xmt_mix_G AS _xmt_mix_G_4
  WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2
 ----- UF -----------------------------------------------------------
+-- Join(0)
 SELECT _xmt_mix_G_4.a_1 AS x,
        eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1, "green") AS G
   FROM _xmt_mix_G AS _xmt_mix_G_4
  WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT _xmt_mix_G_4.a_1 AS x,
        eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1, "green") AS G
   FROM _xmt_mix_G AS _xmt_mix_G_4
@@ -162,20 +181,26 @@ SELECT _xmt_mix_G_4.a_1 AS x,
 
 === (top) (exists ((x Color)) (= (mix x x) x green)) ======================================
 ----- TU -----------------------------------------------------------
+-- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT _xmt_mix_G_4.a_1 AS x,
+ FROM (-- Join(7)
+       SELECT _xmt_mix_G_4.a_1 AS x,
               eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1, "green") AS G
          FROM _xmt_mix_G AS _xmt_mix_G_4
         WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
 ----- UF -----------------------------------------------------------
+-- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT _xmt_mix_G_4.a_1 AS x,
+ FROM (-- Join(7)
+       SELECT _xmt_mix_G_4.a_1 AS x,
               eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1, "green") AS G
          FROM _xmt_mix_G AS _xmt_mix_G_4
         WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
 ----- G ------------------------------------------------------------
+-- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT _xmt_mix_G_4.a_1 AS x,
+ FROM (-- Join(7)
+       SELECT _xmt_mix_G_4.a_1 AS x,
               eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1, "green") AS G
          FROM _xmt_mix_G AS _xmt_mix_G_4
         WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)

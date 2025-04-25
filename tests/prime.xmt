@@ -25,262 +25,335 @@
 (assert (= (prime 10) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
 Groundings:
 ===  x ======================================
- SELECT "x" AS x,
+ -- Join(0)
+SELECT "x" AS x,
        "x" AS G
 ===  (domain x) ======================================
 ----- T ------------------------------------------------------------
+-- Join(0)
 SELECT _xmt_domain_TU_1.a_1 AS x,
        "true" AS G
   FROM _xmt_domain_TU AS _xmt_domain_TU_1
 ----- UF -----------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("domain", "x") AS G
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("domain", "x") AS G
 
 ===  (not (domain x)) ======================================
 ----- TU -----------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("not", apply("domain", "x")) AS G
 ----- U ------------------------------------------------------------
+-- Join(0)
 SELECT _xmt_domain_TU_1.a_1 AS x,
        "false" AS G
   FROM _xmt_domain_TU AS _xmt_domain_TU_1
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("not", apply("domain", "x")) AS G
 
 ===  (prime x) ======================================
 ----- TU -----------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("prime", "x") AS G
 ----- UF -----------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("prime", "x") AS G
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        apply("prime", "x") AS G
 
 ===  y ======================================
- SELECT "y" AS y,
+ -- Join(0)
+SELECT "y" AS y,
        "y" AS G
 ===  (domain y) ======================================
 ----- T ------------------------------------------------------------
+-- Join(0)
 SELECT _xmt_domain_TU_5.a_1 AS y,
        "true" AS G
   FROM _xmt_domain_TU AS _xmt_domain_TU_5
 ----- UF -----------------------------------------------------------
+-- Join(0)
 SELECT "y" AS y,
        apply("domain", "y") AS G
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT "y" AS y,
        apply("domain", "y") AS G
 
 ===  (not (domain y)) ======================================
 ----- TU -----------------------------------------------------------
+-- Join(0)
 SELECT "y" AS y,
        apply("not", apply("domain", "y")) AS G
 ----- U ------------------------------------------------------------
+-- Join(0)
 SELECT _xmt_domain_TU_5.a_1 AS y,
        "false" AS G
   FROM _xmt_domain_TU AS _xmt_domain_TU_5
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT "y" AS y,
        apply("not", apply("domain", "y")) AS G
 
 ===  (< y x) ======================================
 ----- TU -----------------------------------------------------------
+-- Join(0)
 SELECT "y" AS y,
        "x" AS x,
        apply("<", "y", "x") AS G
 ----- UF -----------------------------------------------------------
+-- Join(0)
 SELECT "y" AS y,
        "x" AS x,
        apply("<", "y", "x") AS G
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT "y" AS y,
        "x" AS x,
        apply("<", "y", "x") AS G
 
 ===  (not (< y x)) ======================================
 ----- TU -----------------------------------------------------------
+-- Join(0)
 SELECT "y" AS y,
        "x" AS x,
        apply("not", apply("<", "y", "x")) AS G
 ----- UF -----------------------------------------------------------
+-- Join(0)
 SELECT "y" AS y,
        "x" AS x,
        apply("not", apply("<", "y", "x")) AS G
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT "y" AS y,
        "x" AS x,
        apply("not", apply("<", "y", "x")) AS G
 
 ===  (mod x y) ======================================
- SELECT "x" AS x,
+ -- Join(0)
+SELECT "x" AS x,
        "y" AS y,
        apply("mod", "x", "y") AS G
 ===  0 ======================================
- SELECT 0 AS G
+ -- Join(0)
+SELECT 0 AS G
 ===  (> (mod x y) 0) ======================================
 ----- TU -----------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        "y" AS y,
        apply(">", apply("mod", "x", "y"), 0) AS G
 ----- UF -----------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        "y" AS y,
        apply(">", apply("mod", "x", "y"), 0) AS G
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT "x" AS x,
        "y" AS y,
        apply(">", apply("mod", "x", "y"), 0) AS G
 
 ===  (or (not (domain y)) (not (< y x)) (> (mod x y) 0)) ======================================
 ----- TU -----------------------------------------------------------
+-- Agg (0)
 SELECT y, x,
        or_aggregate(G) as G
- FROM (SELECT "y" AS y,
+ FROM (-- Join(7)
+       SELECT "y" AS y,
               "x" AS x,
               apply("not", apply("domain", "y")) AS G
        UNION
+       -- Join(7)
        SELECT "y" AS y,
               "x" AS x,
               apply("not", apply("<", "y", "x")) AS G
        UNION
+       -- Join(7)
        SELECT "y" AS y,
               "x" AS x,
               apply(">", apply("mod", "x", "y"), 0) AS G)
 ----- UF -----------------------------------------------------------
+-- Join(0)
 SELECT _xmt_domain_TU_5.a_1 AS y,
        "x" AS x,
        apply("or", apply("not", apply("<", _xmt_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_domain_TU_5.a_1), 0)) AS G
   FROM _xmt_domain_TU AS _xmt_domain_TU_5
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT "y" AS y,
        "x" AS x,
        apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G
 
 ===  (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0))) ======================================
 ----- TU -----------------------------------------------------------
+-- Agg (0)
 SELECT x,
        "(forall ((y Int)) " || and_aggregate(G) || ")" as G
- FROM (SELECT "y" AS y,
+ FROM (-- Join(7)
+       SELECT "y" AS y,
               "x" AS x,
               apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
 ----- UF -----------------------------------------------------------
+-- Agg (0)
 SELECT x,
        and_aggregate(G) as G
- FROM (SELECT _xmt_domain_TU_5.a_1 AS y,
+ FROM (-- Join(7)
+       SELECT _xmt_domain_TU_5.a_1 AS y,
               "x" AS x,
               apply("or", apply("not", apply("<", _xmt_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_domain_TU_5.a_1), 0)) AS G
          FROM _xmt_domain_TU AS _xmt_domain_TU_5)
 ----- G ------------------------------------------------------------
+-- Agg (0)
 SELECT x,
        "(forall ((y Int)) " || and_aggregate(G) || ")" as G
- FROM (SELECT "y" AS y,
+ FROM (-- Join(7)
+       SELECT "y" AS y,
               "x" AS x,
               apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
 
 ===  (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))) ======================================
 ----- TU -----------------------------------------------------------
+-- Join(0)
 SELECT Agg_13_G.x AS x,
        apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G) AS G
-  FROM (SELECT x,
+  FROM (-- Agg (8)
+        SELECT x,
                "(forall ((y Int)) " || and_aggregate(G) || ")" as G
-         FROM (SELECT "y" AS y,
+         FROM (-- Join(15)
+               SELECT "y" AS y,
                       "x" AS x,
                       apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
         ) AS Agg_13_G
 ----- UF -----------------------------------------------------------
+-- Join(0)
 SELECT Agg_13_G.x AS x,
        apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G) AS G
-  FROM (SELECT x,
+  FROM (-- Agg (8)
+        SELECT x,
                "(forall ((y Int)) " || and_aggregate(G) || ")" as G
-         FROM (SELECT "y" AS y,
+         FROM (-- Join(15)
+               SELECT "y" AS y,
                       "x" AS x,
                       apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
         ) AS Agg_13_G
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT Agg_13_G.x AS x,
        apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G) AS G
-  FROM (SELECT x,
+  FROM (-- Agg (8)
+        SELECT x,
                "(forall ((y Int)) " || and_aggregate(G) || ")" as G
-         FROM (SELECT "y" AS y,
+         FROM (-- Join(15)
+               SELECT "y" AS y,
                       "x" AS x,
                       apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
         ) AS Agg_13_G
 
 ===  (or (not (domain x)) (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0))))) ======================================
 ----- TU -----------------------------------------------------------
+-- Agg (0)
 SELECT x,
        or_aggregate(G) as G
- FROM (SELECT "x" AS x,
+ FROM (-- Join(7)
+       SELECT "x" AS x,
               apply("not", apply("domain", "x")) AS G
        UNION
+       -- Join(7)
        SELECT _xmt__14.x AS x,
               _xmt__14.G AS G
-         FROM (SELECT Agg_13_G.x AS x,
+         FROM (-- Join(15)
+               SELECT Agg_13_G.x AS x,
                       apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G) AS G
-                 FROM (SELECT x,
+                 FROM (-- Agg (23)
+                       SELECT x,
                               "(forall ((y Int)) " || and_aggregate(G) || ")" as G
-                        FROM (SELECT "y" AS y,
+                        FROM (-- Join(30)
+                              SELECT "y" AS y,
                                      "x" AS x,
                                      apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
                        ) AS Agg_13_G
                ) AS _xmt__14)
 ----- UF -----------------------------------------------------------
+-- Join(0)
 SELECT _xmt_domain_TU_1.a_1 AS x,
        apply("=", apply("prime", _xmt_domain_TU_1.a_1), Agg_13_G.G) AS G
-  FROM (SELECT x,
+  FROM (-- Agg (8)
+        SELECT x,
                "(forall ((y Int)) " || and_aggregate(G) || ")" as G
-         FROM (SELECT "y" AS y,
+         FROM (-- Join(15)
+               SELECT "y" AS y,
                       "x" AS x,
                       apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
         ) AS Agg_13_G
   JOIN _xmt_domain_TU AS _xmt_domain_TU_1
        
 ----- G ------------------------------------------------------------
+-- Join(0)
 SELECT Agg_13_G.x AS x,
        apply("or", apply("not", apply("domain", Agg_13_G.x)), apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G)) AS G
-  FROM (SELECT x,
+  FROM (-- Agg (8)
+        SELECT x,
                "(forall ((y Int)) " || and_aggregate(G) || ")" as G
-         FROM (SELECT "y" AS y,
+         FROM (-- Join(15)
+               SELECT "y" AS y,
                       "x" AS x,
                       apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
         ) AS Agg_13_G
 
 === (top) (forall ((x Int)) (or (not (domain x)) (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))) ======================================
 ----- TU -----------------------------------------------------------
+-- Agg (0)
 SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
- FROM (SELECT Agg_13_G.x AS x,
+ FROM (-- Join(7)
+       SELECT Agg_13_G.x AS x,
               apply("or", apply("not", apply("domain", Agg_13_G.x)), apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G)) AS G
-         FROM (SELECT x,
+         FROM (-- Agg (15)
+               SELECT x,
                       "(forall ((y Int)) " || and_aggregate(G) || ")" as G
-                FROM (SELECT "y" AS y,
+                FROM (-- Join(22)
+                      SELECT "y" AS y,
                              "x" AS x,
                              apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
                ) AS Agg_13_G)
 ----- UF -----------------------------------------------------------
+-- Agg (0)
 SELECT G as G
- FROM (SELECT _xmt_domain_TU_1.a_1 AS x,
+ FROM (-- Join(7)
+       SELECT _xmt_domain_TU_1.a_1 AS x,
               apply("=", apply("prime", _xmt_domain_TU_1.a_1), Agg_13_G.G) AS G
-         FROM (SELECT x,
+         FROM (-- Agg (15)
+               SELECT x,
                       "(forall ((y Int)) " || and_aggregate(G) || ")" as G
-                FROM (SELECT "y" AS y,
+                FROM (-- Join(22)
+                      SELECT "y" AS y,
                              "x" AS x,
                              apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
                ) AS Agg_13_G
          JOIN _xmt_domain_TU AS _xmt_domain_TU_1
               )
 ----- G ------------------------------------------------------------
+-- Agg (0)
 SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
- FROM (SELECT Agg_13_G.x AS x,
+ FROM (-- Join(7)
+       SELECT Agg_13_G.x AS x,
               apply("or", apply("not", apply("domain", Agg_13_G.x)), apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G)) AS G
-         FROM (SELECT x,
+         FROM (-- Agg (15)
+               SELECT x,
                       "(forall ((y Int)) " || and_aggregate(G) || ")" as G
-                FROM (SELECT "y" AS y,
+                FROM (-- Join(22)
+                      SELECT "y" AS y,
                              "x" AS x,
                              apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
                ) AS Agg_13_G)

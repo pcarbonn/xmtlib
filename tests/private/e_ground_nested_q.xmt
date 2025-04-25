@@ -1,0 +1,200 @@
+(set-option :backend none)
+(declare-fun domain (Int) Bool)
+(declare-fun P (Int) Bool)
+(declare-fun Q (Int Int) Bool)
+(assert (forall ((x Int)) (=> (domain x)
+                              (exists ((y Int)) (Q x y)))))
+
+(x-interpret-pred domain (x-range 1 10))
+(x-ground)
+(x-debug solver groundings)
+-------------------------
+(declare-fun domain (Int) Bool)
+(declare-fun P (Int) Bool)
+(declare-fun Q (Int Int) Bool)
+(assert (exists ((y Int)) (Q x y)))
+(assert (exists ((y Int)) (Q x y)))
+(assert (exists ((y Int)) (Q x y)))
+(assert (exists ((y Int)) (Q x y)))
+(assert (exists ((y Int)) (Q x y)))
+(assert (exists ((y Int)) (Q x y)))
+(assert (exists ((y Int)) (Q x y)))
+(assert (exists ((y Int)) (Q x y)))
+(assert (exists ((y Int)) (Q x y)))
+(assert (exists ((y Int)) (Q x y)))
+Groundings:
+===  x ======================================
+ -- Join(0)
+SELECT "x" AS x,
+       "x" AS G
+===  (domain x) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_domain_TU_1.a_1 AS x,
+       "true" AS G
+  FROM _xmt_domain_TU AS _xmt_domain_TU_1
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("domain", "x") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("domain", "x") AS G
+
+===  (not (domain x)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("not", apply("domain", "x")) AS G
+----- U ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_domain_TU_1.a_1 AS x,
+       "false" AS G
+  FROM _xmt_domain_TU AS _xmt_domain_TU_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("not", apply("domain", "x")) AS G
+
+===  y ======================================
+ -- Join(0)
+SELECT "y" AS y,
+       "y" AS G
+===  (Q x y) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("Q", "x", "y") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("Q", "x", "y") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("Q", "x", "y") AS G
+
+===  (exists ((y Int)) (Q x y)) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT x,
+       "(exists ((y Int)) " || or_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("Q", "x", "y") AS G)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT x,
+       "(exists ((y Int)) " || or_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("Q", "x", "y") AS G)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT x,
+       "(exists ((y Int)) " || or_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("Q", "x", "y") AS G)
+
+===  (or (not (domain x)) (exists ((y Int)) (Q x y))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT x,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              apply("not", apply("domain", "x")) AS G
+       UNION
+       -- Join(7)
+       SELECT Agg_5_TU.x AS x,
+              Agg_5_TU.G AS G
+         FROM (-- Agg (15)
+               SELECT x,
+                      "(exists ((y Int)) " || or_aggregate(G) || ")" as G
+                FROM (-- Join(22)
+                      SELECT "x" AS x,
+                             "y" AS y,
+                             apply("Q", "x", "y") AS G)
+               ) AS Agg_5_TU)
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_domain_TU_1.a_1 AS x,
+       Agg_5_UF.G AS G
+  FROM (-- Agg (8)
+        SELECT x,
+               "(exists ((y Int)) " || or_aggregate(G) || ")" as G
+         FROM (-- Join(15)
+               SELECT "x" AS x,
+                      "y" AS y,
+                      apply("Q", "x", "y") AS G)
+        ) AS Agg_5_UF
+  JOIN _xmt_domain_TU AS _xmt_domain_TU_1
+       
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT Agg_5_G.x AS x,
+       apply("or", apply("not", apply("domain", Agg_5_G.x)), Agg_5_G.G) AS G
+  FROM (-- Agg (8)
+        SELECT x,
+               "(exists ((y Int)) " || or_aggregate(G) || ")" as G
+         FROM (-- Join(15)
+               SELECT "x" AS x,
+                      "y" AS y,
+                      apply("Q", "x", "y") AS G)
+        ) AS Agg_5_G
+
+=== (top) (forall ((x Int)) (or (not (domain x)) (exists ((y Int)) (Q x y)))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT Agg_5_G.x AS x,
+              apply("or", apply("not", apply("domain", Agg_5_G.x)), Agg_5_G.G) AS G
+         FROM (-- Agg (15)
+               SELECT x,
+                      "(exists ((y Int)) " || or_aggregate(G) || ")" as G
+                FROM (-- Join(22)
+                      SELECT "x" AS x,
+                             "y" AS y,
+                             apply("Q", "x", "y") AS G)
+               ) AS Agg_5_G)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_domain_TU_1.a_1 AS x,
+              Agg_5_UF.G AS G
+         FROM (-- Agg (15)
+               SELECT x,
+                      "(exists ((y Int)) " || or_aggregate(G) || ")" as G
+                FROM (-- Join(22)
+                      SELECT "x" AS x,
+                             "y" AS y,
+                             apply("Q", "x", "y") AS G)
+               ) AS Agg_5_UF
+         JOIN _xmt_domain_TU AS _xmt_domain_TU_1
+              )
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT Agg_5_G.x AS x,
+              apply("or", apply("not", apply("domain", Agg_5_G.x)), Agg_5_G.G) AS G
+         FROM (-- Agg (15)
+               SELECT x,
+                      "(exists ((y Int)) " || or_aggregate(G) || ")" as G
+                FROM (-- Join(22)
+                      SELECT "x" AS x,
+                             "y" AS y,
+                             apply("Q", "x", "y") AS G)
+               ) AS Agg_5_G)
+
+===========================================
