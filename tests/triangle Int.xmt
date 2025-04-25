@@ -46,93 +46,125 @@ Functions:
  - Edge: Boolean (_xmt_edge_TU Complete, (infinite), (infinite))
  - phi: Int * Int * Int -> Bool (true)
 Groundings:
- - x: SELECT "x" AS x,
+=== x ======================================
+ SELECT "x" AS x,
        "x" AS G
- - y: SELECT "y" AS y,
+=== y ======================================
+ SELECT "y" AS y,
        "y" AS G
- - (Edge x y):
-    T: SELECT _xmt_edge_TU_2.a_1 AS x,
+=== (Edge x y) ======================================
+----- T ------------------------------------------------------------
+SELECT _xmt_edge_TU_2.a_1 AS x,
        _xmt_edge_TU_2.a_2 AS y,
        "true" AS G
   FROM _xmt_edge_TU AS _xmt_edge_TU_2
-    UF: SELECT "x" AS x,
+----- UF -----------------------------------------------------------
+SELECT "x" AS x,
        "y" AS y,
        apply("Edge", "x", "y") AS G
-    G : SELECT "x" AS x,
+----- G ------------------------------------------------------------
+SELECT "x" AS x,
        "y" AS y,
        apply("Edge", "x", "y") AS G
- - (not (Edge x y)):
-    TU: SELECT "x" AS x,
+
+=== (not (Edge x y)) ======================================
+----- TU -----------------------------------------------------------
+SELECT "x" AS x,
        "y" AS y,
        apply("not", apply("Edge", "x", "y")) AS G
-    F: SELECT _xmt_edge_TU_2.a_1 AS x,
+----- U ------------------------------------------------------------
+SELECT _xmt_edge_TU_2.a_1 AS x,
        _xmt_edge_TU_2.a_2 AS y,
        "false" AS G
   FROM _xmt_edge_TU AS _xmt_edge_TU_2
-    G : SELECT "x" AS x,
+----- G ------------------------------------------------------------
+SELECT "x" AS x,
        "y" AS y,
        apply("not", apply("Edge", "x", "y")) AS G
- - z: SELECT "z" AS z,
+
+=== z ======================================
+ SELECT "z" AS z,
        "z" AS G
- - (Edge y z):
-    T: SELECT _xmt_edge_TU_5.a_1 AS y,
+=== (Edge y z) ======================================
+----- T ------------------------------------------------------------
+SELECT _xmt_edge_TU_5.a_1 AS y,
        _xmt_edge_TU_5.a_2 AS z,
        "true" AS G
   FROM _xmt_edge_TU AS _xmt_edge_TU_5
-    UF: SELECT "y" AS y,
+----- UF -----------------------------------------------------------
+SELECT "y" AS y,
        "z" AS z,
        apply("Edge", "y", "z") AS G
-    G : SELECT "y" AS y,
+----- G ------------------------------------------------------------
+SELECT "y" AS y,
        "z" AS z,
        apply("Edge", "y", "z") AS G
- - (not (Edge y z)):
-    TU: SELECT "y" AS y,
+
+=== (not (Edge y z)) ======================================
+----- TU -----------------------------------------------------------
+SELECT "y" AS y,
        "z" AS z,
        apply("not", apply("Edge", "y", "z")) AS G
-    F: SELECT _xmt_edge_TU_5.a_1 AS y,
+----- U ------------------------------------------------------------
+SELECT _xmt_edge_TU_5.a_1 AS y,
        _xmt_edge_TU_5.a_2 AS z,
        "false" AS G
   FROM _xmt_edge_TU AS _xmt_edge_TU_5
-    G : SELECT "y" AS y,
+----- G ------------------------------------------------------------
+SELECT "y" AS y,
        "z" AS z,
        apply("not", apply("Edge", "y", "z")) AS G
- - (Edge x z):
-    T: SELECT _xmt_edge_TU_7.a_1 AS x,
+
+=== (Edge x z) ======================================
+----- T ------------------------------------------------------------
+SELECT _xmt_edge_TU_7.a_1 AS x,
        _xmt_edge_TU_7.a_2 AS z,
        "true" AS G
   FROM _xmt_edge_TU AS _xmt_edge_TU_7
-    UF: SELECT "x" AS x,
+----- UF -----------------------------------------------------------
+SELECT "x" AS x,
        "z" AS z,
        apply("Edge", "x", "z") AS G
-    G : SELECT "x" AS x,
+----- G ------------------------------------------------------------
+SELECT "x" AS x,
        "z" AS z,
        apply("Edge", "x", "z") AS G
- - (not (Edge x z)):
-    TU: SELECT "x" AS x,
+
+=== (not (Edge x z)) ======================================
+----- TU -----------------------------------------------------------
+SELECT "x" AS x,
        "z" AS z,
        apply("not", apply("Edge", "x", "z")) AS G
-    F: SELECT _xmt_edge_TU_7.a_1 AS x,
+----- U ------------------------------------------------------------
+SELECT _xmt_edge_TU_7.a_1 AS x,
        _xmt_edge_TU_7.a_2 AS z,
        "false" AS G
   FROM _xmt_edge_TU AS _xmt_edge_TU_7
-    G : SELECT "x" AS x,
+----- G ------------------------------------------------------------
+SELECT "x" AS x,
        "z" AS z,
        apply("not", apply("Edge", "x", "z")) AS G
- - (phi x y z):
-    TU: SELECT "x" AS x,
+
+=== (phi x y z) ======================================
+----- TU -----------------------------------------------------------
+SELECT "x" AS x,
        "y" AS y,
        "z" AS z,
        apply("phi", "x", "y", "z") AS G
-    UF: SELECT "x" AS x,
+----- UF -----------------------------------------------------------
+SELECT "x" AS x,
        "y" AS y,
        "z" AS z,
        apply("phi", "x", "y", "z") AS G
-    G : SELECT "x" AS x,
+----- G ------------------------------------------------------------
+SELECT "x" AS x,
        "y" AS y,
        "z" AS z,
        apply("phi", "x", "y", "z") AS G
- - (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z)):
-    TU: SELECT x, y, z,
+
+=== (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z)) ======================================
+----- TU -----------------------------------------------------------
+SELECT x, y, z,
        or_aggregate(G) as G
  FROM (SELECT "x" AS x,
               "y" AS y,
@@ -153,7 +185,8 @@ Groundings:
               "y" AS y,
               "z" AS z,
               apply("phi", "x", "y", "z") AS G)
-    UF: SELECT _xmt_edge_TU_2.a_1 AS x,
+----- UF -----------------------------------------------------------
+SELECT _xmt_edge_TU_2.a_1 AS x,
        _xmt_edge_TU_2.a_2 AS y,
        _xmt_edge_TU_5.a_2 AS z,
        apply("phi", _xmt_edge_TU_2.a_1, _xmt_edge_TU_2.a_2, _xmt_edge_TU_5.a_2) AS G
@@ -162,17 +195,21 @@ Groundings:
         ON _xmt_edge_TU_2.a_2 = _xmt_edge_TU_5.a_1
   JOIN _xmt_edge_TU AS _xmt_edge_TU_7
         ON _xmt_edge_TU_2.a_1 = _xmt_edge_TU_7.a_1 AND _xmt_edge_TU_5.a_2 = _xmt_edge_TU_7.a_2
-    G : SELECT "x" AS x,
+----- G ------------------------------------------------------------
+SELECT "x" AS x,
        "y" AS y,
        "z" AS z,
        apply("or", apply("not", apply("Edge", "x", "y")), apply("not", apply("Edge", "y", "z")), apply("not", apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G
- - (forall ((x Int) (y Int) (z Int)) (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z))):
-    TU: SELECT "(forall ((x Int) (y Int) (z Int)) " || and_aggregate(G) || ")" as G
+
+=== (forall ((x Int) (y Int) (z Int)) (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z))) ======================================
+----- TU -----------------------------------------------------------
+SELECT "(forall ((x Int) (y Int) (z Int)) " || and_aggregate(G) || ")" as G
  FROM (SELECT "x" AS x,
               "y" AS y,
               "z" AS z,
               apply("or", apply("not", apply("Edge", "x", "y")), apply("not", apply("Edge", "y", "z")), apply("not", apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G)
-    UF: SELECT G as G
+----- UF -----------------------------------------------------------
+SELECT G as G
  FROM (SELECT _xmt_edge_TU_2.a_1 AS x,
               _xmt_edge_TU_2.a_2 AS y,
               _xmt_edge_TU_5.a_2 AS z,
@@ -182,9 +219,12 @@ Groundings:
                ON _xmt_edge_TU_2.a_2 = _xmt_edge_TU_5.a_1
          JOIN _xmt_edge_TU AS _xmt_edge_TU_7
                ON _xmt_edge_TU_2.a_1 = _xmt_edge_TU_7.a_1 AND _xmt_edge_TU_5.a_2 = _xmt_edge_TU_7.a_2)
-    G : SELECT "(forall ((x Int) (y Int) (z Int)) " || and_aggregate(G) || ")" as G
+----- G ------------------------------------------------------------
+SELECT "(forall ((x Int) (y Int) (z Int)) " || and_aggregate(G) || ")" as G
  FROM (SELECT "x" AS x,
               "y" AS y,
               "z" AS z,
               apply("or", apply("not", apply("Edge", "x", "y")), apply("not", apply("Edge", "y", "z")), apply("not", apply("Edge", "x", "z")), apply("phi", "x", "y", "z")) AS G)
+
+===========================================
 (check-sat)

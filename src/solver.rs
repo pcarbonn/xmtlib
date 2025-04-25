@@ -317,8 +317,9 @@ impl Solver {
                                 "groundings" => {
                                     yield_!(Ok("Groundings:\n".to_string()));
                                     for (term, grounding) in &self.groundings {
-                                        yield_!(Ok(format!(" - {term}:{grounding}\n")))
+                                        yield_!(Ok(format!("=== {term} ======================================\n{grounding}\n")))
                                     }
+                                    yield_!(Ok("===========================================\n".to_string()))
                                 },
                                 _ => yield_!(Err(SolverError::IdentifierError("Unknown 'x-debug solver' parameter\n", obj)))
                             }

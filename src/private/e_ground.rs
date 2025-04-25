@@ -30,18 +30,17 @@ impl std::fmt::Display for Grounding {
         match self {
             Grounding::NonBoolean(query) => write!(f, " {query}"),
             Grounding::Boolean{tu, uf, g, ..} => {
-                writeln!(f, "")?;
                 if tu.get_ids() {
-                    writeln!(f, "    T: {tu}")?;
+                    writeln!(f, "----- T ------------------------------------------------------------\n{tu}")?;
                 } else {
-                    writeln!(f, "    TU: {tu}")?;
+                    writeln!(f, "----- TU -----------------------------------------------------------\n{tu}")?;
                 }
                 if uf.get_ids() {
-                    writeln!(f, "    F: {uf}")?;
+                    writeln!(f, "----- U ------------------------------------------------------------\n{uf}")?;
                 } else {
-                    writeln!(f, "    UF: {uf}")?;
+                    writeln!(f, "----- UF -----------------------------------------------------------\n{uf}")?;
                 }
-                write!  (f, "    G : {g}")
+                writeln!  (f,   "----- G ------------------------------------------------------------\n{g}")
             },
         }
     }
