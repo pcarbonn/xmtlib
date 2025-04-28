@@ -168,7 +168,6 @@ SELECT _xmt_t.G AS x,
        _xmt_p_TU_10.G AS G
   FROM _xmt_t
   JOIN _xmt_p_TU AS _xmt_p_TU_10
-       
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT _xmt_t.G AS x,
@@ -176,7 +175,6 @@ SELECT _xmt_t.G AS x,
        _xmt_p_UF_10.G AS G
   FROM _xmt_t
   JOIN _xmt_p_UF AS _xmt_p_UF_10
-       
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_t.G AS x,
@@ -184,7 +182,6 @@ SELECT _xmt_t.G AS x,
        _xmt_p_G_10.G AS G
   FROM _xmt_t
   JOIN _xmt_p_G AS _xmt_p_G_10
-       
 
 === (top) (forall ((x T)) (p (f x) (f x))) ======================================
 ----- TU -----------------------------------------------------------
@@ -195,8 +192,7 @@ SELECT and_aggregate(implies_(if_, G)) as G
               and_(apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_1), apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_2)) AS if_,
               _xmt_p_G_10.G AS G
          FROM _xmt_t
-         JOIN _xmt_p_G AS _xmt_p_G_10
-              )
+         JOIN _xmt_p_G AS _xmt_p_G_10)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT implies_(if_, G) as G
@@ -205,8 +201,7 @@ SELECT implies_(if_, G) as G
               and_(apply("=",apply("f", _xmt_t.G), _xmt_p_UF_10.a_1), apply("=",apply("f", _xmt_t.G), _xmt_p_UF_10.a_2)) AS if_,
               _xmt_p_UF_10.G AS G
          FROM _xmt_t
-         JOIN _xmt_p_UF AS _xmt_p_UF_10
-              )
+         JOIN _xmt_p_UF AS _xmt_p_UF_10)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(implies_(if_, G)) as G
@@ -215,8 +210,7 @@ SELECT and_aggregate(implies_(if_, G)) as G
               and_(apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_1), apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_2)) AS if_,
               _xmt_p_G_10.G AS G
          FROM _xmt_t
-         JOIN _xmt_p_G AS _xmt_p_G_10
-              )
+         JOIN _xmt_p_G AS _xmt_p_G_10)
 
 ===========================================
 Tables and Views:

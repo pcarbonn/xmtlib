@@ -213,7 +213,6 @@ SELECT "true" AS G
                  FROM _xmt_is_true_TU AS _xmt_is_true_TU_12)
         ) AS Agg_13_TU
   JOIN _xmt_is_true_TU AS _xmt_is_true_TU_14
-       
 ----- U ------------------------------------------------------------
 -- Join(0)
 SELECT "false" AS G
@@ -225,7 +224,6 @@ SELECT "false" AS G
                  FROM _xmt_is_true_G AS _xmt_is_true_G_12)
         ) AS Agg_13_UF
   JOIN _xmt_is_true_UF AS _xmt_is_true_UF_14
-       
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_is_true_G_14.G AS G
@@ -237,7 +235,6 @@ SELECT _xmt_is_true_G_14.G AS G
                  FROM _xmt_is_true_G AS _xmt_is_true_G_12)
         ) AS Agg_13_G
   JOIN _xmt_is_true_G AS _xmt_is_true_G_14
-       
 
 === (top) (not (is_true (exists ((x Bool)) (is_true x)))) ======================================
 ----- T ------------------------------------------------------------
@@ -251,7 +248,6 @@ SELECT "true" AS G
                  FROM _xmt_is_true_G AS _xmt_is_true_G_12)
         ) AS Agg_13_UF
   JOIN _xmt_is_true_UF AS _xmt_is_true_UF_14
-       
 ----- U ------------------------------------------------------------
 -- Join(0)
 SELECT "false" AS G
@@ -263,7 +259,6 @@ SELECT "false" AS G
                  FROM _xmt_is_true_TU AS _xmt_is_true_TU_12)
         ) AS Agg_13_TU
   JOIN _xmt_is_true_TU AS _xmt_is_true_TU_14
-       
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT not_(_xmt_is_true_G_14.G) AS G
@@ -275,7 +270,6 @@ SELECT not_(_xmt_is_true_G_14.G) AS G
                  FROM _xmt_is_true_G AS _xmt_is_true_G_12)
         ) AS Agg_13_G
   JOIN _xmt_is_true_G AS _xmt_is_true_G_14
-       
 
 ===========================================
 Tables and Views:

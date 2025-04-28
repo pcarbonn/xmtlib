@@ -294,7 +294,6 @@ SELECT _xmt_domain_TU_1.a_1 AS x,
          GROUP BY x
         ) AS Agg_13_G
   JOIN _xmt_domain_TU AS _xmt_domain_TU_1
-       
  WHERE  Agg_13_G.x = _xmt_domain_TU_1.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
@@ -342,7 +341,6 @@ SELECT G as G
                 GROUP BY x
                ) AS Agg_13_G
          JOIN _xmt_domain_TU AS _xmt_domain_TU_1
-              
         WHERE  Agg_13_G.x = _xmt_domain_TU_1.a_1)
 ----- G ------------------------------------------------------------
 -- Agg (0)

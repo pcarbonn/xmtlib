@@ -231,8 +231,8 @@ impl GroundingQuery {
                             if on != "" { where_.push(on) };
                             format!("{} AS {table_name}", table_name.base_table)
                         } else {
-                            let on = if on == "" { on } else { format!(" ON {on}")};
-                            format!("\n{indent}  JOIN {} AS {table_name}\n{indent}{INDENT}{on}", table_name.base_table)
+                            let on = if on == "" { on } else { format!("\n{indent}{INDENT} ON {on}")};
+                            format!("\n{indent}  JOIN {} AS {table_name}{on}", table_name.base_table)
                         }
                     }).collect::<Vec<_>>()
                     .join("");
