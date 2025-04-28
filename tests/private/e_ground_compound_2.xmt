@@ -196,12 +196,15 @@ SELECT and_aggregate(implies_(if_, G)) as G
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT implies_(if_, G) as G
- FROM (-- Join(7)
-       SELECT _xmt_t.G AS x,
-              and_(apply("=",apply("f", _xmt_t.G), _xmt_p_UF_10.a_1), apply("=",apply("f", _xmt_t.G), _xmt_p_UF_10.a_2)) AS if_,
-              _xmt_p_UF_10.G AS G
-         FROM _xmt_t
-         JOIN _xmt_p_UF AS _xmt_p_UF_10)
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_t.G AS x,
+                     and_(apply("=",apply("f", _xmt_t.G), _xmt_p_UF_10.a_1), apply("=",apply("f", _xmt_t.G), _xmt_p_UF_10.a_2)) AS if_,
+                     _xmt_p_UF_10.G AS G
+                FROM _xmt_t
+                JOIN _xmt_p_UF AS _xmt_p_UF_10)
+        WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(implies_(if_, G)) as G

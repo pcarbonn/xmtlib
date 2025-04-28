@@ -9,7 +9,7 @@ use crate::ast::{QualIdentifier, SortedVar, SpecConstant, Symbol, L};
 use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 
-use crate::private::e2_ground_query::{GroundingQuery, NaturalJoin, TableName, TableAlias, Column};
+use crate::private::e2_ground_query::{GroundingQuery, NaturalJoin, TableName, TableAlias, Column, INDENT};
 use crate::private::e3_ground_sql::{Mapping, SQLExpr, Predefined};
 use crate::private::z_utilities::OptionMap;
 
@@ -63,9 +63,16 @@ impl GroundingView {
     ) -> (String, Ids) {
         match self {
             GroundingView::Empty => (format!("SELECT \"true\" AS G\n{indent} WHERE FALSE"), Ids::All),
-            GroundingView::View { query, .. } =>
-
-                query.to_sql(variables, indent)
+            GroundingView::View { query, exclude, .. } =>
+                if let Some(exclude) = exclude {
+                    let indent1 = format!("{indent}{INDENT}").to_string();
+                    let (query, ids) = query.to_sql(variables, &indent1);
+                    let comment = format!("-- exclude({})\n{indent}", indent.len());
+                    let query = format!("{comment}SELECT *\n{indent} FROM ({query})\n{indent} WHERE G <> \"{exclude}\"");
+                    (query, ids)
+                } else {
+                    query.to_sql(variables, indent)
+                }
         }
     }
 }

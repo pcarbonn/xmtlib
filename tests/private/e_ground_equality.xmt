@@ -90,11 +90,14 @@ SELECT "true" AS G
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT "true" AS G
-       UNION
-       -- Join(7)
-       SELECT "false" AS G)
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT "true" AS G
+              UNION
+              -- Join(14)
+              SELECT "false" AS G)
+        WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT and_("true", not_("true")) AS G

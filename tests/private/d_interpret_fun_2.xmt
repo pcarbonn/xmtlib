@@ -137,11 +137,14 @@ SELECT _xmt_mix_G_4.a_1 AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_mix_G_4.a_1 AS x,
-              eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1) AS G
-         FROM _xmt_mix_G AS _xmt_mix_G_4
-        WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_mix_G_4.a_1 AS x,
+                     eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1) AS G
+                FROM _xmt_mix_G AS _xmt_mix_G_4
+               WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
+        WHERE G <> "false")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
@@ -183,11 +186,14 @@ SELECT _xmt_mix_G_4.a_1 AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_mix_G_4.a_1 AS x,
-              eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1, "green") AS G
-         FROM _xmt_mix_G AS _xmt_mix_G_4
-        WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_mix_G_4.a_1 AS x,
+                     eq_(_xmt_mix_G_4.G, _xmt_mix_G_4.a_1, "green") AS G
+                FROM _xmt_mix_G AS _xmt_mix_G_4
+               WHERE _xmt_mix_G_4.a_1 = _xmt_mix_G_4.a_2)
+        WHERE G <> "false")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
