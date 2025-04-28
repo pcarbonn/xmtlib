@@ -1,6 +1,6 @@
 // Copyright Pierre Carbonnelle, 2025.
 
-use indexmap::IndexSet;
+use indexmap::{IndexSet, IndexMap};
 use itertools::Either::{self, Left, Right};
 use std::cmp::max;
 use std::fmt::Display;
@@ -27,8 +27,8 @@ pub(crate) enum GroundingQuery {
         variables: OptionMap<Symbol, Column>,
         conditions: Vec<Either<Mapping, Option<TableAlias>>>,  // vector of mapping or `if_` column of a table. If TableAlias is None, "true".
         grounding: SQLExpr,
-        natural_joins: IndexSet<NaturalJoin>,  // joins of grounding sub-queries
-        theta_joins: IndexSet<ThetaJoin>,  // joins with interpretation tables
+        natural_joins: IndexSet<NaturalJoin>,  // cross-products with sort, or joins with grounding sub-queries
+        theta_joins: IndexMap<TableAlias, Vec<Mapping>>,  // joins with interpretation tables
 
         precise: bool,  // true if the (boolean) grounding only has values consistent with the view (e.g., no "false" in TU view)
     },
@@ -73,9 +73,6 @@ impl Hash for NaturalJoin {
         }
     }
 }
-
-/// indexed table name + mapping of (gated) expressions to value column
-pub(crate) type ThetaJoin = (TableAlias, Vec<Mapping>);
 
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

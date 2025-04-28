@@ -2,7 +2,7 @@
 
 use std::hash::Hash;
 
-use indexmap::IndexSet;
+use indexmap::{IndexMap, IndexSet};
 use itertools::Either::{self, Left, Right};
 
 use crate::ast::{QualIdentifier, SortedVar, SpecConstant, Symbol, L};
@@ -101,7 +101,7 @@ pub(crate) fn view_for_constant(
         conditions: vec![],
         grounding: SQLExpr::Constant(spec_constant.clone()),
         natural_joins: IndexSet::new(),
-        theta_joins: IndexSet::new(),
+        theta_joins: IndexMap::new(),
         precise: true
     };
     let base_table = TableName("ignore".to_string());
@@ -128,7 +128,7 @@ pub(crate) fn view_for_variable(
             conditions: vec![],
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::from([NaturalJoin::CrossProduct(table_alias.clone(), symbol.clone())]),
-            theta_joins: IndexSet::new(),
+            theta_joins: IndexMap::new(),
             precise: false  // imprecise for boolean variable !
         };
         let free_variables = OptionMap::from([(symbol.clone(), Some(table_alias))]);
@@ -140,7 +140,7 @@ pub(crate) fn view_for_variable(
             conditions: vec![],
             grounding: SQLExpr::Variable(symbol.clone()),
             natural_joins: IndexSet::new(),
-            theta_joins: IndexSet::new(),
+            theta_joins: IndexMap::new(),
             precise: true  // cannot be boolean
         };
         let free_variables = OptionMap::from([(symbol.clone(), None)]);
@@ -179,7 +179,7 @@ pub(crate) fn view_for_compound(
     let mut conditions= vec![];
     let mut groundings = vec![];
     let mut natural_joins = IndexSet::new();
-    let mut theta_joins = IndexSet::new();
+    let mut theta_joins = IndexMap::new();
     let mut thetas = vec![];
     let mut all_ids = true;
     let mut precise = true;
@@ -228,7 +228,13 @@ pub(crate) fn view_for_compound(
                     conditions.extend(sub_conditions.iter().cloned());
                     groundings.push(sub_grounding.clone());
                     natural_joins.extend(sub_natural_joins.iter().cloned());
-                    theta_joins.extend(sub_theta_joins.iter().cloned());
+                    for (table_alias, mappings) in sub_theta_joins.iter() {
+                        if theta_joins.contains_key(table_alias) {
+                            unreachable!()
+                        } else {
+                            theta_joins.insert(table_alias.clone(), mappings.clone());
+                        }
+                    }
                     precise &= *sub_precise;
 
                     // merge the variables
@@ -306,7 +312,7 @@ pub(crate) fn view_for_compound(
     let grounding =
         match variant {
             QueryVariant::Interpretation(table_name, ids_) => {
-                theta_joins.insert((table_name.clone(), thetas.clone()));
+                theta_joins.insert(table_name.clone(), thetas.clone());
 
                 all_ids = *ids_ == Ids::All;  // reflects the grounding column, not if_
                 match (ids_, exclude) {
@@ -475,7 +481,7 @@ pub(crate) fn view_for_union(
                             conditions: vec![],
                             grounding: grounding.clone(),
                             natural_joins: IndexSet::new(),
-                            theta_joins: IndexSet::new(),
+                            theta_joins: IndexMap::new(),
                             precise: true
                         })
                     },
@@ -524,7 +530,7 @@ pub(crate) fn view_for_union(
                                 conditions,
                                 grounding: SQLExpr::G(table_name.clone()),
                                 natural_joins,
-                                theta_joins: IndexSet::new(),
+                                theta_joins: IndexMap::new(),
                                 precise: true  // because it is based on a view
                             })
                         }

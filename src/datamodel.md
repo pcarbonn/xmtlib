@@ -57,7 +57,7 @@ pub(crate) enum GroundingQuery {
         conditions: Vec<Either<Mapping, TableAlias>>,
         grounding: SQLExpr,
         natural_joins: IndexSet<NaturalJoin>,
-        theta_joins: IndexSet<ThetaJoin>,
+        theta_joins: IndexMap<TableAlias, Vec<Mapping>>,
         precise: bool,
     },
     Aggregate {
@@ -75,7 +75,6 @@ pub(crate) enum NaturalJoin {
     CrossProduct(TableAlias, Symbol),
     ViewJoin(GroundingQuery, TableAlias, Vec<Symbol>),
 }
-pub(crate) type ThetaJoin = (TableAlias, Vec<Mapping>);
 pub(crate) struct Mapping (pub SQLExpr, pub Column);
 pub(crate) enum SQLExpr {
     Boolean(bool),
