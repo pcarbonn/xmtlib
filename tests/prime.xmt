@@ -268,21 +268,17 @@ SELECT x,
               apply("not", apply("domain", "x")) AS G
        UNION
        -- Join(7)
-       SELECT _xmt__14.x AS x,
-              _xmt__14.G AS G
-         FROM (-- Join(15)
-               SELECT Agg_13_G.x AS x,
-                      apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G) AS G
-                 FROM (-- Agg (23)
-                       SELECT x,
-                              "(forall ((y Int)) " || and_aggregate(G) || ")" as G
-                        FROM (-- Join(30)
-                              SELECT "y" AS y,
-                                     "x" AS x,
-                                     apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
-                        GROUP BY x
-                       ) AS Agg_13_G
-               ) AS _xmt__14)
+       SELECT Agg_13_G.x AS x,
+              apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G) AS G
+         FROM (-- Agg (15)
+               SELECT x,
+                      "(forall ((y Int)) " || and_aggregate(G) || ")" as G
+                FROM (-- Join(22)
+                      SELECT "y" AS y,
+                             "x" AS x,
+                             apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
+                GROUP BY x
+               ) AS Agg_13_G)
  GROUP BY x
 ----- UF -----------------------------------------------------------
 -- Join(0)

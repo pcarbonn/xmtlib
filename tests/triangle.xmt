@@ -234,19 +234,13 @@ SELECT x, y, z,
          JOIN _xmt_node AS _xmt_node_1
        UNION
        -- Join(7)
-       SELECT _xmt_phi_9_12.x AS x,
-              _xmt_phi_9_12.y AS y,
-              _xmt_phi_9_12.z AS z,
-              _xmt_phi_9_12.G AS G
-         FROM (-- Join(15)
-               SELECT _xmt_node.G AS x,
-                      _xmt_node_1.G AS y,
-                      _xmt_node_4.G AS z,
-                      apply("phi", _xmt_node.G, _xmt_node_1.G, _xmt_node_4.G) AS G
-                 FROM _xmt_node
-                 JOIN _xmt_node AS _xmt_node_1
-                 JOIN _xmt_node AS _xmt_node_4
-               ) AS _xmt_phi_9_12)
+       SELECT _xmt_node.G AS x,
+              _xmt_node_1.G AS y,
+              _xmt_node_4.G AS z,
+              apply("phi", _xmt_node.G, _xmt_node_1.G, _xmt_node_4.G) AS G
+         FROM _xmt_node
+         JOIN _xmt_node AS _xmt_node_1
+         JOIN _xmt_node AS _xmt_node_4)
  GROUP BY x, y, z
 ----- UF -----------------------------------------------------------
 -- Join(0)

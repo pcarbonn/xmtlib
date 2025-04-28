@@ -116,7 +116,6 @@ impl GroundingQuery {
         variables: &OptionMap<Symbol, Column>,  // the interpretation of the column
         indent: &str
     ) -> (String, Ids) {
-        let comment = "".to_string();
         match self {
             GroundingQuery::Join{variables, conditions, grounding,
             natural_joins, theta_joins, ..} => {

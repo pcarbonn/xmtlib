@@ -305,13 +305,9 @@ SELECT "false" AS G
 ===  (or (not (r x)) false) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT negate_16_UF.x AS x,
-       negate_16_UF.G AS G
-  FROM (-- Join(8)
-        SELECT Bool_12.G AS x,
-               apply("not", apply("r", Bool_12.G)) AS G
-          FROM Bool AS Bool_12
-        ) AS negate_16_UF
+SELECT Bool_12.G AS x,
+       apply("not", apply("r", Bool_12.G)) AS G
+  FROM Bool AS Bool_12
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT Bool_12.G AS x,

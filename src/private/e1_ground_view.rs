@@ -474,6 +474,7 @@ pub(crate) fn view_for_union(
                     },
                     Either::Right(table_name) => {
                         // add the cross-product of missing variables
+                        let mut extended = false;
                         let mut q_variables = OptionMap::new();
                         let join_vars = sub_free_variables.iter()
                             .filter_map( |(symbol, table_name)| {
@@ -494,28 +495,32 @@ pub(crate) fn view_for_union(
                                 q_variables.insert(symbol.clone(), Some(column));
                                 let natural_join = NaturalJoin::Variable(table_name.clone(), symbol.clone());
                                 natural_joins.insert(natural_join);
+                                extended = true;
                             } else {  // infinite variable
                                 q_variables.insert(symbol.clone(), None);
                             }
                         }
+                        if ! extended {
+                            Some(query.clone())  // unchanged
+                        } else {
+                            let conditions =
+                                if *sub_condition {
+                                    vec![Right(Some(table_name.clone()))]
+                                } else if condition {  // add `"true" as if_``
+                                    vec![Right(None)]
+                                } else {
+                                    vec![]
+                                };
 
-                        let conditions =
-                            if *sub_condition {
-                                vec![Right(Some(table_name.clone()))]
-                            } else if condition {  // add `"true" as if_``
-                                vec![Right(None)]
-                            } else {
-                                vec![]
-                            };
-
-                        Some(GroundingQuery::Join {
-                            variables: q_variables,
-                            conditions,
-                            grounding: SQLExpr::G(table_name.clone()),
-                            natural_joins,
-                            theta_joins: IndexSet::new(),
-                            precise: true  // because it is based on a view
-                        })
+                            Some(GroundingQuery::Join {
+                                variables: q_variables,
+                                conditions,
+                                grounding: SQLExpr::G(table_name.clone()),
+                                natural_joins,
+                                theta_joins: IndexSet::new(),
+                                precise: true  // because it is based on a view
+                            })
+                        }
                     },
                 }
             } else { // empty view

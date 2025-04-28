@@ -143,12 +143,9 @@ SELECT not_(_xmt_is_true_G_8.G) AS G
 === (top) (or (not (is_true true)) (not (is_true false))) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT negate_9_UF.G AS G
-  FROM (-- Join(8)
-        SELECT "true" AS G
-          FROM _xmt_is_true_UF AS _xmt_is_true_UF_8
-         WHERE "false" = _xmt_is_true_UF_8.a_1
-        ) AS negate_9_UF
+SELECT "true" AS G
+  FROM _xmt_is_true_UF AS _xmt_is_true_UF_8
+ WHERE "false" = _xmt_is_true_UF_8.a_1
 ----- U ------------------------------------------------------------
 SELECT "true" AS G WHERE FALSE
 ----- G ------------------------------------------------------------

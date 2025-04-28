@@ -106,18 +106,14 @@ SELECT x,
        SELECT "x" AS x,
               apply("not", apply("domain", "x")) AS G
        UNION
-       -- Join(7)
-       SELECT Agg_5_TU.x AS x,
-              Agg_5_TU.G AS G
-         FROM (-- Agg (15)
-               SELECT x,
-                      "(exists ((y Int)) " || or_aggregate(G) || ")" as G
-                FROM (-- Join(22)
-                      SELECT "x" AS x,
-                             "y" AS y,
-                             apply("Q", "x", "y") AS G)
-                GROUP BY x
-               ) AS Agg_5_TU)
+       -- Agg (7)
+       SELECT x,
+              "(exists ((y Int)) " || or_aggregate(G) || ")" as G
+        FROM (-- Join(14)
+              SELECT "x" AS x,
+                     "y" AS y,
+                     apply("Q", "x", "y") AS G)
+        GROUP BY x)
  GROUP BY x
 ----- UF -----------------------------------------------------------
 -- Join(0)
