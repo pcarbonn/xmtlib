@@ -265,7 +265,7 @@ pub(crate) fn view_for_compound(
                             groundings.push(SQLExpr::G(table_name.clone()));
 
                             let map_variables = sub_free_variables.0.keys().cloned().collect();
-                            let sub_natural_join = NaturalJoin::ViewType(query.clone(), table_name.clone(), map_variables);
+                            let sub_natural_join = NaturalJoin::ViewJoin(query.clone(), table_name.clone(), map_variables);
                             natural_joins.insert(sub_natural_join.clone());
                         },
                     }
@@ -290,7 +290,7 @@ pub(crate) fn view_for_compound(
                         unreachable!()  // infinite variable cannot be joined to a table.
                     }
                 },
-                NaturalJoin::ViewType(..) => {
+                NaturalJoin::ViewJoin(..) => {
                     Some(natural_join.clone())
                 }
             }
@@ -483,7 +483,7 @@ pub(crate) fn view_for_union(
                                     None
                                 }
                             }).collect();
-                        let natural_join = NaturalJoin::ViewType(query.clone(), table_name.clone(), join_vars);
+                        let natural_join = NaturalJoin::ViewJoin(query.clone(), table_name.clone(), join_vars);
                         let mut natural_joins = IndexSet::from([natural_join]);
                         for (symbol, sub_table_name) in free_variables.iter() {
                             if let Some(_) = sub_free_variables.get(symbol) {  // the variable is in the sub_view

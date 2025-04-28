@@ -52,7 +52,7 @@ pub(crate) enum GroundingQuery {
 #[derive(Clone, PartialEq, Eq)]
 pub(crate) enum NaturalJoin {
     Variable(TableAlias, Symbol),  // natural join with a table interpreting a variable
-    ViewType(GroundingQuery, TableAlias, Vec<Symbol>),  // natural join with a table interpreting, e.g., a quantification
+    ViewJoin(GroundingQuery, TableAlias, Vec<Symbol>),  // natural join with a table interpreting, e.g., a quantification
 }
 // Custom Hash to avoid hashing a GroundingQuery
 impl Hash for NaturalJoin {
@@ -64,7 +64,7 @@ impl Hash for NaturalJoin {
                 alias.hash(state);
                 symbol.hash(state);
             }
-            NaturalJoin::ViewType(_query, alias, symbols) => {
+            NaturalJoin::ViewJoin(_query, alias, symbols) => {
                 1u8.hash(state);
                 // query is ignored
                 alias.hash(state);
@@ -113,7 +113,7 @@ impl std::fmt::Display for GroundingQuery {
 impl GroundingQuery {
     pub(crate) fn to_sql(
         &self,
-        variables: &OptionMap<Symbol, Column>,
+        variables: &OptionMap<Symbol, Column>,  // the interpretation of the column
         indent: &str
     ) -> (String, Ids) {
         let comment = "".to_string();
@@ -188,7 +188,7 @@ impl GroundingQuery {
                                 // a variable table never has join conditions
                                 name(table_name)
                             },
-                            NaturalJoin::ViewType(query, table_name, symbols) => {
+                            NaturalJoin::ViewJoin(query, table_name, symbols) => {
                                 let name = name(table_name);
                                 let on = symbols.iter()
                                     .filter_map( | symbol | {

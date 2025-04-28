@@ -73,7 +73,7 @@ pub(crate) enum GroundingQuery {
 }
 pub(crate) enum NaturalJoin {
     Variable(TableAlias, Symbol),
-    ViewType(GroundingQuery, TableAlias, Vec<Symbol>),
+    ViewJoin(GroundingQuery, TableAlias, Vec<Symbol>),
 }
 pub(crate) type ThetaJoin = (TableAlias, Vec<Mapping>);
 pub(crate) struct Mapping (pub SQLExpr, pub Column);
