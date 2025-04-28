@@ -13,16 +13,6 @@
 -------------------------
 (declare-fun domain (Int) Bool)
 (declare-fun prime (Int) Bool)
-(assert (= (prime 1) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
-(assert (= (prime 2) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
-(assert (= (prime 3) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
-(assert (= (prime 4) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
-(assert (= (prime 5) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
-(assert (= (prime 6) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
-(assert (= (prime 7) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
-(assert (= (prime 8) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
-(assert (= (prime 9) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
-(assert (= (prime 10) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))
 Groundings:
 ===  x ======================================
  -- Join(0)
@@ -184,6 +174,7 @@ SELECT y, x,
        SELECT "y" AS y,
               "x" AS x,
               apply(">", apply("mod", "x", "y"), 0) AS G)
+ GROUP BY y, x
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT _xmt_domain_TU_5.a_1 AS y,
@@ -205,6 +196,7 @@ SELECT x,
        SELECT "y" AS y,
               "x" AS x,
               apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
+ GROUP BY x
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT x,
@@ -214,6 +206,7 @@ SELECT x,
               "x" AS x,
               apply("or", apply("not", apply("<", _xmt_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_domain_TU_5.a_1), 0)) AS G
          FROM _xmt_domain_TU AS _xmt_domain_TU_5)
+ GROUP BY x
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT x,
@@ -222,6 +215,7 @@ SELECT x,
        SELECT "y" AS y,
               "x" AS x,
               apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
+ GROUP BY x
 
 ===  (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))) ======================================
 ----- TU -----------------------------------------------------------
@@ -235,6 +229,7 @@ SELECT Agg_13_G.x AS x,
                SELECT "y" AS y,
                       "x" AS x,
                       apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
+         GROUP BY x
         ) AS Agg_13_G
 ----- UF -----------------------------------------------------------
 -- Join(0)
@@ -247,6 +242,7 @@ SELECT Agg_13_G.x AS x,
                SELECT "y" AS y,
                       "x" AS x,
                       apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
+         GROUP BY x
         ) AS Agg_13_G
 ----- G ------------------------------------------------------------
 -- Join(0)
@@ -259,6 +255,7 @@ SELECT Agg_13_G.x AS x,
                SELECT "y" AS y,
                       "x" AS x,
                       apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
+         GROUP BY x
         ) AS Agg_13_G
 
 ===  (or (not (domain x)) (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0))))) ======================================
@@ -283,8 +280,10 @@ SELECT x,
                               SELECT "y" AS y,
                                      "x" AS x,
                                      apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
+                        GROUP BY x
                        ) AS Agg_13_G
                ) AS _xmt__14)
+ GROUP BY x
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT _xmt_domain_TU_1.a_1 AS x,
@@ -296,9 +295,11 @@ SELECT _xmt_domain_TU_1.a_1 AS x,
                SELECT "y" AS y,
                       "x" AS x,
                       apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
+         GROUP BY x
         ) AS Agg_13_G
   JOIN _xmt_domain_TU AS _xmt_domain_TU_1
        
+ WHERE  Agg_13_G.x = _xmt_domain_TU_1.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT Agg_13_G.x AS x,
@@ -310,6 +311,7 @@ SELECT Agg_13_G.x AS x,
                SELECT "y" AS y,
                       "x" AS x,
                       apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
+         GROUP BY x
         ) AS Agg_13_G
 
 === (top) (forall ((x Int)) (or (not (domain x)) (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))) ======================================
@@ -326,6 +328,7 @@ SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
                       SELECT "y" AS y,
                              "x" AS x,
                              apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
+                GROUP BY x
                ) AS Agg_13_G)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -340,9 +343,11 @@ SELECT G as G
                       SELECT "y" AS y,
                              "x" AS x,
                              apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
+                GROUP BY x
                ) AS Agg_13_G
          JOIN _xmt_domain_TU AS _xmt_domain_TU_1
-              )
+              
+        WHERE  Agg_13_G.x = _xmt_domain_TU_1.a_1)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
@@ -356,6 +361,7 @@ SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
                       SELECT "y" AS y,
                              "x" AS x,
                              apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G)
+                GROUP BY x
                ) AS Agg_13_G)
 
 ===========================================

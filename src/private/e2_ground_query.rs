@@ -268,9 +268,8 @@ impl GroundingQuery {
                         .collect::<Vec<_>>().join(", ");
                     let free = if free == "" { free } else { format!("{free},\n{indent}{INDENT}") };
 
-                    // group-by is free minus the infinite variables
+                    // group-by the free variables
                     let group_by = free_variables.iter()
-                        .filter( |(_, table_name)| table_name.is_some() )
                         .map( |(symbol, _)| symbol.to_string())
                         .collect::<Vec<_>>().join(", ");
                     let group_by =

@@ -113,6 +113,7 @@ SELECT x,
        -- Join(7)
        SELECT "x" AS x,
               apply("=", apply("P", "x"), apply("Q", "x")) AS G)
+ GROUP BY x
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT _xmt_domain_TU_1.a_1 AS x,

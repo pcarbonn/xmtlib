@@ -214,6 +214,7 @@ SELECT x, y, z,
               "y" AS y,
               "z" AS z,
               apply("phi", "x", "y", "z") AS G)
+ GROUP BY x, y, z
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT _xmt_edge_TU_2.a_1 AS x,

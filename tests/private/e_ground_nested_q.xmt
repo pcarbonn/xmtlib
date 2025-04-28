@@ -12,16 +12,6 @@
 (declare-fun domain (Int) Bool)
 (declare-fun P (Int) Bool)
 (declare-fun Q (Int Int) Bool)
-(assert (exists ((y Int)) (Q x y)))
-(assert (exists ((y Int)) (Q x y)))
-(assert (exists ((y Int)) (Q x y)))
-(assert (exists ((y Int)) (Q x y)))
-(assert (exists ((y Int)) (Q x y)))
-(assert (exists ((y Int)) (Q x y)))
-(assert (exists ((y Int)) (Q x y)))
-(assert (exists ((y Int)) (Q x y)))
-(assert (exists ((y Int)) (Q x y)))
-(assert (exists ((y Int)) (Q x y)))
 Groundings:
 ===  x ======================================
  -- Join(0)
@@ -87,6 +77,7 @@ SELECT x,
        SELECT "x" AS x,
               "y" AS y,
               apply("Q", "x", "y") AS G)
+ GROUP BY x
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT x,
@@ -95,6 +86,7 @@ SELECT x,
        SELECT "x" AS x,
               "y" AS y,
               apply("Q", "x", "y") AS G)
+ GROUP BY x
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT x,
@@ -103,6 +95,7 @@ SELECT x,
        SELECT "x" AS x,
               "y" AS y,
               apply("Q", "x", "y") AS G)
+ GROUP BY x
 
 ===  (or (not (domain x)) (exists ((y Int)) (Q x y))) ======================================
 ----- TU -----------------------------------------------------------
@@ -123,7 +116,9 @@ SELECT x,
                       SELECT "x" AS x,
                              "y" AS y,
                              apply("Q", "x", "y") AS G)
+                GROUP BY x
                ) AS Agg_5_TU)
+ GROUP BY x
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT _xmt_domain_TU_1.a_1 AS x,
@@ -135,9 +130,11 @@ SELECT _xmt_domain_TU_1.a_1 AS x,
                SELECT "x" AS x,
                       "y" AS y,
                       apply("Q", "x", "y") AS G)
+         GROUP BY x
         ) AS Agg_5_UF
   JOIN _xmt_domain_TU AS _xmt_domain_TU_1
        
+ WHERE  Agg_5_UF.x = _xmt_domain_TU_1.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT Agg_5_G.x AS x,
@@ -149,6 +146,7 @@ SELECT Agg_5_G.x AS x,
                SELECT "x" AS x,
                       "y" AS y,
                       apply("Q", "x", "y") AS G)
+         GROUP BY x
         ) AS Agg_5_G
 
 === (top) (forall ((x Int)) (or (not (domain x)) (exists ((y Int)) (Q x y)))) ======================================
@@ -165,6 +163,7 @@ SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
                       SELECT "x" AS x,
                              "y" AS y,
                              apply("Q", "x", "y") AS G)
+                GROUP BY x
                ) AS Agg_5_G)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -179,9 +178,11 @@ SELECT G as G
                       SELECT "x" AS x,
                              "y" AS y,
                              apply("Q", "x", "y") AS G)
+                GROUP BY x
                ) AS Agg_5_UF
          JOIN _xmt_domain_TU AS _xmt_domain_TU_1
-              )
+              
+        WHERE  Agg_5_UF.x = _xmt_domain_TU_1.a_1)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
@@ -195,6 +196,7 @@ SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
                       SELECT "x" AS x,
                              "y" AS y,
                              apply("Q", "x", "y") AS G)
+                GROUP BY x
                ) AS Agg_5_G)
 
 ===========================================

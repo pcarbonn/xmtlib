@@ -264,14 +264,7 @@ pub(crate) fn view_for_compound(
                             }
                             groundings.push(SQLExpr::G(table_name.clone()));
 
-                            let map_variables = sub_free_variables.iter()
-                                .filter_map( |(symbol, table_name)| {
-                                    if table_name.is_some() {
-                                        Some(symbol.clone())
-                                    } else {
-                                        None
-                                    }
-                                }).collect();
+                            let map_variables = sub_free_variables.0.keys().cloned().collect();
                             let sub_natural_join = NaturalJoin::ViewType(query.clone(), table_name.clone(), map_variables);
                             natural_joins.insert(sub_natural_join.clone());
                         },

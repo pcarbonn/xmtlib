@@ -6,7 +6,9 @@ use indexmap::{IndexMap, map::Iter};
 
 /// An IndexMap that maps keys to optional values.  Values are not erased by an insert.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct OptionMap<K: Hash + Eq + Clone, V: Clone>(IndexMap<K, Option<V>>);
+pub(crate) struct OptionMap<K: Hash + Eq + Clone, V: Clone>(
+    pub(crate) IndexMap<K, Option<V>>
+);
 
 impl<K: Hash + Eq + Clone, V: Clone> OptionMap<K, V> {
 
