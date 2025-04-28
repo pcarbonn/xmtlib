@@ -51,15 +51,15 @@ pub(crate) enum GroundingQuery {
 /// Natural join with a table interpreting a variable or a quantification.
 #[derive(Clone, PartialEq, Eq)]
 pub(crate) enum NaturalJoin {
-    VariableJoin(TableAlias, Symbol),  // natural join with a table interpreting a variable
-    ViewJoin(GroundingQuery, TableAlias, Vec<Symbol>),  // natural join with a table interpreting, e.g., a quantification
+    CrossProduct(TableAlias, Symbol),  // natural join with a table interpreting a variable
+    ViewJoin(GroundingQuery, TableAlias, Vec<Symbol>),  // natural join with a view interpreting, e.g., a quantification
 }
 // Custom Hash to avoid hashing a GroundingQuery
 impl Hash for NaturalJoin {
     fn hash<H: Hasher>(&self, state: &mut H) {
         // You can use a tag to differentiate variants
         match self {
-            NaturalJoin::VariableJoin(alias, symbol) => {
+            NaturalJoin::CrossProduct(alias, symbol) => {
                 0u8.hash(state);
                 alias.hash(state);
                 symbol.hash(state);
@@ -131,7 +131,7 @@ impl GroundingQuery {
                 let mut variables = variables.clone();
                 let mut natural_joins = natural_joins.clone();
                 for join in var_joins.iter() {
-                    if let NaturalJoin::VariableJoin(table_alias, symbol) = join {
+                    if let NaturalJoin::CrossProduct(table_alias, symbol) = join {
                         if let Some(None) = variables.get(symbol) {  // must now add the variable join
                             let a1 = Symbol("a_1".to_string()); // todo
                             let col = Column::new(table_alias, &a1);
@@ -201,7 +201,7 @@ impl GroundingQuery {
                         };
 
                         match natural_join {
-                            NaturalJoin::VariableJoin(table_name, _) => {
+                            NaturalJoin::CrossProduct(table_name, _) => {
                                 // a variable table never has join conditions
                                 name(table_name)
                             },
@@ -212,7 +212,7 @@ impl GroundingQuery {
                                 for (symbol, col) in variables.iter() {
                                     if let Some(Column{table_alias, column: _}) = col {
                                         if ! table_alias.base_table.0.starts_with("Agg_") {  // todo
-                                            let join = NaturalJoin::VariableJoin(table_alias.clone(), symbol.clone());
+                                            let join = NaturalJoin::CrossProduct(table_alias.clone(), symbol.clone());
                                             var_joins.insert(join);
                                         }
                                     }
