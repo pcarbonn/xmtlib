@@ -170,7 +170,7 @@ impl GroundingQuery {
                 let grounding_ = format!("{grounding_} AS G");
 
                 // natural joins
-                let mut where_ = "".to_string();
+                let mut where_ = vec![];
                 let naturals = natural_joins.iter().enumerate()
                     .map(|(i, natural_join)| {
 
@@ -210,7 +210,7 @@ impl GroundingQuery {
                                     format!("({query}\n{indent1}) AS {name}")
                                 } else {
                                     if i == 0 {
-                                        where_ = if on == "" { on } else { format!("\n{indent1}{INDENT} WHERE {on}")};
+                                        if on != "" { where_.push(on) };
                                         format!("({query}\n{indent1}) AS {name}")
                                     } else {
                                         format!("({query}\n{indent1}) AS {name} ON {on}")
@@ -229,7 +229,7 @@ impl GroundingQuery {
                             .filter_map( | expr | expr.to_join(variables))
                             .collect::<Vec<_>>().join(" AND ");
                         if i == 0 && naturals.len() == 0 {
-                            where_ = if on == "" { on } else { format!("\n{indent} WHERE {on}")};
+                            if on != "" { where_.push(on) };
                             format!("{} AS {table_name}", table_name.base_table)
                         } else {
                             let on = if on == "" { on } else { format!(" ON {on}")};
@@ -237,6 +237,13 @@ impl GroundingQuery {
                         }
                     }).collect::<Vec<_>>()
                     .join("");
+
+                let where_ = if where_.len() == 0 {
+                        "".to_string()
+                    } else {
+                        format!("\n{indent} WHERE {}", where_.join(" AND "))
+                    };
+
 
                 // naturals + thetas + empty
                 let tables = if 0 < naturals.len() + thetas.len() {
