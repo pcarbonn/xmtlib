@@ -38,7 +38,7 @@ SELECT "x" AS x,
 -- Join(0)
 SELECT "x" AS x,
        apply("not", apply("domain", "x")) AS G
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_domain_TU_1.a_1 AS x,
        "false" AS G
@@ -86,7 +86,7 @@ SELECT "y" AS y,
 -- Join(0)
 SELECT "y" AS y,
        apply("not", apply("domain", "y")) AS G
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_domain_TU_5.a_1 AS y,
        "false" AS G

@@ -150,7 +150,7 @@ impl GroundingQuery {
                                 if let Some(table) = table {
                                     Some(format!("{table}.if_"))
                                 } else {
-                                    Some("\"true\"".to_string())
+                                    None
                                 }
                             }
                         }

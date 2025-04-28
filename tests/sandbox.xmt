@@ -79,7 +79,7 @@ SELECT _xmt_hue.G AS x,
 SELECT _xmt_dim_TU_1.a_1 AS x,
        "true" AS G
   FROM _xmt_dim_TU AS _xmt_dim_TU_1
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_dim_UF_1.a_1 AS x,
        "false" AS G

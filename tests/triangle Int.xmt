@@ -78,7 +78,7 @@ SELECT "x" AS x,
 SELECT "x" AS x,
        "y" AS y,
        apply("not", apply("Edge", "x", "y")) AS G
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_edge_TU_2.a_1 AS x,
        _xmt_edge_TU_2.a_2 AS y,
@@ -118,7 +118,7 @@ SELECT "y" AS y,
 SELECT "y" AS y,
        "z" AS z,
        apply("not", apply("Edge", "y", "z")) AS G
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_edge_TU_5.a_1 AS y,
        _xmt_edge_TU_5.a_2 AS z,
@@ -154,7 +154,7 @@ SELECT "x" AS x,
 SELECT "x" AS x,
        "z" AS z,
        apply("not", apply("Edge", "x", "z")) AS G
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_edge_TU_7.a_1 AS x,
        _xmt_edge_TU_7.a_2 AS z,

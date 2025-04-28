@@ -49,7 +49,7 @@ SELECT "x" AS x,
 -- Join(0)
 SELECT "x" AS x,
        apply("not", apply("domain", "x")) AS G
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_domain_TU_1.a_1 AS x,
        "false" AS G

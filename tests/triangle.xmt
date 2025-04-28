@@ -42,7 +42,7 @@ SELECT _xmt_edge_TU_2.a_1 AS x,
        _xmt_edge_TU_2.a_2 AS y,
        "true" AS G
   FROM _xmt_edge_TU AS _xmt_edge_TU_2
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_edge_UF_2.a_1 AS x,
        _xmt_edge_UF_2.a_2 AS y,
@@ -62,7 +62,7 @@ SELECT _xmt_edge_UF_2.a_1 AS x,
        _xmt_edge_UF_2.a_2 AS y,
        "true" AS G
   FROM _xmt_edge_UF AS _xmt_edge_UF_2
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_edge_TU_2.a_1 AS x,
        _xmt_edge_TU_2.a_2 AS y,
@@ -87,7 +87,7 @@ SELECT _xmt_edge_TU_5.a_1 AS y,
        _xmt_edge_TU_5.a_2 AS z,
        "true" AS G
   FROM _xmt_edge_TU AS _xmt_edge_TU_5
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_edge_UF_5.a_1 AS y,
        _xmt_edge_UF_5.a_2 AS z,
@@ -107,7 +107,7 @@ SELECT _xmt_edge_UF_5.a_1 AS y,
        _xmt_edge_UF_5.a_2 AS z,
        "true" AS G
   FROM _xmt_edge_UF AS _xmt_edge_UF_5
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_edge_TU_5.a_1 AS y,
        _xmt_edge_TU_5.a_2 AS z,
@@ -127,7 +127,7 @@ SELECT _xmt_edge_TU_7.a_1 AS x,
        _xmt_edge_TU_7.a_2 AS z,
        "true" AS G
   FROM _xmt_edge_TU AS _xmt_edge_TU_7
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_edge_UF_7.a_1 AS x,
        _xmt_edge_UF_7.a_2 AS z,
@@ -147,7 +147,7 @@ SELECT _xmt_edge_UF_7.a_1 AS x,
        _xmt_edge_UF_7.a_2 AS z,
        "true" AS G
   FROM _xmt_edge_UF AS _xmt_edge_UF_7
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_edge_TU_7.a_1 AS x,
        _xmt_edge_TU_7.a_2 AS z,
@@ -313,7 +313,7 @@ SELECT _xmt_edge_TU_12.a_1 AS x,
        "true" AS G
   FROM _xmt_edge_TU AS _xmt_edge_TU_12
  WHERE _xmt_edge_TU_12.a_1 = _xmt_edge_TU_12.a_2
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_edge_UF_12.a_1 AS x,
        "false" AS G

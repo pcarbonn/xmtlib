@@ -127,7 +127,7 @@ Groundings:
 -- Join(0)
 SELECT "true" AS G
   FROM _xmt_p_1_TU AS _xmt_p_1_TU
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT "false" AS G
   FROM _xmt_p_1_UF AS _xmt_p_1_UF
@@ -147,7 +147,7 @@ SELECT _xmt_color_1.G AS x,
 SELECT _xmt_bright_TU_2.a_1 AS x,
        "true" AS G
   FROM _xmt_bright_TU AS _xmt_bright_TU_2
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_bright_UF_2.a_1 AS x,
        "false" AS G
@@ -188,7 +188,7 @@ SELECT _xmt_same_TU_4.a_1 AS x,
        "true" AS G
   FROM _xmt_same_TU AS _xmt_same_TU_4
  WHERE _xmt_same_TU_4.a_1 = _xmt_same_TU_4.a_2
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_same_UF_4.a_1 AS x,
        "false" AS G
@@ -239,7 +239,7 @@ SELECT _xmt_same_TU_7.a_1 AS x,
        _xmt_same_TU_7.a_2 AS y,
        "true" AS G
   FROM _xmt_same_TU AS _xmt_same_TU_7
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_same_UF_7.a_1 AS x,
        _xmt_same_UF_7.a_2 AS y,
@@ -321,7 +321,7 @@ SELECT _xmt_hue_10.G AS x,
 SELECT _xmt_dim_TU_11.a_1 AS x,
        "true" AS G
   FROM _xmt_dim_TU AS _xmt_dim_TU_11
------ U ------------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_dim_UF_11.a_1 AS x,
        "false" AS G
