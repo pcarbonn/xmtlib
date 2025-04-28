@@ -58,7 +58,7 @@ impl std::fmt::Display for GroundingView {
 impl GroundingView {
     pub(crate) fn to_sql(
         &self,
-        var_joins: &IndexSet<NaturalJoin>,
+        var_joins: &IndexMap<Symbol, (Column, usize)>,
         indent: &str
     ) -> (String, Ids) {
         match self {
@@ -204,6 +204,7 @@ pub(crate) fn view_for_compound(
                     theta_joins: sub_theta_joins, precise: sub_precise,.. } = query {
 
                     // handle the special case of a variable used as an argument to an interpreted function
+                    // LINK src/doc.md#_Variables
                     match sub_grounding {
                         SQLExpr::Variable(symbol) => {
                             if let QueryVariant::Interpretation(table_name, _) = variant {
@@ -217,7 +218,7 @@ pub(crate) fn view_for_compound(
                                 // do not push to natural_joins
                                 // push `sub_grounding = column` to thetas
                                 let if_ = Mapping(sub_grounding.clone(), column);
-                                thetas.push(if_);
+                                thetas.push(Some(if_));
 
                                 continue  // to the next sub-query
                             }
@@ -253,7 +254,7 @@ pub(crate) fn view_for_compound(
                                 conditions.push(Left(if_.clone()));
                             }
                             // adds nothing if sub_ids == None
-                            thetas.push(if_);
+                            thetas.push(Some(if_));
                         },
                         QueryVariant::Apply
                         | QueryVariant::Construct

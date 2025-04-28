@@ -1,6 +1,6 @@
 // Copyright Pierre Carbonnelle, 2025.
 
-use indexmap::{IndexSet, IndexMap};
+use indexmap::{IndexMap, IndexSet};
 use itertools::Either::{self, Left, Right};
 use std::cmp::max;
 use std::fmt::Display;
@@ -28,7 +28,7 @@ pub(crate) enum GroundingQuery {
         conditions: Vec<Either<Mapping, Option<TableAlias>>>,  // vector of mapping or `if_` column of a table. If TableAlias is None, "true".
         grounding: SQLExpr,
         natural_joins: IndexSet<NaturalJoin>,  // cross-products with sort, or joins with grounding sub-queries
-        theta_joins: IndexMap<TableAlias, Vec<Mapping>>,  // joins with interpretation tables
+        theta_joins: IndexMap<TableAlias, Vec<Option<Mapping>>>,  // joins with interpretation tables
 
         precise: bool,  // true if the (boolean) grounding only has values consistent with the view (e.g., no "false" in TU view)
     },
@@ -102,7 +102,7 @@ pub(crate) const INDENT: &str = "       ";
 impl std::fmt::Display for GroundingQuery {
 
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.to_sql(&IndexSet::new(), "").0)
+        write!(f, "{}", self.to_sql(&IndexMap::new(), "").0)
     }
 }
 
@@ -110,7 +110,7 @@ impl std::fmt::Display for GroundingQuery {
 impl GroundingQuery {
     pub(crate) fn to_sql(
         &self,
-        var_joins: &IndexSet<NaturalJoin>,  // the interpretation of the variables
+        var_joins: &IndexMap<Symbol, (Column, usize)>,  // the interpretation of the variables
         indent: &str
     ) -> (String, Ids) {
         match self {
@@ -124,23 +124,35 @@ impl GroundingQuery {
                 //   JOIN {theta_joins}
                 //  WHERE {where_}
 
-                // combine variables and sub_variables
+                // update variables and theta_joins with var_joins
+                // LINK src/doc.md#_Variables
                 let mut variables = variables.clone();
-                let mut natural_joins = natural_joins.clone();
-                for join in var_joins.iter() {
-                    if let NaturalJoin::CrossProduct(table_alias, symbol) = join {
-                        if let Some(None) = variables.get(symbol) {  // must now add the variable join
-                            let a1 = Symbol("a_1".to_string()); // todo
-                            let col = Column::new(table_alias, &a1);
-                            variables.insert(symbol.clone(), Some(col));
-                            natural_joins.insert(join.clone());
-                        }
-                    } else {
-                        unreachable!()  // because var_joins only contain variable joins
+                let mut new_theta_joins: IndexMap<_, Vec<_>> = IndexMap::new();
+                for (symbol, (column, arity)) in var_joins.iter() {
+                    if let Some(None) = variables.get(symbol) {  // was infinite; must now add the theta join
+                        variables.insert(symbol.clone(), Some(column.clone()));
+                        let Column{table_alias, column: column_name} = column;
+                        let mapping = Mapping(SQLExpr::Variable(symbol.clone()), column.clone());
+                        let index = column_name[2..].parse::<usize>().unwrap()-1;
+
+                        let mut mappings = match new_theta_joins.get(table_alias) {
+                            None => vec![None; *arity],
+                            Some(mappings) => mappings.clone()
+                        };
+                        mappings[index] = Some(mapping);
+                        new_theta_joins.insert(table_alias.clone(), mappings);
                     }
                 };
                 let variables = &variables;
-                let natural_joins = &natural_joins;
+                let mut theta_joins = theta_joins.clone();
+                theta_joins.append(&mut new_theta_joins);
+                let theta_joins = &theta_joins;
+
+                // compute DISTINCT
+                let distinct = theta_joins.iter().any( |(_, mappings)|
+                    mappings.iter().any(|mapping| mapping.is_none())
+                );
+                let distinct = if distinct { " DISTINCT " } else { "" };
 
                 let variables_ = variables.iter()
                     .map(|(symbol, column)| {
@@ -204,13 +216,14 @@ impl GroundingQuery {
                             },
                             NaturalJoin::ViewJoin(query, table_name, symbols) => {
 
-                                // add the variable joins to var_joins
+                                // add the variable to var_joins if it is part of a theta join
+                                // LINK src/doc.md#_Variables
                                 let mut var_joins = var_joins.clone();
                                 for (symbol, col) in variables.iter() {
-                                    if let Some(Column{table_alias, column: _}) = col {
-                                        if ! table_alias.base_table.0.starts_with("Agg_") {  // todo
-                                            let join = NaturalJoin::CrossProduct(table_alias.clone(), symbol.clone());
-                                            var_joins.insert(join);
+                                    if let Some(col) = col {
+                                        let Column{table_alias, column: _} = col;
+                                        if let Some(mappings) = theta_joins.get(table_alias) {
+                                            var_joins.insert(symbol.clone(), (col.clone(), mappings.len()));
                                         }
                                     }
                                 }
@@ -254,7 +267,10 @@ impl GroundingQuery {
                 let thetas = theta_joins.iter().enumerate()
                     .map( | (i, (table_name, mapping)) | {
                         let on = mapping.iter()
-                            .filter_map( | expr | expr.to_join(variables))
+                            .filter_map( | expr |
+                                if let Some(expr) = expr {
+                                    expr.to_join(variables)
+                                } else { None })
                             .collect::<Vec<_>>().join(" AND ");
                         if i == 0 && naturals.len() == 0 {
                             if on != "" { where_.push(on) };
@@ -281,7 +297,7 @@ impl GroundingQuery {
                     };
 
                 let comment = format!("-- Join({})\n{indent}", indent.len());
-               (format!("{comment}SELECT {variables_}{condition}{grounding_}{tables}"),
+               (format!("{comment}SELECT {distinct}{variables_}{condition}{grounding_}{tables}"),
                 ids)
             }
             GroundingQuery::Aggregate { agg, free_variables, infinite_variables, sub_view, .. } => {

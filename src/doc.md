@@ -8,6 +8,8 @@ For example, // LINK src/doc.md#_Equality
 
 The documented topics are listed below:
 
+## // LINK src/doc.md#_Variables
+
 ## // LINK src/doc.md#_Equality
 
 ## // LINK src/doc.md#_Infinite
