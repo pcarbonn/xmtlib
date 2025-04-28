@@ -51,7 +51,7 @@ pub(crate) enum GroundingQuery {
 /// Natural join with a table interpreting a variable or a quantification.
 #[derive(Clone, PartialEq, Eq)]
 pub(crate) enum NaturalJoin {
-    Variable(TableAlias, Symbol),  // natural join with a table interpreting a variable
+    VariableJoin(TableAlias, Symbol),  // natural join with a table interpreting a variable
     ViewJoin(GroundingQuery, TableAlias, Vec<Symbol>),  // natural join with a table interpreting, e.g., a quantification
 }
 // Custom Hash to avoid hashing a GroundingQuery
@@ -59,7 +59,7 @@ impl Hash for NaturalJoin {
     fn hash<H: Hasher>(&self, state: &mut H) {
         // You can use a tag to differentiate variants
         match self {
-            NaturalJoin::Variable(alias, symbol) => {
+            NaturalJoin::VariableJoin(alias, symbol) => {
                 0u8.hash(state);
                 alias.hash(state);
                 symbol.hash(state);
@@ -105,7 +105,7 @@ pub(crate) const INDENT: &str = "       ";
 impl std::fmt::Display for GroundingQuery {
 
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.to_sql(&OptionMap::new(), "").0)
+        write!(f, "{}", self.to_sql(&IndexSet::new(), "").0)
     }
 }
 
@@ -113,7 +113,7 @@ impl std::fmt::Display for GroundingQuery {
 impl GroundingQuery {
     pub(crate) fn to_sql(
         &self,
-        variables: &OptionMap<Symbol, Column>,  // the interpretation of the column
+        var_joins: &IndexSet<NaturalJoin>,  // the interpretation of the variables
         indent: &str
     ) -> (String, Ids) {
         match self {
@@ -126,6 +126,24 @@ impl GroundingQuery {
                 //   FROM {natural joins}
                 //   JOIN {theta_joins}
                 //  WHERE {where_}
+
+                // combine variables and sub_variables
+                let mut variables = variables.clone();
+                let mut natural_joins = natural_joins.clone();
+                for join in var_joins.iter() {
+                    if let NaturalJoin::VariableJoin(table_alias, symbol) = join {
+                        if let Some(None) = variables.get(symbol) {  // must now add the variable join
+                            let a1 = Symbol("a_1".to_string()); // todo
+                            let col = Column::new(table_alias, &a1);
+                            variables.insert(symbol.clone(), Some(col));
+                            natural_joins.insert(join.clone());
+                        }
+                    } else {
+                        unreachable!()  // because var_joins only contain variable joins
+                    }
+                };
+                let variables = &variables;
+                let natural_joins = &natural_joins;
 
                 let variables_ = variables.iter()
                     .map(|(symbol, column)| {
@@ -183,11 +201,26 @@ impl GroundingQuery {
                         };
 
                         match natural_join {
-                            NaturalJoin::Variable(table_name, _) => {
+                            NaturalJoin::VariableJoin(table_name, _) => {
                                 // a variable table never has join conditions
                                 name(table_name)
                             },
                             NaturalJoin::ViewJoin(query, table_name, symbols) => {
+
+                                // add the variable joins to var_joins
+                                let mut var_joins = var_joins.clone();
+                                for (symbol, col) in variables.iter() {
+                                    if let Some(Column{table_alias, column: _}) = col {
+                                        if ! table_alias.base_table.0.starts_with("Agg_") {  // todo
+                                            let join = NaturalJoin::VariableJoin(table_alias.clone(), symbol.clone());
+                                            var_joins.insert(join);
+                                        }
+                                    }
+                                }
+
+                                let indent1 = format!("{indent}{INDENT} ").to_string();
+                                let query = query.to_sql(&var_joins, &indent1).0;
+
                                 let name = name(table_name);
                                 let on = symbols.iter()
                                     .filter_map( | symbol | {
@@ -203,8 +236,7 @@ impl GroundingQuery {
                                             unreachable!("348595")
                                         }
                                     }).collect::<Vec<_>>().join(" AND ");
-                                let indent1 = format!("{indent}{INDENT} ").to_string();
-                                let query = query.to_sql(variables, &indent1).0;
+
                                 if on == "" {
                                     format!("({query}\n{indent1}) AS {name}")
                                 } else {
@@ -311,7 +343,7 @@ impl GroundingQuery {
                             }
                         };
 
-                    let (sub_view, ids) = sub_view.to_sql(variables, format!("{indent}{INDENT}").as_str());
+                    let (sub_view, ids) = sub_view.to_sql(var_joins, format!("{indent}{INDENT}").as_str());
 
                     let comment = format!("-- Agg ({})\n{indent}", indent.len());
                     (format!("{comment}SELECT {free}{grounding} as G\n{indent} FROM ({sub_view}){group_by}"),
@@ -324,7 +356,7 @@ impl GroundingQuery {
                 let mut ids = Ids::All;
                 let view = sub_queries.iter()
                     .map( |query| {
-                        let (sql, ids_) = query.to_sql(variables, indent);
+                        let (sql, ids_) = query.to_sql(var_joins, indent);
                         ids = max(ids.clone(), ids_);
                         sql
                     }).collect::<Vec<_>>().join(format!("\n{indent}UNION\n{indent}").as_str());

@@ -72,7 +72,7 @@ pub(crate) enum GroundingQuery {
     }
 }
 pub(crate) enum NaturalJoin {
-    Variable(TableAlias, Symbol),
+    VariableJoin(TableAlias, Symbol),
     ViewJoin(GroundingQuery, TableAlias, Vec<Symbol>),
 }
 pub(crate) type ThetaJoin = (TableAlias, Vec<Mapping>);

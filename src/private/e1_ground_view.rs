@@ -58,7 +58,7 @@ impl std::fmt::Display for GroundingView {
 impl GroundingView {
     pub(crate) fn to_sql(
         &self,
-        variables: &OptionMap<Symbol, Column>,
+        var_joins: &IndexSet<NaturalJoin>,
         indent: &str
     ) -> (String, Ids) {
         match self {
@@ -66,12 +66,12 @@ impl GroundingView {
             GroundingView::View { query, exclude, .. } =>
                 if let Some(exclude) = exclude {
                     let indent1 = format!("{indent}{INDENT}").to_string();
-                    let (query, ids) = query.to_sql(variables, &indent1);
+                    let (query, ids) = query.to_sql(var_joins, &indent1);
                     let comment = format!("-- exclude({})\n{indent}", indent.len());
                     let query = format!("{comment}SELECT *\n{indent} FROM ({query})\n{indent} WHERE G <> \"{exclude}\"");
                     (query, ids)
                 } else {
-                    query.to_sql(variables, indent)
+                    query.to_sql(var_joins, indent)
                 }
         }
     }
@@ -127,7 +127,7 @@ pub(crate) fn view_for_variable(
             variables,
             conditions: vec![],
             grounding: SQLExpr::Variable(symbol.clone()),
-            natural_joins: IndexSet::from([NaturalJoin::Variable(table_alias.clone(), symbol.clone())]),
+            natural_joins: IndexSet::from([NaturalJoin::VariableJoin(table_alias.clone(), symbol.clone())]),
             theta_joins: IndexSet::new(),
             precise: false  // imprecise for boolean variable !
         };
@@ -285,7 +285,7 @@ pub(crate) fn view_for_compound(
     let natural_joins = natural_joins.iter()
         .filter_map( |natural_join| {
             match natural_join {
-                NaturalJoin::Variable(table_name, symbol) => {
+                NaturalJoin::VariableJoin(table_name, symbol) => {
                     let column = variables.get(symbol).unwrap();
                     if let Some(column) = column {
                         if column.table_alias == *table_name  {
@@ -500,7 +500,7 @@ pub(crate) fn view_for_union(
                             } else if let Some(table_name) = sub_table_name {  // create cross-product
                                 let column = Column::new(table_name, symbol);
                                 q_variables.insert(symbol.clone(), Some(column));
-                                let natural_join = NaturalJoin::Variable(table_name.clone(), symbol.clone());
+                                let natural_join = NaturalJoin::VariableJoin(table_name.clone(), symbol.clone());
                                 natural_joins.insert(natural_join);
                                 extended = true;
                             } else {  // infinite variable

@@ -12,6 +12,16 @@
 (declare-fun domain (Int) Bool)
 (declare-fun P (Int) Bool)
 (declare-fun Q (Int Int) Bool)
+(assert (exists ((y Int)) (Q 1 y)))
+(assert (exists ((y Int)) (Q 2 y)))
+(assert (exists ((y Int)) (Q 3 y)))
+(assert (exists ((y Int)) (Q 4 y)))
+(assert (exists ((y Int)) (Q 5 y)))
+(assert (exists ((y Int)) (Q 6 y)))
+(assert (exists ((y Int)) (Q 7 y)))
+(assert (exists ((y Int)) (Q 8 y)))
+(assert (exists ((y Int)) (Q 9 y)))
+(assert (exists ((y Int)) (Q 10 y)))
 Groundings:
 ===  x ======================================
  -- Join(0)
@@ -126,9 +136,10 @@ SELECT _xmt_domain_TU_1.a_1 AS x,
         SELECT x,
                "(exists ((y Int)) " || or_aggregate(G) || ")" as G
          FROM (-- Join(15)
-               SELECT "x" AS x,
+               SELECT _xmt_domain_TU_1.a_1 AS x,
                       "y" AS y,
-                      apply("Q", "x", "y") AS G)
+                      apply("Q", _xmt_domain_TU_1.a_1, "y") AS G
+                 FROM _xmt_domain_TU AS _xmt_domain_TU_1)
          GROUP BY x
         ) AS Agg_5_UF
   JOIN _xmt_domain_TU AS _xmt_domain_TU_1
@@ -173,9 +184,10 @@ SELECT G as G
                SELECT x,
                       "(exists ((y Int)) " || or_aggregate(G) || ")" as G
                 FROM (-- Join(22)
-                      SELECT "x" AS x,
+                      SELECT _xmt_domain_TU_1.a_1 AS x,
                              "y" AS y,
-                             apply("Q", "x", "y") AS G)
+                             apply("Q", _xmt_domain_TU_1.a_1, "y") AS G
+                        FROM _xmt_domain_TU AS _xmt_domain_TU_1)
                 GROUP BY x
                ) AS Agg_5_UF
          JOIN _xmt_domain_TU AS _xmt_domain_TU_1
