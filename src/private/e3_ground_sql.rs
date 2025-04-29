@@ -106,6 +106,7 @@ impl Mapping {
                 Ids::All => Some(format!("{} = {}", exp, col)),
                 Ids::Some => Some(format!("join_({}, {})", exp, col)),  // NOT is_id(exp) or exp = col
                 Ids::None => {
+                    // LINK src/doc.md#_Variables
                     if let SQLExpr::Variable(_) = self.0 {  // an infinite variable mapped to an interpretation
                         // Variable + Ids::None describe an infinite variable
                         Some(format!("{exp} = {col}"))
@@ -139,6 +140,7 @@ impl SQLExpr {
                 }
             },
             SQLExpr::Variable(symbol) => {
+                // LINK src/doc.md#_Variables
                 let column = variables.get(symbol).unwrap();
                 if let Some(column) = column {
                     (column.to_string(), Ids::All)

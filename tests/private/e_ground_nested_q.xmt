@@ -7,10 +7,9 @@
                               (exists ((y Int)) (Q x y)))))
 
 (x-interpret-pred domain (x-range 1 5))
-(x-interpret-pred domain2 (x-set
-      (10 20)))
+(x-interpret-pred domain2 (x-set (10 20)))
 (assert (forall ((x Int) (y Int)) (=> (domain2 x y)
-                              (exists ((z Int)) (Q x z)))))
+                              (exists ((y Int)) (Q x y)))))
 (x-ground)
 (x-debug solver groundings)
 -------------------------
@@ -23,7 +22,7 @@
 (assert (exists ((y Int)) (Q 3 y)))
 (assert (exists ((y Int)) (Q 4 y)))
 (assert (exists ((y Int)) (Q 5 y)))
-(assert (exists ((z Int)) (Q 10 z)))
+(assert (exists ((y Int)) (Q 10 y)))
 Groundings:
 ===  x ======================================
  -- Join(0)
@@ -246,57 +245,7 @@ SELECT "x" AS x,
        "y" AS y,
        apply("not", apply("domain2", "x", "y")) AS G
 
-===  z ======================================
- -- Join(0)
-SELECT "z" AS z,
-       "z" AS G
-===  (Q x z) ======================================
------ TU -----------------------------------------------------------
--- Join(0)
-SELECT "x" AS x,
-       "z" AS z,
-       apply("Q", "x", "z") AS G
------ UF -----------------------------------------------------------
--- Join(0)
-SELECT "x" AS x,
-       "z" AS z,
-       apply("Q", "x", "z") AS G
------ G ------------------------------------------------------------
--- Join(0)
-SELECT "x" AS x,
-       "z" AS z,
-       apply("Q", "x", "z") AS G
-
-===  (exists ((z Int)) (Q x z)) ======================================
------ TU -----------------------------------------------------------
--- Agg (0)
-SELECT x,
-       "(exists ((z Int)) " || or_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              "z" AS z,
-              apply("Q", "x", "z") AS G)
- GROUP BY x
------ UF -----------------------------------------------------------
--- Agg (0)
-SELECT x,
-       "(exists ((z Int)) " || or_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              "z" AS z,
-              apply("Q", "x", "z") AS G)
- GROUP BY x
------ G ------------------------------------------------------------
--- Agg (0)
-SELECT x,
-       "(exists ((z Int)) " || or_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              "z" AS z,
-              apply("Q", "x", "z") AS G)
- GROUP BY x
-
-===  (or (not (domain2 x y)) (exists ((z Int)) (Q x z))) ======================================
+===  (or (not (domain2 x y)) (exists ((y Int)) (Q x y))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT x, y,
@@ -310,11 +259,11 @@ SELECT x, y,
               UNION
               -- Agg (14)
               SELECT x,
-                     "(exists ((z Int)) " || or_aggregate(G) || ")" as G
+                     "(exists ((y Int)) " || or_aggregate(G) || ")" as G
                FROM (-- Join(21)
                      SELECT "x" AS x,
-                            "z" AS z,
-                            apply("Q", "x", "z") AS G)
+                            "y" AS y,
+                            apply("Q", "x", "y") AS G)
                GROUP BY x)
         WHERE G <> "false")
  GROUP BY x, y
@@ -322,85 +271,85 @@ SELECT x, y,
 -- Join(0)
 SELECT _xmt_domain2_TU_8.a_1 AS x,
        _xmt_domain2_TU_8.a_2 AS y,
-       Agg_12_UF.G AS G
+       Agg_5_UF.G AS G
   FROM (-- Agg (8)
         SELECT x,
-               "(exists ((z Int)) " || or_aggregate(G) || ")" as G
+               "(exists ((y Int)) " || or_aggregate(G) || ")" as G
          FROM (-- Join(15)
                SELECT  DISTINCT _xmt_domain2_TU_8.a_1 AS x,
-                      "z" AS z,
-                      apply("Q", _xmt_domain2_TU_8.a_1, "z") AS G
+                      "y" AS y,
+                      apply("Q", _xmt_domain2_TU_8.a_1, "y") AS G
                  FROM _xmt_domain2_TU AS _xmt_domain2_TU_8)
          GROUP BY x
-        ) AS Agg_12_UF
+        ) AS Agg_5_UF
   JOIN _xmt_domain2_TU AS _xmt_domain2_TU_8
- WHERE  Agg_12_UF.x = _xmt_domain2_TU_8.a_1
+ WHERE  Agg_5_UF.x = _xmt_domain2_TU_8.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT Agg_12_G.x AS x,
+SELECT Agg_5_G.x AS x,
        "y" AS y,
-       apply("or", apply("not", apply("domain2", Agg_12_G.x, "y")), Agg_12_G.G) AS G
+       apply("or", apply("not", apply("domain2", Agg_5_G.x, "y")), Agg_5_G.G) AS G
   FROM (-- Agg (8)
         SELECT x,
-               "(exists ((z Int)) " || or_aggregate(G) || ")" as G
+               "(exists ((y Int)) " || or_aggregate(G) || ")" as G
          FROM (-- Join(15)
                SELECT "x" AS x,
-                      "z" AS z,
-                      apply("Q", "x", "z") AS G)
+                      "y" AS y,
+                      apply("Q", "x", "y") AS G)
          GROUP BY x
-        ) AS Agg_12_G
+        ) AS Agg_5_G
 
-=== (top) (forall ((x Int) (y Int)) (or (not (domain2 x y)) (exists ((z Int)) (Q x z)))) ======================================
+=== (top) (forall ((x Int) (y Int)) (or (not (domain2 x y)) (exists ((y Int)) (Q x y)))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
  FROM (-- Join(7)
-       SELECT Agg_12_G.x AS x,
+       SELECT Agg_5_G.x AS x,
               "y" AS y,
-              apply("or", apply("not", apply("domain2", Agg_12_G.x, "y")), Agg_12_G.G) AS G
+              apply("or", apply("not", apply("domain2", Agg_5_G.x, "y")), Agg_5_G.G) AS G
          FROM (-- Agg (15)
                SELECT x,
-                      "(exists ((z Int)) " || or_aggregate(G) || ")" as G
+                      "(exists ((y Int)) " || or_aggregate(G) || ")" as G
                 FROM (-- Join(22)
                       SELECT "x" AS x,
-                             "z" AS z,
-                             apply("Q", "x", "z") AS G)
+                             "y" AS y,
+                             apply("Q", "x", "y") AS G)
                 GROUP BY x
-               ) AS Agg_12_G)
+               ) AS Agg_5_G)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
  FROM (-- Join(7)
        SELECT _xmt_domain2_TU_8.a_1 AS x,
               _xmt_domain2_TU_8.a_2 AS y,
-              Agg_12_UF.G AS G
+              Agg_5_UF.G AS G
          FROM (-- Agg (15)
                SELECT x,
-                      "(exists ((z Int)) " || or_aggregate(G) || ")" as G
+                      "(exists ((y Int)) " || or_aggregate(G) || ")" as G
                 FROM (-- Join(22)
                       SELECT  DISTINCT _xmt_domain2_TU_8.a_1 AS x,
-                             "z" AS z,
-                             apply("Q", _xmt_domain2_TU_8.a_1, "z") AS G
+                             "y" AS y,
+                             apply("Q", _xmt_domain2_TU_8.a_1, "y") AS G
                         FROM _xmt_domain2_TU AS _xmt_domain2_TU_8)
                 GROUP BY x
-               ) AS Agg_12_UF
+               ) AS Agg_5_UF
          JOIN _xmt_domain2_TU AS _xmt_domain2_TU_8
-        WHERE  Agg_12_UF.x = _xmt_domain2_TU_8.a_1)
+        WHERE  Agg_5_UF.x = _xmt_domain2_TU_8.a_1)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
  FROM (-- Join(7)
-       SELECT Agg_12_G.x AS x,
+       SELECT Agg_5_G.x AS x,
               "y" AS y,
-              apply("or", apply("not", apply("domain2", Agg_12_G.x, "y")), Agg_12_G.G) AS G
+              apply("or", apply("not", apply("domain2", Agg_5_G.x, "y")), Agg_5_G.G) AS G
          FROM (-- Agg (15)
                SELECT x,
-                      "(exists ((z Int)) " || or_aggregate(G) || ")" as G
+                      "(exists ((y Int)) " || or_aggregate(G) || ")" as G
                 FROM (-- Join(22)
                       SELECT "x" AS x,
-                             "z" AS z,
-                             apply("Q", "x", "z") AS G)
+                             "y" AS y,
+                             apply("Q", "x", "y") AS G)
                 GROUP BY x
-               ) AS Agg_12_G)
+               ) AS Agg_5_G)
 
 ===========================================

@@ -111,6 +111,7 @@ pub(crate) fn view_for_constant(
 
 
 /// Creates a query for a variable
+// LINK src/doc.md#_Variables
 pub(crate) fn view_for_variable(
     symbol: &Symbol,
     base_table: Option<TableName>,
@@ -204,26 +205,29 @@ pub(crate) fn view_for_compound(
                     theta_joins: sub_theta_joins, precise: sub_precise,.. } = query {
 
                     // handle the special case of a variable used as an argument to an interpreted function
+                    // example: f(x, a, x)
                     // LINK src/doc.md#_Variables
-                    match sub_grounding {
-                        SQLExpr::Variable(symbol) => {
-                            if let QueryVariant::Interpretation(table_name, _) = variant {
-                                let column = Column::new(table_name, &format!("a_{}", i+1));
+                    if let SQLExpr::Variable(symbol) = sub_grounding {  // symbol = x, at iteration for argument 1 and 3
+                        if let QueryVariant::Interpretation(table_name, _) = variant { // table_name = f
+                            // the sub_grounding is a free variable, and and the i-th argument of f
+                            // => update the query in progress
 
-                                //  update the query in progress
-                                free_variables.insert(symbol.clone(), Some(table_name.clone()));
-                                variables.insert(symbol.clone(), Some(column.clone()));
-                                // sub-query has no conditions
-                                groundings.push(sub_grounding.clone());
-                                // do not push to natural_joins
-                                // push `sub_grounding = column` to thetas
-                                let if_ = Mapping(sub_grounding.clone(), column);
-                                thetas.push(Some(if_));
+                            let column = Column::new(table_name, &format!("a_{}", i+1));  // "f.a_1", "f.a_3"
+                            free_variables.insert(symbol.clone(), Some(table_name.clone()));
 
-                                continue  // to the next sub-query
-                            }
-                        },
-                        _ => {}
+                            // add "f.a_1 AS x" to SELECT  ("f.a_3" is ignored)
+                            variables.insert(symbol.clone(), Some(column.clone()));
+
+                            // sub-query has no conditions
+                            // add "{sub_grounding}" to groundings. In SQL, sub_grounding is "f.a_1"
+                            groundings.push(sub_grounding.clone());  // ("f.a_1", a, "f.a_1")
+                            // do not push to natural_joins
+                            // push `f.a_1 = f.a_1` and `f.a_3 = f.a_1` to condition for table_name
+                            let if_ = Mapping(sub_grounding.clone(), column);
+                            thetas.push(Some(if_));
+
+                            continue  // to the next sub-query
+                        }
                     };
 
                     conditions.extend(sub_conditions.iter().cloned());

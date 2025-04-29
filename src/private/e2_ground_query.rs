@@ -125,21 +125,26 @@ impl GroundingQuery {
                 //  WHERE {where_}
 
                 // update variables and theta_joins with var_joins
+                // example: var_joins = {x: (f.a_1, 3), y:(f.a_3, 3)} where arity of f is 3
                 // LINK src/doc.md#_Variables
                 let mut variables = variables.clone();
                 let mut new_theta_joins: IndexMap<_, Vec<_>> = IndexMap::new();
                 for (symbol, (column, arity)) in var_joins.iter() {
                     if let Some(None) = variables.get(symbol) {  // was infinite; must now add the theta join
+
+                        // add "f.a_1 AS x", "f.a_3 AS y" to SELECT
                         variables.insert(symbol.clone(), Some(column.clone()));
+
                         let Column{table_alias, column: column_name} = column;
-                        let mapping = Mapping(SQLExpr::Variable(symbol.clone()), column.clone());
-                        let index = column_name[2..].parse::<usize>().unwrap()-1;
+                        let mapping = Mapping(SQLExpr::Variable(symbol.clone()), column.clone());  // x->f.a_1, y-> f.a_3
+                        let index = column_name[2..].parse::<usize>().unwrap()-1;  // 0, 2
 
                         let mut mappings = match new_theta_joins.get(table_alias) {
                             None => vec![None; *arity],
                             Some(mappings) => mappings.clone()
                         };
                         mappings[index] = Some(mapping);
+                        // at the end, new_thetas is : f -> [Some(x, f.a_1), None, Some(y, f.a_3)]
                         new_theta_joins.insert(table_alias.clone(), mappings);
                     }
                 };
@@ -148,7 +153,7 @@ impl GroundingQuery {
                 theta_joins.append(&mut new_theta_joins);
                 let theta_joins = &theta_joins;
 
-                // compute DISTINCT
+                // add DISTINCT if a mapping is partial
                 let distinct = theta_joins.iter().any( |(_, mappings)|
                     mappings.iter().any(|mapping| mapping.is_none())
                 );
@@ -217,16 +222,18 @@ impl GroundingQuery {
                             NaturalJoin::ViewJoin(query, table_name, symbols) => {
 
                                 // add the variable to var_joins if it is part of a theta join
+                                // example: theta_joins[f] = [Some(x, f.a_1), .., Some(y, f.a_3)]
                                 // LINK src/doc.md#_Variables
                                 let mut var_joins = var_joins.clone();
-                                for (symbol, col) in variables.iter() {
+                                for (symbol, col) in variables.iter() {  // (x, Some(f.a_1)), (y, Some(f.a_3))
                                     if let Some(col) = col {
                                         let Column{table_alias, column: _} = col;
                                         if let Some(mappings) = theta_joins.get(table_alias) {
+                                            // the variable is an argument to an interpreted symbol
                                             var_joins.insert(symbol.clone(), (col.clone(), mappings.len()));
                                         }
                                     }
-                                }
+                                }  // var_joins is {x: (f.a_1, 3), y:(f.a_3, 3)}
 
                                 let indent1 = format!("{indent}{INDENT} ").to_string();
                                 let query = query.to_sql(&var_joins, &indent1).0;
@@ -356,7 +363,14 @@ impl GroundingQuery {
                             }
                         };
 
-                    let (sub_view, ids) = sub_view.to_sql(var_joins, format!("{indent}{INDENT}").as_str());
+                    // handle variable shadowing
+                    // LINK src/doc.md#_Variables
+                    let mut var_joins = var_joins.clone();
+                    for SortedVar(symbol, _) in infinite_variables.iter() {
+                        var_joins.shift_remove(symbol);
+                    }
+
+                    let (sub_view, ids) = sub_view.to_sql(&var_joins, format!("{indent}{INDENT}").as_str());
 
                     let comment = format!("-- Agg ({})\n{indent}", indent.len());
                     (format!("{comment}SELECT {free}{grounding} as G\n{indent} FROM ({sub_view}){group_by}"),
