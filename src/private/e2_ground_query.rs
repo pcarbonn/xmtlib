@@ -27,6 +27,7 @@ pub(crate) enum GroundingQuery {
         variables: OptionMap<Symbol, Column>,
         conditions: Vec<Either<Mapping, Option<TableAlias>>>,  // vector of mapping or `if_` column of a table. If TableAlias is None, "true".
         grounding: SQLExpr,
+        outer: bool,
         natural_joins: IndexSet<NaturalJoin>,  // cross-products with sort, or joins with grounding sub-queries
         theta_joins: IndexMap<TableAlias, Vec<Option<Mapping>>>,  // joins with interpretation tables
 
@@ -114,7 +115,7 @@ impl GroundingQuery {
         indent: &str
     ) -> (String, Ids) {
         match self {
-            GroundingQuery::Join{variables, conditions, grounding,
+            GroundingQuery::Join{variables, conditions, grounding, outer,
             natural_joins, theta_joins, ..} => {
 
                 // SELECT {variables.0} AS {variables.1},
@@ -202,6 +203,7 @@ impl GroundingQuery {
 
                 // natural joins
                 let mut where_ = vec![];
+                let join = if *outer { "FULL JOIN"} else { "JOIN" };
                 let naturals = natural_joins.iter().enumerate()
                     .map(|(i, natural_join)| {
 
@@ -268,7 +270,7 @@ impl GroundingQuery {
                         }
                     })
                     .collect::<Vec<_>>()
-                    .join(format!("\n{indent}  JOIN ").as_str());
+                    .join(format!("\n{indent}  {join} ").as_str());
 
                 // theta joins
                 let thetas = theta_joins.iter().enumerate()
@@ -452,7 +454,7 @@ impl GroundingQuery {
 
         match self {
             GroundingQuery::Join { variables, conditions, grounding,
-            natural_joins, theta_joins, precise,..} => {
+            outer, natural_joins, theta_joins, precise} => {
 
                 let new_grounding =
                     match grounding {
@@ -464,6 +466,7 @@ impl GroundingQuery {
                     variables: variables.clone(),
                     conditions: conditions.clone(),
                     grounding: new_grounding,
+                    outer: *outer,
                     natural_joins: natural_joins.clone(),
                     theta_joins: theta_joins.clone(),
                     precise: *precise

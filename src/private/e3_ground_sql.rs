@@ -35,6 +35,7 @@ pub(crate) enum Predefined {
     #[strum(to_string = "or" )] Or,
     #[strum(to_string = "not")] Not,
     // "=>" is replaced by a disjunction during annotation
+    #[strum(to_string = "="  )] BoolEq,  // TODO add default value
     #[strum(to_string = "="  )] Eq,
     #[strum(to_string = "<"  )] Less,
     #[strum(to_string = "<=" )] LE,
@@ -55,7 +56,8 @@ pub(crate) enum Predefined {
 const UNARY: [Predefined; 2] = [Predefined::Not, Predefined::Abs];
 const BINARY: [Predefined; 1] = [Predefined::Mod];
 const ASSOCIATIVE: [Predefined; 2] = [Predefined::And, Predefined::Or];
-const CHAINABLE: [Predefined; 5] = [
+const CHAINABLE: [Predefined; 6] = [
+    Predefined::BoolEq,
     Predefined::Eq,
     Predefined::Less,
     Predefined::LE,
@@ -240,11 +242,12 @@ impl SQLExpr {
                         _ => {}
                     }
 
-                    if ids == Ids::None {
+                    if ids == Ids::None && *function != Predefined::BoolEq {
                         (format!("apply(\"{function}\", {terms})"), ids)
                     } else {
                         match function {
-                            Predefined::Eq      => (format!("eq_({terms})"), ids),
+                            Predefined::BoolEq    => (format!("bool_eq_(\"true\", {terms})"), ids),
+                            Predefined::Eq        => (format!("eq_({terms})"), ids),
                             Predefined::Less
                             | Predefined::LE
                             | Predefined::GE

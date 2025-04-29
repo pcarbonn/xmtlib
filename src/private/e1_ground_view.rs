@@ -100,6 +100,7 @@ pub(crate) fn view_for_constant(
         variables: OptionMap::new(),
         conditions: vec![],
         grounding: SQLExpr::Constant(spec_constant.clone()),
+        outer: false,
         natural_joins: IndexSet::new(),
         theta_joins: IndexMap::new(),
         precise: true
@@ -128,6 +129,7 @@ pub(crate) fn view_for_variable(
             variables,
             conditions: vec![],
             grounding: SQLExpr::Variable(symbol.clone()),
+            outer: false,
             natural_joins: IndexSet::from([NaturalJoin::CrossProduct(table_alias.clone(), symbol.clone())]),
             theta_joins: IndexMap::new(),
             precise: false  // imprecise for boolean variable !
@@ -140,6 +142,7 @@ pub(crate) fn view_for_variable(
             variables,
             conditions: vec![],
             grounding: SQLExpr::Variable(symbol.clone()),
+            outer: false,
             natural_joins: IndexSet::new(),
             theta_joins: IndexMap::new(),
             precise: true  // cannot be boolean
@@ -171,6 +174,7 @@ pub(crate) fn view_for_compound(
     index: TermId,
     sub_queries: &Vec<GroundingView>,
     variant: &QueryVariant,
+    outer: bool,
     exclude: Option<bool>,
     solver: &mut Solver
 ) -> Result<GroundingView, SolverError> {
@@ -199,72 +203,76 @@ pub(crate) fn view_for_compound(
                 free_variables.extend(to_add);
                 all_ids = all_ids && *sub_all_ids;
 
-                // if the sub-query is a Join
-                if let GroundingQuery::Join { variables: sub_variables, conditions: sub_conditions,
-                    grounding: sub_grounding, natural_joins: sub_natural_joins,
-                    theta_joins: sub_theta_joins, precise: sub_precise,.. } = query {
+                // if the sub-query is an Inner Join
+                let done = if let GroundingQuery::Join { variables: sub_variables, conditions: sub_conditions,
+                    grounding: sub_grounding, outer: sub_outer, natural_joins: sub_natural_joins,
+                    theta_joins: sub_theta_joins, precise: sub_precise } = query {
+                    if !outer && !sub_outer {
 
-                    // handle the special case of a variable used as an argument to an interpreted function
-                    // example: f(x, a, x)
-                    // LINK src/doc.md#_Variables
-                    if let SQLExpr::Variable(symbol) = sub_grounding {  // symbol = x, at iteration for argument 1 and 3
-                        if let QueryVariant::Interpretation(table_name, _) = variant { // table_name = f
-                            // the sub_grounding is a free variable, and and the i-th argument of f
-                            // => update the query in progress
+                        // handle the special case of a variable used as an argument to an interpreted function
+                        // example: f(x, a, x)
+                        // LINK src/doc.md#_Variables
+                        if let SQLExpr::Variable(symbol) = sub_grounding {  // symbol = x, at iteration for argument 1 and 3
+                            if let QueryVariant::Interpretation(table_name, _) = variant { // table_name = f
+                                // the sub_grounding is a free variable, and and the i-th argument of f
+                                // => update the query in progress
 
-                            let column = Column::new(table_name, &format!("a_{}", i+1));  // "f.a_1", "f.a_3"
-                            free_variables.insert(symbol.clone(), Some(table_name.clone()));
+                                let column = Column::new(table_name, &format!("a_{}", i+1));  // "f.a_1", "f.a_3"
+                                free_variables.insert(symbol.clone(), Some(table_name.clone()));
 
-                            // add "f.a_1 AS x" to SELECT  ("f.a_3" is ignored)
-                            variables.insert(symbol.clone(), Some(column.clone()));
+                                // add "f.a_1 AS x" to SELECT  ("f.a_3" is ignored)
+                                variables.insert(symbol.clone(), Some(column.clone()));
 
-                            // sub-query has no conditions
-                            // add "{sub_grounding}" to groundings. In SQL, sub_grounding is "f.a_1"
-                            groundings.push(sub_grounding.clone());  // ("f.a_1", a, "f.a_1")
-                            // do not push to natural_joins
-                            // push `f.a_1 = f.a_1` and `f.a_3 = f.a_1` to condition for table_name
-                            let if_ = Mapping(sub_grounding.clone(), column);
-                            thetas.push(Some(if_));
+                                // sub-query has no conditions
+                                // add "{sub_grounding}" to groundings. In SQL, sub_grounding is "f.a_1"
+                                groundings.push(sub_grounding.clone());  // ("f.a_1", a, "f.a_1")
+                                // do not push to natural_joins
+                                // push `f.a_1 = f.a_1` and `f.a_3 = f.a_1` to condition for table_name
+                                let if_ = Mapping(sub_grounding.clone(), column);
+                                thetas.push(Some(if_));
 
-                            continue  // to the next sub-query
-                        }
-                    };
-
-                    conditions.extend(sub_conditions.iter().cloned());
-                    groundings.push(sub_grounding.clone());
-                    natural_joins.extend(sub_natural_joins.iter().cloned());
-                    for (table_alias, mappings) in sub_theta_joins.iter() {
-                        if theta_joins.contains_key(table_alias) {
-                            unreachable!()
-                        } else {
-                            theta_joins.insert(table_alias.clone(), mappings.clone());
-                        }
-                    }
-                    precise &= *sub_precise;
-
-                    // merge the variables
-                    for (symbol, column) in sub_variables.clone().iter() {
-                        variables.insert(symbol.clone(), column.clone());
-                    }
-
-                    // compute the join conditions, for later use
-                    match variant {
-                        QueryVariant::Interpretation(table_name, ..) => {
-                            let column = Column::new(table_name, &format!("a_{}", i+1));
-
-                            // push `sub_grounding = column` to conditions and thetas
-                            let if_ = Mapping(sub_grounding.clone(), column);
-                            if ! *sub_all_ids {
-                                conditions.push(Left(if_.clone()));
+                                continue  // to the next sub-query
                             }
-                            // adds nothing if sub_ids == None
-                            thetas.push(Some(if_));
-                        },
-                        QueryVariant::Apply
-                        | QueryVariant::Construct
-                        | QueryVariant::Predefined => {}
-                    }
-                } else {  // not a Join --> use the ViewType
+                        };
+
+                        conditions.extend(sub_conditions.iter().cloned());
+                        groundings.push(sub_grounding.clone());
+                        natural_joins.extend(sub_natural_joins.iter().cloned());
+                        for (table_alias, mappings) in sub_theta_joins.iter() {
+                            if theta_joins.contains_key(table_alias) {
+                                unreachable!()
+                            } else {
+                                theta_joins.insert(table_alias.clone(), mappings.clone());
+                            }
+                        }
+                        precise &= *sub_precise;
+
+                        // merge the variables
+                        for (symbol, column) in sub_variables.clone().iter() {
+                            variables.insert(symbol.clone(), column.clone());
+                        }
+
+                        // compute the join conditions, for later use
+                        match variant {
+                            QueryVariant::Interpretation(table_name, ..) => {
+                                let column = Column::new(table_name, &format!("a_{}", i+1));
+
+                                // push `sub_grounding = column` to conditions and thetas
+                                let if_ = Mapping(sub_grounding.clone(), column);
+                                if ! *sub_all_ids {
+                                    conditions.push(Left(if_.clone()));
+                                }
+                                // adds nothing if sub_ids == None
+                                thetas.push(Some(if_));
+                            },
+                            QueryVariant::Apply
+                            | QueryVariant::Construct
+                            | QueryVariant::Predefined => {}
+                        }
+                        true  // done
+                    } else { false }
+                } else { false };
+                if ! done {  // not a Join --> use the ViewType
                     match grounding {
                         Either::Left(constant) => {
                             // merge the variables
@@ -358,7 +366,7 @@ pub(crate) fn view_for_compound(
                     "and"       => Predefined::And,
                     "or"        => Predefined::Or,
                     "not"       => Predefined::Not,
-                    "="         => Predefined::Eq,
+                    "="         => if outer { Predefined::BoolEq } else { Predefined::Eq },
                     "<"         => Predefined::Less,
                     "<="        => Predefined::LE,
                     ">="        => Predefined::GE,
@@ -391,6 +399,7 @@ pub(crate) fn view_for_compound(
         variables,
         conditions,
         grounding,
+        outer,
         natural_joins,
         theta_joins,
         precise
@@ -490,6 +499,7 @@ pub(crate) fn view_for_union(
                             variables: q_variables,
                             conditions: vec![],
                             grounding: grounding.clone(),
+                            outer: false,
                             natural_joins: IndexSet::new(),
                             theta_joins: IndexMap::new(),
                             precise: true
@@ -539,6 +549,7 @@ pub(crate) fn view_for_union(
                                 variables: q_variables,
                                 conditions,
                                 grounding: SQLExpr::G(table_name.clone()),
+                                outer: false,
                                 natural_joins,
                                 theta_joins: IndexMap::new(),
                                 precise: true  // because it is based on a view

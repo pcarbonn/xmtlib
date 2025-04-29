@@ -238,6 +238,50 @@ pub(crate) fn init_db(
             }
         })?;
 
+        // create function "bool_eq_".
+        // The first argument is the default value for NULL arguments.
+        conn.create_scalar_function(  // LINK src/doc.md#_Equality
+            "bool_eq_",
+            -1,                     // Number of arguments the function takes
+            FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,                  // Deterministic (same input gives same output)
+            |ctx| {                // The function logic
+                let args = get_args_default(ctx)?;
+                if args.len() == 2 {  // most frequent case
+                    if args[0] == args[1] {  // they might not be ids !
+                        Ok("true".to_string())
+                    } else if is_id(&args[0]) && is_id(&args[1]) {
+                        Ok("false".to_string())
+                    } else {
+                        Ok(format!("(= {})", args.join(" ")))
+                    }
+                } else {
+                    // if two ids are different, return false
+                    // otherwise, if all are ids, return true
+                    // else return the equality
+                    let mut last_id: Option<&String> = None;
+                    let mut all_ids = true;
+                    for arg in &args {
+                        if is_id(arg) {
+                            if let Some(last_id) = last_id {
+                                if *last_id != *arg {
+                                    return Ok("false".to_string())
+                                }
+                            } else {
+                                last_id = Some(arg)
+                            }
+                        } else {
+                            all_ids = false;
+                        }
+                    }
+                    if all_ids {
+                        Ok("true".to_string())
+                    } else {
+                        Ok(format!("(= {})", args.join(" ")))
+                    }
+                }
+            },
+        )?;
+
     // create function "eq_"
     conn.create_scalar_function(  // LINK src/doc.md#_Equality
         "eq_",
@@ -730,6 +774,34 @@ fn get_args (ctx: &Context) -> Result<Vec<String>, Error> {
                         .map_err(|_| Error::InvalidFunctionParameterType(i, value.data_type())),
                 rusqlite::types::ValueRef::Blob(_) =>
                     Err(Error::InvalidFunctionParameterType(i, value.data_type())),
+            }
+        }).collect::<Result<_, Error>>()?;     // Collect results or propagate errors
+    Ok(args)
+}
+
+/// get the args from the context.  The first argument is the default value for NULL arguments.
+fn get_args_default (ctx: &Context) -> Result<Vec<String>, Error> {
+    let mut default = "".to_string();
+    let args: Vec<String> = (0..ctx.len())
+        .filter_map(|i| {
+            let value = ctx.get_raw(i);
+            let value = match value {
+                rusqlite::types::ValueRef::Null =>
+                    Ok(default.clone()),
+                rusqlite::types::ValueRef::Integer(i) =>
+                    Ok(i.to_string()),
+                rusqlite::types::ValueRef::Real(r) =>
+                    Ok(r.to_string()),
+                rusqlite::types::ValueRef::Text(_) =>
+                    ctx.get::<String>(i),
+                rusqlite::types::ValueRef::Blob(_) =>
+                    Err(Error::InvalidFunctionParameterType(i, value.data_type())),
+            };
+            if i == 0 {
+                default = value.unwrap_or_else(|_| "".to_string());
+                None
+            } else {
+                Some(value)
             }
         }).collect::<Result<_, Error>>()?;     // Collect results or propagate errors
     Ok(args)
