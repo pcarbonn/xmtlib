@@ -292,7 +292,7 @@ pub(crate) fn view_for_compound(
         }
     };
 
-    // remove natural_joins of types that are not used in variables
+    // remove cross-products of types that are not used in variables
     let natural_joins = natural_joins.iter()
         .filter_map( |natural_join| {
             match natural_join {

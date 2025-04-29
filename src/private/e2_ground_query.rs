@@ -455,16 +455,10 @@ impl GroundingQuery {
             natural_joins, theta_joins, precise,..} => {
 
                 let new_grounding =
-                    if all_ids {
-                        if view_type == ViewType::TU {
-                            SQLExpr::Boolean(false)  // all ids were true
-                        } else if view_type == ViewType::UF {
-                            SQLExpr::Boolean(true)  // all ids were false
-                        } else {
-                            SQLExpr::Predefined(Predefined::Not, Box::new(vec![grounding.clone()]))
-                        }
-                    } else {
-                        SQLExpr::Predefined(Predefined::Not, Box::new(vec![grounding.clone()]))
+                    match grounding {
+                        SQLExpr::Boolean(true) => SQLExpr::Boolean(false),
+                        SQLExpr::Boolean(false) => SQLExpr::Boolean(true),
+                        _ => SQLExpr::Predefined(Predefined::Not, Box::new(vec![grounding.clone()]))
                     };
                 let query = GroundingQuery::Join {
                     variables: variables.clone(),
