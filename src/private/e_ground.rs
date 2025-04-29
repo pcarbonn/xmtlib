@@ -12,7 +12,7 @@ use crate::solver::{Solver, Backend};
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, Interpretation};
 use crate::private::e1_ground_view::{GroundingView, ViewType, QueryVariant,
-    view_for_constant, view_for_variable, view_for_compound, query_for_aggregate, view_for_union};
+    view_for_constant, view_for_variable, view_for_compound, view_for_aggregate, view_for_union};
 use crate::private::e2_ground_query::{TableName, TableAlias};
 use crate::ast::L;
 
@@ -251,7 +251,7 @@ pub(crate) fn ground_term_(
 
                     let (free_variables, infinite_variables) = sub_g.get_free_variables(variables).clone();
 
-                    let tu = query_for_aggregate(
+                    let tu = view_for_aggregate(
                         &sub_g,
                         &free_variables,
                         &infinite_variables,
@@ -259,7 +259,7 @@ pub(crate) fn ground_term_(
                         Some(false),
                         TableAlias{base_table: TableName(format!("{table_name}_TU")), index: 0})?;
 
-                    let g = query_for_aggregate(
+                    let g = view_for_aggregate(
                         &sub_g,
                         &free_variables,
                         &infinite_variables,
@@ -270,7 +270,7 @@ pub(crate) fn ground_term_(
                     // the infinite variables may be different for sub_uf
                     let (free_variables, infinite_variables) = sub_uf.get_free_variables(variables).clone();
 
-                    let uf = query_for_aggregate(
+                    let uf = view_for_aggregate(
                         &sub_uf,
                         &free_variables,
                         &infinite_variables,
@@ -293,7 +293,7 @@ pub(crate) fn ground_term_(
 
                     let (free_variables, infinite_variables) = sub_tu.get_free_variables(variables).clone();
 
-                    let tu = query_for_aggregate(
+                    let tu = view_for_aggregate(
                         &sub_tu,
                         &free_variables,
                         &infinite_variables,
@@ -304,7 +304,7 @@ pub(crate) fn ground_term_(
                     // the infinite variables may be different from sub tu
                     let (free_variables, infinite_variables) = sub_g.get_free_variables(variables).clone();
 
-                    let uf = query_for_aggregate(
+                    let uf = view_for_aggregate(
                         &sub_g,
                         &free_variables,
                         &infinite_variables,
@@ -312,7 +312,7 @@ pub(crate) fn ground_term_(
                         Some(true),
                         TableAlias{base_table: TableName(format!("{table_name}_UF")), index: 0})?;
 
-                    let g = query_for_aggregate(
+                    let g = view_for_aggregate(
                         &sub_g,
                         &free_variables,
                         &infinite_variables,

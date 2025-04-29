@@ -266,15 +266,20 @@ pub(crate) fn view_for_compound(
                     }
                 } else {  // not a Join --> use the ViewType
                     match grounding {
-                        Either::Left(constant) =>
-                            groundings.push(constant.clone()),
-
-                        Either::Right(table_name) => {
-
+                        Either::Left(constant) => {
                             // merge the variables
                             for (symbol, _) in sub_free_variables.clone().iter() {
-                                    let column = Column::new(table_name, &symbol);
-                                    variables.insert(symbol.clone(), Some(column));
+                                variables.insert(symbol.clone(), None);
+                            }
+
+                            groundings.push(constant.clone())
+                        },
+
+                        Either::Right(table_name) => {
+                            // merge the variables
+                            for (symbol, _) in sub_free_variables.clone().iter() {
+                                let column = Column::new(table_name, &symbol);
+                                variables.insert(symbol.clone(), Some(column));
                             }
 
                             if *sub_condition {
@@ -396,7 +401,7 @@ pub(crate) fn view_for_compound(
 
 
 /// Creates a query over an aggregate view, possibly adding a where clause if exclude is not empty
-pub(crate) fn query_for_aggregate(
+pub(crate) fn view_for_aggregate(
     sub_query: &GroundingView,
     free_variables: &OptionMap<Symbol, TableAlias>,
     infinite_variables: &Vec<SortedVar>,  // variables being quantified
