@@ -165,7 +165,7 @@ pub(crate) enum QueryVariant {
     Interpretation(TableAlias, Ids),
     Apply,
     Construct,
-    Predefined,
+    Predefined(Predefined),
     PredefinedWithDefault(bool)
 }
 
@@ -279,7 +279,7 @@ pub(crate) fn view_for_compound(
                             },
                             QueryVariant::Apply
                             | QueryVariant::Construct
-                            | QueryVariant::Predefined
+                            | QueryVariant::Predefined(_)
                             | QueryVariant::PredefinedWithDefault(..) => {}
                         }
                         true  // done
@@ -384,28 +384,8 @@ pub(crate) fn view_for_compound(
                     _ => SQLExpr::Construct(qual_identifier.clone(), Box::new(groundings))
                 }
             },
-            QueryVariant::Predefined => {
+            QueryVariant::Predefined(function) => {
                 // LINK src/doc.md#_Equality
-                let function = match qual_identifier.to_string().as_str() {
-                    "and"       => Predefined::And,
-                    "or"        => Predefined::Or,
-                    "not"       => Predefined::Not,
-                    "="         => Predefined::Eq,
-                    "<"         => Predefined::Less,
-                    "<="        => Predefined::LE,
-                    ">="        => Predefined::GE,
-                    ">"         => Predefined::Greater,
-                    "distinct"  => Predefined::Distinct,
-                    "ite"       => Predefined::Ite,
-
-                    "+"     => Predefined::Plus,
-                    "-"     => Predefined::Minus,
-                    "*"     => Predefined::Times,
-                    "div"   => Predefined::Div,
-                    "abs"   => Predefined::Abs,
-                    "mod"   => Predefined::Mod,
-                    _ => panic!()
-                };
                 if ! [  Predefined::And,
                         Predefined::Or,
                         Predefined::Not
@@ -413,7 +393,7 @@ pub(crate) fn view_for_compound(
                     precise = false
                 };
 
-                SQLExpr::Predefined(function, Box::new(groundings))
+                SQLExpr::Predefined(function.clone(), Box::new(groundings))
             },
             QueryVariant::PredefinedWithDefault(default) => {
                 precise = false;

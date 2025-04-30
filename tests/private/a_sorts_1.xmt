@@ -15,6 +15,7 @@
 (define-sort MyArray () (Array Color Color))
 (x-debug solver parametric_sorts)
 (x-debug solver sorts)
+(x-debug solver functions)
 (x-debug db tables)
 (x-debug db _xmt_Q)
 (check-sat)
@@ -65,6 +66,36 @@ Sorts:
  - (unknown) MyBitVec
  - (unknown) (Array Color Color)
  - (unknown) MyArray
+Functions:
+ - true: Constructor
+ - false: Constructor
+ - not: Predefined (true)
+ - =>: Predefined (true)
+ - and: Predefined (true)
+ - or: Predefined (true)
+ - xor: Predefined (true)
+ - =: Predefined (true)
+ - distinct: Predefined (true)
+ - <=: Predefined (true)
+ - <: Predefined (true)
+ - >=: Predefined (true)
+ - >: Predefined (true)
+ - ite: Predefined (?)
+ - let: Predefined (?)
+ - +: Predefined (false)
+ - -: Predefined (false)
+ - *: Predefined (false)
+ - div: Predefined (false)
+ - mod: Predefined (false)
+ - abs: Predefined (false)
+ - red: Constructor
+ - green: Constructor
+ - blue: Constructor
+ - white: Constructor
+ - pair: Constructor
+ - p: Constructor
+ - triplet: Constructor
+ - q: Constructor
 Tables and Views:
  - Bool (table)
  - _xmt_color (table)
