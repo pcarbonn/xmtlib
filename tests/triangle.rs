@@ -7,7 +7,7 @@
 
 use std::time::Instant;
 
-use rusqlite::params;
+use rusqlite::{Connection, params};
 
 use xmt_lib::solver::Solver;
 
@@ -18,14 +18,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let start = Instant::now();
 
-    let mut solver = Solver::default();
-
-
     // Data load
-    solver.conn.execute("CREATE TABLE Edges (a_1 INTEGER, a_2 INTEGER, PRIMARY KEY (a_1, a_2))", ())?;
+    let conn = Connection::open_in_memory().unwrap();
+    conn.execute("CREATE TABLE Edges (a_1 INTEGER, a_2 INTEGER, PRIMARY KEY (a_1, a_2))", ())?;
 
     {
-        let mut stmt = solver.conn.prepare("INSERT INTO Edges (a_1, a_2) VALUES (?, ?)")?;
+        let mut stmt = conn.prepare("INSERT INTO Edges (a_1, a_2) VALUES (?, ?)")?;
         for i in 1..n {
             for j in 1..4 {
                 if i+j < n {
@@ -37,6 +35,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let data_load = Instant::now();
     println!("Data load: {:?}", data_load.duration_since(start));
 
+    let mut solver = Solver::new(Some(conn));
 
     // Declarations
     let execute = |solver: &mut Solver, commands: &str| {

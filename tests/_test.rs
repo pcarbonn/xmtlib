@@ -72,7 +72,7 @@ fn test_file(path: &Path) {
     let input = expected.split("\n-------------------------\n").collect::<Vec<&str>>()[0];
 
     // execute file
-    let mut solver = Solver::default();
+    let mut solver = Solver::new(None);
     let results = solver.parse_and_execute(&input);
     let result = results.into_iter().collect::<Vec<_>>().join("");
 

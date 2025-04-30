@@ -26,7 +26,7 @@ fn main() {
 
     if args.file_path.exists() {
         let source = fs::read_to_string(args.file_path).unwrap();
-        let mut solver = Solver::default();
+        let mut solver = Solver::new(None);
         let results = solver.parse_and_execute(&source);
         for result in results {
             print!("{}", result);
@@ -46,7 +46,7 @@ mod tests {
     use crate::solver::Solver;
 
     fn tester(source: &str, output: &str) {
-        let mut solver = Solver::default();
+        let mut solver = Solver::new(None);
         let results = solver.parse_and_execute(source);
         assert_eq!(results.into_iter().collect::<Vec<_>>().join(""), output);
     }

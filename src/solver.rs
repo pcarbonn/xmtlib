@@ -32,8 +32,9 @@ pub(crate) type TermId = usize;
 
 /// A solver is used to solve SMT problems.
 pub struct Solver {
-    /// A connection to the sqlite database used for grounding assertions (via the rusqlite crate).
-    pub conn: Connection,
+    /// A connection to the sqlite database used for grounding assertions
+    /// (via the [rusqlite](https://docs.rs/rusqlite/latest/rusqlite/index.html) crate).
+    pub(crate) conn: Connection,
     pub(crate) backend: Backend,
     /// help ensure the backend is not changed after a command has been executed
     pub (crate) started: bool,
@@ -65,11 +66,20 @@ pub struct Solver {
 }
 
 
-impl Default for Solver {
-    fn default() -> Solver {
+impl Solver {
+    /// Creates a solver.
+    /// Optionally gives access to a sqlite database with pre-loaded data
+    /// (via the [rusqlite](https://docs.rs/rusqlite/latest/rusqlite/index.html) crate).
+    pub fn new(conn: Option<Connection>) -> Solver {
+
+        let mut conn =
+            if let Some(conn) = conn {
+                conn
+            } else {
+                Connection::open_in_memory().unwrap()
+            };
 
         // create Bool table
-        let mut conn = Connection::open_in_memory().unwrap();
         conn.execute(
             "CREATE TABLE Bool (
                     G    TEXT PRIMARY KEY

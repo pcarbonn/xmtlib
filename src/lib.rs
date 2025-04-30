@@ -47,7 +47,8 @@
 //! use xmt_lib::solver::Solver;
 //!
 //! fn main() -> () {
-//!     let mut solver = Solver::default();
+//!     let connection = None;
+//!     let mut solver = Solver::new(connection);
 //!     let commands = r#"
 //!         (set-option :backend Z3)
 //!         (declare-fun Edge (Int Int) Bool)
@@ -94,18 +95,15 @@
 //! Should we be wrong, we can easily make the memory-based API public.
 //!
 //! The Solver API is described [here](solver/struct.Solver.html).
-//! Note that, unlike SMT-Lib 2.6, but like the Z3 solver,
-//! xmt-lib accepts negative numbers in terms (e.g., `-1` is accepted for `(- 1)`).
 //!
 //! A solver instance has a connection to a sqlite database used for grounding assertions.
-//! This connection can be used to efficiently load data in the database,
+//! This database can be pre-loaded with data describing the interpretation of symbols,
 //! as examplified in the [triangle crate](../triangle/index.html).
 //! The interpretation of a symbol can then be specified using the `(x-sql` construct, as described further below.
-//! The owner of the sqlite database is the solver:
-//! the connection should not be changed to another sqlite database.
-//! To access data in another format, e.g., csv, [virtual tables](https://sqlite.org/vtab.html) should be used.
 //!
 //! The new commands introduced by xmt-lib are listed below.
+//! Note that, unlike SMT-Lib 2.6, but like the Z3 solver,
+//! xmt-lib accepts negative numbers in terms (e.g., `-1` is accepted for `(- 1)`).
 //!
 //!
 //! ## (set-option :backend ...)
