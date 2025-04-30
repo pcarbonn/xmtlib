@@ -35,7 +35,7 @@ pub(crate) enum Predefined {
     #[strum(to_string = "or" )] Or,
     #[strum(to_string = "not")] Not,
     // "=>" is replaced by a disjunction during annotation
-    #[strum(to_string = "="  )] BoolEq,  // TODO add default value
+    #[strum(to_string = "="  )] BoolEq(bool),
     #[strum(to_string = "="  )] Eq,
     #[strum(to_string = "<"  )] Less,
     #[strum(to_string = "<=" )] LE,
@@ -52,25 +52,37 @@ pub(crate) enum Predefined {
     #[strum(to_string = "abs")] Abs,
 }
 
+enum Associativity {
+    Unary,
+    Binary,
+    Associative,
+    Chainable,
+    Pairwise,
+    LeftAssoc,
+    Ite
+}
 
-const UNARY: [Predefined; 2] = [Predefined::Not, Predefined::Abs];
-const BINARY: [Predefined; 1] = [Predefined::Mod];
-const ASSOCIATIVE: [Predefined; 2] = [Predefined::And, Predefined::Or];
-const CHAINABLE: [Predefined; 6] = [
-    Predefined::BoolEq,
-    Predefined::Eq,
-    Predefined::Less,
-    Predefined::LE,
-    Predefined::GE,
-    Predefined::Greater
-    ];
-const PAIRWISE: [Predefined; 1] = [ Predefined::Distinct ];
-const LEFT_ASSOC: [Predefined; 4] = [
-    Predefined::Plus,
-    Predefined::Minus,
-    Predefined::Times,
-    Predefined::Div,
-];
+fn associativity(function: &Predefined) -> Associativity {
+    match function {
+        Predefined::And       => Associativity::Associative,
+        Predefined::Or        => Associativity::Associative,
+        Predefined::Not       => Associativity::Unary,
+        Predefined::BoolEq(_) => Associativity::Chainable,
+        Predefined::Eq        => Associativity::Chainable,
+        Predefined::Less      => Associativity::Chainable,
+        Predefined::LE        => Associativity::Chainable,
+        Predefined::GE        => Associativity::Chainable,
+        Predefined::Greater   => Associativity::Chainable,
+        Predefined::Distinct  => Associativity::Pairwise,
+        Predefined::Ite       => Associativity::Ite,
+        Predefined::Plus      => Associativity::LeftAssoc,
+        Predefined::Minus     => Associativity::LeftAssoc,
+        Predefined::Times     => Associativity::LeftAssoc,
+        Predefined::Div       => Associativity::LeftAssoc,
+        Predefined::Mod       => Associativity::Binary,
+        Predefined::Abs       => Associativity::Unary,
+    }
+}
 
 
 ///////////////////////////  Display //////////////////////////////////////////
@@ -159,146 +171,152 @@ impl SQLExpr {
                 sql_for("construct2", qual_identifier.to_string(), exprs, variables)
             },
             SQLExpr::Predefined(function, exprs) => {
-                if UNARY.contains(function) {
-                    // NOT, abs
-                    let e = exprs.first().unwrap();
-                    let (expr, ids) = e.to_sql(variables);
-                    if ids == Ids::None {
-                        (format!("apply(\"{function}\", {expr})"), Ids::None)
-                    } else if *function == Predefined::Not {
-                        (format!("not_({expr})"), ids)
-                    } else {
-                        (format!("abs_({expr})"), ids)
-                    }
-                } else if BINARY.contains(function) {
-                    // mod
-
-                    let mut ids = Ids::All;
-                    let terms = exprs.iter()
-                        .map(|e| {
-                            let (e, ids_) = e.to_sql(variables);
-                            ids = max(ids.clone(), ids_.clone());
-                            e
-                        }).collect::<Vec<_>>();
-
-                    if let [a, b] = &terms[..] {
+                match associativity(function) {
+                    Associativity::Unary => {
+                        // NOT, abs
+                        let e = exprs.first().unwrap();
+                        let (expr, ids) = e.to_sql(variables);
                         if ids == Ids::None {
-                            (format!("apply(\"{function}\", {a}, {b})"),
-                            ids.clone())
+                            (format!("apply(\"{function}\", {expr})"), Ids::None)
+                        } else if *function == Predefined::Not {
+                            (format!("not_({expr})"), ids)
                         } else {
-                            (format!("left_(\"{function}\", {a}, {b})"),
-                            ids.clone())
+                            (format!("abs_({expr})"), ids)
                         }
-                    } else {
-                        panic!("incorrect number of arguments for mod")
-                    }
-                } else if ASSOCIATIVE.contains(function) {
-                    // AND, OR
-                    let name = function.to_string();
-                    let mut ids = Ids::All;
-                    let exprs =
-                        exprs.iter().cloned().filter_map( |e| {
-                            let (e_, ids_) = e.to_sql(variables);
-                            ids = max(ids.clone(), ids_.clone());
-                            // try to simplify
-                            match e {
-                                SQLExpr::Boolean(b) =>
-                                    if name == "and" && b { None }
-                                    else if name == "or" && !b { None }
-                                    else { Some(e_) },
-                                _ => Some(e_)
+                    },
+                    Associativity::Binary => {
+                        // mod
+
+                        let mut ids = Ids::All;
+                        let terms = exprs.iter()
+                            .map(|e| {
+                                let (e, ids_) = e.to_sql(variables);
+                                ids = max(ids.clone(), ids_.clone());
+                                e
+                            }).collect::<Vec<_>>();
+
+                        if let [a, b] = &terms[..] {
+                            if ids == Ids::None {
+                                (format!("apply(\"{function}\", {a}, {b})"),
+                                ids.clone())
+                            } else {
+                                (format!("left_(\"{function}\", {a}, {b})"),
+                                ids.clone())
                             }
-                        }).collect::<Vec<String>>();
-                    if exprs.len() == 0 {
-                        if name == "and" {
-                            ("\"true\"".to_string(), Ids::All)
                         } else {
-                            ("\"false\"".to_string(), Ids::All)
+                            panic!("incorrect number of arguments for mod")
                         }
-                    } else if exprs.len() == 1 {
-                        (exprs.first().unwrap().clone(), ids)
-                    } else {
-                        if ids == Ids::None {
-                            (format!("apply(\"{name}\", {})", exprs.join(", ")), ids)
+                    },
+                    Associativity::Associative => {
+                        // AND, OR
+                        let name = function.to_string();
+                        let mut ids = Ids::All;
+                        let exprs =
+                            exprs.iter().cloned().filter_map( |e| {
+                                let (e_, ids_) = e.to_sql(variables);
+                                ids = max(ids.clone(), ids_.clone());
+                                // try to simplify
+                                match e {
+                                    SQLExpr::Boolean(b) =>
+                                        if name == "and" && b { None }
+                                        else if name == "or" && !b { None }
+                                        else { Some(e_) },
+                                    _ => Some(e_)
+                                }
+                            }).collect::<Vec<String>>();
+                        if exprs.len() == 0 {
+                            if name == "and" {
+                                ("\"true\"".to_string(), Ids::All)
+                            } else {
+                                ("\"false\"".to_string(), Ids::All)
+                            }
+                        } else if exprs.len() == 1 {
+                            (exprs.first().unwrap().clone(), ids)
                         } else {
-                            (format!("{name}_({})", exprs.join(", ")), ids)
-                        }
-                    }
-                } else if CHAINABLE.contains(function) {
-                    // LINK src/doc.md#_Equality
-                    // Eq, comparisons
-
-                    let (terms, ids) = collect_args(Ids::All, exprs, variables);
-
-                    // simplify
-                    match function {
-                        Predefined::Eq => {
-                            let equal = exprs.iter().zip(exprs.iter().skip(1))
-                                    .all(|(a, b)| *a == *b);
-                            if equal {
-                                return ("\"true\"".to_string(), Ids::All)
+                            if ids == Ids::None {
+                                (format!("apply(\"{name}\", {})", exprs.join(", ")), ids)
+                            } else {
+                                (format!("{name}_({})", exprs.join(", ")), ids)
                             }
                         }
-                        _ => {}
-                    }
+                    },
+                    Associativity::Chainable => {
+                        // LINK src/doc.md#_Equality
+                        // Eq, comparisons
 
-                    if ids == Ids::None && *function != Predefined::BoolEq {
-                        (format!("apply(\"{function}\", {terms})"), ids)
-                    } else {
+                        let (terms, ids) = collect_args(Ids::All, exprs, variables);
+
+                        // simplify
                         match function {
-                            Predefined::BoolEq    => (format!("bool_eq_(\"true\", {terms})"), ids),
-                            Predefined::Eq        => (format!("eq_({terms})"), ids),
-                            Predefined::Less
-                            | Predefined::LE
-                            | Predefined::GE
-                            | Predefined::Greater => (format!("compare_(\"{function}\", {terms})"), ids),
-                            _ => unreachable!()
+                            Predefined::Eq => {
+                                let equal = exprs.iter().zip(exprs.iter().skip(1))
+                                        .all(|(a, b)| *a == *b);
+                                if equal {
+                                    return ("\"true\"".to_string(), Ids::All)
+                                }
+                            }
+                            _ => {}
                         }
-                    }
-                } else if PAIRWISE.contains(function) { // distinct
 
-                    let (terms, ids) = collect_args(Ids::All, exprs, variables);
-
-                    if ids == Ids::None {
-                        (format!("apply(\"distinct\", {terms})"), ids)
-                    } else {
-                        (format!("compare_(\"distinct\", {terms})"), ids)
-                    }
-                } else if LEFT_ASSOC.contains(function) {
-                    // + - * div
-
-                    let (terms, ids) = collect_args(Ids::All, exprs, variables);
-
-                    if ids == Ids::None {
-                        (format!("apply(\"{function}\", {terms})"), ids)
-                    } else {
-                        (format!("left_(\"{function}\", {terms})"), ids)
-                    }
-                } else if *function == Predefined::Ite {
-                    let mut ids = Ids::All;
-                    let terms = exprs.iter()
-                        .map(|e| {
-                            let (e, ids_) = e.to_sql(variables);
-                            ids = max(ids.clone(), ids_.clone());
-                            e
-                        }).collect::<Vec<_>>();
-
-                    if terms[1] == terms[2] {  // condition is irrelevant
-                        (terms[1].clone(), ids.clone())
-                    } else if terms[0] == "\"true\"" {
-                        (terms[1].clone(), ids.clone())
-                    } else if terms[1] == "\"false\"" {
-                        (terms[2].clone(), ids.clone())
-                    } else {
-                        let terms = terms.join(", ");
-                        if ids == Ids::None {
-                            (format!("apply(\"{function}\", {terms})"), ids.clone())
+                        if ids == Ids::None && !matches!(*function, Predefined::BoolEq(_)) {
+                            (format!("apply(\"{function}\", {terms})"), ids)
                         } else {
-                            (format!("ite_({terms})"), ids.clone())
+                            match function {
+                                Predefined::BoolEq(default)    => (format!("bool_eq_(\"{default}\", {terms})"), ids),
+                                Predefined::Eq        => (format!("eq_({terms})"), ids),
+                                Predefined::Less
+                                | Predefined::LE
+                                | Predefined::GE
+                                | Predefined::Greater => (format!("compare_(\"{function}\", {terms})"), ids),
+                                _ => unreachable!()
+                            }
                         }
-                    }
-                } else {
-                    unreachable!()
+                    },
+                    Associativity::Pairwise => { // distinct
+
+                        let (terms, ids) = collect_args(Ids::All, exprs, variables);
+
+                        if ids == Ids::None {
+                            (format!("apply(\"distinct\", {terms})"), ids)
+                        } else {
+                            (format!("compare_(\"distinct\", {terms})"), ids)
+                        }
+                    },
+                    Associativity::LeftAssoc => {
+                        // + - * div
+
+                        let (terms, ids) = collect_args(Ids::All, exprs, variables);
+
+                        if ids == Ids::None {
+                            (format!("apply(\"{function}\", {terms})"), ids)
+                        } else {
+                            (format!("left_(\"{function}\", {terms})"), ids)
+                        }
+                    },
+                    Associativity::Ite => {
+                        let mut ids = Ids::All;
+                        let terms = exprs.iter()
+                            .map(|e| {
+                                let (e, ids_) = e.to_sql(variables);
+                                ids = max(ids.clone(), ids_.clone());
+                                e
+                            }).collect::<Vec<_>>();
+
+                        if terms[1] == terms[2] {  // condition is irrelevant
+                            (terms[1].clone(), ids.clone())
+                        } else if terms[0] == "\"true\"" {
+                            (terms[1].clone(), ids.clone())
+                        } else if terms[1] == "\"false\"" {
+                            (terms[2].clone(), ids.clone())
+                        } else {
+                            let terms = terms.join(", ");
+                            if ids == Ids::None {
+                                (format!("apply(\"{function}\", {terms})"), ids.clone())
+                            } else {
+                                (format!("ite_({terms})"), ids.clone())
+                            }
+                        }
+                    },
                 }
             }
         }

@@ -56,7 +56,7 @@ pub(crate) enum GroundingQuery {
         variables: OptionMap<Symbol, Column>,
         conditions: Vec<Either<Mapping, TableAlias>>,
         grounding: SQLExpr,
-	    outer: bool,
+        outer: Option<bool>,
         natural_joins: IndexSet<NaturalJoin>,
         theta_joins: IndexMap<TableAlias, Vec<Option<Mapping>>>,
         precise: bool,

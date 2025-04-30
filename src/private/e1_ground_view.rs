@@ -100,7 +100,7 @@ pub(crate) fn view_for_constant(
         variables: OptionMap::new(),
         conditions: vec![],
         grounding: SQLExpr::Constant(spec_constant.clone()),
-        outer: false,
+        outer: None,
         natural_joins: IndexSet::new(),
         theta_joins: IndexMap::new(),
         precise: true
@@ -129,7 +129,7 @@ pub(crate) fn view_for_variable(
             variables,
             conditions: vec![],
             grounding: SQLExpr::Variable(symbol.clone()),
-            outer: false,
+            outer: None,
             natural_joins: IndexSet::from([NaturalJoin::CrossProduct(table_alias.clone(), symbol.clone())]),
             theta_joins: IndexMap::new(),
             precise: false  // imprecise for boolean variable !
@@ -142,7 +142,7 @@ pub(crate) fn view_for_variable(
             variables,
             conditions: vec![],
             grounding: SQLExpr::Variable(symbol.clone()),
-            outer: false,
+            outer: None,
             natural_joins: IndexSet::new(),
             theta_joins: IndexMap::new(),
             precise: true  // cannot be boolean
@@ -165,7 +165,8 @@ pub(crate) enum QueryVariant {
     Interpretation(TableAlias, Ids),
     Apply,
     Construct,
-    Predefined
+    Predefined,
+    PredefinedWithDefault(bool)
 }
 
 /// Creates a query for a compound term, according to `variant`.
@@ -174,7 +175,6 @@ pub(crate) fn view_for_compound(
     index: TermId,
     sub_queries: &Vec<GroundingView>,
     variant: &QueryVariant,
-    outer: bool,
     exclude: Option<bool>,
     solver: &mut Solver
 ) -> Result<GroundingView, SolverError> {
@@ -195,8 +195,12 @@ pub(crate) fn view_for_compound(
             GroundingView::Empty => {
                 return Ok(GroundingView::Empty)
             },
-            GroundingView::View {free_variables: sub_free_variables, condition: sub_condition,
-                grounding, query, all_ids: sub_all_ids,..} => {
+            GroundingView::View {
+                    free_variables: sub_free_variables,
+                    condition: sub_condition,
+                    grounding,
+                    query,
+                    all_ids: sub_all_ids,..} => {
 
                 let to_add = sub_free_variables.iter()
                     .map(|(k, v)| (k.clone(), v.clone()));
@@ -204,10 +208,18 @@ pub(crate) fn view_for_compound(
                 all_ids = all_ids && *sub_all_ids;
 
                 // if the sub-query is an Inner Join
-                let done = if let GroundingQuery::Join { variables: sub_variables, conditions: sub_conditions,
-                    grounding: sub_grounding, outer: sub_outer, natural_joins: sub_natural_joins,
-                    theta_joins: sub_theta_joins, precise: sub_precise } = query {
-                    if !outer && !sub_outer {
+                let done = if let GroundingQuery::Join {
+                            variables: sub_variables,
+                            conditions: sub_conditions,
+                            grounding: sub_grounding,
+                            outer: sub_outer,
+                            natural_joins: sub_natural_joins,
+                            theta_joins: sub_theta_joins,
+                            precise: sub_precise }
+                        = query {
+
+                    if ! matches!(variant, QueryVariant::PredefinedWithDefault(_))
+                    && sub_outer.is_none() {
 
                         // handle the special case of a variable used as an argument to an interpreted function
                         // example: f(x, a, x)
@@ -267,7 +279,8 @@ pub(crate) fn view_for_compound(
                             },
                             QueryVariant::Apply
                             | QueryVariant::Construct
-                            | QueryVariant::Predefined => {}
+                            | QueryVariant::Predefined
+                            | QueryVariant::PredefinedWithDefault(..) => {}
                         }
                         true  // done
                     } else { false }
@@ -278,7 +291,7 @@ pub(crate) fn view_for_compound(
                     let table_name =
                         match grounding {
                             Either::Left(constant) => {
-                                if ! outer {  // no need to create a Join
+                                if ! matches!(variant, QueryVariant::PredefinedWithDefault(..)) {  // no need to create a Join
                                     // merge the variables
                                     for (symbol, _) in sub_free_variables.clone().iter() {
                                         variables.insert(symbol.clone(), None);
@@ -377,7 +390,7 @@ pub(crate) fn view_for_compound(
                     "and"       => Predefined::And,
                     "or"        => Predefined::Or,
                     "not"       => Predefined::Not,
-                    "="         => if outer { Predefined::BoolEq } else { Predefined::Eq },
+                    "="         => Predefined::Eq,
                     "<"         => Predefined::Less,
                     "<="        => Predefined::LE,
                     ">="        => Predefined::GE,
@@ -401,9 +414,16 @@ pub(crate) fn view_for_compound(
                 };
 
                 SQLExpr::Predefined(function, Box::new(groundings))
+            },
+            QueryVariant::PredefinedWithDefault(default) => {
+                precise = false;
+                SQLExpr::Predefined(Predefined::BoolEq(*default), Box::new(groundings))
             }
         };
-
+    let outer = match variant {
+            QueryVariant::PredefinedWithDefault(default) => Some(*default),
+            _ => None
+        };
     let base_table = solver.create_table_name(format!("{qual_identifier}_{index}"));
     let table_alias = TableAlias::new(base_table, 0);
     let query = GroundingQuery::Join {
@@ -438,23 +458,23 @@ pub(crate) fn view_for_aggregate(
             // LINK src/doc.md#_Infinite
             // if the query is an aggregate, try to have only one aggregate
             if let GroundingQuery::Aggregate {
-                agg: sub_agg,
-                infinite_variables: sub_infinite_variables,
-                sub_view: sub_sub_view, ..}
-                = query {
-                    if agg == sub_agg  {
-                        // it's possible to by pass the sub-aggregate
-                        let mut infinite_variables = infinite_variables.clone();
-                        infinite_variables.extend(sub_infinite_variables.iter().cloned());
+                        agg: sub_agg,
+                        infinite_variables: sub_infinite_variables,
+                        sub_view: sub_sub_view, ..}
+                    = query {
+                if agg == sub_agg  {
+                    // it's possible to by pass the sub-aggregate
+                    let mut infinite_variables = infinite_variables.clone();
+                    infinite_variables.extend(sub_infinite_variables.iter().cloned());
 
-                        let query = GroundingQuery::Aggregate {
-                            agg: agg.to_string(),
-                            free_variables: free_variables.clone(),
-                            infinite_variables: infinite_variables.clone(),
-                            sub_view: Box::new(*sub_sub_view.clone()),
-                        };
-                        return GroundingView::new(table_alias, free_variables.clone(), query, exclude, *all_ids)
-                    }
+                    let query = GroundingQuery::Aggregate {
+                        agg: agg.to_string(),
+                        free_variables: free_variables.clone(),
+                        infinite_variables: infinite_variables.clone(),
+                        sub_view: Box::new(*sub_sub_view.clone()),
+                    };
+                    return GroundingView::new(table_alias, free_variables.clone(), query, exclude, *all_ids)
+                }
             }
 
             let query = GroundingQuery::Aggregate {
@@ -483,8 +503,12 @@ pub(crate) fn view_for_union(
     let mut all_ids = true;
     let mut precise = true;
     for sub_view in sub_views.clone() {
-        if let GroundingView::View { free_variables: sub_free_variables,
-            condition: sub_condition, all_ids: sub_all_ids, query, .. } = sub_view {
+        if let GroundingView::View {
+                    free_variables: sub_free_variables,
+                    condition: sub_condition,
+                    all_ids: sub_all_ids,
+                    query, .. }
+                = sub_view {
 
             free_variables.append(&mut sub_free_variables.clone());
             condition |= sub_condition;
@@ -497,8 +521,12 @@ pub(crate) fn view_for_union(
     // build the sub-queries
     let sub_queries = sub_views.iter()
         .filter_map( |sub_view| {
-            if let GroundingView::View { free_variables: sub_free_variables, condition: sub_condition,
-                grounding, query, ..} = sub_view {
+            if let GroundingView::View {
+                        free_variables: sub_free_variables,
+                        condition: sub_condition,
+                        grounding,
+                        query, ..}
+                    = sub_view {
 
                 match grounding {
                     Either::Left(grounding) => {
@@ -510,7 +538,7 @@ pub(crate) fn view_for_union(
                             variables: q_variables,
                             conditions: vec![],
                             grounding: grounding.clone(),
-                            outer: false,
+                            outer: None,
                             natural_joins: IndexSet::new(),
                             theta_joins: IndexMap::new(),
                             precise: true
@@ -560,7 +588,7 @@ pub(crate) fn view_for_union(
                                 variables: q_variables,
                                 conditions,
                                 grounding: SQLExpr::G(table_name.clone()),
-                                outer: false,
+                                outer: None,
                                 natural_joins,
                                 theta_joins: IndexMap::new(),
                                 precise: true  // because it is based on a view

@@ -27,7 +27,7 @@ pub(crate) enum GroundingQuery {
         variables: OptionMap<Symbol, Column>,
         conditions: Vec<Either<Mapping, Option<TableAlias>>>,  // vector of mapping or `if_` column of a table. If TableAlias is None, "true".
         grounding: SQLExpr,
-        outer: bool,
+        outer: Option<bool>,  // the default boolean value for outer joins (None for inner join)
         natural_joins: IndexSet<NaturalJoin>,  // cross-products with sort, or joins with grounding sub-queries
         theta_joins: IndexMap<TableAlias, Vec<Option<Mapping>>>,  // joins with interpretation tables
 
@@ -203,7 +203,7 @@ impl GroundingQuery {
 
                 // natural joins
                 let mut where_ = vec![];
-                let join = if *outer { "FULL JOIN"} else { "JOIN" };
+                let join = if outer.is_some() { "FULL JOIN" } else { "JOIN" };
                 let naturals = natural_joins.iter().enumerate()
                     .map(|(i, natural_join)| {
 
