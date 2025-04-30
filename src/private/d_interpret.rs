@@ -311,7 +311,7 @@ pub(crate) fn interpret_fun(
                             tuples.len()
                         },
                         Right(sql) => {
-                            let sql = format!("CREATE VIEW {table_g} AS {}", sql.0);  // todo: handle "?"
+                            let sql = format!("CREATE VIEW {table_g} AS {}", sql.0);
                             solver.conn.execute(&sql, ())?;
                             solver.conn.query_row(
                                 format!("SELECT COUNT(*) FROM {table_g}").as_str(),
@@ -406,7 +406,7 @@ pub(crate) fn interpret_fun(
                             tuples.len()
                         },
                         Right(sql) => {
-                            let sql = format!("CREATE VIEW {table_g} AS {}", sql.0); // todo: handle "?"
+                            let sql = format!("CREATE VIEW {table_g} AS {}", sql.0);
                             solver.conn.execute(&sql, ())?;
                             let sql = format!("CREATE VIEW {table_tu} AS SELECT FROM {table_g} WHERE G <> \"false\"");
                             solver.conn.execute(&sql, ())?;

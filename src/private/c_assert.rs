@@ -32,11 +32,7 @@ pub(crate) fn assert_(
 /// - remove duplicate conjuncts/disjuncts
 /// - push negation down disjunctions and conjunctions
 
-/// - todo: push negation down quantification
 /// - todo: replace ambiguous simple identifier (constructor) by a qualified identifier
-/// - todo: push universal quantification up disjunction, down conjunction
-/// - todo: push existential quantification up conjunction, down disjunction
-/// - todo: merge nested quantification/aggregate of the same type
 pub(crate) fn annotate_term(
     term: &L<Term>,
     variables: &mut IndexMap<Symbol, Option<SortedVar>>,  // can't use XSortedVar here because it's a term variant

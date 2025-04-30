@@ -384,7 +384,6 @@ pub(crate) fn init_db(
                 let result = match operator.as_str() {
                     "<" => a < b,
                     "<=" => a <= b,
-                    "distinct" => a != b,  // todo perf: this is an incomplete test
                     ">" => a > b,
                     ">=" => a >= b,
                     _ => return Err(Error::InvalidParameterName(operator))
@@ -399,7 +398,6 @@ pub(crate) fn init_db(
                 let result = match operator.as_str() {
                     "<" => a < b,
                     "<=" => a <= b,
-                    "distinct" => a != b,  // todo perf: this is an incomplete test
                     ">" => a > b,
                     ">=" => a >= b,
                     _ => return Err(Error::InvalidParameterName(operator))

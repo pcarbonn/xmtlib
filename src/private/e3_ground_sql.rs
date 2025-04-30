@@ -279,7 +279,8 @@ impl SQLExpr {
                         if ids == Ids::None {
                             (format!("apply(\"distinct\", {terms})"), ids)
                         } else {
-                            (format!("compare_(\"distinct\", {terms})"), ids)
+                            //TODO perf: use custom function
+                            (format!("apply(\"distinct\", {terms})"), Ids::None)
                         }
                     },
                     Associativity::LeftAssoc => {

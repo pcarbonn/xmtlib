@@ -16,7 +16,9 @@
 (assert false)
 (assert false)
 (assert false)
+(assert (distinct 1 2 3))
 (assert false)
+(assert (distinct 1 2 3))
 Groundings:
 ===  2 ======================================
  -- Join(0)
@@ -155,13 +157,13 @@ SELECT and_(compare_("<=", 2, 2), not_(compare_("<=", 3, 3))) AS G
 === (top) (distinct 1 2 3) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT compare_("distinct", 1, 2, 3) AS G
+SELECT apply("distinct", 1, 2, 3) AS G
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT compare_("distinct", 1, 2, 3) AS G
+SELECT apply("distinct", 1, 2, 3) AS G
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT compare_("distinct", 1, 2, 3) AS G
+SELECT apply("distinct", 1, 2, 3) AS G
 
 ===  2.0 ======================================
  -- Join(0)
@@ -227,13 +229,13 @@ SELECT 1.0 AS G
 === (top) (distinct 1.0 2.0 3.0) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT compare_("distinct", 1.0, 2.0, 3.0) AS G
+SELECT apply("distinct", 1.0, 2.0, 3.0) AS G
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT compare_("distinct", 1.0, 2.0, 3.0) AS G
+SELECT apply("distinct", 1.0, 2.0, 3.0) AS G
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT compare_("distinct", 1.0, 2.0, 3.0) AS G
+SELECT apply("distinct", 1.0, 2.0, 3.0) AS G
 
 ===========================================
 Tables and Views:

@@ -176,45 +176,31 @@
 //! by mapping a value to tuples of arguments, and by giving a default value.
 //! (The interpretation of a function with an infinite domain cannot be given)
 //!
-//! The mapping can be supplied using:
+//! The grammar for this command is:
+//! ```text
+//!     '(' 'x-interpret-fun' <symbol> <mappings> <default>? ')'
+//! ```
 //!
-//! * `(x-mapping`, e.g., `(x-interpret-fun Length (x-mapping ((a b) 2) ((b c) ?) ((c a) 4) ) 999)`.
-//! The length of pair `(a b)` is 2, of `(b c)` is unknown, of `(c a)` is 4,
-//! and is 999 for every other pairs in the domain of Length.
+//! The mappings can be supplied using:
+//!
+//! * ``` `(` `x-mapping` ['(' <tuple> <value> ')']* `)` ```
+//! where a tuple is a list of identifiers between parenthesis (e.g., `(a b)`),
+//! and a value is an identifier or  `?` (for unknown value).
+//! The list of identifiers must match the arity of the function symbol.
+//! For example, `(x-mapping ((a b) 2) ((b c) ?) ((c a) 4) )`
+//! maps `(a b)` to 2, `(b c)` to unknown, and `(c a)` to 4
 //!
 //! * `(x-sql "SELECT .. FROM ..")`
 //! The SELECT is run using the sqlite connection of the solver.
 //! The SELECT must return `n+1` columns named `a_0, .. a_n, G`
 //! where `n` is the arity of the symbol being interpreted,
-//! `a_0, .. a_n` contain the tuples of arguments, and `G` the corresponding values.
+//! `a_0, .. a_n` contain the tuples of arguments, and `G` the corresponding known values.
 //! These columns must be of type INTEGER for integers, REAL for reals, and TEXT otherwise.
+//! The values in the mappings must be nullary constructors (thus excluding "?")
+//! (note: this rule is not enforced by the xmtlib crate)
 //!
-//!
-//!
-//! The grammar for the `(x-mapping` command is :
-//!
-//! ```text
-//!     '(' 'x-interpret-fun' <symbol> '(' 'x-mapping' <mapping>* ')' <value>? ')'
-//!```
-//!
-//! with 0 or more mapping of the form:
-//!
-//! ```text
-//!    '(' <tuple> <value> ')'
-//!```
-//!
-//! where a tuple is a list of identifiers between parenthesis (e.g., `(a b)`),
-//! and a value is an identifier or  `?` (for unknown value).
-//! The list of identifiers must match the arity of the function symbol.
-//! The default value must be given if the set of tuples in the interpretation
-//! does not cover the domain of the function;
-//! it may not be given otherwise.
-//!
-//! The table may not have duplicate tuples,
+//! The mappings may not have duplicate tuples,
 //! and the values in the mapping must be of the appropriate type.
-//! Furthermore, for the `(x-sql` variant,
-//! the values in the mappings must be nullary constructors (thus excluding any unknown value).
-//! (note: these rules are not enforced by the xmtlib crate for the `(x-sql` variant)
 //!
 //! The default value must be given if the set of tuples in the interpretation
 //! does not cover the domain of the function;
