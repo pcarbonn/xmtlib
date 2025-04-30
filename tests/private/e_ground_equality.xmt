@@ -75,13 +75,31 @@ SELECT not_("true") AS G
 === (top) (= (= 2 2) (not (= 3 3))) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT bool_eq_("true", "true", not_("true")) AS G
+SELECT bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+  FROM (-- Join(8)
+        SELECT "true" AS G
+        ) AS Outer_0
+  FULL JOIN (-- Join(8)
+        SELECT not_("true") AS G
+        ) AS Outer_1
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT bool_eq_("true", "true", not_("true")) AS G
+SELECT bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+  FROM (-- Join(8)
+        SELECT "true" AS G
+        ) AS Outer_0
+  FULL JOIN (-- Join(8)
+        SELECT not_("true") AS G
+        ) AS Outer_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT bool_eq_("true", "true", not_("true")) AS G
+SELECT bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+  FROM (-- Join(8)
+        SELECT "true" AS G
+        ) AS Outer_0
+  FULL JOIN (-- Join(8)
+        SELECT not_("true") AS G
+        ) AS Outer_1
 
 === (top) (and (= 2 2) (not (= 3 3))) ======================================
 ----- T ------------------------------------------------------------

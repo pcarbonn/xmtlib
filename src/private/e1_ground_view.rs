@@ -272,33 +272,44 @@ pub(crate) fn view_for_compound(
                         true  // done
                     } else { false }
                 } else { false };
+
                 if ! done {  // not a Join --> use the ViewType
-                    match grounding {
-                        Either::Left(constant) => {
-                            // merge the variables
-                            for (symbol, _) in sub_free_variables.clone().iter() {
-                                variables.insert(symbol.clone(), None);
-                            }
 
-                            groundings.push(constant.clone())
-                        },
+                    let table_name =
+                        match grounding {
+                            Either::Left(constant) => {
+                                if ! outer {  // no need to create a Join
+                                    // merge the variables
+                                    for (symbol, _) in sub_free_variables.clone().iter() {
+                                        variables.insert(symbol.clone(), None);
+                                    }
 
-                        Either::Right(table_name) => {
-                            // merge the variables
-                            for (symbol, _) in sub_free_variables.clone().iter() {
-                                let column = Column::new(table_name, &symbol);
-                                variables.insert(symbol.clone(), Some(column));
-                            }
+                                    groundings.push(constant.clone());
+                                    None
+                                } else {  // need to create a Join for outer join
+                                    let base_table = TableName(format!("Outer_{i}").to_string());
+                                    Some(TableAlias{ base_table, index: 0})
+                                }
+                            },
+                            Either::Right(table_name) =>
+                                Some(table_name.clone())
+                        };
 
-                            if *sub_condition {
-                                conditions.push(Right(Some(table_name.clone())));
-                            }
-                            groundings.push(SQLExpr::G(table_name.clone()));
+                    if let Some(table_name) = table_name {
+                        // merge the variables
+                        for (symbol, _) in sub_free_variables.clone().iter() {
+                            let column = Column::new(&table_name, &symbol);
+                            variables.insert(symbol.clone(), Some(column));
+                        }
 
-                            let map_variables = sub_free_variables.0.keys().cloned().collect();
-                            let sub_natural_join = NaturalJoin::ViewJoin(query.clone(), table_name.clone(), map_variables);
-                            natural_joins.insert(sub_natural_join.clone());
-                        },
+                        if *sub_condition {
+                            conditions.push(Right(Some(table_name.clone())));
+                        }
+                        groundings.push(SQLExpr::G(table_name.clone()));
+
+                        let map_variables = sub_free_variables.0.keys().cloned().collect();
+                        let sub_natural_join = NaturalJoin::ViewJoin(query.clone(), table_name.clone(), map_variables);
+                        natural_joins.insert(sub_natural_join.clone());
                     }
                 }
             }

@@ -13,14 +13,15 @@
 -------------------------
 (declare-fun domain (Int) Bool)
 (declare-fun prime (Int) Bool)
-(assert (= (prime 3) (> 1 0)))
-(assert (= (prime 4) (and (> 0 0) (> 1 0))))
-(assert (= (prime 5) (and (> 1 0) (> 2 0) (> 1 0))))
-(assert (= (prime 6) (and (> 0 0) (> 0 0) (> 2 0) (> 1 0))))
-(assert (= (prime 7) (and (> 1 0) (> 1 0) (> 3 0) (> 2 0) (> 1 0))))
-(assert (= (prime 8) (and (> 0 0) (> 2 0) (> 0 0) (> 3 0) (> 2 0) (> 1 0))))
-(assert (= (prime 9) (and (> 1 0) (> 0 0) (> 1 0) (> 4 0) (> 3 0) (> 2 0) (> 1 0))))
-(assert (= (prime 10) (and (> 0 0) (> 1 0) (> 2 0) (> 0 0) (> 4 0) (> 3 0) (> 2 0) (> 1 0))))
+(assert (= (prime 2) true))
+(assert (= (prime 3) true))
+(assert (= (prime 4) false))
+(assert (= (prime 5) true))
+(assert (= (prime 6) false))
+(assert (= (prime 7) true))
+(assert (= (prime 8) false))
+(assert (= (prime 9) false))
+(assert (= (prime 10) false))
 Groundings:
 ===  x ======================================
  -- Join(0)
@@ -234,9 +235,13 @@ SELECT x,
 ===  (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT Agg_13_UF.x AS x,
-       bool_eq_("true", apply("prime", Agg_13_UF.x), Agg_13_UF.G) AS G
-  FROM (-- Agg (8)
+SELECT Outer_0.x AS x,
+       bool_eq_("true", Outer_0.G, Agg_13_UF.G) AS G
+  FROM (-- Join(8)
+        SELECT "x" AS x,
+               apply("prime", "x") AS G
+        ) AS Outer_0
+  FULL JOIN (-- Agg (8)
         SELECT x,
                and_aggregate(G) as G
          FROM (-- exclude(15)
@@ -248,12 +253,16 @@ SELECT Agg_13_UF.x AS x,
                         FROM _xmt_domain_TU AS _xmt_domain_TU_5)
                 WHERE G <> "true")
          GROUP BY x
-        ) AS Agg_13_UF
+        ) AS Agg_13_UF ON  Agg_13_UF.x = Outer_0.x
 ----- UF -----------------------------------------------------------
 -- Join(0)
-SELECT Agg_13_UF.x AS x,
-       bool_eq_("true", apply("prime", Agg_13_UF.x), Agg_13_UF.G) AS G
-  FROM (-- Agg (8)
+SELECT Outer_0.x AS x,
+       bool_eq_("true", Outer_0.G, Agg_13_UF.G) AS G
+  FROM (-- Join(8)
+        SELECT "x" AS x,
+               apply("prime", "x") AS G
+        ) AS Outer_0
+  FULL JOIN (-- Agg (8)
         SELECT x,
                and_aggregate(G) as G
          FROM (-- exclude(15)
@@ -265,12 +274,16 @@ SELECT Agg_13_UF.x AS x,
                         FROM _xmt_domain_TU AS _xmt_domain_TU_5)
                 WHERE G <> "true")
          GROUP BY x
-        ) AS Agg_13_UF
+        ) AS Agg_13_UF ON  Agg_13_UF.x = Outer_0.x
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT Agg_13_UF.x AS x,
-       bool_eq_("true", apply("prime", Agg_13_UF.x), Agg_13_UF.G) AS G
-  FROM (-- Agg (8)
+SELECT Outer_0.x AS x,
+       bool_eq_("true", Outer_0.G, Agg_13_UF.G) AS G
+  FROM (-- Join(8)
+        SELECT "x" AS x,
+               apply("prime", "x") AS G
+        ) AS Outer_0
+  FULL JOIN (-- Agg (8)
         SELECT x,
                and_aggregate(G) as G
          FROM (-- exclude(15)
@@ -282,7 +295,7 @@ SELECT Agg_13_UF.x AS x,
                         FROM _xmt_domain_TU AS _xmt_domain_TU_5)
                 WHERE G <> "true")
          GROUP BY x
-        ) AS Agg_13_UF
+        ) AS Agg_13_UF ON  Agg_13_UF.x = Outer_0.x
 
 ===  (or (not (domain x)) (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0))))) ======================================
 ----- TU -----------------------------------------------------------
@@ -296,9 +309,13 @@ SELECT x,
                      apply("not", apply("domain", "x")) AS G
               UNION
               -- Join(14)
-              SELECT Agg_13_UF.x AS x,
-                     bool_eq_("true", apply("prime", Agg_13_UF.x), Agg_13_UF.G) AS G
-                FROM (-- Agg (22)
+              SELECT Outer_0.x AS x,
+                     bool_eq_("true", Outer_0.G, Agg_13_UF.G) AS G
+                FROM (-- Join(22)
+                      SELECT "x" AS x,
+                             apply("prime", "x") AS G
+                      ) AS Outer_0
+                FULL JOIN (-- Agg (22)
                       SELECT x,
                              and_aggregate(G) as G
                        FROM (-- exclude(29)
@@ -310,7 +327,7 @@ SELECT x,
                                       FROM _xmt_domain_TU AS _xmt_domain_TU_5)
                               WHERE G <> "true")
                        GROUP BY x
-                      ) AS Agg_13_UF)
+                      ) AS Agg_13_UF ON  Agg_13_UF.x = Outer_0.x)
         WHERE G <> "false")
  GROUP BY x
 ----- UF -----------------------------------------------------------
@@ -318,9 +335,14 @@ SELECT x,
 SELECT _xmt_domain_TU_1.a_1 AS x,
        _xmt__14_20.G AS G
   FROM (-- Join(8)
-        SELECT Agg_13_UF.x AS x,
-               bool_eq_("true", apply("prime", Agg_13_UF.x), Agg_13_UF.G) AS G
-          FROM (-- Agg (16)
+        SELECT Outer_0.x AS x,
+               bool_eq_("true", Outer_0.G, Agg_13_UF.G) AS G
+          FROM (-- Join(16)
+                SELECT _xmt_domain_TU_1.a_1 AS x,
+                       apply("prime", _xmt_domain_TU_1.a_1) AS G
+                  FROM _xmt_domain_TU AS _xmt_domain_TU_1
+                ) AS Outer_0
+          FULL JOIN (-- Agg (16)
                 SELECT x,
                        and_aggregate(G) as G
                  FROM (-- exclude(23)
@@ -333,7 +355,7 @@ SELECT _xmt_domain_TU_1.a_1 AS x,
                                 JOIN _xmt_domain_TU AS _xmt_domain_TU_1)
                         WHERE G <> "true")
                  GROUP BY x
-                ) AS Agg_13_UF
+                ) AS Agg_13_UF ON  Agg_13_UF.x = Outer_0.x
         ) AS _xmt__14_20
   JOIN _xmt_domain_TU AS _xmt_domain_TU_1
  WHERE  _xmt__14_20.x = _xmt_domain_TU_1.a_1
@@ -342,9 +364,13 @@ SELECT _xmt_domain_TU_1.a_1 AS x,
 SELECT _xmt__14_21.x AS x,
        apply("or", apply("not", apply("domain", _xmt__14_21.x)), _xmt__14_21.G) AS G
   FROM (-- Join(8)
-        SELECT Agg_13_UF.x AS x,
-               bool_eq_("true", apply("prime", Agg_13_UF.x), Agg_13_UF.G) AS G
-          FROM (-- Agg (16)
+        SELECT Outer_0.x AS x,
+               bool_eq_("true", Outer_0.G, Agg_13_UF.G) AS G
+          FROM (-- Join(16)
+                SELECT "x" AS x,
+                       apply("prime", "x") AS G
+                ) AS Outer_0
+          FULL JOIN (-- Agg (16)
                 SELECT x,
                        and_aggregate(G) as G
                  FROM (-- exclude(23)
@@ -356,7 +382,7 @@ SELECT _xmt__14_21.x AS x,
                                 FROM _xmt_domain_TU AS _xmt_domain_TU_5)
                         WHERE G <> "true")
                  GROUP BY x
-                ) AS Agg_13_UF
+                ) AS Agg_13_UF ON  Agg_13_UF.x = Outer_0.x
         ) AS _xmt__14_21
 
 === (top) (forall ((x Int)) (or (not (domain x)) (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))))) ======================================
@@ -367,9 +393,13 @@ SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
        SELECT _xmt__14_21.x AS x,
               apply("or", apply("not", apply("domain", _xmt__14_21.x)), _xmt__14_21.G) AS G
          FROM (-- Join(15)
-               SELECT Agg_13_UF.x AS x,
-                      bool_eq_("true", apply("prime", Agg_13_UF.x), Agg_13_UF.G) AS G
-                 FROM (-- Agg (23)
+               SELECT Outer_0.x AS x,
+                      bool_eq_("true", Outer_0.G, Agg_13_UF.G) AS G
+                 FROM (-- Join(23)
+                       SELECT "x" AS x,
+                              apply("prime", "x") AS G
+                       ) AS Outer_0
+                 FULL JOIN (-- Agg (23)
                        SELECT x,
                               and_aggregate(G) as G
                         FROM (-- exclude(30)
@@ -381,7 +411,7 @@ SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
                                        FROM _xmt_domain_TU AS _xmt_domain_TU_5)
                                WHERE G <> "true")
                         GROUP BY x
-                       ) AS Agg_13_UF
+                       ) AS Agg_13_UF ON  Agg_13_UF.x = Outer_0.x
                ) AS _xmt__14_21)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -390,9 +420,14 @@ SELECT G as G
        SELECT _xmt_domain_TU_1.a_1 AS x,
               _xmt__14_20.G AS G
          FROM (-- Join(15)
-               SELECT Agg_13_UF.x AS x,
-                      bool_eq_("true", apply("prime", Agg_13_UF.x), Agg_13_UF.G) AS G
-                 FROM (-- Agg (23)
+               SELECT Outer_0.x AS x,
+                      bool_eq_("true", Outer_0.G, Agg_13_UF.G) AS G
+                 FROM (-- Join(23)
+                       SELECT _xmt_domain_TU_1.a_1 AS x,
+                              apply("prime", _xmt_domain_TU_1.a_1) AS G
+                         FROM _xmt_domain_TU AS _xmt_domain_TU_1
+                       ) AS Outer_0
+                 FULL JOIN (-- Agg (23)
                        SELECT x,
                               and_aggregate(G) as G
                         FROM (-- exclude(30)
@@ -405,7 +440,7 @@ SELECT G as G
                                        JOIN _xmt_domain_TU AS _xmt_domain_TU_1)
                                WHERE G <> "true")
                         GROUP BY x
-                       ) AS Agg_13_UF
+                       ) AS Agg_13_UF ON  Agg_13_UF.x = Outer_0.x
                ) AS _xmt__14_20
          JOIN _xmt_domain_TU AS _xmt_domain_TU_1
         WHERE  _xmt__14_20.x = _xmt_domain_TU_1.a_1)
@@ -416,9 +451,13 @@ SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
        SELECT _xmt__14_21.x AS x,
               apply("or", apply("not", apply("domain", _xmt__14_21.x)), _xmt__14_21.G) AS G
          FROM (-- Join(15)
-               SELECT Agg_13_UF.x AS x,
-                      bool_eq_("true", apply("prime", Agg_13_UF.x), Agg_13_UF.G) AS G
-                 FROM (-- Agg (23)
+               SELECT Outer_0.x AS x,
+                      bool_eq_("true", Outer_0.G, Agg_13_UF.G) AS G
+                 FROM (-- Join(23)
+                       SELECT "x" AS x,
+                              apply("prime", "x") AS G
+                       ) AS Outer_0
+                 FULL JOIN (-- Agg (23)
                        SELECT x,
                               and_aggregate(G) as G
                         FROM (-- exclude(30)
@@ -430,7 +469,7 @@ SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
                                        FROM _xmt_domain_TU AS _xmt_domain_TU_5)
                                WHERE G <> "true")
                         GROUP BY x
-                       ) AS Agg_13_UF
+                       ) AS Agg_13_UF ON  Agg_13_UF.x = Outer_0.x
                ) AS _xmt__14_21)
 
 ===========================================

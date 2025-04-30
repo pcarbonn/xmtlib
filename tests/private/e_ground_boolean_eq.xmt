@@ -12,6 +12,7 @@
 (declare-datatype Color ( ( red ) ( blue ) ( green ) ))
 (declare-fun p (Color) Bool)
 (declare-fun q (Color) Bool)
+(declare-fun r (Color) Bool)
 (x-interpret-fun p (x-mapping
        ((red) true)
 ) ?)
@@ -23,6 +24,11 @@
                             )))
 (x-ground)
 (x-debug solver groundings)
+(assert (forall ((x Color)) (= (p x)
+                               (q x)
+                               (r x)
+                            )))
+(x-ground)
 -------------------------
 (declare-fun domain (Int) Bool)
 (declare-fun P (Int) Bool)
@@ -30,6 +36,7 @@
 (declare-datatype Color ((red ) (blue ) (green )))
 (declare-fun p (Color) Bool)
 (declare-fun q (Color) Bool)
+(declare-fun r (Color) Bool)
 (assert (= (P 1) (Q 1)))
 (assert (= (P 2) (Q 2)))
 (assert (= (P 3) (Q 3)))
@@ -109,16 +116,40 @@ SELECT "x" AS x,
 ===  (= (P x) (Q x)) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT "x" AS x,
-       bool_eq_("true", apply("P", "x"), apply("Q", "x")) AS G
+SELECT Outer_0.x AS x,
+       bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+  FROM (-- Join(8)
+        SELECT "x" AS x,
+               apply("P", "x") AS G
+        ) AS Outer_0
+  FULL JOIN (-- Join(8)
+        SELECT "x" AS x,
+               apply("Q", "x") AS G
+        ) AS Outer_1 ON  Outer_1.x = Outer_0.x
 ----- UF -----------------------------------------------------------
 -- Join(0)
-SELECT "x" AS x,
-       bool_eq_("true", apply("P", "x"), apply("Q", "x")) AS G
+SELECT Outer_0.x AS x,
+       bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+  FROM (-- Join(8)
+        SELECT "x" AS x,
+               apply("P", "x") AS G
+        ) AS Outer_0
+  FULL JOIN (-- Join(8)
+        SELECT "x" AS x,
+               apply("Q", "x") AS G
+        ) AS Outer_1 ON  Outer_1.x = Outer_0.x
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT "x" AS x,
-       bool_eq_("true", apply("P", "x"), apply("Q", "x")) AS G
+SELECT Outer_0.x AS x,
+       bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+  FROM (-- Join(8)
+        SELECT "x" AS x,
+               apply("P", "x") AS G
+        ) AS Outer_0
+  FULL JOIN (-- Join(8)
+        SELECT "x" AS x,
+               apply("Q", "x") AS G
+        ) AS Outer_1 ON  Outer_1.x = Outer_0.x
 
 ===  (or (not (domain x)) (= (P x) (Q x))) ======================================
 ----- TU -----------------------------------------------------------
@@ -132,40 +163,114 @@ SELECT x,
                      apply("not", apply("domain", "x")) AS G
               UNION
               -- Join(14)
-              SELECT "x" AS x,
-                     bool_eq_("true", apply("P", "x"), apply("Q", "x")) AS G)
+              SELECT Outer_0.x AS x,
+                     bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+                FROM (-- Join(22)
+                      SELECT "x" AS x,
+                             apply("P", "x") AS G
+                      ) AS Outer_0
+                FULL JOIN (-- Join(22)
+                      SELECT "x" AS x,
+                             apply("Q", "x") AS G
+                      ) AS Outer_1 ON  Outer_1.x = Outer_0.x)
         WHERE G <> "false")
  GROUP BY x
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT _xmt_domain_TU_1.a_1 AS x,
-       bool_eq_("true", apply("P", _xmt_domain_TU_1.a_1), apply("Q", _xmt_domain_TU_1.a_1)) AS G
-  FROM _xmt_domain_TU AS _xmt_domain_TU_1
+       _xmt__5_14.G AS G
+  FROM (-- Join(8)
+        SELECT Outer_0.x AS x,
+               bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+          FROM (-- Join(16)
+                SELECT _xmt_domain_TU_1.a_1 AS x,
+                       apply("P", _xmt_domain_TU_1.a_1) AS G
+                  FROM _xmt_domain_TU AS _xmt_domain_TU_1
+                ) AS Outer_0
+          FULL JOIN (-- Join(16)
+                SELECT _xmt_domain_TU_1.a_1 AS x,
+                       apply("Q", _xmt_domain_TU_1.a_1) AS G
+                  FROM _xmt_domain_TU AS _xmt_domain_TU_1
+                ) AS Outer_1 ON  Outer_1.x = Outer_0.x
+        ) AS _xmt__5_14
+  JOIN _xmt_domain_TU AS _xmt_domain_TU_1
+ WHERE  _xmt__5_14.x = _xmt_domain_TU_1.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT "x" AS x,
-       apply("or", apply("not", apply("domain", "x")), bool_eq_("true", apply("P", "x"), apply("Q", "x"))) AS G
+SELECT _xmt__5_15.x AS x,
+       apply("or", apply("not", apply("domain", _xmt__5_15.x)), _xmt__5_15.G) AS G
+  FROM (-- Join(8)
+        SELECT Outer_0.x AS x,
+               bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+          FROM (-- Join(16)
+                SELECT "x" AS x,
+                       apply("P", "x") AS G
+                ) AS Outer_0
+          FULL JOIN (-- Join(16)
+                SELECT "x" AS x,
+                       apply("Q", "x") AS G
+                ) AS Outer_1 ON  Outer_1.x = Outer_0.x
+        ) AS _xmt__5_15
 
 === (top) (forall ((x Int)) (or (not (domain x)) (= (P x) (Q x)))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
  FROM (-- Join(7)
-       SELECT "x" AS x,
-              apply("or", apply("not", apply("domain", "x")), bool_eq_("true", apply("P", "x"), apply("Q", "x"))) AS G)
+       SELECT _xmt__5_15.x AS x,
+              apply("or", apply("not", apply("domain", _xmt__5_15.x)), _xmt__5_15.G) AS G
+         FROM (-- Join(15)
+               SELECT Outer_0.x AS x,
+                      bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+                 FROM (-- Join(23)
+                       SELECT "x" AS x,
+                              apply("P", "x") AS G
+                       ) AS Outer_0
+                 FULL JOIN (-- Join(23)
+                       SELECT "x" AS x,
+                              apply("Q", "x") AS G
+                       ) AS Outer_1 ON  Outer_1.x = Outer_0.x
+               ) AS _xmt__5_15)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
  FROM (-- Join(7)
        SELECT _xmt_domain_TU_1.a_1 AS x,
-              bool_eq_("true", apply("P", _xmt_domain_TU_1.a_1), apply("Q", _xmt_domain_TU_1.a_1)) AS G
-         FROM _xmt_domain_TU AS _xmt_domain_TU_1)
+              _xmt__5_14.G AS G
+         FROM (-- Join(15)
+               SELECT Outer_0.x AS x,
+                      bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+                 FROM (-- Join(23)
+                       SELECT _xmt_domain_TU_1.a_1 AS x,
+                              apply("P", _xmt_domain_TU_1.a_1) AS G
+                         FROM _xmt_domain_TU AS _xmt_domain_TU_1
+                       ) AS Outer_0
+                 FULL JOIN (-- Join(23)
+                       SELECT _xmt_domain_TU_1.a_1 AS x,
+                              apply("Q", _xmt_domain_TU_1.a_1) AS G
+                         FROM _xmt_domain_TU AS _xmt_domain_TU_1
+                       ) AS Outer_1 ON  Outer_1.x = Outer_0.x
+               ) AS _xmt__5_14
+         JOIN _xmt_domain_TU AS _xmt_domain_TU_1
+        WHERE  _xmt__5_14.x = _xmt_domain_TU_1.a_1)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
  FROM (-- Join(7)
-       SELECT "x" AS x,
-              apply("or", apply("not", apply("domain", "x")), bool_eq_("true", apply("P", "x"), apply("Q", "x"))) AS G)
+       SELECT _xmt__5_15.x AS x,
+              apply("or", apply("not", apply("domain", _xmt__5_15.x)), _xmt__5_15.G) AS G
+         FROM (-- Join(15)
+               SELECT Outer_0.x AS x,
+                      bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+                 FROM (-- Join(23)
+                       SELECT "x" AS x,
+                              apply("P", "x") AS G
+                       ) AS Outer_0
+                 FULL JOIN (-- Join(23)
+                       SELECT "x" AS x,
+                              apply("Q", "x") AS G
+                       ) AS Outer_1 ON  Outer_1.x = Outer_0.x
+               ) AS _xmt__5_15)
 
 ===  x ======================================
  -- Join(0)
@@ -304,3 +409,8 @@ SELECT and_aggregate(G) as G
                ) AS _xmt_q_10_22 ON  _xmt_q_10_22.x = _xmt_p_9_19.x)
 
 ===========================================
+error: at position (27, 29): Too many boolean arguments
+   |
+27 | (assert (forall ((x Color)) (= (p x)
+   |                             ^ Too many boolean arguments
+   |

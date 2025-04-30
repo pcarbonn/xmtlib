@@ -366,7 +366,13 @@ pub(crate) fn init_db(
                     rusqlite::types::ValueRef::Text(_) => {
                         let val = ctx.get::<String>(i)?;
                         args.push(val.clone());
-                        strs.push(val);
+                        if let Ok(val) = val.parse::<i64>() {
+                            ints.push(val)
+                        } else if let Ok(val) = val.parse::<f64>() {
+                            reals.push(val)
+                        } else {
+                            strs.push(val)
+                        }
                     }
                     rusqlite::types::ValueRef::Blob(_) =>
                         return Err(Error::InvalidFunctionParameterType(i, value.data_type())),

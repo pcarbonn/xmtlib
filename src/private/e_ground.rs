@@ -449,6 +449,9 @@ fn ground_compound(
                         let (mut gqs, outer) = match groundings.get(0) {
                             Some(Grounding::Boolean { .. }) => {
                                 //TODO choose TF or UF
+                                if 2 < gqs.len() {
+                                    return Err(SolverError::TermError("Too many boolean arguments", term.clone()))  //TODO relax constraint
+                                }
                                 (ufs, true)
                             },
                             Some(Grounding::NonBoolean { .. }) => {
