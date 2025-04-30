@@ -482,8 +482,9 @@ peg::parser!{
             { XDebug (typ, object) }
 
         rule xground() -> Command
-            = "x-ground"
-            { XGround }
+            = "x-ground" _
+              debug: "debug:"?
+            { XGround(debug.is_some()) }
 
         rule verbatim() -> Command
             = command: ( "check-sat-assuming"

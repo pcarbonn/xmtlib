@@ -5,16 +5,15 @@ use std::future::Future;
 use genawaiter::{sync::Gen, sync::gen, yield_};
 use rusqlite::Connection;
 
-use crate::ast::{QualIdentifier, Term};
-use crate::error::SolverError::{self, *};
-use crate::solver::{Solver, Backend};
+use crate::ast::{L, QualIdentifier, Identifier, Symbol, Term};
+use crate::error::{Offset, SolverError::{self, *}};
+use crate::solver::Solver;
 
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, Interpretation};
 use crate::private::e1_ground_view::{GroundingView, ViewType, QueryVariant,
     view_for_constant, view_for_variable, view_for_compound, view_for_aggregate, view_for_union};
 use crate::private::e2_ground_query::{TableName, TableAlias};
-use crate::ast::L;
 
 
 /////////////////////  Data structure for Grounding  //////////////////////////
@@ -51,6 +50,7 @@ impl std::fmt::Display for Grounding {
 
 /// ground the pending assertions
 pub(crate) fn ground(
+    debug: bool,
     solver: &mut Solver
 ) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {
 
@@ -58,19 +58,20 @@ pub(crate) fn ground(
         // update statistics in DB
         solver.conn.execute("ANALYZE", []).unwrap();
 
-        // extract terms and commands
-        let (commands, terms) = solver.assertions_to_ground.iter()
-            .map(|(command, term)| (command.clone(), term.clone()))
-            .collect::<(Vec<_>, Vec<_>)>();
+        // concatenate the assertions to be grounded
+        let terms = solver.assertions_to_ground.clone();
 
-        for (term, command) in terms.iter().zip(commands) {
-            if solver.backend != Backend::NoDriver {
-                // push and pop, to avoid polluting the SMT state
-                yield_!(solver.exec("(push)"));
-                yield_!(solver.exec(&command));
-                yield_!(solver.exec("(pop)"));
-            }
+        let terms = if debug {
+            // slower, but avoid random ordering of grounded assertions
+            terms
+        } else {
+            // faster, because it gives sqlite more scope for optimisation
+            let and_ = QualIdentifier::Identifier(L(Identifier::Simple(Symbol("and".to_string())), Offset(0)));
+            let term = L(Term::Application(and_, terms), Offset(0));
+            vec![term]
+        };
 
+        for term in terms {
             match ground_term(&term, true, solver) {
                 Ok(g) => {
                     match g {
@@ -232,12 +233,12 @@ pub(crate) fn ground_term_(
         L(Term::Identifier(qual_identifier), _) => {
 
             // an identifier
-            ground_compound(term, qual_identifier, &mut vec![], solver)
+            ground_compound(term, qual_identifier, &mut vec![], false, solver)
         },
         L(Term::Application(qual_identifier, sub_terms), _) => {
 
             // a compound term
-            ground_compound(term, qual_identifier, sub_terms, solver)
+            ground_compound(term, qual_identifier, sub_terms, top_level, solver)
         },
         L(Term::Let(..), _) => todo!(),
         L(Term::Forall(variables, term), _) => {
@@ -333,12 +334,19 @@ fn ground_compound(
     term: &L<Term>,
     qual_identifier: &QualIdentifier,
     sub_terms: &Vec<L<Term>>,
+    top_level: bool,
     solver: &mut Solver
 ) -> Result<Grounding, SolverError> {
 
+    let top_level = if qual_identifier.to_string() == "and" {
+            top_level
+        } else {
+            false
+        };
+
     // ground sub_terms, creating an entry in solver.groundings if necessary
     let groundings = sub_terms.iter()
-        .map( |t| ground_term(t, false, solver))
+        .map( |t| ground_term(t, top_level, solver))
         .collect::<Result<Vec<_>,_>>()?;
 
     let index = solver.groundings.len();
@@ -407,7 +415,8 @@ fn ground_compound(
 
                         let tu = view_for_compound(qual_identifier, index, &mut tus, &variant, Some(false), solver)?;
 
-                        let uf = view_for_union(ufs, Some(true), "and".to_string(), index)?;
+                        let agg = if top_level { "" } else { "and" };
+                        let uf = view_for_union(ufs, Some(true), agg.to_string(), index)?;
 
                         let g = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
 

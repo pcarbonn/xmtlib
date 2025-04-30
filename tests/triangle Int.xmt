@@ -12,7 +12,7 @@
             (=> (and (Edge x y) (Edge y z) (Edge x z))
                 (phi x y z)
             )))
-(x-ground)
+(x-ground debug:)
 (x-debug solver functions)
 ;(x-debug db-view Edge_UF)
 (x-debug solver groundings)

@@ -10,7 +10,7 @@
 (assert (not (and (is_true true) (is_true false))))
 (assert (not (is_true (exists ((x Bool)) (is_true x)))))
 
-(x-ground)
+(x-ground debug:)
 (x-debug solver groundings)
 (x-debug db tables)
 (x-debug db _xmt_is_true_UF)
@@ -30,7 +30,7 @@ SELECT "false" AS G
 -- Join(0)
 SELECT "false" AS G
 
-===  true ======================================
+=== (top) true ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
 SELECT "true" AS G
@@ -70,21 +70,17 @@ SELECT "false" AS G
 -- Join(0)
 SELECT "false" AS G
 
-=== (top) (is_true true) ======================================
+===  true ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
 SELECT "true" AS G
-  FROM _xmt_is_true_TU AS _xmt_is_true_TU_5
- WHERE "true" = _xmt_is_true_TU_5.a_1
 ----- F ------------------------------------------------------------
 SELECT "true" AS G WHERE FALSE
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_is_true_G_5.G AS G
-  FROM _xmt_is_true_G AS _xmt_is_true_G_5
- WHERE "true" = _xmt_is_true_G_5.a_1
+SELECT "true" AS G
 
-===  (is_true true) ======================================
+=== (top) (is_true true) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
 SELECT "true" AS G
@@ -98,19 +94,33 @@ SELECT _xmt_is_true_G_6.G AS G
   FROM _xmt_is_true_G AS _xmt_is_true_G_6
  WHERE "true" = _xmt_is_true_G_6.a_1
 
+===  (is_true true) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+  FROM _xmt_is_true_TU AS _xmt_is_true_TU_7
+ WHERE "true" = _xmt_is_true_TU_7.a_1
+----- F ------------------------------------------------------------
+SELECT "true" AS G WHERE FALSE
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_is_true_G_7.G AS G
+  FROM _xmt_is_true_G AS _xmt_is_true_G_7
+ WHERE "true" = _xmt_is_true_G_7.a_1
+
 ===  (not (is_true true)) ======================================
 ----- T ------------------------------------------------------------
 SELECT "true" AS G WHERE FALSE
 ----- F ------------------------------------------------------------
 -- Join(0)
 SELECT "false" AS G
-  FROM _xmt_is_true_TU AS _xmt_is_true_TU_6
- WHERE "true" = _xmt_is_true_TU_6.a_1
+  FROM _xmt_is_true_TU AS _xmt_is_true_TU_7
+ WHERE "true" = _xmt_is_true_TU_7.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT not_(_xmt_is_true_G_6.G) AS G
-  FROM _xmt_is_true_G AS _xmt_is_true_G_6
- WHERE "true" = _xmt_is_true_G_6.a_1
+SELECT not_(_xmt_is_true_G_7.G) AS G
+  FROM _xmt_is_true_G AS _xmt_is_true_G_7
+ WHERE "true" = _xmt_is_true_G_7.a_1
 
 ===  (is_true false) ======================================
 ----- T ------------------------------------------------------------
@@ -118,88 +128,88 @@ SELECT "true" AS G WHERE FALSE
 ----- F ------------------------------------------------------------
 -- Join(0)
 SELECT "false" AS G
-  FROM _xmt_is_true_UF AS _xmt_is_true_UF_8
- WHERE "false" = _xmt_is_true_UF_8.a_1
+  FROM _xmt_is_true_UF AS _xmt_is_true_UF_9
+ WHERE "false" = _xmt_is_true_UF_9.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_is_true_G_8.G AS G
-  FROM _xmt_is_true_G AS _xmt_is_true_G_8
- WHERE "false" = _xmt_is_true_G_8.a_1
+SELECT _xmt_is_true_G_9.G AS G
+  FROM _xmt_is_true_G AS _xmt_is_true_G_9
+ WHERE "false" = _xmt_is_true_G_9.a_1
 
 ===  (not (is_true false)) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
 SELECT "true" AS G
-  FROM _xmt_is_true_UF AS _xmt_is_true_UF_8
- WHERE "false" = _xmt_is_true_UF_8.a_1
+  FROM _xmt_is_true_UF AS _xmt_is_true_UF_9
+ WHERE "false" = _xmt_is_true_UF_9.a_1
 ----- F ------------------------------------------------------------
 SELECT "true" AS G WHERE FALSE
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT not_(_xmt_is_true_G_8.G) AS G
-  FROM _xmt_is_true_G AS _xmt_is_true_G_8
- WHERE "false" = _xmt_is_true_G_8.a_1
+SELECT not_(_xmt_is_true_G_9.G) AS G
+  FROM _xmt_is_true_G AS _xmt_is_true_G_9
+ WHERE "false" = _xmt_is_true_G_9.a_1
 
 === (top) (or (not (is_true true)) (not (is_true false))) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
 SELECT "true" AS G
-  FROM _xmt_is_true_UF AS _xmt_is_true_UF_8
- WHERE "false" = _xmt_is_true_UF_8.a_1
+  FROM _xmt_is_true_UF AS _xmt_is_true_UF_9
+ WHERE "false" = _xmt_is_true_UF_9.a_1
 ----- F ------------------------------------------------------------
 SELECT "true" AS G WHERE FALSE
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT or_(not_(_xmt_is_true_G_6.G), not_(_xmt_is_true_G_8.G)) AS G
-  FROM _xmt_is_true_G AS _xmt_is_true_G_6
-  JOIN _xmt_is_true_G AS _xmt_is_true_G_8
-        ON "false" = _xmt_is_true_G_8.a_1
- WHERE "true" = _xmt_is_true_G_6.a_1
+SELECT or_(not_(_xmt_is_true_G_7.G), not_(_xmt_is_true_G_9.G)) AS G
+  FROM _xmt_is_true_G AS _xmt_is_true_G_7
+  JOIN _xmt_is_true_G AS _xmt_is_true_G_9
+        ON "false" = _xmt_is_true_G_9.a_1
+ WHERE "true" = _xmt_is_true_G_7.a_1
 
 ===  x ======================================
  -- Join(0)
-SELECT Bool_11.G AS x,
-       Bool_11.G AS G
-  FROM Bool AS Bool_11
+SELECT Bool_12.G AS x,
+       Bool_12.G AS G
+  FROM Bool AS Bool_12
 ===  (is_true x) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_is_true_TU_12.a_1 AS x,
+SELECT _xmt_is_true_TU_13.a_1 AS x,
        "true" AS G
-  FROM _xmt_is_true_TU AS _xmt_is_true_TU_12
+  FROM _xmt_is_true_TU AS _xmt_is_true_TU_13
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_is_true_UF_12.a_1 AS x,
+SELECT _xmt_is_true_UF_13.a_1 AS x,
        "false" AS G
-  FROM _xmt_is_true_UF AS _xmt_is_true_UF_12
+  FROM _xmt_is_true_UF AS _xmt_is_true_UF_13
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_is_true_G_12.a_1 AS x,
-       _xmt_is_true_G_12.G AS G
-  FROM _xmt_is_true_G AS _xmt_is_true_G_12
+SELECT _xmt_is_true_G_13.a_1 AS x,
+       _xmt_is_true_G_13.G AS G
+  FROM _xmt_is_true_G AS _xmt_is_true_G_13
 
 ===  (exists ((x Bool)) (is_true x)) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (-- Join(7)
-       SELECT _xmt_is_true_TU_12.a_1 AS x,
+       SELECT _xmt_is_true_TU_13.a_1 AS x,
               "true" AS G
-         FROM _xmt_is_true_TU AS _xmt_is_true_TU_12)
+         FROM _xmt_is_true_TU AS _xmt_is_true_TU_13)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (-- Join(7)
-       SELECT _xmt_is_true_G_12.a_1 AS x,
-              _xmt_is_true_G_12.G AS G
-         FROM _xmt_is_true_G AS _xmt_is_true_G_12)
+       SELECT _xmt_is_true_G_13.a_1 AS x,
+              _xmt_is_true_G_13.G AS G
+         FROM _xmt_is_true_G AS _xmt_is_true_G_13)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (-- Join(7)
-       SELECT _xmt_is_true_G_12.a_1 AS x,
-              _xmt_is_true_G_12.G AS G
-         FROM _xmt_is_true_G AS _xmt_is_true_G_12)
+       SELECT _xmt_is_true_G_13.a_1 AS x,
+              _xmt_is_true_G_13.G AS G
+         FROM _xmt_is_true_G AS _xmt_is_true_G_13)
 
 ===  (is_true (exists ((x Bool)) (is_true x))) ======================================
 ----- T ------------------------------------------------------------
@@ -208,33 +218,33 @@ SELECT "true" AS G
   FROM (-- Agg (8)
         SELECT or_aggregate(G) as G
          FROM (-- Join(15)
-               SELECT _xmt_is_true_TU_12.a_1 AS x,
+               SELECT _xmt_is_true_TU_13.a_1 AS x,
                       "true" AS G
-                 FROM _xmt_is_true_TU AS _xmt_is_true_TU_12)
-        ) AS Agg_13_TU
-  JOIN _xmt_is_true_TU AS _xmt_is_true_TU_14
+                 FROM _xmt_is_true_TU AS _xmt_is_true_TU_13)
+        ) AS Agg_14_TU
+  JOIN _xmt_is_true_TU AS _xmt_is_true_TU_15
 ----- F ------------------------------------------------------------
 -- Join(0)
 SELECT "false" AS G
   FROM (-- Agg (8)
         SELECT or_aggregate(G) as G
          FROM (-- Join(15)
-               SELECT _xmt_is_true_G_12.a_1 AS x,
-                      _xmt_is_true_G_12.G AS G
-                 FROM _xmt_is_true_G AS _xmt_is_true_G_12)
-        ) AS Agg_13_UF
-  JOIN _xmt_is_true_UF AS _xmt_is_true_UF_14
+               SELECT _xmt_is_true_G_13.a_1 AS x,
+                      _xmt_is_true_G_13.G AS G
+                 FROM _xmt_is_true_G AS _xmt_is_true_G_13)
+        ) AS Agg_14_UF
+  JOIN _xmt_is_true_UF AS _xmt_is_true_UF_15
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_is_true_G_14.G AS G
+SELECT _xmt_is_true_G_15.G AS G
   FROM (-- Agg (8)
         SELECT or_aggregate(G) as G
          FROM (-- Join(15)
-               SELECT _xmt_is_true_G_12.a_1 AS x,
-                      _xmt_is_true_G_12.G AS G
-                 FROM _xmt_is_true_G AS _xmt_is_true_G_12)
-        ) AS Agg_13_G
-  JOIN _xmt_is_true_G AS _xmt_is_true_G_14
+               SELECT _xmt_is_true_G_13.a_1 AS x,
+                      _xmt_is_true_G_13.G AS G
+                 FROM _xmt_is_true_G AS _xmt_is_true_G_13)
+        ) AS Agg_14_G
+  JOIN _xmt_is_true_G AS _xmt_is_true_G_15
 
 === (top) (not (is_true (exists ((x Bool)) (is_true x)))) ======================================
 ----- T ------------------------------------------------------------
@@ -243,33 +253,33 @@ SELECT "true" AS G
   FROM (-- Agg (8)
         SELECT or_aggregate(G) as G
          FROM (-- Join(15)
-               SELECT _xmt_is_true_G_12.a_1 AS x,
-                      _xmt_is_true_G_12.G AS G
-                 FROM _xmt_is_true_G AS _xmt_is_true_G_12)
-        ) AS Agg_13_UF
-  JOIN _xmt_is_true_UF AS _xmt_is_true_UF_14
+               SELECT _xmt_is_true_G_13.a_1 AS x,
+                      _xmt_is_true_G_13.G AS G
+                 FROM _xmt_is_true_G AS _xmt_is_true_G_13)
+        ) AS Agg_14_UF
+  JOIN _xmt_is_true_UF AS _xmt_is_true_UF_15
 ----- F ------------------------------------------------------------
 -- Join(0)
 SELECT "false" AS G
   FROM (-- Agg (8)
         SELECT or_aggregate(G) as G
          FROM (-- Join(15)
-               SELECT _xmt_is_true_TU_12.a_1 AS x,
+               SELECT _xmt_is_true_TU_13.a_1 AS x,
                       "true" AS G
-                 FROM _xmt_is_true_TU AS _xmt_is_true_TU_12)
-        ) AS Agg_13_TU
-  JOIN _xmt_is_true_TU AS _xmt_is_true_TU_14
+                 FROM _xmt_is_true_TU AS _xmt_is_true_TU_13)
+        ) AS Agg_14_TU
+  JOIN _xmt_is_true_TU AS _xmt_is_true_TU_15
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT not_(_xmt_is_true_G_14.G) AS G
+SELECT not_(_xmt_is_true_G_15.G) AS G
   FROM (-- Agg (8)
         SELECT or_aggregate(G) as G
          FROM (-- Join(15)
-               SELECT _xmt_is_true_G_12.a_1 AS x,
-                      _xmt_is_true_G_12.G AS G
-                 FROM _xmt_is_true_G AS _xmt_is_true_G_12)
-        ) AS Agg_13_G
-  JOIN _xmt_is_true_G AS _xmt_is_true_G_14
+               SELECT _xmt_is_true_G_13.a_1 AS x,
+                      _xmt_is_true_G_13.G AS G
+                 FROM _xmt_is_true_G AS _xmt_is_true_G_13)
+        ) AS Agg_14_G
+  JOIN _xmt_is_true_G AS _xmt_is_true_G_15
 
 ===========================================
 Tables and Views:

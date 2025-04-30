@@ -14,13 +14,12 @@ use crate::ast::L;
 
 pub(crate) fn assert_(
     term: &L<Term>,
-    command: String,
     solver: &mut Solver
 ) -> Result<String, SolverError> {
 
     let mut variables = IndexMap::new();
     let new_term = annotate_term(term, &mut variables, solver)?;
-    solver.assertions_to_ground.push((command, new_term));
+    solver.assertions_to_ground.push(new_term);
     Ok("".to_string())
 }
 
@@ -165,7 +164,7 @@ pub(crate) fn annotate_term(
         },
 
         L(Term::Let(var_bindings, term), start) => {
-            // transform the t_i in var_bindings using variables, and term using new_variables for propoer shadowing
+            // transform the t_i in var_bindings using variables, and term using new_variables for proper shadowing
             let mut new_variables = variables.clone();
             let mut new_var_bindings = vec![];
             for VarBinding(symbol, binding) in var_bindings {

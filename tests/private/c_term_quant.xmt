@@ -13,7 +13,7 @@
 (assert (not (exists ((x Bool)) (r x))))
 (assert (forall ((x Bool)) (=> (and (r x) (r x)) false)))
 
-(x-ground)
+(x-ground debug:)
 (x-debug solver groundings)
 (x-debug db tables)
 -------------------------

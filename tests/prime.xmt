@@ -8,7 +8,7 @@
                                                         (> (mod x y) 0)))))))
 
 (x-interpret-pred domain (x-range 2 10))
-(x-ground)
+(x-ground debug:)
 (x-debug solver groundings)
 -------------------------
 (declare-fun domain (Int) Bool)

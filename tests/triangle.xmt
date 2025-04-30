@@ -384,5 +384,108 @@ SELECT or_aggregate(G) as G
               _xmt_edge_G_2.G AS G
          FROM _xmt_edge_G AS _xmt_edge_G_2)
 
+=== (top) (and (forall ((x Node) (y Node) (z Node)) (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z))) (forall ((x Node)) (Edge x x)) (exists ((x Node) (y Node)) (Edge x y))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT apply("and", Agg_11_TU.G, Agg_13_TU.G, Agg_14_TU.G) AS G
+  FROM (-- Agg (8)
+        SELECT and_aggregate(G) as G
+         FROM (-- Join(15)
+               SELECT _xmt_edge_G_2.a_1 AS x,
+                      _xmt_edge_G_2.a_2 AS y,
+                      _xmt_edge_G_5.a_2 AS z,
+                      apply("or", not_(_xmt_edge_G_2.G), not_(_xmt_edge_G_5.G), not_(_xmt_edge_G_7.G), apply("phi", _xmt_edge_G_2.a_1, _xmt_edge_G_2.a_2, _xmt_edge_G_5.a_2)) AS G
+                 FROM _xmt_edge_G AS _xmt_edge_G_2
+                 JOIN _xmt_edge_G AS _xmt_edge_G_5
+                       ON _xmt_edge_G_2.a_2 = _xmt_edge_G_5.a_1
+                 JOIN _xmt_edge_G AS _xmt_edge_G_7
+                       ON _xmt_edge_G_2.a_1 = _xmt_edge_G_7.a_1 AND _xmt_edge_G_5.a_2 = _xmt_edge_G_7.a_2)
+        ) AS Agg_11_TU
+  JOIN (-- Agg (8)
+        SELECT and_aggregate(G) as G
+         FROM (-- Join(15)
+               SELECT _xmt_edge_G_12.a_1 AS x,
+                      _xmt_edge_G_12.G AS G
+                 FROM _xmt_edge_G AS _xmt_edge_G_12
+                WHERE _xmt_edge_G_12.a_1 = _xmt_edge_G_12.a_2)
+        ) AS Agg_13_TU
+  JOIN (-- Agg (8)
+        SELECT or_aggregate(G) as G
+         FROM (-- Join(15)
+               SELECT _xmt_edge_TU_2.a_1 AS x,
+                      _xmt_edge_TU_2.a_2 AS y,
+                      "true" AS G
+                 FROM _xmt_edge_TU AS _xmt_edge_TU_2)
+        ) AS Agg_14_TU
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Agg (14)
+              SELECT G as G
+               FROM (-- exclude(21)
+                     SELECT *
+                      FROM (-- Join(28)
+                            SELECT _xmt_edge_TU_2.a_1 AS x,
+                                   _xmt_edge_TU_2.a_2 AS y,
+                                   _xmt_edge_TU_5.a_2 AS z,
+                                   apply("phi", _xmt_edge_TU_2.a_1, _xmt_edge_TU_2.a_2, _xmt_edge_TU_5.a_2) AS G
+                              FROM _xmt_edge_TU AS _xmt_edge_TU_2
+                              JOIN _xmt_edge_TU AS _xmt_edge_TU_5
+                                    ON _xmt_edge_TU_2.a_2 = _xmt_edge_TU_5.a_1
+                              JOIN _xmt_edge_TU AS _xmt_edge_TU_7
+                                    ON _xmt_edge_TU_2.a_1 = _xmt_edge_TU_7.a_1 AND _xmt_edge_TU_5.a_2 = _xmt_edge_TU_7.a_2)
+                      WHERE G <> "true")
+              UNION
+              -- Agg (14)
+              SELECT G as G
+               FROM (-- Join(21)
+                     SELECT _xmt_edge_UF_12.a_1 AS x,
+                            "false" AS G
+                       FROM _xmt_edge_UF AS _xmt_edge_UF_12
+                      WHERE _xmt_edge_UF_12.a_1 = _xmt_edge_UF_12.a_2)
+              UNION
+              -- Agg (14)
+              SELECT or_aggregate(G) as G
+               FROM (-- Join(21)
+                     SELECT _xmt_edge_G_2.a_1 AS x,
+                            _xmt_edge_G_2.a_2 AS y,
+                            _xmt_edge_G_2.G AS G
+                       FROM _xmt_edge_G AS _xmt_edge_G_2))
+        WHERE G <> "true")
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT apply("and", Agg_11_G.G, Agg_13_G.G, Agg_14_G.G) AS G
+  FROM (-- Agg (8)
+        SELECT and_aggregate(G) as G
+         FROM (-- Join(15)
+               SELECT _xmt_edge_G_2.a_1 AS x,
+                      _xmt_edge_G_2.a_2 AS y,
+                      _xmt_edge_G_5.a_2 AS z,
+                      apply("or", not_(_xmt_edge_G_2.G), not_(_xmt_edge_G_5.G), not_(_xmt_edge_G_7.G), apply("phi", _xmt_edge_G_2.a_1, _xmt_edge_G_2.a_2, _xmt_edge_G_5.a_2)) AS G
+                 FROM _xmt_edge_G AS _xmt_edge_G_2
+                 JOIN _xmt_edge_G AS _xmt_edge_G_5
+                       ON _xmt_edge_G_2.a_2 = _xmt_edge_G_5.a_1
+                 JOIN _xmt_edge_G AS _xmt_edge_G_7
+                       ON _xmt_edge_G_2.a_1 = _xmt_edge_G_7.a_1 AND _xmt_edge_G_5.a_2 = _xmt_edge_G_7.a_2)
+        ) AS Agg_11_G
+  JOIN (-- Agg (8)
+        SELECT and_aggregate(G) as G
+         FROM (-- Join(15)
+               SELECT _xmt_edge_G_12.a_1 AS x,
+                      _xmt_edge_G_12.G AS G
+                 FROM _xmt_edge_G AS _xmt_edge_G_12
+                WHERE _xmt_edge_G_12.a_1 = _xmt_edge_G_12.a_2)
+        ) AS Agg_13_G
+  JOIN (-- Agg (8)
+        SELECT or_aggregate(G) as G
+         FROM (-- Join(15)
+               SELECT _xmt_edge_G_2.a_1 AS x,
+                      _xmt_edge_G_2.a_2 AS y,
+                      _xmt_edge_G_2.G AS G
+                 FROM _xmt_edge_G AS _xmt_edge_G_2)
+        ) AS Agg_14_G
+
 ===========================================
 (check-sat)

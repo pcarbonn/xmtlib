@@ -5,7 +5,7 @@
 (declare-fun q (Int) Bool)
 (assert (= 2 (ite (p 1) 1 2)))
 (assert (ite true (p 2) (p 3)))
-(x-ground)
+(x-ground debug:)
 (x-debug solver groundings)
 (x-debug db tables)
 -------------------------

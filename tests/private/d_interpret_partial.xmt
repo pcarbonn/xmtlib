@@ -13,7 +13,7 @@
    ? )
 (assert (= green (mix red green)))
 (assert (exists ((x Color)) (= (mix x x) x)))
-(x-ground)
+(x-ground debug:)
 (x-debug solver functions)
 (x-debug solver groundings)
 (x-debug db tables)

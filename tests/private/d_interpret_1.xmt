@@ -27,7 +27,7 @@
 ; convert to definition
 (declare-fun dark (Color) Bool)
 (assert (dark red))
-(x-ground)
+(x-ground debug:)
 (x-debug db _xmt_bright_TU)
 (x-debug db _xmt_bright_G)
 (x-debug db _xmt_Color)

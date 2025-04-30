@@ -14,7 +14,7 @@
 ) ? )
 (assert (p b B))
 (assert (forall ((x T)) (p x (f x)) ))
-(x-ground)
+(x-ground debug:)
 (x-debug db _xmt_p_g)
 (x-debug solver groundings)
 (x-debug db tables)

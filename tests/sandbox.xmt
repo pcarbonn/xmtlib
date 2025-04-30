@@ -5,7 +5,7 @@
 (x-interpret-pred dim (x-set ((hue red red))))
 (assert (exists ((x Hue)) (dim x) ))
 
-(x-ground)
+(x-ground debug:)
 (x-debug db _xmt_Color)
 (x-debug db _xmt_Hue)
 (x-debug db _xmt_dim_T)

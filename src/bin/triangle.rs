@@ -64,7 +64,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     (=> (and (Edge x y) (Edge y z) (Edge x z))
                             (phi x y z)
                     )))
-        (x-ground)
+        (x-ground debug:)
     "#);
     let grounding = Instant::now();
     println!("Grounding: {:?}", grounding.duration_since(declaration));

@@ -52,7 +52,7 @@ pub struct Solver {
     /// To support differed grounding of terms.
     /// The string is the original assertion command.
     /// The first element is the annotated term
-    pub(crate) assertions_to_ground: Vec<(String, L<Term>)>,
+    pub(crate) assertions_to_ground: Vec<L<Term>>,
     /// a mapping from a term (top-level?) to a composable representation of its grounding
     pub(crate) groundings: IndexMap<(L<Term>, bool), Grounding>,
 
@@ -238,11 +238,19 @@ impl Solver {
             let command = c.to_string();
             match c {
 
-                Command::Assert(term) =>
-                    yield_!(assert_(&term, command, self)),
+                Command::Assert(term) => {
+                    if self.backend != Backend::NoDriver {
+                        // submit to solver to detect syntax error
+                        // push and pop, to avoid polluting the SMT state
+                        yield_!(self.exec("(push)"));
+                        yield_!(self.exec(&command));
+                        yield_!(self.exec("(pop)"));
+                    }
 
+                    yield_!(assert_(&term, self))
+                }
                 Command::CheckSat => {
-                    for res in ground(self) {
+                    for res in ground(false, self) {
                         yield_!(res)
                     }
                     match self.exec(&command) {
@@ -362,8 +370,8 @@ impl Solver {
                     }
                 },
 
-                Command::XGround => {
-                    for res in ground(self) {
+                Command::XGround(debug) => {
+                    for res in ground(debug, self) {
                         yield_!(res)
                     }
                 }

@@ -10,7 +10,7 @@
 (x-interpret-pred domain2 (x-set (10 20)))
 (assert (forall ((x Int) (y Int)) (=> (domain2 x y)
                               (exists ((y Int)) (Q x y)))))
-(x-ground)
+(x-ground debug:)
 (x-debug solver groundings)
 -------------------------
 (declare-fun domain (Int) Bool)

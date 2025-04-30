@@ -81,7 +81,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         (declare-fun Strength (Color) Int)
         (x-interpret-fun Strength (x-sql "SELECT G as a_1, 1 as G from _xmt_color"))
         (assert (= (Strength red) 1))
-        (x-ground)
+        (x-ground debug:)
         (check-sat)
     "#);
 
