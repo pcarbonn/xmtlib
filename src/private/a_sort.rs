@@ -324,9 +324,9 @@ pub(crate) fn instantiate_parent_sort(
 
                             // create sort object
                             match sort_object {
-                                SortObject::Normal{table, row_count, ..} => {
+                                SortObject::Normal{datatype_dec, table, row_count} => {
                                     let alias = Some((table.clone(), row_count.clone()));
-                                    insert_sort(parent_sort.clone(), None, new_g, alias, solver)
+                                    insert_sort(parent_sort.clone(), Some(datatype_dec.clone()), new_g, alias, solver)
                                 },
                                 SortObject::Infinite
                                 | SortObject::Recursive
@@ -439,7 +439,7 @@ fn insert_sort(
                             },
                         }
                     } else {
-                        SortObject::Unknown
+                        unreachable!()
                     }
                 },
                 TypeInterpretation::Unknown => SortObject::Unknown,

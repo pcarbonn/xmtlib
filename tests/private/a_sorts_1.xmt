@@ -58,8 +58,8 @@ Sorts:
  - (recursive) (Pair ColorList (Pair ColorList ColorList))
  - (recursive) (Triplet ColorList)
  - (Sort_8: 5) PairColor: ((white ) (pair (first Color) (second Color)))
- - (unknown) (MyPair Color)
- - (unknown) MyPairColor
+ - (Sort_8: 5) (MyPair Color): ((white ) (pair (first Color) (second Color)))
+ - (Sort_8: 5) MyPairColor: ((white ) (pair (first Color) (second Color)))
  - (unknown) (_ BitVec 2)
  - (unknown) (Pair (_ BitVec 2) (_ BitVec 2))
  - (unknown) (MyPair (_ BitVec 2))

@@ -345,7 +345,7 @@ peg::parser!{
             { DatatypeDec::Par(v, c) }
 
             / "(" _
-              c:( constructor_dec() ** _ ) _
+              c:( constructor_dec() ++ _ ) _
               ")"
             { DatatypeDec::DatatypeDec(c) }
 
