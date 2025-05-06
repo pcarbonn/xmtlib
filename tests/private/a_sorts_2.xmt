@@ -28,8 +28,8 @@
 (define-sort MyPair () (Pair A B))
 Parametric datatypes:
  - (unknown): Array
- - (recursive): Tree
- - (recursive): TreeList
+ - (recursive) Tree: (par (X) ((node (value X) (children (TreeList X)))))
+ - (recursive) TreeList: (par (Y) ((empty ) (insert (head (Tree Y)) (tail (TreeList Y)))))
  - (unknown): Pair
 Sorts:
  - (Bool: 2) Bool: ((true ) (false ))

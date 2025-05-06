@@ -319,8 +319,8 @@ impl Solver {
                                                     .collect::<Vec<String>>().join(",");
                                                 yield_!(Ok(format!(" - {sort}: ({vars}) -> {definiendum}\n")))
                                             },
-                                            ParametricObject::Recursive =>
-                                                yield_!(Ok(format!(" - (recursive): {sort}\n"))),
+                                            ParametricObject::Recursive(decl) =>
+                                                yield_!(Ok(format!(" - (recursive) {sort}: {decl}\n"))),
                                             ParametricObject::Unknown =>
                                                 yield_!(Ok(format!(" - (unknown): {sort}\n"))),
                                         }

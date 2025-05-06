@@ -23,7 +23,7 @@ use debug_print::debug_println as dprintln;
 pub(crate) enum ParametricObject {
     Datatype(DatatypeDec),
     DTDefinition{ variables: Vec<Symbol>, definiendum: Sort },
-    Recursive,
+    Recursive(DatatypeDec),
     Unknown
 }
 
@@ -170,7 +170,7 @@ pub(crate) fn create_parametric_sort(
     }
 
     if recursive {
-        solver.parametric_sorts.insert(symb.clone(), ParametricObject::Recursive);
+        solver.parametric_sorts.insert(symb.clone(), ParametricObject::Recursive(dec.clone()));
     } else {
         let value = ParametricObject::Datatype(dec.clone());
         solver.parametric_sorts.insert(symb.clone(), value);
@@ -339,8 +339,8 @@ pub(crate) fn instantiate_parent_sort(
                         ParametricObject::Datatype(DatatypeDec::DatatypeDec(_)) => {
                             Err(InternalError(1786496))  // Unexpected non-parametric type
                         },
-                        ParametricObject::Recursive => {
-                            insert_sort(parent_sort.clone(), None, TypeInterpretation::Recursive, None, solver)
+                        ParametricObject::Recursive(decl) => {
+                            insert_sort(parent_sort.clone(), Some(decl), TypeInterpretation::Recursive, None, solver)
                         },
                         ParametricObject::Unknown => {
                             insert_sort(parent_sort.clone(), None, TypeInterpretation::Unknown, None, solver)
