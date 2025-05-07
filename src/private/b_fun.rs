@@ -97,7 +97,7 @@ pub(crate) fn declare_fun(
     let co_domain = solver.canonical_sorts.get(&co_domain)
         .ok_or(SolverError::ExprError("unknown co_domain".to_string()))?;
 
-    let identifier = QualIdentifier::Identifier(L(Identifier::Simple(symbol), Offset(0)));
+    let identifier = L(Identifier::Simple(symbol), Offset(0));
     let boolean = co_domain.to_string() == "Bool";
     let function_is = FunctionObject::NotInterpreted{signature: (domain, co_domain.clone(), boolean)};
     solver.functions.insert(identifier, function_is);
@@ -109,5 +109,10 @@ pub(crate) fn get_function_object<'a>(
     function: &'a QualIdentifier,
     solver: &'a Solver
 ) -> Option<&'a FunctionObject> {
-    solver.functions.get(function)
+    match function {
+        QualIdentifier::Identifier(identifier) =>
+            solver.functions.get(identifier),
+        QualIdentifier::Sorted(identifier, _) =>
+            solver.functions.get(identifier),
+    }
 }

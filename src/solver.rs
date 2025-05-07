@@ -34,6 +34,7 @@ pub(crate) type TermId = usize;
 #[derive(Debug, Display, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct CanonicalSort(pub(crate) Sort);
 
+
 /// A solver is used to solve SMT problems.
 pub struct Solver {
     /// A connection to the sqlite database used for grounding assertions
@@ -51,8 +52,7 @@ pub struct Solver {
     pub(crate) sort_objects: IndexMap<CanonicalSort, SortObject>,
 
     /// predicate and function symbols
-    pub(crate) functions: IndexMap<QualIdentifier, FunctionObject>,
-    // pub(crate) qualified_functions: IndexMap<QualIdentifier, FunctionObject>,
+    pub(crate) functions: IndexMap<L<Identifier>, FunctionObject>,
 
     /// To support differed grounding of terms.
     /// The string is the original assertion command.
@@ -142,7 +142,7 @@ impl Solver {
         // create pre-defined functions
         let mut functions = IndexMap::new();
         let function = |s: &str|
-            QualIdentifier::Identifier(L(Identifier::Simple(Symbol(s.to_string())), Offset(0)));
+            L(Identifier::Simple(Symbol(s.to_string())), Offset(0));
 
         // boolean pre-defined functions
         // LINK src/doc.md#_Constructor

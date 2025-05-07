@@ -6,7 +6,7 @@ use unzip_n::unzip_n;
 
 unzip_n!(pub 4);
 
-use crate::ast::{Identifier, QualIdentifier, Sort, XTuple, XSet, Term, SpecConstant, String_};
+use crate::ast::{Identifier, Sort, XTuple, XSet, Term, SpecConstant, String_};
 use crate::error::SolverError::{self, InternalError};
 use crate::solver::{Solver, CanonicalSort};
 
@@ -23,10 +23,9 @@ pub(crate) fn interpret_pred(
     solver: &mut Solver,
 ) -> Result<String, SolverError> {
     // get the symbol declaration
-    let qual_identifier = QualIdentifier::Identifier(identifier.clone());
     let table_name = solver.create_table_name(identifier.to_string());
 
-    let function_is = get_function_object(&qual_identifier, solver)
+    let function_is = solver.functions.get(&identifier)
         .ok_or(SolverError::IdentifierError("Unknown symbol", identifier.clone()))?;
 
     match function_is {
@@ -48,7 +47,7 @@ pub(crate) fn interpret_pred(
             } else {
                 if domain.len() == 0 {
                     // special case: arity 0
-                    return interpret_pred_0(qual_identifier, tuples, solver);
+                    return interpret_pred_0(identifier, tuples, solver);
                 }
 
                 let domain = domain.clone();
@@ -111,7 +110,7 @@ pub(crate) fn interpret_pred(
                     let table_uf = Interpretation::Infinite;
                     let table_g  = Interpretation::Infinite;
                     let function_is = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-                    solver.functions.insert(qual_identifier, function_is);
+                    solver.functions.insert(identifier, function_is);
                 } else {
 
                     // create UF view
@@ -133,7 +132,7 @@ pub(crate) fn interpret_pred(
                     let table_uf = Interpretation::Table{name: missing,  ids: Ids::All};
                     let  table_g = Interpretation::Table{name: name_g,   ids: Ids::All};
                     let function_is = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-                    solver.functions.insert(qual_identifier, function_is);
+                    solver.functions.insert(identifier, function_is);
 
                 }
 
@@ -146,11 +145,11 @@ pub(crate) fn interpret_pred(
 
 /// Interpret a predicate of arity 0
 fn interpret_pred_0(
-    qual_identifier: QualIdentifier,
+    identifier: L<Identifier>,
     tuples: XSet,
     solver: &mut Solver,
 ) -> Result<String, SolverError> {
-    let table_name = solver.create_table_name(qual_identifier.to_string());
+    let table_name = solver.create_table_name(identifier.to_string());
 
     let table_tu = Interpretation::Table{name: TableName(format!("{table_name}_TU")), ids: Ids::All};
     let table_uf = Interpretation::Table{name: TableName(format!("{table_name}_UF")), ids: Ids::All};
@@ -186,7 +185,7 @@ fn interpret_pred_0(
 
     // create FunctionObject with boolean interpretations.
     let function_is = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-    solver.functions.insert(qual_identifier.clone(), function_is);
+    solver.functions.insert(identifier.clone(), function_is);
     Ok("".to_string())
 }
 
@@ -200,9 +199,8 @@ pub(crate) fn interpret_fun(
     let table_name = solver.create_table_name(identifier.to_string());
 
     // get the symbol declaration
-    let qual_identifier = QualIdentifier::Identifier(identifier.clone());
 
-    let function_is = get_function_object(&qual_identifier, solver)
+    let function_is = solver.functions.get(&identifier)
         .ok_or(SolverError::IdentifierError("Unknown symbol", identifier.clone()))?;
 
     match function_is {
@@ -223,7 +221,7 @@ pub(crate) fn interpret_fun(
                 let value = match tuples {
                     Left(tuples) =>
                         if tuples.len() == 0 {  // (x-interpret-fun c (x-mapping ) 1)
-                            else_.clone().ok_or(SolverError::IdentifierError("no values", identifier))?
+                            else_.clone().ok_or(SolverError::IdentifierError("no values", identifier.clone()))?
                         } else if tuples.len() == 1 {   // (x-interpret-fun c (x-mapping () 1))
                             tuples[0].1.clone()
                         } else {
@@ -245,7 +243,7 @@ pub(crate) fn interpret_fun(
                     // create FunctionObject.
                     let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
                     let function_is = FunctionObject::NonBooleanInterpreted { table_g };
-                    solver.functions.insert(qual_identifier.clone(), function_is);
+                    solver.functions.insert(identifier, function_is);
                 } else {
                     let (tu, uf, g) =
                         match value.to_string().as_str() {
@@ -272,7 +270,7 @@ pub(crate) fn interpret_fun(
                     let table_uf  = Interpretation::Table{name: TableName(format!("{table_name}_UF")), ids: Ids::All};
                     let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
                     let function_is = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-                    solver.functions.insert(qual_identifier.clone(), function_is);
+                    solver.functions.insert(identifier.clone(), function_is);
                 }
             } else {
                 let domain = domain.clone();
@@ -349,7 +347,7 @@ pub(crate) fn interpret_fun(
 
                     let table_g = Interpretation::Table{name: table_g, ids};
                     let function_is = FunctionObject::NonBooleanInterpreted { table_g };
-                    solver.functions.insert(qual_identifier, function_is);
+                    solver.functions.insert(identifier, function_is);
 
                 } else {  // partial interpretation of predicate
 
@@ -467,7 +465,7 @@ pub(crate) fn interpret_fun(
                     let table_uf = Interpretation::Table{name: table_uf, ids: ids.clone()};
                     let table_g  = Interpretation::Table{name: table_g , ids: ids};
                     let function_is = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-                    solver.functions.insert(qual_identifier, function_is);
+                    solver.functions.insert(identifier, function_is);
                 }
             };
             Ok("".to_string())

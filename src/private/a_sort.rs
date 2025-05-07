@@ -6,7 +6,7 @@ use indexmap::{IndexMap, IndexSet};
 use itertools::Itertools;
 use rusqlite::{params, Connection};
 
-use crate::ast::{ConstructorDec, DatatypeDec, Identifier, Numeral, SelectorDec, Sort, SortDec, Symbol, QualIdentifier};
+use crate::ast::{ConstructorDec, DatatypeDec, Identifier, Numeral, SelectorDec, Sort, SortDec, Symbol};
 use crate::error::{SolverError::{self, InternalError}, Offset};
 use crate::solver::{Solver, CanonicalSort};
 use crate::private::b_fun::FunctionObject;
@@ -469,8 +469,8 @@ fn create_table(
         let ConstructorDec(constructor, selectors) = constructor_decl;
         if selectors.len() == 0 {
             nullary.push(constructor.0.clone());
-            let qual_identifier = QualIdentifier::Identifier(L(Identifier::Simple(constructor.clone()), Offset(0)));
-            solver.functions.insert(qual_identifier, FunctionObject::Constructor);
+            let identifier = L(Identifier::Simple(constructor.clone()), Offset(0));
+            solver.functions.insert(identifier, FunctionObject::Constructor);
         } else {
             for SelectorDec(selector, sort) in selectors {
                 // LINK src/doc.md#_Infinite
@@ -510,8 +510,8 @@ fn create_table(
         for constructor_decl in constructor_decls { // e.g. (pair (first Color) (second Color))
             let ConstructorDec(constructor, selectors) = constructor_decl;
 
-            let qual_identifier = QualIdentifier::Identifier(L(Identifier::Simple(constructor.clone()), Offset(0)));
-            solver.functions.insert(qual_identifier, FunctionObject::Constructor);
+            let identifier = L(Identifier::Simple(constructor.clone()), Offset(0));
+            solver.functions.insert(identifier, FunctionObject::Constructor);
 
             if selectors.len() != 0 {  // otherwise, already in core table
 
