@@ -11,7 +11,6 @@
 (define-sort MyPair (T) (Pair T T))
 (define-sort PairColor () (Pair Color Color))
 (define-sort MyPairColor () (MyPair Color))
-(define-sort MyBitVec () (MyPair (_ BitVec 2)))
 (define-sort MyArray () (Array Color Color))
 (x-debug solver parametric_sorts)
 (x-debug solver sorts)
@@ -19,6 +18,7 @@
 (x-debug db tables)
 (x-debug db _xmt_Q)
 (check-sat)
+(define-sort MyBitVec () (MyPair (_ BitVec 2)))
 -------------------------
 (declare-datatype Color ((red ) (green )))
 (declare-datatype color ((blue ) (white )))
@@ -31,7 +31,6 @@
 (define-sort MyPair (T) (Pair T T))
 (define-sort PairColor () (Pair Color Color))
 (define-sort MyPairColor () (MyPair Color))
-(define-sort MyBitVec () (MyPair (_ BitVec 2)))
 (define-sort MyArray () (Array Color Color))
 Parametric datatypes:
  - (unknown): Array
@@ -60,10 +59,6 @@ Sorts:
  - (Sort_8: 5) PairColor: ((white ) (pair (first Color) (second Color)))
  - (Sort_8: 5) (MyPair Color): ((white ) (pair (first Color) (second Color)))
  - (Sort_8: 5) MyPairColor: ((white ) (pair (first Color) (second Color)))
- - (unknown) (_ BitVec 2)
- - (unknown) (Pair (_ BitVec 2) (_ BitVec 2))
- - (unknown) (MyPair (_ BitVec 2))
- - (unknown) MyBitVec
  - (unknown) (Array Color Color)
  - (unknown) MyArray
 Functions:
@@ -134,3 +129,4 @@ Tables and Views:
 │ "q"         │ " (triplet white)"                             │ " (q  (triplet white))"                             │
 └─────────────┴────────────────────────────────────────────────┴─────────────────────────────────────────────────────┘
 (check-sat)
+****** Error: Unknown sort: (_ BitVec 2)

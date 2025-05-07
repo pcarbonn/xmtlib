@@ -29,7 +29,7 @@ pub(crate) enum ParametricObject {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum SortObject{
-    Normal{datatype_dec: DatatypeDec, table: TableName, row_count: usize},  // table name, number of rows
+    Normal{datatype_dec: DatatypeDec, table: TableName, row_count: usize},  // table name, number of rows.  DatatypeDec is non-parametric.
     Recursive,
     Infinite,  // Int, Real, and derived
     Unknown
@@ -263,7 +263,7 @@ pub(crate) fn instantiate_parent_sort(
     } else {
         match parent_sort {
             Sort::Sort(_) =>   // check if recursive
-                insert_sort(parent_sort.clone(), None, TypeInterpretation::Unknown, None, solver),
+                Err(SolverError::ExprError(format!("Unknown sort: {parent_sort}").to_string())),
 
             Sort::Parametric(id, parameters) => {
                 // running example: Pair Color Color
