@@ -43,9 +43,11 @@ Sorts:
  - (infinite) String
  - (infinite) RegLan
  - (recursive) (Tree Int)
+ - (recursive) (TreeList Int)
  - (recursive) TreeInt
  - (_xmt_color: 2) Color: ((red ) (green ))
  - (recursive) (TreeList Color)
+ - (recursive) (Tree Color)
  - (recursive) TreeListColor
  - (unknown) A
  - (unknown) B

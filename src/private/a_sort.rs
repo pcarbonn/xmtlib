@@ -273,8 +273,10 @@ pub(crate) fn instantiate_parent_sort(
                     let parent_decl = solver.parametric_sorts.get(symb)
                         .ok_or(InternalError(2785648))?;  // the parametric type should be in the solver
 
+                    let mut grounding = TypeInterpretation::Normal;
                     match parent_decl.clone() {
-                        ParametricObject::Datatype(DatatypeDec::Par(variables, constructors)) => {
+                          ParametricObject::Datatype(DatatypeDec::Par(variables, constructors))
+                        | ParametricObject::Recursive(DatatypeDec::Par(variables, constructors)) => {
                             // variables: (X Y)
                             // constructors: ( ( white ) (pair (first X) (second Y))))
                             // we assume variables.len() = parameters.len()
@@ -284,12 +286,13 @@ pub(crate) fn instantiate_parent_sort(
                             let subs = sort_mapping(variables, parameters);
 
                             // instantiate constructors
-                            let mut grounding = TypeInterpretation::Normal;
+                            let mut declaring = declaring.clone();
+                            declaring.insert(parent_sort.clone());
                             let mut new_constructors = vec![]; // ( ( white ) (pair (first Color) (second Color))))
                             for c in constructors {
                                 let mut new_selectors = vec![]; // first Color, second Color
                                 for s in c.1 {
-                                    let (new_g, new_sort) = substitute_in_sort(&s.1, &subs, declaring, solver)?;
+                                    let (new_g, new_sort) = substitute_in_sort(&s.1, &subs, &declaring, solver)?;
                                     grounding = max(grounding, new_g);
                                     let new_selector = SelectorDec(s.0, new_sort);
                                     new_selectors.push(new_selector)
@@ -301,6 +304,10 @@ pub(crate) fn instantiate_parent_sort(
                             // add the declaration to the solver
                             let new_decl = DatatypeDec::DatatypeDec(new_constructors);
                             insert_sort(parent_sort.clone(), Some(new_decl), grounding, None, solver)
+                        },
+                          ParametricObject::Datatype(DatatypeDec::DatatypeDec(_))
+                        | ParametricObject::Recursive(DatatypeDec::DatatypeDec(_))=> {
+                            Err(InternalError(1786496))  // Unexpected non-parametric type
                         },
                         ParametricObject::DTDefinition{variables, definiendum, } => {
                             // running example: parent_sort is (MyPair Color Color)
@@ -326,14 +333,7 @@ pub(crate) fn instantiate_parent_sort(
                                     insert_sort(parent_sort.clone(), None, new_g, None, solver)
                                 }
                             }
-
                         }
-                        ParametricObject::Datatype(DatatypeDec::DatatypeDec(_)) => {
-                            Err(InternalError(1786496))  // Unexpected non-parametric type
-                        },
-                        ParametricObject::Recursive(decl) => {
-                            insert_sort(parent_sort.clone(), Some(decl), TypeInterpretation::Recursive, None, solver)
-                        },
                         ParametricObject::Unknown => {
                             insert_sort(parent_sort.clone(), None, TypeInterpretation::Unknown, None, solver)
                         }
