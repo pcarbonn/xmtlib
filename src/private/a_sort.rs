@@ -127,20 +127,19 @@ pub(crate) fn define_sort(
         let declaring = IndexSet::new();
         let g = instantiate_parent_sort(&definiendum, &declaring, solver)?;
 
-        let new_decl = solver.sorts.get(&definiendum)
+        let new_sort_object = solver.sorts.get(&definiendum)
             .ok_or(InternalError(482664))?;
-        let (new_decl, table_name) =
-            match new_decl.clone()
+        let new_decl =
+            match new_sort_object.clone()
              {
-                SortObject::Normal{datatype_dec, table, row_count} => {
-                    (Some(datatype_dec.clone()), Some((table, row_count)))
-                },
+                SortObject::Normal{datatype_dec, ..} =>
+                    Some(datatype_dec.clone()),
                 SortObject::Recursive
                 | SortObject::Infinite
-                | SortObject::Unknown => (None, None),
+                | SortObject::Unknown => None,
             };
         let new_sort = Sort::Sort(L(Identifier::Simple(symb), Offset(0)));
-        insert_sort(new_sort, new_decl, g, table_name, solver)?;
+        insert_sort(new_sort, new_decl, g, Some(new_sort_object.clone()), solver)?;
 
     } else {  // sort must be parametric
         solver.parametric_sorts.insert(symb, ParametricObject::DTDefinition{variables, definiendum});
@@ -323,8 +322,8 @@ pub(crate) fn instantiate_parent_sort(
 
                             // create sort object
                             match sort_object {
-                                SortObject::Normal{datatype_dec, table, row_count} => {
-                                    let alias = Some((table.clone(), row_count.clone()));
+                                SortObject::Normal{datatype_dec, ..} => {
+                                    let alias = Some(sort_object.clone());
                                     insert_sort(parent_sort.clone(), Some(datatype_dec.clone()), new_g, alias, solver)
                                 },
                                 SortObject::Infinite
@@ -400,7 +399,7 @@ fn insert_sort(
     sort: Sort,
     decl: Option<DatatypeDec>,
     grounding: TypeInterpretation,
-    alias: Option<(TableName, usize)>,  // name and size of the table that `sort` is an alias for.
+    alias: Option<SortObject>,  // SortObject::Normal
     solver: &mut Solver,
 ) -> Result<TypeInterpretation, SolverError> {
 
@@ -413,8 +412,8 @@ fn insert_sort(
                     if let Some(datatype_dec) = decl {
                         match datatype_dec {
                             DatatypeDec::DatatypeDec(ref constructor_decls) => {
-                                if let Some((table, row_count)) = alias {
-                                    SortObject::Normal{datatype_dec, table, row_count}
+                                if let Some(sort_object) = alias {
+                                    sort_object
                                 } else {
                                     let table =
                                         if let Sort::Sort(L(Identifier::Simple(Symbol(ref name)), _)) = sort {
