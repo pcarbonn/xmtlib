@@ -11,7 +11,7 @@ use crate::error::SolverError::{self, InternalError};
 use crate::solver::{Solver, CanonicalSort};
 
 use crate::private::a_sort::{SortObject, get_sort_object};
-use crate::private::b_fun::{FunctionObject, Interpretation};
+use crate::private::b_fun::{FunctionObject, get_function_object, Interpretation};
 use crate::private::e1_ground_view::Ids;
 use crate::private::e2_ground_query::TableName;
 use crate::ast::L;
@@ -26,7 +26,7 @@ pub(crate) fn interpret_pred(
     let qual_identifier = QualIdentifier::Identifier(identifier.clone());
     let table_name = solver.create_table_name(identifier.to_string());
 
-    let function_is = solver.functions.get(&qual_identifier)
+    let function_is = get_function_object(&qual_identifier, solver)
         .ok_or(SolverError::IdentifierError("Unknown symbol", identifier.clone()))?;
 
     match function_is {
@@ -202,7 +202,7 @@ pub(crate) fn interpret_fun(
     // get the symbol declaration
     let qual_identifier = QualIdentifier::Identifier(identifier.clone());
 
-    let function_is = solver.functions.get(&qual_identifier)
+    let function_is = get_function_object(&qual_identifier, solver)
         .ok_or(SolverError::IdentifierError("Unknown symbol", identifier.clone()))?;
 
     match function_is {
@@ -572,7 +572,7 @@ fn construct(id: &L<Term>, solver: &mut Solver) -> Result<String, SolverError> {
     match id {
         L(Term::SpecConstant(_), _) => Ok(id.to_string()),
         L(Term::Identifier(qual_identifier), _) => {
-            if let Some(f_is) = solver.functions.get(qual_identifier) {
+            if let Some(f_is) = get_function_object(qual_identifier, solver) {
                 match f_is {
                     FunctionObject::Constructor => Ok(id.to_string()),
                     _ => Err(SolverError::TermError("Not an id", id.clone())),
@@ -582,7 +582,7 @@ fn construct(id: &L<Term>, solver: &mut Solver) -> Result<String, SolverError> {
             }
         },
         L(Term::Application(qual_identifier, terms), _) => {
-            if let Some(f_is) = solver.functions.get(qual_identifier) {
+            if let Some(f_is) = get_function_object(qual_identifier, solver) {
                 match f_is {
                     FunctionObject::Constructor => {
                         let new_terms = terms.iter()

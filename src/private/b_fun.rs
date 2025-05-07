@@ -104,3 +104,10 @@ pub(crate) fn declare_fun(
 
     Ok(out)
 }
+
+pub(crate) fn get_function_object<'a>(
+    function: &'a QualIdentifier,
+    solver: &'a Solver
+) -> Option<&'a FunctionObject> {
+    solver.functions.get(function)
+}

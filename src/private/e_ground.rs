@@ -10,7 +10,7 @@ use crate::error::{Offset, SolverError::{self, *}};
 use crate::solver::Solver;
 
 use crate::private::a_sort::{SortObject, get_sort_object};
-use crate::private::b_fun::{FunctionObject, Interpretation};
+use crate::private::b_fun::{FunctionObject, get_function_object, Interpretation};
 use crate::private::e1_ground_view::{GroundingView, ViewType, QueryVariant,
     view_for_constant, view_for_variable, view_for_compound, view_for_aggregate, view_for_union};
 use crate::private::e2_ground_query::{TableName, TableAlias};
@@ -361,7 +361,7 @@ fn ground_compound(
             })
         .collect::<Vec<_>>();
 
-    let function_is = match solver.functions.get(qual_identifier) {
+    let function_is = match get_function_object(qual_identifier, solver) {
         Some(f) => f,
         None => return Err(SolverError::TermError("Unknown symbol", term.clone()))
     };
