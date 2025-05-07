@@ -2,6 +2,7 @@
 
 use regex::Regex;
 use std::future::Future;
+use std::fmt::Display;
 
 use genawaiter::{sync::Gen, sync::gen, yield_};
 use indexmap::{IndexMap, IndexSet};
@@ -29,6 +30,13 @@ pub(crate) enum Backend {
 
 pub(crate) type TermId = usize;
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub(crate) struct CanonicalSort(pub(crate) Sort);
+impl Display for CanonicalSort {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 /// A solver is used to solve SMT problems.
 pub struct Solver {
@@ -43,8 +51,8 @@ pub struct Solver {
     pub(crate) parametric_sorts: IndexMap<Symbol, ParametricObject>,
 
     /// contains nullary data types and the used instantiations of parametric data types
-    pub(crate) canonical_sorts: IndexMap<Sort, Sort>,
-    pub(crate) sorts: IndexMap<Sort, SortObject>,
+    pub(crate) canonical_sorts: IndexMap<Sort, CanonicalSort>,
+    pub(crate) sort_objects: IndexMap<CanonicalSort, SortObject>,
 
     /// predicate and function symbols
     pub(crate) functions: IndexMap<QualIdentifier, FunctionObject>,
@@ -103,8 +111,11 @@ impl Solver {
         // parametric_sorts.insert(Symbol("Tuple".to_string()), ParametricObject::Unknown);
 
         // create pre-defined sorts: Bool, Int, Real
-        let mut sorts = IndexMap::new();
-        let sort = |s: &str| Sort::Sort(L(Identifier::Simple(Symbol(s.to_string())), Offset(0)));
+        let mut sort_objects = IndexMap::new();
+        let sort = |s: &str|
+            Sort::Sort(L(Identifier::Simple(Symbol(s.to_string())), Offset(0)));
+        let canonical_sort = |s: &str|
+            CanonicalSort(Sort::Sort(L(Identifier::Simple(Symbol(s.to_string())), Offset(0))));
 
         let bool_decl = SortObject::Normal{
             datatype_dec: DatatypeDec::DatatypeDec(
@@ -115,22 +126,22 @@ impl Solver {
                 ),
             table: TableName("Bool".to_string()),
             row_count: 2};
-        sorts.insert(sort("Bool"), bool_decl);
+            sort_objects.insert(CanonicalSort(sort("Bool")), bool_decl);
         // LINK src/doc.md#_Infinite
-        sorts.insert(sort("Int"), SortObject::Infinite);
-        sorts.insert(sort("Real"), SortObject::Infinite);
-        sorts.insert(sort("RoundingMode"), SortObject::Infinite);  // in FloatingPoint theory
-        sorts.insert(sort("String"), SortObject::Infinite);  // in String theory
-        sorts.insert(sort("RegLan"), SortObject::Infinite);  // in String theory
+        sort_objects.insert(canonical_sort("Int"), SortObject::Infinite);
+        sort_objects.insert(canonical_sort("Real"), SortObject::Infinite);
+        sort_objects.insert(canonical_sort("RoundingMode"), SortObject::Infinite);  // in FloatingPoint theory
+        sort_objects.insert(canonical_sort("String"), SortObject::Infinite);  // in String theory
+        sort_objects.insert(canonical_sort("RegLan"), SortObject::Infinite);  // in String theory
 
 
         let mut canonical_sorts = IndexMap::new();
-        canonical_sorts.insert(sort("Bool"), sort("Bool"));
-        canonical_sorts.insert(sort("Int"), sort("Int"));
-        canonical_sorts.insert(sort("Real"), sort("Real"));
-        canonical_sorts.insert(sort("RoundingMode"), sort("RoundingMode"));  // in FloatingPoint theory
-        canonical_sorts.insert(sort("String"), sort("String"));  // in String theory
-        canonical_sorts.insert(sort("RegLan"), sort("RegLan"));  // in String theory
+        canonical_sorts.insert(sort("Bool"), canonical_sort("Bool"));
+        canonical_sorts.insert(sort("Int"), canonical_sort("Int"));
+        canonical_sorts.insert(sort("Real"), canonical_sort("Real"));
+        canonical_sorts.insert(sort("RoundingMode"), canonical_sort("RoundingMode"));  // in FloatingPoint theory
+        canonical_sorts.insert(sort("String"), canonical_sort("String"));  // in String theory
+        canonical_sorts.insert(sort("RegLan"), canonical_sort("RegLan"));  // in String theory
 
         // create pre-defined functions
         let mut functions = IndexMap::new();
@@ -178,7 +189,7 @@ impl Solver {
                 started: false,
                 conn,
                 parametric_sorts,
-                sorts,
+                sort_objects,
                 canonical_sorts,
                 functions,
                 // qualified_functions: IndexMap::new(),
@@ -306,8 +317,8 @@ impl Solver {
                                 "sorts" => {
                                     yield_!(Ok("Sorts:\n".to_string()));
                                     for (sort, canonical) in &self.canonical_sorts {
-                                        let decl = self.sorts.get(canonical).unwrap();
-                                        let canonical = if canonical == sort { "".to_string() }
+                                        let decl = self.sort_objects.get(canonical).unwrap();
+                                        let canonical = if canonical.0 == sort.clone() { "".to_string() }
                                             else { format!(" (= {canonical})") };
                                         match decl {
                                             SortObject::Normal{datatype_dec, table, row_count} =>

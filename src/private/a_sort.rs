@@ -8,7 +8,7 @@ use rusqlite::{params, Connection};
 
 use crate::ast::{ConstructorDec, DatatypeDec, Identifier, Numeral, SelectorDec, Sort, SortDec, Symbol, QualIdentifier};
 use crate::error::{SolverError::{self, InternalError}, Offset};
-use crate::solver::Solver;
+use crate::solver::{Solver, CanonicalSort};
 use crate::private::b_fun::FunctionObject;
 use crate::private::e2_ground_query::TableName;
 use crate::ast::L;
@@ -129,7 +129,7 @@ pub(crate) fn define_sort(
 
         let canonical = solver.canonical_sorts.get(&definiendum)
             .ok_or(InternalError(845667))?;
-        let new_sort_object = solver.sorts.get(canonical)
+        let new_sort_object = solver.sort_objects.get(canonical)
             .ok_or(InternalError(482664))?;
         let new_decl =
             match new_sort_object.clone()
@@ -321,7 +321,7 @@ pub(crate) fn instantiate_parent_sort(
                             // get the name of the table
                             let canonical = solver.canonical_sorts.get(&new_sort)
                                 .ok_or(InternalError(78429656))?;
-                            let sort_object = solver.sorts.get(canonical)
+                            let sort_object = solver.sort_objects.get(canonical)
                                 .ok_or(InternalError(7842966))?;
 
                             // create sort object
@@ -403,13 +403,13 @@ fn insert_sort(
     sort: Sort,
     decl: Option<DatatypeDec>,
     grounding: TypeInterpretation,
-    alias: Option<(Sort, SortObject)>,  // SortObject::Normal
+    alias: Option<(CanonicalSort, SortObject)>,  // SortObject::Normal
     solver: &mut Solver,
 ) -> Result<TypeInterpretation, SolverError> {
 
     if ! solver.canonical_sorts.contains_key(&sort) { // a new sort
 
-        let i = solver.sorts.len();
+        let i = solver.sort_objects.len();
         let (canonical, sort_object) =
             match grounding {
                 TypeInterpretation::Normal => {
@@ -426,7 +426,7 @@ fn insert_sort(
                                             TableName(format!("Sort_{}", i))
                                         };
                                     let row_count = create_table(&table, &constructor_decls, solver)?;
-                                    (sort.clone(), SortObject::Normal{datatype_dec, table, row_count})
+                                    (CanonicalSort(sort.clone()), SortObject::Normal{datatype_dec, table, row_count})
                                 }
                             },
                             DatatypeDec::Par(..) => {
@@ -437,14 +437,14 @@ fn insert_sort(
                         unreachable!()
                     }
                 },
-                TypeInterpretation::Unknown => (sort.clone(), SortObject::Unknown),
-                TypeInterpretation::Infinite => (sort.clone(), SortObject::Infinite),
-                TypeInterpretation::Recursive => (sort.clone(), SortObject::Recursive),
+                TypeInterpretation::Unknown => (CanonicalSort(sort.clone()), SortObject::Unknown),
+                TypeInterpretation::Infinite => (CanonicalSort(sort.clone()), SortObject::Infinite),
+                TypeInterpretation::Recursive => (CanonicalSort(sort.clone()), SortObject::Recursive),
             };
 
-        // update solver.sorts
+        // update solver.sort_objects
         solver.canonical_sorts.insert(sort, canonical.clone());
-        solver.sorts.insert(canonical, sort_object);
+        solver.sort_objects.insert(canonical, sort_object);
     }
 
     Ok(grounding)
@@ -525,7 +525,7 @@ fn create_table(
                 for (i, SelectorDec(selector, sort)) in selectors.iter().enumerate() {
                     let canonical = solver.canonical_sorts.get(sort)
                         .ok_or(InternalError(74594855))?;
-                    let sort_object = solver.sorts.get(canonical)
+                    let sort_object = solver.sort_objects.get(canonical)
                         .ok_or(InternalError(7459455))?;
                     if let SortObject::Normal{table, row_count, ..} = sort_object {
                         tables.push(table.clone());
@@ -590,7 +590,7 @@ fn create_core_table(
 
 pub(crate) fn get_sort_object<'a>(sort: &'a Sort, solver: &'a Solver) -> Option<&'a SortObject> {
     match solver.canonical_sorts.get(sort) {
-        Some(canonical) => solver.sorts.get(canonical),
+        Some(canonical) => solver.sort_objects.get(canonical),
         None => None
     }
 }
