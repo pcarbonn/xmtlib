@@ -2,8 +2,8 @@
 
 use regex::Regex;
 use std::future::Future;
-use std::fmt::Display;
 
+use derive_more::Display;
 use genawaiter::{sync::Gen, sync::gen, yield_};
 use indexmap::{IndexMap, IndexSet};
 use rusqlite::{Connection, Result};
@@ -30,13 +30,9 @@ pub(crate) enum Backend {
 
 pub(crate) type TermId = usize;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+// A non-parametric sort without use of aliases (defined sort)
+#[derive(Debug, Display, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct CanonicalSort(pub(crate) Sort);
-impl Display for CanonicalSort {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
 
 /// A solver is used to solve SMT problems.
 pub struct Solver {
