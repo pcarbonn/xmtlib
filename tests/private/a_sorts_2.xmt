@@ -8,6 +8,8 @@
     )
 )
 (declare-datatype TreeInt ( (treeint (value (Tree Int)))))
+(declare-datatype Color ((red ) (green )))
+(define-sort TreeListColor () (TreeList Color))
 ; declare-sort
 (declare-sort Pair 2)
 (declare-sort A 0)
@@ -22,6 +24,8 @@
 -------------------------
 (declare-datatypes ((Tree 1) (TreeList 1)) ((par (X) ((node (value X) (children (TreeList X))))) (par (Y) ((empty ) (insert (head (Tree Y)) (tail (TreeList Y)))))))
 (declare-datatype TreeInt ((treeint (value (Tree Int)))))
+(declare-datatype Color ((red ) (green )))
+(define-sort TreeListColor () (TreeList Color))
 (declare-sort Pair 2)
 (declare-sort A 0)
 (declare-sort B 0)
@@ -40,6 +44,9 @@ Sorts:
  - (infinite) RegLan
  - (recursive) (Tree Int)
  - (recursive) TreeInt
+ - (_xmt_color: 2) Color: ((red ) (green ))
+ - (recursive) (TreeList Color)
+ - (recursive) TreeListColor
  - (unknown) A
  - (unknown) B
  - (unknown) (Pair A B)
@@ -66,6 +73,9 @@ Functions:
  - div: Predefined (false)
  - mod: Predefined (false)
  - abs: Predefined (false)
+ - red: Constructor
+ - green: Constructor
 Tables and Views:
  - Bool (table)
+ - _xmt_color (table)
 (check-sat)

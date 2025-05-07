@@ -71,19 +71,22 @@ pub(crate) fn declare_datatypes(
 
     let out = solver.exec(&command)?;  // this also validates the declaration
 
-    // collect the declared symbols, for recursivity detection
-    let declaring = sort_decs.iter().map(|sd| {
-            let SortDec(symb, _) = sd;
-            symb.clone()
-        })
-        .collect();
-
-    for (SortDec(symb, _), dec) in sort_decs.into_iter().zip(decs.into_iter()) {
+    for (SortDec(symb, _), dec) in sort_decs.iter().zip(decs.iter()) {
         match dec {
-            DatatypeDec::Par(_, ref constructor_decs) =>
-                create_parametric_sort(&symb, &dec, &constructor_decs, &declaring, solver)?,
-            DatatypeDec::DatatypeDec(_) =>
-                create_sort(&symb, &dec, &declaring, solver)?,
+            DatatypeDec::Par(_, ref constructor_decs) => {
+                // for recursivity detection
+                let declaring = sort_decs.iter()
+                    .map(|sd| sd.0.clone())
+                    .collect();
+                create_parametric_sort(&symb, &dec, &constructor_decs, &declaring, solver)?
+            }
+            DatatypeDec::DatatypeDec(_) => {
+                // for recursivity detection
+                let declaring = sort_decs.iter()
+                    .map(|sd| Sort::Sort(L(Identifier::Simple(sd.0.clone()), Offset(0))))
+                    .collect();
+                create_non_parametric_sort(&symb, &dec, &declaring, solver)?
+            }
         };
     }
 
@@ -209,10 +212,10 @@ fn recursive_sort(
 /// Adds a non-parametric declaration to the solver,
 /// and create database table of its extension.
 /// Also adds any required instantiation of parent sorts.
-pub(crate) fn create_sort(
+pub(crate) fn create_non_parametric_sort(
     symb: &Symbol,
     decl: &DatatypeDec,
-    declaring: &IndexSet<Symbol>,  // to detect mutually-recursive datatypes
+    declaring: &IndexSet<Sort>,  // to detect mutually-recursive datatypes
     solver: &mut Solver
 ) -> Result<(), SolverError> {
 
@@ -243,7 +246,7 @@ pub(crate) fn create_sort(
 /// This function is recursive.
 pub(crate) fn instantiate_parent_sort(
     parent_sort: &Sort,
-    declaring: &IndexSet<Symbol>,
+    declaring: &IndexSet<Sort>,
     solver: &mut Solver,
 ) -> Result<TypeInterpretation, SolverError> {
 
@@ -255,27 +258,16 @@ pub(crate) fn instantiate_parent_sort(
             SortObject::Infinite   => Ok(TypeInterpretation::Infinite),
             SortObject::Recursive  => Ok(TypeInterpretation::Recursive),
         }
+    } else if declaring.contains(parent_sort) {
+        insert_sort(parent_sort.clone(), None, TypeInterpretation::Recursive, None, solver)
     } else {
         match parent_sort {
-            Sort::Sort(id) =>   // check if recursive
-                if let L(Identifier::Simple(symb), _) = id {
-                    if declaring.contains(symb) {
-                        insert_sort(parent_sort.clone(), None, TypeInterpretation::Recursive, None, solver)
-                    } else {
-                        Err(SolverError::IdentifierError("Unknown sort", id.clone()))
-                    }
-                } else {  // indexed identifier
-                    insert_sort(parent_sort.clone(), None, TypeInterpretation::Unknown, None, solver)
-                },
+            Sort::Sort(_) =>   // check if recursive
+                insert_sort(parent_sort.clone(), None, TypeInterpretation::Unknown, None, solver),
 
             Sort::Parametric(id, parameters) => {
                 // running example: Pair Color Color
                 if let L(Identifier::Simple(symb), _) = id {
-
-                    // check if recursive
-                    if declaring.contains(symb) {
-                        return insert_sort(parent_sort.clone(), None, TypeInterpretation::Recursive, None, solver)
-                    }
 
                     // (declare-datatype Pair (par (X Y) ( ( white ) (pair (first X) (second Y)))))
                     let parent_decl = solver.parametric_sorts.get(symb)
@@ -371,7 +363,7 @@ fn sort_mapping(
 fn substitute_in_sort(
     sort: &Sort,
     subs: &IndexMap<Sort, Sort>,
-    declaring: &IndexSet<Symbol>,
+    declaring: &IndexSet<Sort>,
     solver: &mut Solver,
 ) -> Result<(TypeInterpretation, Sort), SolverError> {
 
