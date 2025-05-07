@@ -1,20 +1,22 @@
 (set-option :backend none)
 (declare-datatype Color ( ( red ) ( green ) ))
 (declare-datatype Pair (par (X) ((pair (first X) (second X)))))
+(define-sort PairColor () (Pair Color))
 (declare-fun bright (Color) Bool)
 (declare-fun invert (Color) Color)
 (declare-fun brightest ( (Pair Color) ) Color)
-(declare-fun colorOf ( Int ) Color)
+(declare-fun colorOf ( PairColor ) PairColor)
 (x-debug solver sorts)
 (x-debug solver functions)
 (x-debug db tables)
 -------------------------
 (declare-datatype Color ((red ) (green )))
 (declare-datatype Pair (par (X) ((pair (first X) (second X)))))
+(define-sort PairColor () (Pair Color))
 (declare-fun bright (Color) Bool)
 (declare-fun invert (Color) Color)
 (declare-fun brightest ((Pair Color)) Color)
-(declare-fun colorOf (Int) Color)
+(declare-fun colorOf (PairColor) PairColor)
 Sorts:
  - (Bool: 2) Bool: ((true ) (false ))
  - (infinite) Int
@@ -24,6 +26,7 @@ Sorts:
  - (infinite) RegLan
  - (_xmt_color: 2) Color: ((red ) (green ))
  - (Sort_7: 4) (Pair Color): ((pair (first Color) (second Color)))
+ - (Sort_7: 4) PairColor (= (Pair Color)): ((pair (first Color) (second Color)))
 Functions:
  - true: Constructor
  - false: Constructor
@@ -48,11 +51,11 @@ Functions:
  - abs: Predefined (false)
  - red: Constructor
  - green: Constructor
+ - pair: Constructor
  - bright: Color -> Bool (true)
  - invert: Color -> Color (false)
- - pair: Constructor
  - brightest: (Pair Color) -> Color (false)
- - colorOf: Int -> Color (false)
+ - colorOf: (Pair Color) -> (Pair Color) (false)
 Tables and Views:
  - Bool (table)
  - _xmt_color (table)

@@ -7,7 +7,7 @@ use indexmap::IndexSet;
 
 use crate::ast::{Sort, Symbol, Identifier, QualIdentifier};
 use crate::error::{SolverError, Offset};
-use crate::solver::Solver;
+use crate::solver::{Solver, CanonicalSort};
 use crate::private::a_sort::instantiate_parent_sort;
 use crate::private::e1_ground_view::Ids;
 use crate::private::e2_ground_query::TableName;
@@ -21,7 +21,7 @@ use crate::ast::L;
 pub(crate) enum FunctionObject {
     Predefined{boolean: Option<bool>},  // None = unknown for `ite, let` --> need special code
     Constructor,
-    NotInterpreted{signature: (Vec<Sort>, Sort, bool)},  // signature used to create table, when later interpreted
+    NotInterpreted{signature: (Vec<CanonicalSort>, CanonicalSort, bool)},  // signature used to create table, when later interpreted
     NonBooleanInterpreted{ table_g: Interpretation},
     BooleanInterpreted{table_tu: Interpretation, table_uf: Interpretation, table_g: Interpretation}
 }
@@ -91,12 +91,15 @@ pub(crate) fn declare_fun(
     }
     instantiate_parent_sort(&co_domain, &declaring, solver)?;
 
+    let domain = domain.iter()
+        .map( | sort | solver.canonical_sorts.get(sort).unwrap().clone())
+        .collect();
+    let co_domain = solver.canonical_sorts.get(&co_domain)
+        .ok_or(SolverError::ExprError("unknown co_domain".to_string()))?;
+
     let identifier = QualIdentifier::Identifier(L(Identifier::Simple(symbol), Offset(0)));
-    let boolean = match co_domain {
-        Sort::Sort(L(Identifier::Simple(Symbol(ref s)), _)) => s=="Bool",
-        _ => false
-    };
-    let function_is = FunctionObject::NotInterpreted{signature: (domain, co_domain, boolean)};
+    let boolean = co_domain.to_string() == "Bool";
+    let function_is = FunctionObject::NotInterpreted{signature: (domain, co_domain.clone(), boolean)};
     solver.functions.insert(identifier, function_is);
 
     Ok(out)

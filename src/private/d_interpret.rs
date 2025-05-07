@@ -8,7 +8,7 @@ unzip_n!(pub 4);
 
 use crate::ast::{Identifier, QualIdentifier, Sort, XTuple, XSet, Term, SpecConstant, String_};
 use crate::error::SolverError::{self, InternalError};
-use crate::solver::Solver;
+use crate::solver::{Solver, CanonicalSort};
 
 use crate::private::a_sort::{SortObject, get_sort_object};
 use crate::private::b_fun::{FunctionObject, Interpretation};
@@ -478,12 +478,12 @@ pub(crate) fn interpret_fun(
 
 // returns the size of the domain (or 0 if infinite)
 fn size(
-    domain: &Vec<Sort>,
+    domain: &Vec<CanonicalSort>,
     solver: &Solver
 ) -> Result<usize, SolverError> {
     domain.iter()
         .map( |sort| {
-            let sort_object = get_sort_object(sort, solver);
+            let sort_object = get_sort_object(&sort.0, solver);
             if let Some(sort_object) = sort_object {
                 match sort_object {
                     SortObject::Normal{row_count, ..} => Ok(row_count),
@@ -492,7 +492,7 @@ fn size(
                     | SortObject::Unknown => Ok(&0),
                 }
             } else {
-                let id = match sort {
+                let id = match &sort.0 {
                     Sort::Sort(id)
                     | Sort::Parametric(id, _) => id,
                 };
@@ -506,13 +506,13 @@ fn size(
 /// Columns are (a_1, .., a_n, G) if co-domain, else (a_1, .., a_n).
 fn create_interpretation_table(
     table_name: TableName,
-    domain: &Vec<Sort>,
-    co_domain: &Option<Sort>,
+    domain: &Vec<CanonicalSort>,
+    co_domain: &Option<CanonicalSort>,
     solver: &mut Solver
 ) -> Result<(), SolverError> {
 
     // Helper function
-    let column = |name: String, sort: &Sort| {
+    let column = |name: String, sort: &CanonicalSort| {
         // LINK src/doc.md#_Infinite
         let sort_name = sort.to_string();
         if sort_name == "Int" {
@@ -528,7 +528,7 @@ fn create_interpretation_table(
         domain.iter().enumerate()
         .map( |(i, sort)| {
             let col = column(format!("a_{}", i+1), sort);
-            match get_sort_object(sort, solver) {
+            match get_sort_object(&sort.0, solver) {
                 Some(SortObject::Normal{table, ..}) =>
                     Ok((col, format!("FOREIGN KEY (a_{}) REFERENCES {table}(G)", i+1))),
                 Some(_) => // infinite domain
@@ -638,7 +638,7 @@ fn populate_table(
 /// `from` is renamed to `.._K` if it is the same as `all``.
 fn create_missing_views(
     from: TableName,  // table with partial interpretation
-    domain: &Vec<Sort>,
+    domain: &Vec<CanonicalSort>,
     value: &Option<String>,
     identifier: L<Identifier>,
     missing: &TableName,
@@ -660,7 +660,7 @@ fn create_missing_views(
     // T_1.G as a_1, T_1.G, T as T_1, T_1.G = from.a_1
     let (columns, args, joins, thetas) = domain.iter().enumerate()
         .map( |(i, sort)| {
-            match get_sort_object(sort, solver) {
+            match get_sort_object(&sort.0, solver) {
                 Some(SortObject::Normal{table, ..}) =>
                     Ok((format!("{table}_{i}.G AS a_{}", i+1),
                         format!("{table}_{i}.G"),
