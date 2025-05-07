@@ -10,7 +10,7 @@ use crate::ast::{Identifier, QualIdentifier, Sort, XTuple, XSet, Term, SpecConst
 use crate::error::SolverError::{self, InternalError};
 use crate::solver::Solver;
 
-use crate::private::a_sort::SortObject;
+use crate::private::a_sort::{SortObject, get_sort_object};
 use crate::private::b_fun::{FunctionObject, Interpretation};
 use crate::private::e1_ground_view::Ids;
 use crate::private::e2_ground_query::TableName;
@@ -483,7 +483,7 @@ fn size(
 ) -> Result<usize, SolverError> {
     domain.iter()
         .map( |sort| {
-            let sort_object = solver.sorts.get(sort);
+            let sort_object = get_sort_object(sort, solver);
             if let Some(sort_object) = sort_object {
                 match sort_object {
                     SortObject::Normal{row_count, ..} => Ok(row_count),
@@ -528,7 +528,7 @@ fn create_interpretation_table(
         domain.iter().enumerate()
         .map( |(i, sort)| {
             let col = column(format!("a_{}", i+1), sort);
-            match solver.sorts.get(sort) {
+            match get_sort_object(sort, solver) {
                 Some(SortObject::Normal{table, ..}) =>
                     Ok((col, format!("FOREIGN KEY (a_{}) REFERENCES {table}(G)", i+1))),
                 Some(_) => // infinite domain
@@ -660,7 +660,7 @@ fn create_missing_views(
     // T_1.G as a_1, T_1.G, T as T_1, T_1.G = from.a_1
     let (columns, args, joins, thetas) = domain.iter().enumerate()
         .map( |(i, sort)| {
-            match solver.sorts.get(sort) {
+            match get_sort_object(sort, solver) {
                 Some(SortObject::Normal{table, ..}) =>
                     Ok((format!("{table}_{i}.G AS a_{}", i+1),
                         format!("{table}_{i}.G"),

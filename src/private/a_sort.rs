@@ -127,7 +127,9 @@ pub(crate) fn define_sort(
         let declaring = IndexSet::new();
         let g = instantiate_parent_sort(&definiendum, &declaring, solver)?;
 
-        let new_sort_object = solver.sorts.get(&definiendum)
+        let canonical = solver.canonical_sorts.get(&definiendum)
+            .ok_or(InternalError(845667))?;
+        let new_sort_object = solver.sorts.get(canonical)
             .ok_or(InternalError(482664))?;
         let new_decl =
             match new_sort_object.clone()
@@ -139,7 +141,7 @@ pub(crate) fn define_sort(
                 | SortObject::Unknown => None,
             };
         let new_sort = Sort::Sort(L(Identifier::Simple(symb), Offset(0)));
-        insert_sort(new_sort, new_decl, g, Some(new_sort_object.clone()), solver)?;
+        insert_sort(new_sort, new_decl, g, Some((canonical.clone(), new_sort_object.clone())), solver)?;
 
     } else {  // sort must be parametric
         solver.parametric_sorts.insert(symb, ParametricObject::DTDefinition{variables, definiendum});
@@ -249,7 +251,7 @@ pub(crate) fn instantiate_parent_sort(
     solver: &mut Solver,
 ) -> Result<TypeInterpretation, SolverError> {
 
-    if let Some(sort_object) = solver.sorts.get(parent_sort) {
+    if let Some(sort_object) = get_sort_object(parent_sort, solver) {
         // already instantiated
         match sort_object {
             SortObject::Normal{..} => Ok(TypeInterpretation::Normal),
@@ -317,13 +319,15 @@ pub(crate) fn instantiate_parent_sort(
                             let (new_g, new_sort) = substitute_in_sort(&definiendum, &subs, declaring, solver)?; // (Pair Color Color)
 
                             // get the name of the table
-                            let sort_object = solver.sorts.get(&new_sort)
+                            let canonical = solver.canonical_sorts.get(&new_sort)
+                                .ok_or(InternalError(78429656))?;
+                            let sort_object = solver.sorts.get(canonical)
                                 .ok_or(InternalError(7842966))?;
 
                             // create sort object
                             match sort_object {
                                 SortObject::Normal{datatype_dec, ..} => {
-                                    let alias = Some(sort_object.clone());
+                                    let alias = Some((canonical.clone(), sort_object.clone()));
                                     insert_sort(parent_sort.clone(), Some(datatype_dec.clone()), new_g, alias, solver)
                                 },
                                 SortObject::Infinite
@@ -399,21 +403,21 @@ fn insert_sort(
     sort: Sort,
     decl: Option<DatatypeDec>,
     grounding: TypeInterpretation,
-    alias: Option<SortObject>,  // SortObject::Normal
+    alias: Option<(Sort, SortObject)>,  // SortObject::Normal
     solver: &mut Solver,
 ) -> Result<TypeInterpretation, SolverError> {
 
-    if ! solver.sorts.contains_key(&sort) { // a new sort
+    if ! solver.canonical_sorts.contains_key(&sort) { // a new sort
 
         let i = solver.sorts.len();
-        let sort_object =
+        let (canonical, sort_object) =
             match grounding {
                 TypeInterpretation::Normal => {
                     if let Some(datatype_dec) = decl {
                         match datatype_dec {
                             DatatypeDec::DatatypeDec(ref constructor_decls) => {
-                                if let Some(sort_object) = alias {
-                                    sort_object
+                                if let Some(alias) = alias {
+                                    alias.clone()
                                 } else {
                                     let table =
                                         if let Sort::Sort(L(Identifier::Simple(Symbol(ref name)), _)) = sort {
@@ -422,7 +426,7 @@ fn insert_sort(
                                             TableName(format!("Sort_{}", i))
                                         };
                                     let row_count = create_table(&table, &constructor_decls, solver)?;
-                                    SortObject::Normal{datatype_dec, table, row_count}
+                                    (sort.clone(), SortObject::Normal{datatype_dec, table, row_count})
                                 }
                             },
                             DatatypeDec::Par(..) => {
@@ -433,13 +437,14 @@ fn insert_sort(
                         unreachable!()
                     }
                 },
-                TypeInterpretation::Unknown => SortObject::Unknown,
-                TypeInterpretation::Infinite => SortObject::Infinite,
-                TypeInterpretation::Recursive => SortObject::Recursive,
+                TypeInterpretation::Unknown => (sort.clone(), SortObject::Unknown),
+                TypeInterpretation::Infinite => (sort.clone(), SortObject::Infinite),
+                TypeInterpretation::Recursive => (sort.clone(), SortObject::Recursive),
             };
 
         // update solver.sorts
-        solver.sorts.insert(sort, sort_object);
+        solver.canonical_sorts.insert(sort, canonical.clone());
+        solver.sorts.insert(canonical, sort_object);
     }
 
     Ok(grounding)
@@ -518,7 +523,9 @@ fn create_table(
                 }
                 let mut row_product = 1;
                 for (i, SelectorDec(selector, sort)) in selectors.iter().enumerate() {
-                    let sort_object = solver.sorts.get(&sort.clone())
+                    let canonical = solver.canonical_sorts.get(sort)
+                        .ok_or(InternalError(74594855))?;
+                    let sort_object = solver.sorts.get(canonical)
                         .ok_or(InternalError(7459455))?;
                     if let SortObject::Normal{table, row_count, ..} = sort_object {
                         tables.push(table.clone());
@@ -578,4 +585,12 @@ fn create_core_table(
         stmt.execute(params![value])?;
     }
     Ok(())
+}
+
+
+pub(crate) fn get_sort_object<'a>(sort: &'a Sort, solver: &'a Solver) -> Option<&'a SortObject> {
+    match solver.canonical_sorts.get(sort) {
+        Some(canonical) => solver.sorts.get(canonical),
+        None => None
+    }
 }

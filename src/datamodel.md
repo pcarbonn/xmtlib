@@ -5,6 +5,7 @@ pub struct Solver {
     pub(crate) backend: Backend,
     pub conn: Connection,
     pub(crate) parametric_sorts: IndexMap<Symbol, ParametricObject>,
+    pub(crate) canonical_sorts: IndexMap<Sort, Sort>,
     pub(crate) sorts: IndexMap<Sort, SortObject>,
     pub(crate) functions: IndexMap<QualIdentifier, FunctionObject>,
     // pub(crate) qualified_functions: IndexMap<QualIdentifier, FunctionObject>,

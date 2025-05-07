@@ -6,7 +6,7 @@ use crate::ast::{Identifier, QualIdentifier, SortedVar, Symbol, Term, VarBinding
 use crate::error::{SolverError::{self, *}, Offset};
 use crate::solver::Solver;
 
-use crate::private::a_sort::SortObject;
+use crate::private::a_sort::{SortObject, get_sort_object};
 use crate::ast::L;
 
 
@@ -224,7 +224,7 @@ fn process_quantification (
 
     let mut new_variables = variables.clone();
     for SortedVar(symbol, sort) in sorted_vars {
-        match solver.sorts.get(sort) {
+        match get_sort_object(sort, solver) {
             Some(SortObject::Normal{..}) => {
                 new_variables.insert(symbol.clone(), Some(SortedVar(symbol.clone(), sort.clone())));
             },

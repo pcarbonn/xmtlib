@@ -10,7 +10,7 @@
 (declare-datatype ColorList ( (nil) (cons (head Color) (tail (Triplet ColorList)))))
 (define-sort MyPair (T) (Pair T T))
 (define-sort PairColor () (Pair Color Color))
-(define-sort MyPairColor () (MyPair Color))
+(define-sort MyPairColor () (MyPair PairColor))
 (define-sort MyArray () (Array Color Color))
 (x-debug solver parametric_sorts)
 (x-debug solver sorts)
@@ -30,7 +30,7 @@
 (declare-datatype ColorList ((nil ) (cons (head Color) (tail (Triplet ColorList)))))
 (define-sort MyPair (T) (Pair T T))
 (define-sort PairColor () (Pair Color Color))
-(define-sort MyPairColor () (MyPair Color))
+(define-sort MyPairColor () (MyPair PairColor))
 (define-sort MyArray () (Array Color Color))
 Parametric datatypes:
  - (unknown): Array
@@ -56,9 +56,10 @@ Sorts:
  - (recursive) (Pair ColorList ColorList)
  - (recursive) (Pair ColorList (Pair ColorList ColorList))
  - (recursive) (Triplet ColorList)
- - (Sort_8: 5) PairColor: ((white ) (pair (first Color) (second Color)))
- - (Sort_8: 5) (MyPair Color): ((white ) (pair (first Color) (second Color)))
- - (Sort_8: 5) MyPairColor: ((white ) (pair (first Color) (second Color)))
+ - (Sort_8: 5) PairColor (= (Pair Color Color)): ((white ) (pair (first Color) (second Color)))
+ - (Sort_18: 26) (Pair PairColor PairColor): ((white ) (pair (first PairColor) (second PairColor)))
+ - (Sort_18: 26) (MyPair PairColor) (= (Pair PairColor PairColor)): ((white ) (pair (first PairColor) (second PairColor)))
+ - (Sort_18: 26) MyPairColor (= (Pair PairColor PairColor)): ((white ) (pair (first PairColor) (second PairColor)))
  - (unknown) (Array Color Color)
  - (unknown) MyArray
 Functions:
@@ -102,6 +103,8 @@ Tables and Views:
  - Sort_10 (table)
  - Sort_11 (table)
  - _xmt_q (table)
+ - Sort_18_core (table)
+ - Sort_18 (table)
  TABLE: _xmt_q
 ┌─────────────┬────────────────────────────────────────────────┬─────────────────────────────────────────────────────┐
 │ constructor │ x                                              │ G                                                   │

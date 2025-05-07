@@ -9,7 +9,7 @@ use crate::ast::{L, QualIdentifier, Identifier, Symbol, Term};
 use crate::error::{Offset, SolverError::{self, *}};
 use crate::solver::Solver;
 
-use crate::private::a_sort::SortObject;
+use crate::private::a_sort::{SortObject, get_sort_object};
 use crate::private::b_fun::{FunctionObject, Interpretation};
 use crate::private::e1_ground_view::{GroundingView, ViewType, QueryVariant,
     view_for_constant, view_for_variable, view_for_compound, view_for_aggregate, view_for_union};
@@ -210,7 +210,7 @@ pub(crate) fn ground_term_(
             // a variable
             let base_table =
                 if let Some(sort) = sort {  // finite domain
-                    match solver.sorts.get(sort) {
+                    match get_sort_object(sort, solver) {
                         Some(SortObject::Normal{table, ..}) => Some(table.clone()),
                         Some(SortObject::Recursive)
                         | Some(SortObject::Infinite)

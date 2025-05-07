@@ -43,6 +43,7 @@ pub struct Solver {
     pub(crate) parametric_sorts: IndexMap<Symbol, ParametricObject>,
 
     /// contains nullary data types and the used instantiations of parametric data types
+    pub(crate) canonical_sorts: IndexMap<Sort, Sort>,
     pub(crate) sorts: IndexMap<Sort, SortObject>,
 
     /// predicate and function symbols
@@ -116,11 +117,20 @@ impl Solver {
             row_count: 2};
         sorts.insert(sort("Bool"), bool_decl);
         // LINK src/doc.md#_Infinite
-        sorts.insert(sort("Int" ), SortObject::Infinite);
-        sorts.insert(sort("Real" ), SortObject::Infinite);
-        sorts.insert(sort("RoundingMode" ), SortObject::Infinite);  // in FloatingPoint theory
-        sorts.insert(sort("String" ), SortObject::Infinite);  // in String theory
-        sorts.insert(sort("RegLan" ), SortObject::Infinite);  // in String theory
+        sorts.insert(sort("Int"), SortObject::Infinite);
+        sorts.insert(sort("Real"), SortObject::Infinite);
+        sorts.insert(sort("RoundingMode"), SortObject::Infinite);  // in FloatingPoint theory
+        sorts.insert(sort("String"), SortObject::Infinite);  // in String theory
+        sorts.insert(sort("RegLan"), SortObject::Infinite);  // in String theory
+
+
+        let mut canonical_sorts = IndexMap::new();
+        canonical_sorts.insert(sort("Bool"), sort("Bool"));
+        canonical_sorts.insert(sort("Int"), sort("Int"));
+        canonical_sorts.insert(sort("Real"), sort("Real"));
+        canonical_sorts.insert(sort("RoundingMode"), sort("RoundingMode"));  // in FloatingPoint theory
+        canonical_sorts.insert(sort("String"), sort("String"));  // in String theory
+        canonical_sorts.insert(sort("RegLan"), sort("RegLan"));  // in String theory
 
         // create pre-defined functions
         let mut functions = IndexMap::new();
@@ -164,12 +174,13 @@ impl Solver {
             let backend = Backend::Z3(ctx);
 
             Solver {
-                backend: backend,
+                backend,
                 started: false,
-                conn: conn,
-                parametric_sorts: parametric_sorts,
-                sorts: sorts,
-                functions: functions,
+                conn,
+                parametric_sorts,
+                sorts,
+                canonical_sorts,
+                functions,
                 // qualified_functions: IndexMap::new(),
                 assertions_to_ground: vec![],
                 groundings: IndexMap::new(),
@@ -294,16 +305,19 @@ impl Solver {
                             match obj.to_string().as_str() {
                                 "sorts" => {
                                     yield_!(Ok("Sorts:\n".to_string()));
-                                    for (sort, decl) in &self.sorts {
+                                    for (sort, canonical) in &self.canonical_sorts {
+                                        let decl = self.sorts.get(canonical).unwrap();
+                                        let canonical = if canonical == sort { "".to_string() }
+                                            else { format!(" (= {canonical})") };
                                         match decl {
                                             SortObject::Normal{datatype_dec, table, row_count} =>
-                                                yield_!(Ok(format!(" - ({table}: {row_count}) {sort}: {datatype_dec}\n"))),
+                                                yield_!(Ok(format!(" - ({table}: {row_count}) {sort}{canonical}: {datatype_dec}\n"))),
                                             SortObject::Recursive =>
-                                                yield_!(Ok(format!(" - (recursive) {sort}\n"))),
+                                                yield_!(Ok(format!(" - (recursive) {sort}{canonical}\n"))),
                                             SortObject::Infinite =>
-                                                yield_!(Ok(format!(" - (infinite) {sort}\n"))),
+                                                yield_!(Ok(format!(" - (infinite) {sort}{canonical}\n"))),
                                             SortObject::Unknown =>
-                                                yield_!(Ok(format!(" - (unknown) {sort}\n"))),
+                                                yield_!(Ok(format!(" - (unknown) {sort}{canonical}\n"))),
                                         }
                                     }
                                 },
