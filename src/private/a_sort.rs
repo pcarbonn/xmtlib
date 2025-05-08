@@ -1,5 +1,10 @@
 // Copyright Pierre Carbonnelle, 2025.
 
+// Sorts have 3 main attributes:
+// * monomorphic or polymorphic (having variables)
+// * not parametric or parametric (a concretisation of a polymorphic sort)
+// * base or defined (by a `(define-sort` command)
+
 use std::cmp::max;
 
 use indexmap::{IndexMap, IndexSet};
@@ -21,10 +26,10 @@ use debug_print::debug_println as dprintln;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum PolymorphicObject {
-    SortDefinition{ variables: Vec<Symbol>, definiendum: Sort },
-    Datatype(DatatypeDec),
-    RecursiveDT(DatatypeDec),
-    Unknown
+    SortDefinition{ variables: Vec<Symbol>, definiendum: Sort }, // (define-sort
+    Datatype(DatatypeDec), // (declare-datatype
+    RecursiveDT(DatatypeDec), // (declare-datatype
+    Unknown  // (declare-sort
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -125,7 +130,7 @@ pub(crate) fn define_sort(
 
     if variables.len() == 0 {  // monomorphic
         let declaring = IndexSet::new();
-        let g = instantiate_parent_sort(&definiendum, &declaring, solver)?;
+        let g = instantiate_sort(&definiendum, &declaring, solver)?;
 
         let canonical = solver.canonical_sorts.get(&definiendum)
             .ok_or(InternalError(845667))?;
@@ -154,7 +159,7 @@ pub(crate) fn define_sort(
 ///////////////////////  create_polymorphic_sort  //////////////////////////////
 
 
-/// adds a parametric declaration to the solver.
+/// adds a polymorphic declaration to the solver.
 pub(crate) fn create_polymorphic_sort(
     symb: &Symbol,
     dec: &DatatypeDec,
@@ -207,7 +212,7 @@ fn recursive_sort(
 }
 
 
-///////////////////////  create non-parametric sort  //////////////////////////
+///////////////////////  create monomorphic sort  //////////////////////////
 
 
 /// Adds a monomorphic declaration to the solver,
@@ -227,7 +232,7 @@ pub(crate) fn create_monomorphic_sort(
         for constructor_decl in constructor_decls {
             let ConstructorDec(_, selectors) = constructor_decl;
             for SelectorDec(_, sort) in selectors {
-                let g = instantiate_parent_sort(&sort, declaring, solver)?;
+                let g = instantiate_sort(&sort, declaring, solver)?;
                 grounding = max(grounding, g);
             }
         }
@@ -245,13 +250,13 @@ pub(crate) fn create_monomorphic_sort(
 /// Create a monomorphic sort and its parents in the solver, if not present.
 /// Returns the type of grounding of the sort.
 /// This function is recursive.
-pub(crate) fn instantiate_parent_sort(
-    parent_sort: &Sort,  // monomorphic
+pub(crate) fn instantiate_sort(
+    sort: &Sort,  // monomorphic
     declaring: &IndexSet<Sort>,
     solver: &mut Solver,
 ) -> Result<TypeInterpretation, SolverError> {
 
-    if let Some(sort_object) = get_sort_object(parent_sort, solver) {
+    if let Some(sort_object) = get_sort_object(sort, solver) {
         // already instantiated
         match sort_object {
             SortObject::Normal{..} => Ok(TypeInterpretation::Normal),
@@ -259,23 +264,23 @@ pub(crate) fn instantiate_parent_sort(
             SortObject::Infinite   => Ok(TypeInterpretation::Infinite),
             SortObject::Recursive  => Ok(TypeInterpretation::Recursive),
         }
-    } else if declaring.contains(parent_sort) {
-        insert_sort(parent_sort.clone(), None, TypeInterpretation::Recursive, None, solver)
+    } else if declaring.contains(sort) {
+        insert_sort(sort.clone(), None, TypeInterpretation::Recursive, None, solver)
     } else {
-        match parent_sort {
+        match sort {
             Sort::Sort(_) =>   // check if recursive
-                Err(SolverError::ExprError(format!("Unknown sort: {parent_sort}").to_string())),
+                Err(SolverError::ExprError(format!("Unknown sort: {sort}").to_string())),
 
             Sort::Parametric(id, parameters) => {
-                // running example: parent_sort is (Pair Color Color)
+                // running example: sort is (Pair Color Color)
                 if let L(Identifier::Simple(symb), _) = id {
 
                     // (declare-datatype Pair (par (X Y) ( ( white ) (pair (first X) (second Y)))))
-                    let parent_decl = solver.polymorphic_sorts.get(symb)
+                    let polymorphic_object = solver.polymorphic_sorts.get(symb)
                         .ok_or(InternalError(2785648))?;  // the parametric type should be in the solver
 
                     let mut grounding = TypeInterpretation::Normal;
-                    match parent_decl.clone() {
+                    match polymorphic_object.clone() {
                           PolymorphicObject::Datatype(DatatypeDec::Par(variables, constructors))
                         | PolymorphicObject::RecursiveDT(DatatypeDec::Par(variables, constructors)) => {
                             // variables: (X Y)
@@ -288,14 +293,14 @@ pub(crate) fn instantiate_parent_sort(
 
                             // instantiate constructors
                             let mut declaring = declaring.clone();
-                            declaring.insert(parent_sort.clone());
+                            declaring.insert(sort.clone());
                             let mut new_constructors = vec![]; // ( ( white ) (pair (first Color) (second Color))))
-                            for c in constructors {
-                                let mut new_selectors = vec![]; // first Color, second Color
-                                for s in c.1 {
+                            for c in constructors {  // ( white ), (pair (first X) (second Y))
+                                let mut new_selectors = vec![];
+                                for s in c.1 {  // (first X), (second Y)
                                     let (new_g, new_sort) = substitute_in_sort(&s.1, &subs, &declaring, solver)?;
                                     grounding = max(grounding, new_g);
-                                    let new_selector = SelectorDec(s.0, new_sort);
+                                    let new_selector = SelectorDec(s.0, new_sort);  // (pair (first Color) (second Color))
                                     new_selectors.push(new_selector)
                                 }
                                 let new_c = ConstructorDec(c.0.clone(), new_selectors);
@@ -304,7 +309,7 @@ pub(crate) fn instantiate_parent_sort(
 
                             // add the declaration to the solver
                             let new_decl = DatatypeDec::DatatypeDec(new_constructors);
-                            insert_sort(parent_sort.clone(), Some(new_decl), grounding, None, solver)
+                            insert_sort(sort.clone(), Some(new_decl), grounding, None, solver)
                         },
                           PolymorphicObject::Datatype(DatatypeDec::DatatypeDec(_))
                         | PolymorphicObject::RecursiveDT(DatatypeDec::DatatypeDec(_))=> {
@@ -328,21 +333,21 @@ pub(crate) fn instantiate_parent_sort(
                             match sort_object {
                                 SortObject::Normal{datatype_dec, ..} => {
                                     let alias = Some((canonical.clone(), sort_object.clone()));
-                                    insert_sort(parent_sort.clone(), Some(datatype_dec.clone()), new_g, alias, solver)
+                                    insert_sort(sort.clone(), Some(datatype_dec.clone()), new_g, alias, solver)
                                 },
                                 SortObject::Infinite
                                 | SortObject::Recursive
                                 | SortObject::Unknown => {
-                                    insert_sort(parent_sort.clone(), None, new_g, None, solver)
+                                    insert_sort(sort.clone(), None, new_g, None, solver)
                                 }
                             }
                         }
                         PolymorphicObject::Unknown => {
-                            insert_sort(parent_sort.clone(), None, TypeInterpretation::Unknown, None, solver)
+                            insert_sort(sort.clone(), None, TypeInterpretation::Unknown, None, solver)
                         }
                     }
                 } else {  // indexed identifier
-                    insert_sort(parent_sort.clone(), None, TypeInterpretation::Unknown, None, solver)
+                    insert_sort(sort.clone(), None, TypeInterpretation::Unknown, None, solver)
                 }
             },
         }}
@@ -375,7 +380,7 @@ fn substitute_in_sort(
         Sort::Sort(_) => {
             // substitute if in the substitution map
             let new_sort = subs.get(sort).unwrap_or(sort).clone();
-            let new_g = instantiate_parent_sort(&new_sort, declaring, solver)?;
+            let new_g = instantiate_sort(&new_sort, declaring, solver)?;
             Ok((new_g, new_sort))
         },
 
@@ -388,7 +393,7 @@ fn substitute_in_sort(
                 new_sorts.push(new_s);
             }
             let new_sort = Sort::Parametric(id.clone(), new_sorts);
-            let new_g = instantiate_parent_sort(&new_sort, declaring, solver)?;
+            let new_g = instantiate_sort(&new_sort, declaring, solver)?;
             Ok((new_g, new_sort))
         }
     }
@@ -412,7 +417,7 @@ fn insert_sort(
         let i = solver.sort_objects.len();
         let (canonical, sort_object) =
             match grounding {
-                TypeInterpretation::Normal => {
+                TypeInterpretation::Normal => {  // create table for the sort
                     if let Some(datatype_dec) = decl {
                         match datatype_dec {
                             DatatypeDec::DatatypeDec(ref constructor_decls) => {
@@ -425,8 +430,9 @@ fn insert_sort(
                                         } else {
                                             TableName(format!("Sort_{}", i))
                                         };
-                                    let row_count = create_table(&table, &constructor_decls, solver)?;
-                                    (CanonicalSort(sort.clone()), SortObject::Normal{datatype_dec, table, row_count})
+                                    let canonical_sort = CanonicalSort(sort.clone());
+                                    let row_count = create_table(&table, &canonical_sort, &constructor_decls, solver)?;
+                                    (canonical_sort, SortObject::Normal{datatype_dec, table, row_count})
                                 }
                             },
                             DatatypeDec::Par(..) => {
@@ -453,6 +459,7 @@ fn insert_sort(
 
 fn create_table(
     table: &TableName,
+    canonical_sort: &CanonicalSort,
     constructor_decls: &Vec<ConstructorDec>,
     solver: &mut Solver
 ) -> Result<usize, SolverError> {
@@ -470,6 +477,7 @@ fn create_table(
         if selectors.len() == 0 {
             nullary.push(constructor.0.clone());
             let identifier = L(Identifier::Simple(constructor.clone()), Offset(0));
+            set_function_object(&identifier, &vec![], &canonical_sort, FunctionObject::Constructor, solver);
             solver.function_objects.insert(identifier, FunctionObject::Constructor);
         } else {
             for SelectorDec(selector, sort) in selectors {
@@ -510,7 +518,13 @@ fn create_table(
         for constructor_decl in constructor_decls { // e.g. (pair (first Color) (second Color))
             let ConstructorDec(constructor, selectors) = constructor_decl;
 
+            let domain: Vec<CanonicalSort> = selectors.iter()
+                .map(|SelectorDec(_, sort)| solver.canonical_sorts.get(sort)
+                    .ok_or(SolverError::ExprError(format!("Unknown sort: {sort}")))
+                    .map(Clone::clone))
+                .collect::<Result<_, _>>()?;
             let identifier = L(Identifier::Simple(constructor.clone()), Offset(0));
+            set_function_object(&identifier, &domain, &canonical_sort, FunctionObject::Constructor, solver);
             solver.function_objects.insert(identifier, FunctionObject::Constructor);
 
             if selectors.len() != 0 {  // otherwise, already in core table
@@ -592,5 +606,47 @@ pub(crate) fn get_sort_object<'a>(sort: &'a Sort, solver: &'a Solver) -> Option<
     match solver.canonical_sorts.get(sort) {
         Some(canonical) => solver.sort_objects.get(canonical),
         None => None
+    }
+}
+
+
+// fn to_canonical(
+//     sort: &Sort,  // monomorphic
+//     solver: &mut Solver
+// ) -> Result<CanonicalSort, SolverError> {
+//     match sort {
+//         Sort::Sort(_) => {
+//             solver.canonical_sorts.get(sort)
+//                 .cloned()
+//                 .ok_or(SolverError::ExprError("unknown sort".to_string()))
+//         },
+//         Sort::Parametric(id, sorts) => {
+//             let sorts = sorts.iter()
+//                 .map(|s| to_canonical(s, solver))
+//                 .collect::<Result<Vec<_>,_>>()?;
+//             match solver.polymorphic_sorts.get(&Symbol(id.to_string())) {
+//                 Some(DatatypeDec::DatatypeDec(constructors)) => todo!(),
+//                 None => todo!(),
+//             }
+//         },
+//     }
+// }
+
+
+fn set_function_object(
+    identifier: &L<Identifier>,
+    domain: &Vec<CanonicalSort>,
+    co_domain: &CanonicalSort,
+    function_object: FunctionObject,
+    solver: &mut Solver
+) -> () {
+    let key = (identifier.clone(), domain.clone());
+    match solver.functions2.get_mut(&key) {
+        Some(map) => {
+            map.insert(co_domain.clone(), function_object);
+        }
+        None => {
+            solver.functions2.insert(key, IndexMap::from([(co_domain.clone(), function_object)]));
+        }
     }
 }

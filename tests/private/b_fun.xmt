@@ -27,35 +27,35 @@ Sorts:
  - (_xmt_color: 2) Color: ((red ) (green ))
  - (Sort_7: 4) (Pair Color): ((pair (first Color) (second Color)))
  - (Sort_7: 4) PairColor (= (Pair Color)): ((pair (first Color) (second Color)))
-Functions:
- - true: Constructor
- - false: Constructor
- - not: Predefined (true)
- - =>: Predefined (true)
- - and: Predefined (true)
- - or: Predefined (true)
- - xor: Predefined (true)
- - =: Predefined (true)
- - distinct: Predefined (true)
- - <=: Predefined (true)
- - <: Predefined (true)
- - >=: Predefined (true)
- - >: Predefined (true)
- - ite: Predefined (?)
- - let: Predefined (?)
- - +: Predefined (false)
- - -: Predefined (false)
- - *: Predefined (false)
- - div: Predefined (false)
- - mod: Predefined (false)
- - abs: Predefined (false)
- - red: Constructor
- - green: Constructor
- - pair: Constructor
- - bright: Color -> Bool (true)
- - invert: Color -> Color (false)
- - brightest: (Pair Color) -> Color (false)
- - colorOf: (Pair Color) -> (Pair Color) (false)
+Functions2:
+ - true ()->Bool : Constructor
+ - false ()->Bool : Constructor
+ - not ()->Bool : Predefined (true)
+ - => ()->Bool : Predefined (true)
+ - and ()->Bool : Predefined (true)
+ - or ()->Bool : Predefined (true)
+ - xor ()->Bool : Predefined (true)
+ - = ()->Bool : Predefined (true)
+ - distinct ()->Bool : Predefined (true)
+ - <= ()->Bool : Predefined (true)
+ - < ()->Bool : Predefined (true)
+ - >= ()->Bool : Predefined (true)
+ - > ()->Bool : Predefined (true)
+ - ite ()->Bool : Predefined (?)
+ - let ()->Bool : Predefined (?)
+ - + ()->Real : Predefined (false)
+ - - ()->Real : Predefined (false)
+ - * ()->Real : Predefined (false)
+ - div ()->Real : Predefined (false)
+ - mod ()->Real : Predefined (false)
+ - abs ()->Real : Predefined (false)
+ - red ()->Color : Constructor
+ - green ()->Color : Constructor
+ - pair (Color, Color)->(Pair Color) : Constructor
+ - bright (Color)->Bool : Color -> Bool (true)
+ - invert (Color)->Color : Color -> Color (false)
+ - brightest ((Pair Color))->Color : (Pair Color) -> Color (false)
+ - colorOf ((Pair Color))->(Pair Color) : (Pair Color) -> (Pair Color) (false)
 Tables and Views:
  - Bool (table)
  - _xmt_color (table)

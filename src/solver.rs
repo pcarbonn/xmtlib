@@ -53,6 +53,7 @@ pub struct Solver {
     pub(crate) sort_objects: IndexMap<CanonicalSort, SortObject>,
 
     /// predicate and function symbols
+    pub(crate) functions2: IndexMap<(L<Identifier>, Vec<CanonicalSort>), IndexMap<CanonicalSort,FunctionObject>>,
     pub(crate) function_objects: IndexMap<L<Identifier>, FunctionObject>,
 
     /// To support differed grounding of terms.
@@ -144,53 +145,62 @@ impl Solver {
         let id = |s: &str|
             L(Identifier::Simple(Symbol(s.to_string())), Offset(0));
 
+        let mut functions2 = IndexMap::new();
         let mut function_objects = IndexMap::new();
 
-        // boolean pre-defined functions
-        // LINK src/doc.md#_Constructor
-        for s in ["true", "false"] {
-            function_objects.insert(id(s),
-                FunctionObject::Constructor);
+
+        {// boolean pre-defined functions
+            let co_domain = CanonicalSort(sort("Bool"));
+            // LINK src/doc.md#_Constructor
+            for s in ["true", "false"] {
+                let func = FunctionObject::Constructor;
+                functions2.insert((id(s), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
+                function_objects.insert(id(s), FunctionObject::Constructor);
+            }
+
+            // boolean pre-defined functions
+            for (s, function) in [
+                    ("not",      Predefined::Not),
+                    ("=>",       Predefined::_Implies),
+                    ("and",      Predefined::And),
+                    ("or",       Predefined::Or),
+                    ("xor",      Predefined::_Xor),
+                    ("=",        Predefined::Eq),
+                    ("distinct", Predefined::Distinct),
+                    ("<=",       Predefined::LE),
+                    ("<",        Predefined::Less),
+                    (">=",       Predefined::GE),
+                    (">",        Predefined::Greater)
+                            ] {
+                let func = FunctionObject::Predefined{ function, boolean: Some(true) };
+                functions2.insert((id(s), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
+                function_objects.insert(id(s), func);
+            }
+
+            // ite, lte
+            let func = FunctionObject::Predefined { function: Predefined::Ite, boolean: None };
+            functions2.insert((id("ite"), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
+            function_objects.insert(id("ite"), func);
+
+            let func = FunctionObject::Predefined { function: Predefined::_Let, boolean: None };
+            functions2.insert((id("let"), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
+            function_objects.insert(id("let"), func);
         }
-
-        // boolean pre-defined functions
-        for (s, function) in [
-                ("not",      Predefined::Not),
-                ("=>",       Predefined::_Implies),
-                ("and",      Predefined::And),
-                ("or",       Predefined::Or),
-                ("xor",      Predefined::_Xor),
-                ("=",        Predefined::Eq),
-                ("distinct", Predefined::Distinct),
-                ("<=",       Predefined::LE),
-                ("<",        Predefined::Less),
-                (">=",       Predefined::GE),
-                (">",        Predefined::Greater)
-                        ] {
-            function_objects.insert(id(s),
-                FunctionObject::Predefined{ function, boolean: Some(true) });
+        { // non-boolean pre-defined functions
+            let co_domain = CanonicalSort(sort("Real"));
+            for (s, function) in [
+                    ("+",   Predefined::Plus),
+                    ("-",   Predefined::Minus),
+                    ("*",   Predefined::Times),
+                    ("div", Predefined::Div),
+                    ("mod", Predefined::Mod),
+                    ("abs", Predefined::Abs),
+                    ] {
+                let func = FunctionObject::Predefined{ function, boolean: Some(false) };
+                functions2.insert((id(s), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
+                function_objects.insert(id(s), func);
+            };
         }
-
-        // ite, lte
-        function_objects.insert(id("ite"),
-            FunctionObject::Predefined { function: Predefined::Ite, boolean: None });
-
-        function_objects.insert(id("let"),
-            FunctionObject::Predefined { function: Predefined::_Let, boolean: None });
-
-        // non-boolean pre-defined functions
-        for (s, function) in [
-                ("+",   Predefined::Plus),
-                ("-",   Predefined::Minus),
-                ("*",   Predefined::Times),
-                ("div", Predefined::Div),
-                ("mod", Predefined::Mod),
-                ("abs", Predefined::Abs),
-                ] {
-            function_objects.insert(id(s),
-                FunctionObject::Predefined{ function, boolean: Some(false) });
-        };
-
         unsafe {
             let cfg = Z3_mk_config();
             let ctx = Z3_mk_context(cfg);
@@ -203,6 +213,7 @@ impl Solver {
                 polymorphic_sorts,
                 sort_objects,
                 canonical_sorts,
+                functions2,
                 function_objects,
                 assertions_to_ground: vec![],
                 groundings: IndexMap::new(),
@@ -363,9 +374,14 @@ impl Solver {
                                     }
                                 },
                                 "functions" => {
-                                    yield_!(Ok("Functions:\n".to_string()));
-                                    for (symbol, func) in &self.function_objects {
-                                        yield_!(Ok(format!(" - {symbol}: {func}\n")))
+                                    yield_!(Ok("Functions2:\n".to_string()));
+                                    for ((symbol, domain), map) in &self.functions2 {
+                                        let domain = domain.iter()
+                                            .map(|s| s.to_string())
+                                            .collect::<Vec<_>>().join(", ");
+                                        for (co_domain, func) in map {
+                                            yield_!(Ok(format!(" - {symbol} ({domain})->{co_domain} : {func}\n")))
+                                        }
                                     }
                                 },
                                 "groundings" => {

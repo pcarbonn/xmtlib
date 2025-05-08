@@ -3,12 +3,12 @@
 
 use std::fmt::Display;
 
-use indexmap::IndexSet;
+use indexmap::{IndexMap, IndexSet};
 
 use crate::ast::{Sort, Symbol, Identifier, QualIdentifier};
 use crate::error::{SolverError, Offset};
 use crate::solver::{Solver, CanonicalSort};
-use crate::private::a_sort::instantiate_parent_sort;
+use crate::private::a_sort::instantiate_sort;
 use crate::private::e1_ground_view::Ids;
 use crate::private::e2_ground_query::TableName;
 use crate::private::e3_ground_sql::Predefined;
@@ -88,19 +88,21 @@ pub(crate) fn declare_fun(
     // instantiate the sorts, if needed
     let declaring = IndexSet::new();
     for sort in &domain {
-        instantiate_parent_sort(&sort, &declaring, solver)?;
+        instantiate_sort(&sort, &declaring, solver)?;
     }
-    instantiate_parent_sort(&co_domain, &declaring, solver)?;
+    instantiate_sort(&co_domain, &declaring, solver)?;
 
     let domain = domain.iter()
         .map( | sort | solver.canonical_sorts.get(sort).unwrap().clone())
-        .collect();
+        .collect::<Vec<_>>();
     let co_domain = solver.canonical_sorts.get(&co_domain)
         .ok_or(SolverError::ExprError("unknown co_domain".to_string()))?;
 
     let identifier = L(Identifier::Simple(symbol), Offset(0));
     let boolean = co_domain.to_string() == "Bool";
-    let function_is = FunctionObject::NotInterpreted{signature: (domain, co_domain.clone(), boolean)};
+    let function_is = FunctionObject::NotInterpreted{signature: (domain.clone(), co_domain.clone(), boolean)};
+
+    solver.functions2.insert((identifier.clone(), domain.clone()), IndexMap::from([(co_domain.clone(), function_is.clone())]));
     solver.function_objects.insert(identifier, function_is);
 
     Ok(out)
