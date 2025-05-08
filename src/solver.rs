@@ -12,12 +12,13 @@ use z3_sys::*;
 use crate::ast::*;
 use crate::error::{format_error, SolverError, Offset};
 use crate::grammar::parse;
-use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, ParametricObject, SortObject};
+use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, PolymorphicObject, SortObject};
 use crate::private::b_fun::{declare_fun, FunctionObject};
 use crate::private::c_assert::assert_;
 use crate::private::d_interpret::{interpret_pred, interpret_fun};
 use crate::private::e_ground::{ground, Grounding};
 use crate::private::e2_ground_query::TableName;
+use crate::private::e3_ground_sql::Predefined;
 use crate::private::y_db::init_db;
 use crate::ast::L;
 
@@ -45,14 +46,14 @@ pub struct Solver {
     pub (crate) started: bool,
 
     /// contains only parametric data type declarations
-    pub(crate) parametric_sorts: IndexMap<Symbol, ParametricObject>,
+    pub(crate) polymorphic_sorts: IndexMap<Symbol, PolymorphicObject>,
 
     /// contains nullary data types and the used instantiations of parametric data types
     pub(crate) canonical_sorts: IndexMap<Sort, CanonicalSort>,
     pub(crate) sort_objects: IndexMap<CanonicalSort, SortObject>,
 
     /// predicate and function symbols
-    pub(crate) functions: IndexMap<L<Identifier>, FunctionObject>,
+    pub(crate) function_objects: IndexMap<L<Identifier>, FunctionObject>,
 
     /// To support differed grounding of terms.
     /// The string is the original assertion command.
@@ -99,12 +100,12 @@ impl Solver {
         // Note: indexed sorts are created as Unknown when occurring: (_ BitVec n), (_ FloatingPoint eb sb)
 
         // create pre-defined parametric sorts: (Array ..), (Seq ..), (Tuple..)
-        let mut parametric_sorts = IndexMap::new();
-        parametric_sorts.insert(Symbol("Array".to_string()), ParametricObject::Unknown);
+        let mut polymorphic_sorts = IndexMap::new();
+        polymorphic_sorts.insert(Symbol("Array".to_string()), PolymorphicObject::Unknown);
 
         // not in the SMT-Lib standard:
-        // parametric_sorts.insert(Symbol("Seq".to_string()), ParametricObject::Unknown);
-        // parametric_sorts.insert(Symbol("Tuple".to_string()), ParametricObject::Unknown);
+        // polymorphic_sorts.insert(Symbol("Seq".to_string()), PolymorphicObject::Unknown);
+        // polymorphic_sorts.insert(Symbol("Tuple".to_string()), PolymorphicObject::Unknown);
 
         // create pre-defined sorts: Bool, Int, Real
         let mut sort_objects = IndexMap::new();
@@ -139,40 +140,55 @@ impl Solver {
         canonical_sorts.insert(sort("String"), canonical_sort("String"));  // in String theory
         canonical_sorts.insert(sort("RegLan"), canonical_sort("RegLan"));  // in String theory
 
-        // create pre-defined functions
-        let mut functions = IndexMap::new();
-        let function = |s: &str|
+        // create function objects
+        let id = |s: &str|
             L(Identifier::Simple(Symbol(s.to_string())), Offset(0));
+
+        let mut function_objects = IndexMap::new();
 
         // boolean pre-defined functions
         // LINK src/doc.md#_Constructor
         for s in ["true", "false"] {
-            functions.insert(function(s),
+            function_objects.insert(id(s),
                 FunctionObject::Constructor);
         }
 
         // boolean pre-defined functions
-        for s in ["not",
-                        "=>", "and", "or", "xor",
-                        "=", "distinct",
-                        "<=", "<", ">=", ">"
+        for (s, function) in [
+                ("not",      Predefined::Not),
+                ("=>",       Predefined::_Implies),
+                ("and",      Predefined::And),
+                ("or",       Predefined::Or),
+                ("xor",      Predefined::_Xor),
+                ("=",        Predefined::Eq),
+                ("distinct", Predefined::Distinct),
+                ("<=",       Predefined::LE),
+                ("<",        Predefined::Less),
+                (">=",       Predefined::GE),
+                (">",        Predefined::Greater)
                         ] {
-            functions.insert(function(s),
-                FunctionObject::Predefined{ boolean: Some(true) });
+            function_objects.insert(id(s),
+                FunctionObject::Predefined{ function, boolean: Some(true) });
         }
 
         // ite, lte
-        functions.insert(function("ite"),
-            FunctionObject::Predefined { boolean: None });
-        functions.insert(function("let"),
-            FunctionObject::Predefined { boolean: None });
+        function_objects.insert(id("ite"),
+            FunctionObject::Predefined { function: Predefined::Ite, boolean: None });
+
+        function_objects.insert(id("let"),
+            FunctionObject::Predefined { function: Predefined::_Let, boolean: None });
 
         // non-boolean pre-defined functions
-        for s in ["+", "-", "*", "div",
-                        "mod", "abs",
-                        ] {
-            functions.insert(function(s),
-                FunctionObject::Predefined{ boolean: Some(false) });
+        for (s, function) in [
+                ("+",   Predefined::Plus),
+                ("-",   Predefined::Minus),
+                ("*",   Predefined::Times),
+                ("div", Predefined::Div),
+                ("mod", Predefined::Mod),
+                ("abs", Predefined::Abs),
+                ] {
+            function_objects.insert(id(s),
+                FunctionObject::Predefined{ function, boolean: Some(false) });
         };
 
         unsafe {
@@ -184,11 +200,10 @@ impl Solver {
                 backend,
                 started: false,
                 conn,
-                parametric_sorts,
+                polymorphic_sorts,
                 sort_objects,
                 canonical_sorts,
-                functions,
-                // qualified_functions: IndexMap::new(),
+                function_objects,
                 assertions_to_ground: vec![],
                 groundings: IndexMap::new(),
                 grounded: IndexSet::new(),
@@ -328,28 +343,28 @@ impl Solver {
                                         }
                                     }
                                 },
-                                "parametric_sorts" => {
+                                "polymorphic_sorts" => {
                                     yield_!(Ok("Parametric datatypes:\n".to_string()));
-                                    for (sort, decl) in &self.parametric_sorts {
+                                    for (sort, decl) in &self.polymorphic_sorts {
                                         match decl {
-                                            ParametricObject::Datatype(decl) =>
+                                            PolymorphicObject::Datatype(decl) =>
                                                 yield_!(Ok(format!(" - {sort}: {decl}\n"))),
-                                            ParametricObject::DTDefinition{variables, definiendum} => {
+                                            PolymorphicObject::SortDefinition{variables, definiendum} => {
                                                 let vars = variables.iter()
                                                     .map(|v| v.0.clone())
                                                     .collect::<Vec<String>>().join(",");
                                                 yield_!(Ok(format!(" - {sort}: ({vars}) -> {definiendum}\n")))
                                             },
-                                            ParametricObject::Recursive(decl) =>
+                                            PolymorphicObject::RecursiveDT(decl) =>
                                                 yield_!(Ok(format!(" - (recursive) {sort}: {decl}\n"))),
-                                            ParametricObject::Unknown =>
+                                            PolymorphicObject::Unknown =>
                                                 yield_!(Ok(format!(" - (unknown): {sort}\n"))),
                                         }
                                     }
                                 },
                                 "functions" => {
                                     yield_!(Ok("Functions:\n".to_string()));
-                                    for (symbol, func) in &self.functions {
+                                    for (symbol, func) in &self.function_objects {
                                         yield_!(Ok(format!(" - {symbol}: {func}\n")))
                                     }
                                 },

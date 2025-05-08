@@ -11,6 +11,7 @@ use crate::solver::{Solver, CanonicalSort};
 use crate::private::a_sort::instantiate_parent_sort;
 use crate::private::e1_ground_view::Ids;
 use crate::private::e2_ground_query::TableName;
+use crate::private::e3_ground_sql::Predefined;
 use crate::ast::L;
 
 
@@ -19,10 +20,10 @@ use crate::ast::L;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum FunctionObject {
-    Predefined{boolean: Option<bool>},  // None = unknown for `ite, let` --> need special code
+    Predefined{function: Predefined, boolean: Option<bool>},  // None = unknown for `ite, let` --> need special code
     Constructor,
     NotInterpreted{signature: (Vec<CanonicalSort>, CanonicalSort, bool)},  // signature used to create table, when later interpreted
-    NonBooleanInterpreted{ table_g: Interpretation},
+    Interpreted(Interpretation),
     BooleanInterpreted{table_tu: Interpretation, table_uf: Interpretation, table_g: Interpretation}
 }
 
@@ -39,9 +40,9 @@ pub(crate) enum Interpretation {
 impl Display for FunctionObject {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Predefined{boolean} =>
+            Self::Predefined{boolean, ..} =>
                 if let Some(b) = boolean {
-                    write!(f, "Predefined ({})", b)
+                    write!(f, "Predefined ({b})")
                 } else {
                     write!(f, "Predefined (?)")
                 },
@@ -55,7 +56,7 @@ impl Display for FunctionObject {
                 let co_domain = co_domain.to_string();
                 write!(f,"{domain} -> {co_domain} ({boolean})")
             }
-            Self::NonBooleanInterpreted{table_g} =>
+            Self::Interpreted(table_g) =>
                 write!(f, "Non Boolean ({table_g})"),
             Self::BooleanInterpreted{table_tu, table_uf, table_g} =>
                 write!(f, "Boolean ({table_tu}, {table_uf}, {table_g})"),
@@ -100,7 +101,7 @@ pub(crate) fn declare_fun(
     let identifier = L(Identifier::Simple(symbol), Offset(0));
     let boolean = co_domain.to_string() == "Bool";
     let function_is = FunctionObject::NotInterpreted{signature: (domain, co_domain.clone(), boolean)};
-    solver.functions.insert(identifier, function_is);
+    solver.function_objects.insert(identifier, function_is);
 
     Ok(out)
 }
@@ -111,8 +112,8 @@ pub(crate) fn get_function_object<'a>(
 ) -> Option<&'a FunctionObject> {
     match function {
         QualIdentifier::Identifier(identifier) =>
-            solver.functions.get(identifier),
+            solver.function_objects.get(identifier),
         QualIdentifier::Sorted(identifier, _) =>
-            solver.functions.get(identifier),
+            solver.function_objects.get(identifier),
     }
 }

@@ -12,7 +12,7 @@
 (define-sort PairColor () (Pair Color Color))
 (define-sort MyPairColor () (MyPair PairColor))
 (define-sort MyArray () (Array Color Color))
-(x-debug solver parametric_sorts)
+(x-debug solver polymorphic_sorts)
 (x-debug solver sorts)
 (x-debug solver functions)
 (x-debug db tables)

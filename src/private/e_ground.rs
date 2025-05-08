@@ -367,7 +367,7 @@ fn ground_compound(
     };
 
     match function_is {
-        FunctionObject::Predefined { boolean: None } => { // ite
+        FunctionObject::Predefined { boolean: None, .. } => { // ite
             match qual_identifier.to_string().as_str() {
                 "ite" => {
                     if sub_terms.len() != 3 {
@@ -406,14 +406,13 @@ fn ground_compound(
                 _ => Err(InternalError(3884562))
             }
         },
-        FunctionObject::Predefined { boolean: Some(boolean) } => {
+        FunctionObject::Predefined {function, boolean: Some(boolean), .. } => {
+            let variant = QueryVariant::Predefined(function.clone());
             if *boolean {
                 let (mut tus, mut ufs) = collect_tu_uf(&groundings);
 
                 match qual_identifier.to_string().as_str() {
                     "and" => {
-                        let variant = QueryVariant::Predefined(Predefined::And);
-
                         let tu = view_for_compound(qual_identifier, index, &mut tus, &variant, Some(false), solver)?;
 
                         let agg = if top_level { "" } else { "and" };
@@ -424,8 +423,6 @@ fn ground_compound(
                         Ok(Grounding::Boolean{tu, uf, g})
                     }
                     "or" => {
-                        let variant = QueryVariant::Predefined(Predefined::Or);
-
                         let tu = view_for_union(tus, Some(false), "or".to_string(), index)?;
 
                         let uf = view_for_compound(qual_identifier,  index, &mut ufs, &variant, Some(true), solver)?;
@@ -463,7 +460,7 @@ fn ground_compound(
                                 if 2 < gqs.len() {
                                     return Err(SolverError::TermError("Too many boolean arguments", term.clone()))  //TODO relax constraint
                                 }
-                                (ufs, QueryVariant::PredefinedWithDefault(true))
+                                (ufs, QueryVariant::Equality(true))
                             },
                             Some(Grounding::NonBoolean { .. }) => {
                                 (gqs, QueryVariant::Predefined(Predefined::Eq))
@@ -479,15 +476,6 @@ fn ground_compound(
                         Ok(Grounding::Boolean{tu, uf, g})
                     }
                     "<" | "<=" | ">=" | ">" | "distinct" => {
-                        let function = match qual_identifier.to_string().as_str() {
-                            "<"         => Predefined::Less,
-                            "<="        => Predefined::LE,
-                            ">="        => Predefined::GE,
-                            ">"         => Predefined::Greater,
-                            "distinct"  => Predefined::Distinct,
-                            _ => unreachable!()
-                        };
-                        let variant = QueryVariant::Predefined(function);
                         let tu = view_for_compound(qual_identifier, index, &mut gqs, &variant, Some(false), solver)?;
 
                         let uf = view_for_compound(qual_identifier, index, &mut gqs, &variant, Some(true), solver)?;
@@ -501,16 +489,6 @@ fn ground_compound(
             } else {  // predefined non-boolean function
                 match qual_identifier.to_string().as_str() {
                     "+" | "-" | "*" | "div" | "mod" | "abs" => {
-                        let function = match qual_identifier.to_string().as_str() {
-                            "+"     => Predefined::Plus,
-                            "-"     => Predefined::Minus,
-                            "*"     => Predefined::Times,
-                            "div"   => Predefined::Div,
-                            "mod"   => Predefined::Mod,
-                            "abs"   => Predefined::Abs,
-                            _ => unreachable!()
-                        };
-                        let variant = QueryVariant::Predefined(function);
                         let g = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
 
                         Ok(Grounding::NonBoolean( g ))
@@ -579,7 +557,7 @@ fn ground_compound(
 
             Ok(Grounding::Boolean{tu: new_queries[0].clone(), uf: new_queries[1].clone(), g: new_queries[2].clone()})
         },
-        FunctionObject::NonBooleanInterpreted { table_g } => {
+        FunctionObject::Interpreted(table_g) => {
             let variant = match table_g {
                 Interpretation::Table{name, ids} => {
                     let table_name = TableAlias::new(name.clone(), index);

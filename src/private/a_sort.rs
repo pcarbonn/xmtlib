@@ -20,10 +20,10 @@ use debug_print::debug_println as dprintln;
 /////////////////////  Data structure for Sort  ///////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub(crate) enum ParametricObject {
+pub(crate) enum PolymorphicObject {
+    SortDefinition{ variables: Vec<Symbol>, definiendum: Sort },
     Datatype(DatatypeDec),
-    DTDefinition{ variables: Vec<Symbol>, definiendum: Sort },
-    Recursive(DatatypeDec),
+    RecursiveDT(DatatypeDec),
     Unknown
 }
 
@@ -78,14 +78,14 @@ pub(crate) fn declare_datatypes(
                 let declaring = sort_decs.iter()
                     .map(|sd| sd.0.clone())
                     .collect();
-                create_parametric_sort(&symb, &dec, &constructor_decs, &declaring, solver)?
+                create_polymorphic_sort(&symb, &dec, &constructor_decs, &declaring, solver)?
             }
             DatatypeDec::DatatypeDec(_) => {
                 // for recursivity detection
                 let declaring = sort_decs.iter()
                     .map(|sd| Sort::Sort(L(Identifier::Simple(sd.0.clone()), Offset(0))))
                     .collect();
-                create_non_parametric_sort(&symb, &dec, &declaring, solver)?
+                create_monomorphic_sort(&symb, &dec, &declaring, solver)?
             }
         };
     }
@@ -106,8 +106,8 @@ pub(crate) fn declare_sort(
         let sort = Sort::Sort(L(Identifier::Simple(symb), Offset(0)));
         insert_sort(sort, None, TypeInterpretation::Unknown, None, solver)?;
     } else {
-        let dt_object = ParametricObject::Unknown;
-        solver.parametric_sorts.insert(symb, dt_object);
+        let dt_object = PolymorphicObject::Unknown;
+        solver.polymorphic_sorts.insert(symb, dt_object);
     }
 
     Ok(out)
@@ -123,7 +123,7 @@ pub(crate) fn define_sort(
 
     let out = solver.exec(&command)?;
 
-    if variables.len() == 0 {  // non-parametric
+    if variables.len() == 0 {  // monomorphic
         let declaring = IndexSet::new();
         let g = instantiate_parent_sort(&definiendum, &declaring, solver)?;
 
@@ -143,19 +143,19 @@ pub(crate) fn define_sort(
         let new_sort = Sort::Sort(L(Identifier::Simple(symb), Offset(0)));
         insert_sort(new_sort, new_decl, g, Some((canonical.clone(), new_sort_object.clone())), solver)?;
 
-    } else {  // sort must be parametric
-        solver.parametric_sorts.insert(symb, ParametricObject::DTDefinition{variables, definiendum});
+    } else {  // sort must is polymorphic
+        solver.polymorphic_sorts.insert(symb, PolymorphicObject::SortDefinition{variables, definiendum});
     }
 
     Ok(out)
 }
 
 
-///////////////////////  create_parametric_sort  //////////////////////////////
+///////////////////////  create_polymorphic_sort  //////////////////////////////
 
 
 /// adds a parametric declaration to the solver.
-pub(crate) fn create_parametric_sort(
+pub(crate) fn create_polymorphic_sort(
     symb: &Symbol,
     dec: &DatatypeDec,
     constructor_decs: &Vec<ConstructorDec>,  // this redundant argument is for convenience
@@ -174,10 +174,10 @@ pub(crate) fn create_parametric_sort(
     }
 
     if recursive {
-        solver.parametric_sorts.insert(symb.clone(), ParametricObject::Recursive(dec.clone()));
+        solver.polymorphic_sorts.insert(symb.clone(), PolymorphicObject::RecursiveDT(dec.clone()));
     } else {
-        let value = ParametricObject::Datatype(dec.clone());
-        solver.parametric_sorts.insert(symb.clone(), value);
+        let value = PolymorphicObject::Datatype(dec.clone());
+        solver.polymorphic_sorts.insert(symb.clone(), value);
     }
     Ok(())
 }
@@ -210,10 +210,10 @@ fn recursive_sort(
 ///////////////////////  create non-parametric sort  //////////////////////////
 
 
-/// Adds a non-parametric declaration to the solver,
+/// Adds a monomorphic declaration to the solver,
 /// and create database table of its extension.
 /// Also adds any required instantiation of parent sorts.
-pub(crate) fn create_non_parametric_sort(
+pub(crate) fn create_monomorphic_sort(
     symb: &Symbol,
     decl: &DatatypeDec,
     declaring: &IndexSet<Sort>,  // to detect mutually-recursive datatypes
@@ -238,15 +238,15 @@ pub(crate) fn create_non_parametric_sort(
         Ok(())
 
     } else {
-        Err(InternalError(5428868))  // unexpected parametric datatype
+        Err(InternalError(5428868))  // unexpected polymorphic datatype
     }
 }
 
-/// Create the sort and its parents in the solver, if not present.
+/// Create a monomorphic sort and its parents in the solver, if not present.
 /// Returns the type of grounding of the sort.
 /// This function is recursive.
 pub(crate) fn instantiate_parent_sort(
-    parent_sort: &Sort,
+    parent_sort: &Sort,  // monomorphic
     declaring: &IndexSet<Sort>,
     solver: &mut Solver,
 ) -> Result<TypeInterpretation, SolverError> {
@@ -267,17 +267,17 @@ pub(crate) fn instantiate_parent_sort(
                 Err(SolverError::ExprError(format!("Unknown sort: {parent_sort}").to_string())),
 
             Sort::Parametric(id, parameters) => {
-                // running example: Pair Color Color
+                // running example: parent_sort is (Pair Color Color)
                 if let L(Identifier::Simple(symb), _) = id {
 
                     // (declare-datatype Pair (par (X Y) ( ( white ) (pair (first X) (second Y)))))
-                    let parent_decl = solver.parametric_sorts.get(symb)
+                    let parent_decl = solver.polymorphic_sorts.get(symb)
                         .ok_or(InternalError(2785648))?;  // the parametric type should be in the solver
 
                     let mut grounding = TypeInterpretation::Normal;
                     match parent_decl.clone() {
-                          ParametricObject::Datatype(DatatypeDec::Par(variables, constructors))
-                        | ParametricObject::Recursive(DatatypeDec::Par(variables, constructors)) => {
+                          PolymorphicObject::Datatype(DatatypeDec::Par(variables, constructors))
+                        | PolymorphicObject::RecursiveDT(DatatypeDec::Par(variables, constructors)) => {
                             // variables: (X Y)
                             // constructors: ( ( white ) (pair (first X) (second Y))))
                             // we assume variables.len() = parameters.len()
@@ -306,11 +306,11 @@ pub(crate) fn instantiate_parent_sort(
                             let new_decl = DatatypeDec::DatatypeDec(new_constructors);
                             insert_sort(parent_sort.clone(), Some(new_decl), grounding, None, solver)
                         },
-                          ParametricObject::Datatype(DatatypeDec::DatatypeDec(_))
-                        | ParametricObject::Recursive(DatatypeDec::DatatypeDec(_))=> {
+                          PolymorphicObject::Datatype(DatatypeDec::DatatypeDec(_))
+                        | PolymorphicObject::RecursiveDT(DatatypeDec::DatatypeDec(_))=> {
                             Err(InternalError(1786496))  // Unexpected non-parametric type
                         },
-                        ParametricObject::DTDefinition{variables, definiendum, } => {
+                        PolymorphicObject::SortDefinition{variables, definiendum, } => {
                             // running example: parent_sort is (MyPair Color Color)
                             // parent_decl: (define-sort MyPair (T) (Pair T T))
 
@@ -337,7 +337,7 @@ pub(crate) fn instantiate_parent_sort(
                                 }
                             }
                         }
-                        ParametricObject::Unknown => {
+                        PolymorphicObject::Unknown => {
                             insert_sort(parent_sort.clone(), None, TypeInterpretation::Unknown, None, solver)
                         }
                     }
@@ -352,7 +352,7 @@ pub(crate) fn instantiate_parent_sort(
 /// Creates a mapping from Sort-variables to Sort
 fn sort_mapping(
     variables: Vec<Symbol>,  // a variable representing a sort
-    values: &Vec<Sort>
+    values: &Vec<Sort>  // monomorphic
 ) -> IndexMap<Sort, Sort> {
     let old_variables: Vec<Sort> = variables.iter()
         .map(|s| { Sort::Sort(L(Identifier::Simple(s.clone()), Offset(0)))})
@@ -362,7 +362,7 @@ fn sort_mapping(
         .collect()
 }
 
-
+/// Converts a polymorphic sort to a monomorphic sort.
 fn substitute_in_sort(
     sort: &Sort,
     subs: &IndexMap<Sort, Sort>,
@@ -398,7 +398,7 @@ fn substitute_in_sort(
 ///////////////////////  insert sort  /////////////////////////////////////////
 
 
-/// Make the non-parametric sort known to the solver, and create its table
+/// Make the monomorphic sort known to the solver, and create its table
 fn insert_sort(
     sort: Sort,
     decl: Option<DatatypeDec>,
@@ -470,7 +470,7 @@ fn create_table(
         if selectors.len() == 0 {
             nullary.push(constructor.0.clone());
             let identifier = L(Identifier::Simple(constructor.clone()), Offset(0));
-            solver.functions.insert(identifier, FunctionObject::Constructor);
+            solver.function_objects.insert(identifier, FunctionObject::Constructor);
         } else {
             for SelectorDec(selector, sort) in selectors {
                 // LINK src/doc.md#_Infinite
@@ -511,7 +511,7 @@ fn create_table(
             let ConstructorDec(constructor, selectors) = constructor_decl;
 
             let identifier = L(Identifier::Simple(constructor.clone()), Offset(0));
-            solver.functions.insert(identifier, FunctionObject::Constructor);
+            solver.function_objects.insert(identifier, FunctionObject::Constructor);
 
             if selectors.len() != 0 {  // otherwise, already in core table
 

@@ -160,13 +160,14 @@ pub(crate) enum ViewType {
     #[strum(to_string = "G")] G,
 }
 
-/// describes the type of query to create for a compound term
+/// describes the type of query to create for a compound term.
+// this differs too much from FunctionObject to merge them.
 pub(crate) enum QueryVariant {
-    Interpretation(TableAlias, Ids),
-    Apply,
-    Construct,
+    Equality(bool),
     Predefined(Predefined),
-    PredefinedWithDefault(bool)
+    Construct,
+    Apply,
+    Interpretation(TableAlias, Ids),  // not TableName !
 }
 
 /// Creates a query for a compound term, according to `variant`.
@@ -218,7 +219,7 @@ pub(crate) fn view_for_compound(
                             precise: sub_precise }
                         = query {
 
-                    if ! matches!(variant, QueryVariant::PredefinedWithDefault(_))
+                    if ! matches!(variant, QueryVariant::Equality(_))
                     && sub_outer.is_none() {
 
                         // handle the special case of a variable used as an argument to an interpreted function
@@ -280,7 +281,7 @@ pub(crate) fn view_for_compound(
                             QueryVariant::Apply
                             | QueryVariant::Construct
                             | QueryVariant::Predefined(_)
-                            | QueryVariant::PredefinedWithDefault(..) => {}
+                            | QueryVariant::Equality(..) => {}
                         }
                         true  // done
                     } else { false }
@@ -291,7 +292,7 @@ pub(crate) fn view_for_compound(
                     let table_name =
                         match grounding {
                             Either::Left(constant) => {
-                                if ! matches!(variant, QueryVariant::PredefinedWithDefault(..)) {  // no need to create a Join
+                                if ! matches!(variant, QueryVariant::Equality(..)) {  // no need to create a Join
                                     // merge the variables
                                     for (symbol, _) in sub_free_variables.clone().iter() {
                                         variables.insert(symbol.clone(), None);
@@ -395,13 +396,13 @@ pub(crate) fn view_for_compound(
 
                 SQLExpr::Predefined(function.clone(), Box::new(groundings))
             },
-            QueryVariant::PredefinedWithDefault(default) => {
+            QueryVariant::Equality(default) => {
                 precise = false;
                 SQLExpr::Predefined(Predefined::BoolEq(*default), Box::new(groundings))
             }
         };
     let outer = match variant {
-            QueryVariant::PredefinedWithDefault(default) => Some(*default),
+            QueryVariant::Equality(default) => Some(*default),
             _ => None
         };
     let base_table = solver.create_table_name(format!("{qual_identifier}_{index}"));

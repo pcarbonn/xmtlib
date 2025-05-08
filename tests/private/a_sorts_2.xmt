@@ -15,7 +15,7 @@
 (declare-sort A 0)
 (declare-sort B 0)
 (define-sort MyPair () (Pair A B))
-(x-debug solver parametric_sorts)
+(x-debug solver polymorphic_sorts)
 (x-debug solver sorts)
 (x-debug solver functions)
 (x-debug db tables)

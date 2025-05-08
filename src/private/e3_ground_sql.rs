@@ -31,9 +31,11 @@ pub(crate) enum SQLExpr {
 pub(crate) enum Predefined {
     // display is the SMT-lib symbol
 
+    #[strum(to_string = "not")] Not,
+    #[strum(to_string = "=>" )] _Implies,
     #[strum(to_string = "and")] And,
     #[strum(to_string = "or" )] Or,
-    #[strum(to_string = "not")] Not,
+    #[strum(to_string = "xor")] _Xor,
     // "=>" is replaced by a disjunction during annotation
     #[strum(to_string = "="  )] BoolEq(bool),
     #[strum(to_string = "="  )] Eq,
@@ -43,6 +45,7 @@ pub(crate) enum Predefined {
     #[strum(to_string = ">"  )] Greater,
     #[strum(to_string = "distinct")] Distinct,
     #[strum(to_string = "ite")] Ite,
+    #[strum(to_string = "let")] _Let,
 
     #[strum(to_string = "+"  )] Plus,
     #[strum(to_string = "-"  )] Minus,
@@ -58,15 +61,19 @@ enum Associativity {
     Associative,
     Chainable,
     Pairwise,
+    RightAssoc,
     LeftAssoc,
-    Ite
+    Ite,
+    _Let
 }
 
 fn associativity(function: &Predefined) -> Associativity {
     match function {
+        Predefined::Not       => Associativity::Unary,
+        Predefined::_Implies  => Associativity::RightAssoc,
         Predefined::And       => Associativity::Associative,
         Predefined::Or        => Associativity::Associative,
-        Predefined::Not       => Associativity::Unary,
+        Predefined::_Xor      => Associativity::LeftAssoc,
         Predefined::BoolEq(_) => Associativity::Chainable,
         Predefined::Eq        => Associativity::Chainable,
         Predefined::Less      => Associativity::Chainable,
@@ -75,6 +82,7 @@ fn associativity(function: &Predefined) -> Associativity {
         Predefined::Greater   => Associativity::Chainable,
         Predefined::Distinct  => Associativity::Pairwise,
         Predefined::Ite       => Associativity::Ite,
+        Predefined::_Let      => Associativity::_Let,
         Predefined::Plus      => Associativity::LeftAssoc,
         Predefined::Minus     => Associativity::LeftAssoc,
         Predefined::Times     => Associativity::LeftAssoc,
@@ -284,7 +292,7 @@ impl SQLExpr {
                         }
                     },
                     Associativity::LeftAssoc => {
-                        // + - * div
+                        // + - * div xor
 
                         let (terms, ids) = collect_args(Ids::All, exprs, variables);
 
@@ -294,6 +302,7 @@ impl SQLExpr {
                             (format!("left_(\"{function}\", {terms})"), ids)
                         }
                     },
+                    Associativity::RightAssoc => todo!(),
                     Associativity::Ite => {
                         let mut ids = Ids::All;
                         let terms = exprs.iter()
@@ -318,6 +327,7 @@ impl SQLExpr {
                             }
                         }
                     },
+                    Associativity::_Let => todo!()
                 }
             }
         }

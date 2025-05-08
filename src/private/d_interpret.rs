@@ -25,15 +25,15 @@ pub(crate) fn interpret_pred(
     // get the symbol declaration
     let table_name = solver.create_table_name(identifier.to_string());
 
-    let function_is = solver.functions.get(&identifier)
+    let function_object = solver.function_objects.get(&identifier)
         .ok_or(SolverError::IdentifierError("Unknown symbol", identifier.clone()))?;
 
-    match function_is {
+    match function_object {
         FunctionObject::Predefined { .. } =>
             Err(SolverError::IdentifierError("Can't interpret a pre-defined symbol", identifier)),
         FunctionObject::BooleanInterpreted { .. } =>
             Err(SolverError::IdentifierError("Can't re-interpret an interpreted symbol", identifier)),
-        FunctionObject::NonBooleanInterpreted { .. } =>
+        FunctionObject::Interpreted { .. } =>
             Err(SolverError::IdentifierError("Can't re-interpret an interpreted symbol", identifier)),
         FunctionObject::Constructor { .. } =>
             Err(SolverError::IdentifierError("Can't interpret a constructor", identifier)),
@@ -109,8 +109,8 @@ pub(crate) fn interpret_pred(
                     let table_tu = Interpretation::Table{name: table_tu.clone(), ids: Ids::All};
                     let table_uf = Interpretation::Infinite;
                     let table_g  = Interpretation::Infinite;
-                    let function_is = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-                    solver.functions.insert(identifier, function_is);
+                    let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
+                    solver.function_objects.insert(identifier, function_object);
                 } else {
 
                     // create UF view
@@ -131,8 +131,8 @@ pub(crate) fn interpret_pred(
                     let table_tu = Interpretation::Table{name: table_tu, ids: Ids::All};
                     let table_uf = Interpretation::Table{name: missing,  ids: Ids::All};
                     let  table_g = Interpretation::Table{name: name_g,   ids: Ids::All};
-                    let function_is = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-                    solver.functions.insert(identifier, function_is);
+                    let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
+                    solver.function_objects.insert(identifier, function_object);
 
                 }
 
@@ -184,8 +184,8 @@ fn interpret_pred_0(
     };
 
     // create FunctionObject with boolean interpretations.
-    let function_is = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-    solver.functions.insert(identifier.clone(), function_is);
+    let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
+    solver.function_objects.insert(identifier.clone(), function_object);
     Ok("".to_string())
 }
 
@@ -200,15 +200,15 @@ pub(crate) fn interpret_fun(
 
     // get the symbol declaration
 
-    let function_is = solver.functions.get(&identifier)
+    let function_object = solver.function_objects.get(&identifier)
         .ok_or(SolverError::IdentifierError("Unknown symbol", identifier.clone()))?;
 
-    match function_is {
+    match function_object {
         FunctionObject::Predefined { .. } =>
             Err(SolverError::IdentifierError("Can't interpret a pre-defined symbol", identifier)),
         FunctionObject::BooleanInterpreted { .. } =>
             Err(SolverError::IdentifierError("Can't re-interpret an interpreted symbol", identifier)),
-        FunctionObject::NonBooleanInterpreted { .. } =>
+        FunctionObject::Interpreted { .. } =>
             Err(SolverError::IdentifierError("Can't re-interpret an interpreted symbol", identifier)),
         FunctionObject::Constructor { .. } =>
             Err(SolverError::IdentifierError("Can't interpret a constructor", identifier)),
@@ -242,8 +242,8 @@ pub(crate) fn interpret_fun(
 
                     // create FunctionObject.
                     let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
-                    let function_is = FunctionObject::NonBooleanInterpreted { table_g };
-                    solver.functions.insert(identifier, function_is);
+                    let function_object = FunctionObject::Interpreted(table_g);
+                    solver.function_objects.insert(identifier, function_object);
                 } else {
                     let (tu, uf, g) =
                         match value.to_string().as_str() {
@@ -269,8 +269,8 @@ pub(crate) fn interpret_fun(
                     let table_tu  = Interpretation::Table{name: TableName(format!("{table_name}_TU")), ids: Ids::All};
                     let table_uf  = Interpretation::Table{name: TableName(format!("{table_name}_UF")), ids: Ids::All};
                     let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
-                    let function_is = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-                    solver.functions.insert(identifier.clone(), function_is);
+                    let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
+                    solver.function_objects.insert(identifier.clone(), function_object);
                 }
             } else {
                 let domain = domain.clone();
@@ -346,8 +346,8 @@ pub(crate) fn interpret_fun(
                     };
 
                     let table_g = Interpretation::Table{name: table_g, ids};
-                    let function_is = FunctionObject::NonBooleanInterpreted { table_g };
-                    solver.functions.insert(identifier, function_is);
+                    let function_object = FunctionObject::Interpreted(table_g);
+                    solver.function_objects.insert(identifier, function_object);
 
                 } else {  // partial interpretation of predicate
 
@@ -464,8 +464,8 @@ pub(crate) fn interpret_fun(
                     let table_tu = Interpretation::Table{name: table_tu, ids: ids.clone()};
                     let table_uf = Interpretation::Table{name: table_uf, ids: ids.clone()};
                     let table_g  = Interpretation::Table{name: table_g , ids: ids};
-                    let function_is = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-                    solver.functions.insert(identifier, function_is);
+                    let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
+                    solver.function_objects.insert(identifier, function_object);
                 }
             };
             Ok("".to_string())
@@ -590,7 +590,7 @@ fn construct(id: &L<Term>, solver: &mut Solver) -> Result<String, SolverError> {
                     },
                     FunctionObject::Predefined { .. }
                     | FunctionObject::NotInterpreted { .. }
-                    | FunctionObject::NonBooleanInterpreted { .. }
+                    | FunctionObject::Interpreted { .. }
                     | FunctionObject::BooleanInterpreted { .. } =>
                         Err(SolverError::TermError("Not an id", id.clone())),
                 }
