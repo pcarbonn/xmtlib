@@ -57,9 +57,9 @@ Sorts:
  - (recursive) (Pair ColorList (Pair ColorList ColorList))
  - (recursive) (Triplet ColorList)
  - (Sort_8: 5) PairColor (= (Pair Color Color)): ((white ) (pair (first Color) (second Color)))
- - (Sort_18: 26) (Pair PairColor PairColor): ((white ) (pair (first PairColor) (second PairColor)))
- - (Sort_18: 26) (MyPair PairColor) (= (Pair PairColor PairColor)): ((white ) (pair (first PairColor) (second PairColor)))
- - (Sort_18: 26) MyPairColor (= (Pair PairColor PairColor)): ((white ) (pair (first PairColor) (second PairColor)))
+ - (Sort_18: 26) (Pair PairColor PairColor) (= (Pair (Pair Color Color) (Pair Color Color))): ((white ) (pair (first PairColor) (second PairColor)))
+ - (Sort_18: 26) (MyPair PairColor) (= (Pair (Pair Color Color) (Pair Color Color))): ((white ) (pair (first PairColor) (second PairColor)))
+ - (Sort_18: 26) MyPairColor (= (Pair (Pair Color Color) (Pair Color Color))): ((white ) (pair (first PairColor) (second PairColor)))
  - (unknown) (Array Color Color)
  - (unknown) MyArray
 Functions2:
@@ -90,13 +90,13 @@ Functions2:
  - white ()->color : Constructor
  - white ()->(Pair Color Color) : Constructor
  - white ()->(Pair Color (Pair Color Color)) : Constructor
- - white ()->(Pair PairColor PairColor) : Constructor
+ - white ()->(Pair (Pair Color Color) (Pair Color Color)) : Constructor
  - pair (Color, Color)->(Pair Color Color) : Constructor
  - p ((Pair Color Color))->P : Constructor
  - pair (Color, (Pair Color Color))->(Pair Color (Pair Color Color)) : Constructor
  - triplet ((Pair Color (Pair Color Color)))->(Triplet Color) : Constructor
  - q ((Triplet Color))->Q : Constructor
- - pair ((Pair Color Color), (Pair Color Color))->(Pair PairColor PairColor) : Constructor
+ - pair ((Pair Color Color), (Pair Color Color))->(Pair (Pair Color Color) (Pair Color Color)) : Constructor
 Tables and Views:
  - Bool (table)
  - _xmt_color (table)

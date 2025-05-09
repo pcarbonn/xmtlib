@@ -53,7 +53,8 @@ pub struct Solver {
     pub(crate) sort_objects: IndexMap<CanonicalSort, SortObject>,
 
     /// predicate and function symbols
-    pub(crate) functions2: IndexMap<(L<Identifier>, Vec<CanonicalSort>), IndexMap<CanonicalSort,FunctionObject>>,
+    pub(crate) functions2: IndexMap<(L<Identifier>, Vec<CanonicalSort>),
+                                     IndexMap<CanonicalSort, FunctionObject>>,
     pub(crate) function_objects: IndexMap<L<Identifier>, FunctionObject>,
 
     /// To support differed grounding of terms.

@@ -2,7 +2,7 @@
 
 // Sorts have 3 main attributes:
 // * monomorphic or polymorphic (having variables)
-// * not parametric or parametric (a concretisation of a polymorphic sort)
+// * non-parametric or parametric (a concretisation of a polymorphic sort)
 // * base or defined (by a `(define-sort` command)
 
 use std::cmp::max;
@@ -34,7 +34,7 @@ pub(crate) enum PolymorphicObject {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum SortObject{
-    Normal{datatype_dec: DatatypeDec, table: TableName, row_count: usize},  // table name, number of rows.  DatatypeDec is non-parametric.
+    Normal{datatype_dec: DatatypeDec, table: TableName, row_count: usize},  // table name, number of rows.  DatatypeDec is monomorphic
     Recursive,
     Infinite,  // Int, Real, and derived
     Unknown
@@ -424,15 +424,31 @@ fn insert_sort(
                                 if let Some(alias) = alias {
                                     alias.clone()
                                 } else {
-                                    let table =
-                                        if let Sort::Sort(L(Identifier::Simple(Symbol(ref name)), _)) = sort {
-                                            solver.create_table_name(name.to_string())
-                                        } else {
-                                            TableName(format!("Sort_{}", i))
+                                    let (table, canonical) =
+                                        match sort {
+                                            Sort::Sort(L(Identifier::Simple(Symbol(ref name)), _)) =>
+                                                (solver.create_table_name(name.to_string()),
+                                                CanonicalSort(sort.clone())),
+                                            Sort::Sort(_) =>
+                                                (TableName(format!("Sort_{}", i)),
+                                                CanonicalSort(sort.clone())),
+                                            Sort::Parametric(ref id, ref sorts) => {
+                                                let canonicals = sorts.iter()
+                                                    .map(|s|
+                                                        solver.canonical_sorts.get(s)
+                                                            .cloned()
+                                                            .ok_or(SolverError::ExprError("unknown sort".to_string())))
+                                                    .collect::<Result<Vec<_>,_>>()?
+                                                    .into_iter()  // decanonicalize them
+                                                    .map(|canonical| canonical.0)
+                                                    .collect();
+
+                                                (TableName(format!("Sort_{}", i)),
+                                                CanonicalSort(Sort::Parametric(id.clone(), canonicals)))
+                                            }
                                         };
-                                    let canonical_sort = CanonicalSort(sort.clone());
-                                    let row_count = create_table(&table, &canonical_sort, &constructor_decls, solver)?;
-                                    (canonical_sort, SortObject::Normal{datatype_dec, table, row_count})
+                                    let row_count = create_table(&table, &canonical, &constructor_decls, solver)?;
+                                    (canonical, SortObject::Normal{datatype_dec, table, row_count})
                                 }
                             },
                             DatatypeDec::Par(..) => {
@@ -608,29 +624,6 @@ pub(crate) fn get_sort_object<'a>(sort: &'a Sort, solver: &'a Solver) -> Option<
         None => None
     }
 }
-
-
-// fn to_canonical(
-//     sort: &Sort,  // monomorphic
-//     solver: &mut Solver
-// ) -> Result<CanonicalSort, SolverError> {
-//     match sort {
-//         Sort::Sort(_) => {
-//             solver.canonical_sorts.get(sort)
-//                 .cloned()
-//                 .ok_or(SolverError::ExprError("unknown sort".to_string()))
-//         },
-//         Sort::Parametric(id, sorts) => {
-//             let sorts = sorts.iter()
-//                 .map(|s| to_canonical(s, solver))
-//                 .collect::<Result<Vec<_>,_>>()?;
-//             match solver.polymorphic_sorts.get(&Symbol(id.to_string())) {
-//                 Some(DatatypeDec::DatatypeDec(constructors)) => todo!(),
-//                 None => todo!(),
-//             }
-//         },
-//     }
-// }
 
 
 fn set_function_object(
