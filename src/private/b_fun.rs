@@ -5,7 +5,7 @@ use std::fmt::Display;
 
 use indexmap::{IndexMap, IndexSet};
 
-use crate::ast::{Sort, Symbol, Identifier, QualIdentifier};
+use crate::ast::{Identifier, QualIdentifier, Sort, Symbol, Term};
 use crate::error::{SolverError, Offset};
 use crate::solver::{Solver, CanonicalSort};
 use crate::private::a_sort::instantiate_sort;
@@ -109,13 +109,36 @@ pub(crate) fn declare_fun(
 }
 
 pub(crate) fn get_function_object<'a>(
+    term: &L<Term>,  // a function application; used for error reporting
     function: &'a QualIdentifier,
+    sorts: &Vec<CanonicalSort>,
     solver: &'a Solver
-) -> Option<&'a FunctionObject> {
+) -> Result<(&'a CanonicalSort, &'a FunctionObject), SolverError> {
     match function {
-        QualIdentifier::Identifier(identifier) =>
-            solver.function_objects.get(identifier),
-        QualIdentifier::Sorted(identifier, _) =>
-            solver.function_objects.get(identifier),
+        QualIdentifier::Identifier(identifier) => {
+            match solver.functions2.get(&(identifier.clone(), sorts.clone())) {
+                Some(map) => {
+                    if map.len() == 1 {
+                        Ok(map.first().unwrap())
+                    } else {
+                        Err(SolverError::TermError("Ambiguous term application", term.clone()))  // ambiguous
+                    }
+                }
+                None => Err(SolverError::TermError("Unknown symbol", term.clone()))
+            }
+        },
+        QualIdentifier::Sorted(identifier, sort) =>
+            match solver.functions2.get(&(identifier.clone(), sorts.clone())) {
+                Some(map) => {
+                    if let Some(canonical) = solver.canonical_sorts.get(sort) {
+                        match map.get(canonical) {
+                            Some(function_object) =>
+                                Ok((canonical, function_object)),
+                            None => Err(SolverError::TermError("Inappropriate identifier qualification", term.clone()))
+                        }
+                    } else { Err(SolverError::TermError("Incorrect function application", term.clone())) }
+                }
+                None => Err(SolverError::TermError("Unknown symbol", term.clone()))
+            }
     }
 }

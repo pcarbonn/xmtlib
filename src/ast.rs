@@ -17,6 +17,7 @@ use itertools::Itertools;
 use itertools::Either::{self, Left, Right};
 
 use crate::error::Offset;
+use crate::solver::CanonicalSort;
 use crate::private::a_sort::SortObject;
 
 
@@ -107,6 +108,23 @@ impl std::fmt::Display for SpecConstant {
         }
     }
 }
+impl SpecConstant {
+    pub(crate) fn to_canonical_sort(&self) -> CanonicalSort {
+        match self {
+            SpecConstant::Numeral(_) =>
+                CanonicalSort(Sort::Sort(L(Identifier::Simple(Symbol("Int".to_string())), Offset(0)))),
+            SpecConstant::Decimal(_) =>
+                CanonicalSort(Sort::Sort(L(Identifier::Simple(Symbol("Real".to_string())), Offset(0)))),
+            SpecConstant::Hexadecimal(_) =>
+                CanonicalSort(Sort::Sort(L(Identifier::Simple(Symbol("Int".to_string())), Offset(0)))),
+            SpecConstant::Binary(_) =>
+                CanonicalSort(Sort::Sort(L(Identifier::Simple(Symbol("Int".to_string())), Offset(0)))),
+            SpecConstant::String(_) =>
+                CanonicalSort(Sort::Sort(L(Identifier::Simple(Symbol("String".to_string())), Offset(0)))),
+        }
+    }
+}
+
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum SExpr {

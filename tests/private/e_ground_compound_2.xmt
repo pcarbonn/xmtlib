@@ -9,7 +9,7 @@
 
 (declare-fun f (T) Tf)
 (assert (forall ((x T)) (and (p x (f a)) (p x (f b)) ) ))
-(assert (forall ((x T)) (p (f x) (f x)) ))
+(assert (forall ((x T)) (p x (f x)) ))
 (x-ground debug:)
 (x-debug solver groundings)
 (x-debug db tables)
@@ -19,10 +19,8 @@
 (declare-fun p (T Tf) Bool)
 (declare-fun f (T) Tf)
 (assert (and (not (= (f a) A)) (=> (= (f a) B) (p a B)) (not (= (f b) A)) (=> (= (f b) B) (p a B))))
-(assert (not (and (= (f a) a) (= (f a) A))))
-(assert (=> (and (= (f a) a) (= (f a) B)) (p a B)))
-(assert (not (and (= (f b) a) (= (f b) A))))
-(assert (=> (and (= (f b) a) (= (f b) B)) (p a B)))
+(assert (not (= (f a) A)))
+(assert (=> (= (f a) B) (p a B)))
 Groundings:
 ===  x ======================================
  -- Join(0)
@@ -160,60 +158,54 @@ SELECT and_aggregate(implies_(if_, G)) as G
 SELECT _xmt_t.G AS x,
        apply("f", _xmt_t.G) AS G
   FROM _xmt_t
-===  (p (f x) (f x)) ======================================
+===  (p x (f x)) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_t.G AS x,
-       and_(apply("=",apply("f", _xmt_t.G), _xmt_p_TU_10.a_1), apply("=",apply("f", _xmt_t.G), _xmt_p_TU_10.a_2)) AS if_,
+SELECT _xmt_p_TU_10.a_1 AS x,
+       apply("=",apply("f", _xmt_p_TU_10.a_1), _xmt_p_TU_10.a_2) AS if_, 
        _xmt_p_TU_10.G AS G
-  FROM _xmt_t
-  JOIN _xmt_p_TU AS _xmt_p_TU_10
+  FROM _xmt_p_TU AS _xmt_p_TU_10
 ----- UF -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_t.G AS x,
-       and_(apply("=",apply("f", _xmt_t.G), _xmt_p_UF_10.a_1), apply("=",apply("f", _xmt_t.G), _xmt_p_UF_10.a_2)) AS if_,
+SELECT _xmt_p_UF_10.a_1 AS x,
+       apply("=",apply("f", _xmt_p_UF_10.a_1), _xmt_p_UF_10.a_2) AS if_, 
        _xmt_p_UF_10.G AS G
-  FROM _xmt_t
-  JOIN _xmt_p_UF AS _xmt_p_UF_10
+  FROM _xmt_p_UF AS _xmt_p_UF_10
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_t.G AS x,
-       and_(apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_1), apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_2)) AS if_,
+SELECT _xmt_p_G_10.a_1 AS x,
+       apply("=",apply("f", _xmt_p_G_10.a_1), _xmt_p_G_10.a_2) AS if_, 
        _xmt_p_G_10.G AS G
-  FROM _xmt_t
-  JOIN _xmt_p_G AS _xmt_p_G_10
+  FROM _xmt_p_G AS _xmt_p_G_10
 
-=== (top) (forall ((x T)) (p (f x) (f x))) ======================================
+=== (top) (forall ((x T)) (p x (f x))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(implies_(if_, G)) as G
  FROM (-- Join(7)
-       SELECT _xmt_t.G AS x,
-              and_(apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_1), apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_2)) AS if_,
+       SELECT _xmt_p_G_10.a_1 AS x,
+              apply("=",apply("f", _xmt_p_G_10.a_1), _xmt_p_G_10.a_2) AS if_, 
               _xmt_p_G_10.G AS G
-         FROM _xmt_t
-         JOIN _xmt_p_G AS _xmt_p_G_10)
+         FROM _xmt_p_G AS _xmt_p_G_10)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT implies_(if_, G) as G
  FROM (-- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_t.G AS x,
-                     and_(apply("=",apply("f", _xmt_t.G), _xmt_p_UF_10.a_1), apply("=",apply("f", _xmt_t.G), _xmt_p_UF_10.a_2)) AS if_,
+              SELECT _xmt_p_UF_10.a_1 AS x,
+                     apply("=",apply("f", _xmt_p_UF_10.a_1), _xmt_p_UF_10.a_2) AS if_, 
                      _xmt_p_UF_10.G AS G
-                FROM _xmt_t
-                JOIN _xmt_p_UF AS _xmt_p_UF_10)
+                FROM _xmt_p_UF AS _xmt_p_UF_10)
         WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(implies_(if_, G)) as G
  FROM (-- Join(7)
-       SELECT _xmt_t.G AS x,
-              and_(apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_1), apply("=",apply("f", _xmt_t.G), _xmt_p_G_10.a_2)) AS if_,
+       SELECT _xmt_p_G_10.a_1 AS x,
+              apply("=",apply("f", _xmt_p_G_10.a_1), _xmt_p_G_10.a_2) AS if_, 
               _xmt_p_G_10.G AS G
-         FROM _xmt_t
-         JOIN _xmt_p_G AS _xmt_p_G_10)
+         FROM _xmt_p_G AS _xmt_p_G_10)
 
 ===========================================
 Tables and Views:

@@ -66,7 +66,7 @@ Functions2:
  - red ()->Color : Constructor
  - green ()->Color : Constructor
  - hue (Color, Color)->Hue : Constructor
- - dim (Hue)->Bool : Hue -> Bool (true)
+ - dim (Hue)->Bool : Boolean (_xmt_dim_TU Complete, _xmt_dim_UF Complete, _xmt_dim_G Complete)
 Groundings:
 ===  x ======================================
  -- Join(0)

@@ -112,14 +112,14 @@ Functions2:
  - div ()->Real : Predefined (false)
  - mod ()->Real : Predefined (false)
  - abs ()->Real : Predefined (false)
- - p ()->Bool :  -> Bool (true)
- - P ()->Bool :  -> Bool (true)
+ - p ()->Bool : Boolean (_xmt_p_1_TU Complete, _xmt_p_1_UF Complete, _xmt_p_1_G Complete)
+ - P ()->Bool : Boolean (_xmt_p_3_TU Complete, _xmt_p_3_UF Complete, _xmt_p_3_G Complete)
  - red ()->Color : Constructor
  - green ()->Color : Constructor
- - bright (Color)->Bool : Color -> Bool (true)
- - same (Color, Color)->Bool : Color * Color -> Bool (true)
+ - bright (Color)->Bool : Boolean (_xmt_bright_TU Complete, _xmt_bright_UF Complete, _xmt_bright_G Complete)
+ - same (Color, Color)->Bool : Boolean (_xmt_same_TU Complete, _xmt_same_UF Complete, _xmt_same_G Complete)
  - hue (Color, Color)->Hue : Constructor
- - dim (Hue)->Bool : Hue -> Bool (true)
+ - dim (Hue)->Bool : Boolean (_xmt_dim_TU Complete, _xmt_dim_UF Complete, _xmt_dim_G Complete)
  - dark (Color)->Bool : Color -> Bool (true)
 Groundings:
 === (top) p ======================================

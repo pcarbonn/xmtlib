@@ -5,9 +5,9 @@ use std::future::Future;
 use genawaiter::{sync::Gen, sync::gen, yield_};
 use rusqlite::Connection;
 
-use crate::ast::{L, QualIdentifier, Identifier, Symbol, Term};
+use crate::ast::{L, QualIdentifier, Identifier, Symbol, Term, Sort};
 use crate::error::{Offset, SolverError::{self, *}};
-use crate::solver::Solver;
+use crate::solver::{CanonicalSort, Solver};
 
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, get_function_object, Interpretation};
@@ -74,7 +74,7 @@ pub(crate) fn ground(
 
         for term in terms {
             match ground_term(&term, true, solver) {
-                Ok(g) => {
+                Ok((g, _)) => {
                     match g {
                         Grounding::NonBoolean(_) => yield_!(Err(SolverError::TermError("Expecting a boolean", term.clone()))),
                         Grounding::Boolean{uf, ..} => {
@@ -175,7 +175,7 @@ fn ground_term(
     term: &L<Term>,
     top_level: bool,
     solver: &mut Solver
-) -> Result<Grounding, SolverError> {
+) -> Result<(Grounding, CanonicalSort), SolverError> {
 
     if let Some(grounding) = solver.groundings.get(&(term.clone(), top_level)) {
         Ok(grounding.clone())
@@ -196,14 +196,15 @@ pub(crate) fn ground_term_(
     term: &L<Term>,
     top_level: bool,
     solver: &mut Solver
-) -> Result<Grounding, SolverError> {
+) -> Result<(Grounding, CanonicalSort), SolverError> {
 
     match term {
         L(Term::SpecConstant(spec_constant), _) => {
 
             // a number or string; cannot be Boolean
             let grounding = view_for_constant(spec_constant)?;
-            Ok(Grounding::NonBoolean(grounding))
+            let canonical = spec_constant.to_canonical_sort();
+            Ok((Grounding::NonBoolean(grounding), canonical))
         },
         L(Term::XSortedVar(symbol, sort, sorted_object), _) => {
 
@@ -219,10 +220,13 @@ pub(crate) fn ground_term_(
             let index = solver.groundings.len();
             let g = view_for_variable(symbol, base_table, index)?;
 
+            let canonical = solver.canonical_sorts.get(sort)
+                .ok_or(InternalError(1458856))?
+                .clone();
             if sort.to_string() == "bool" {
-                Ok(Grounding::Boolean { tu: g.clone(), uf: g.clone(), g })
+                Ok((Grounding::Boolean { tu: g.clone(), uf: g.clone(), g }, canonical))
             } else {
-                Ok(Grounding::NonBoolean(g))
+                Ok((Grounding::NonBoolean(g), canonical))
             }
         },
         L(Term::XLetVar(_, _), _) => {
@@ -241,9 +245,9 @@ pub(crate) fn ground_term_(
         L(Term::Let(..), _) => todo!(),
         L(Term::Forall(variables, term), _) => {
             match ground_term(term, false, solver)? {
-                Grounding::NonBoolean(_) =>
+                (Grounding::NonBoolean(_), _) =>
                     Err(InternalError(42578548)),
-                Grounding::Boolean { tu: _, uf: sub_uf, g: sub_g } => {
+                (Grounding::Boolean { tu: _, uf: sub_uf, g: sub_g }, canonical) => {
 
                     let index = solver.groundings.len();
                     let table_name = TableName(format!("Agg_{index}"));
@@ -277,15 +281,15 @@ pub(crate) fn ground_term_(
                         None,
                         TableAlias{base_table: TableName(format!("{table_name}_UF")), index: 0})?;
 
-                    Ok(Grounding::Boolean{tu, uf, g})
+                    Ok((Grounding::Boolean{tu, uf, g}, canonical))
                 },
             }
         },
         L(Term::Exists(variables, term), _) => {
             match ground_term(term, false, solver)? {
-                Grounding::NonBoolean(_) =>
+                (Grounding::NonBoolean(_), _) =>
                     Err(InternalError(42578548)),
-                Grounding::Boolean { tu: sub_tu, uf: _, g: sub_g } => {
+                (Grounding::Boolean { tu: sub_tu, uf: _, g: sub_g }, canonical) => {
 
                     let index = solver.groundings.len();
                     let table_name = TableName(format!("Agg_{index}"));
@@ -318,7 +322,7 @@ pub(crate) fn ground_term_(
                         "or",
                         None,
                         TableAlias{base_table: TableName(format!("{table_name}_G")), index: 0})?;
-                    Ok(Grounding::Boolean{tu, uf, g})
+                    Ok((Grounding::Boolean{tu, uf, g}, canonical))
                 },
             }
         },
@@ -334,7 +338,7 @@ fn ground_compound(
     sub_terms: &Vec<L<Term>>,
     top_level: bool,
     solver: &mut Solver
-) -> Result<Grounding, SolverError> {
+) -> Result<(Grounding, CanonicalSort), SolverError> {
 
     let top_level = if qual_identifier.to_string() == "and" {
             top_level
@@ -343,9 +347,12 @@ fn ground_compound(
         };
 
     // ground sub_terms, creating an entry in solver.groundings if necessary
-    let groundings = sub_terms.iter()
-        .map( |t| ground_term(t, top_level, solver))
-        .collect::<Result<Vec<_>,_>>()?;
+    let (groundings, sorts): (Vec<Grounding>, Vec<CanonicalSort>) =
+        sub_terms.iter()
+            .map( |t| ground_term(t, top_level, solver))
+            .collect::<Result<Vec<(Grounding, CanonicalSort)>,_>>()?
+            .into_iter()
+            .unzip();
 
     let index = solver.groundings.len();
 
@@ -358,10 +365,15 @@ fn ground_compound(
             })
         .collect::<Vec<_>>();
 
-    let function_is = match get_function_object(qual_identifier, solver) {
-        Some(f) => f,
-        None => return Err(SolverError::TermError("Unknown symbol", term.clone()))
+    let (out_sort, function_is) = match get_function_object(term, qual_identifier, &sorts, solver) {
+        Ok(f) => f,
+        Err(_) => {  // some predefined functions have no sorts
+            let (out_sort, f) = get_function_object(term, qual_identifier, &vec![], solver)?;
+            if let FunctionObject::Predefined{..} = f { (out_sort, f) }
+            else { return Err(SolverError::TermError("Unknown function application", term.clone())) }
+        }
     };
+    let out_sort = out_sort.clone();
 
     match function_is {
         FunctionObject::Predefined { boolean: None, .. } => { // ite
@@ -378,7 +390,7 @@ fn ground_compound(
                                 let mut sub_queries = vec![ifg, lg, rg];
                                 let g = view_for_compound(qual_identifier, index, &mut sub_queries, &variant, None, solver)?;
 
-                        Ok(Grounding::NonBoolean( g ))
+                                Ok((Grounding::NonBoolean( g ), sorts[1].clone()))
                             },
                             ( Grounding::Boolean{tu: ltu, uf: luf, g: lg, ..},
                               Grounding::Boolean{tu: rtu, uf: ruf, g: rg, ..}) => {
@@ -392,7 +404,7 @@ fn ground_compound(
                                 let mut sub_queries = vec![ifg, lg, rg];
                                 let g = view_for_compound(qual_identifier, index, &mut sub_queries, &variant, None, solver)?;
 
-                                Ok(Grounding::Boolean{tu, uf, g})
+                                Ok((Grounding::Boolean{tu, uf, g}, sorts[1].clone()))
                             },
                             _ => return Err(SolverError::TermError("Incorrect type of arguments", term.clone()))
                         }
@@ -417,7 +429,7 @@ fn ground_compound(
 
                         let g = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
 
-                        Ok(Grounding::Boolean{tu, uf, g})
+                        Ok((Grounding::Boolean{tu, uf, g}, out_sort))
                     }
                     "or" => {
                         let tu = view_for_union(tus, Some(false), "or".to_string(), index)?;
@@ -426,7 +438,7 @@ fn ground_compound(
 
                         let g = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
 
-                        Ok(Grounding::Boolean{tu, uf, g})
+                        Ok((Grounding::Boolean{tu, uf, g}, out_sort))
 
                     }
                     "not" => {
@@ -439,9 +451,9 @@ fn ground_compound(
                                     let new_uf = tu.negate(index, ViewType::TU, solver)?;
                                     let new_g = g.negate(index, ViewType::G, solver)?;
 
-                                    Ok(Grounding::Boolean{tu: new_tu, uf: new_uf, g: new_g})
+                                    Ok((Grounding::Boolean{tu: new_tu, uf: new_uf, g: new_g}, out_sort))
                                 } else {  // empty
-                                    Ok(Grounding::Boolean{tu: GroundingView::Empty, uf:  GroundingView::Empty, g:  GroundingView::Empty})
+                                    Ok((Grounding::Boolean{tu: GroundingView::Empty, uf:  GroundingView::Empty, g:  GroundingView::Empty}, out_sort))
                                 }
                             },
                             Some(Grounding::NonBoolean(_))
@@ -470,7 +482,7 @@ fn ground_compound(
 
                         let g = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
 
-                        Ok(Grounding::Boolean{tu, uf, g})
+                        Ok((Grounding::Boolean{tu, uf, g}, out_sort))
                     }
                     "<" | "<=" | ">=" | ">" | "distinct" => {
                         let tu = view_for_compound(qual_identifier, index, &mut gqs, &variant, Some(false), solver)?;
@@ -479,7 +491,7 @@ fn ground_compound(
 
                         let g = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
 
-                        Ok(Grounding::Boolean{tu, uf, g})
+                        Ok((Grounding::Boolean{tu, uf, g}, out_sort))
                     }
                     _ => Err(InternalError(58994512))
                 }
@@ -487,8 +499,13 @@ fn ground_compound(
                 match qual_identifier.to_string().as_str() {
                     "+" | "-" | "*" | "div" | "mod" | "abs" => {
                         let g = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
+                        let sort = if sorts.iter().any(|s| s.to_string() == "Real") {
+                            CanonicalSort(Sort::Sort(L(Identifier::Simple(Symbol("Real".to_string())), Offset(0))))
+                        } else {
+                            CanonicalSort(Sort::Sort(L(Identifier::Simple(Symbol("Int".to_string())), Offset(0))))
+                        };
 
-                        Ok(Grounding::NonBoolean( g ))
+                        Ok((Grounding::NonBoolean( g ), sort))
                     }
                     _ => Err(InternalError(48519624))
                 }
@@ -502,10 +519,10 @@ fn ground_compound(
                 let tu = view_for_compound(qual_identifier, index, &mut vec![], &variant, Some(false), solver)?;
                 let uf = view_for_compound(qual_identifier, index, &mut vec![], &variant, Some(true), solver)?;
                 let g = view_for_compound(qual_identifier, index, &mut vec![], &variant, None, solver)?;
-                Ok(Grounding::Boolean{tu, uf, g})
+                Ok((Grounding::Boolean{tu, uf, g}, out_sort))
             } else {
                 let grounding_query = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
-                Ok(Grounding::NonBoolean(grounding_query))
+                Ok((Grounding::NonBoolean(grounding_query), out_sort))
             }
         },
         FunctionObject::NotInterpreted { signature: (_, _, boolean)} => { // custom function
@@ -518,12 +535,12 @@ fn ground_compound(
                 let tu = view_for_compound(qual_identifier, index, &mut tus, &variant, Some(false), solver)?;
                 let uf = view_for_compound(qual_identifier, index, &mut ufs, &variant, Some(true), solver)?;
 
-                Ok(Grounding::Boolean{tu, uf, g})
+                Ok((Grounding::Boolean{tu, uf, g}, out_sort))
             } else {
 
                 // custom non-boolean function
                 let grounding_query = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
-                Ok(Grounding::NonBoolean(grounding_query))
+                Ok((Grounding::NonBoolean(grounding_query), out_sort))
             }
         },
         FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g } => {
@@ -552,7 +569,8 @@ fn ground_compound(
                 new_queries.push(new_view);
             };
 
-            Ok(Grounding::Boolean{tu: new_queries[0].clone(), uf: new_queries[1].clone(), g: new_queries[2].clone()})
+            Ok((Grounding::Boolean{tu: new_queries[0].clone(), uf: new_queries[1].clone(), g: new_queries[2].clone()},
+                out_sort))
         },
         FunctionObject::Interpreted(table_g) => {
             let variant = match table_g {
@@ -563,7 +581,7 @@ fn ground_compound(
                 Interpretation::Infinite => QueryVariant::Apply
             };
             let new_view = view_for_compound(qual_identifier, index, &gqs, &variant, None, solver)?;
-            Ok(Grounding::NonBoolean(new_view))
+            Ok((Grounding::NonBoolean(new_view), out_sort))
         }
     }
 }

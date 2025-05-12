@@ -37,7 +37,10 @@ pub(crate) fn interpret_pred(
             Err(SolverError::IdentifierError("Can't re-interpret an interpreted symbol", identifier)),
         FunctionObject::Constructor { .. } =>
             Err(SolverError::IdentifierError("Can't interpret a constructor", identifier)),
-        FunctionObject::NotInterpreted { signature: (domain, _, boolean) } => {
+        FunctionObject::NotInterpreted { signature: (domain, co_domain, boolean) } => {
+            let domain = domain.clone();
+            let co_domain = co_domain.clone();
+
             if solver.grounded.contains(&identifier.0) {
                 // todo: convert interpretation to definition
                 return Err(SolverError::IdentifierError("Can't interpret a symbol after grounding its use", identifier))
@@ -47,7 +50,7 @@ pub(crate) fn interpret_pred(
             } else {
                 if domain.len() == 0 {
                     // special case: arity 0
-                    return interpret_pred_0(identifier, tuples, solver);
+                    return interpret_pred_0(identifier, tuples, co_domain, solver);
                 }
 
                 let domain = domain.clone();
@@ -60,10 +63,8 @@ pub(crate) fn interpret_pred(
                         let mut tuples_strings = vec![];
                         for XTuple(tuple) in &tuples {
                             if tuple.len() == domain.len() {
-                                let tuples_t = tuple.iter()
-                                    .map(|t| construct(t, solver) )
-                                    .collect::<Result<Vec<_>, SolverError>>()?;
-                                tuples_strings.push(tuples_t);
+                                let (_, new_terms) = construct_tuple(tuple, solver)?;
+                                tuples_strings.push(new_terms);
                             } else {
                                 return Err(SolverError::IdentifierError("Incorrect tuple length", identifier))
                             }
@@ -104,49 +105,47 @@ pub(crate) fn interpret_pred(
                 solver.conn.execute(&sql, ())?;
 
                 let size = size(&domain, &solver)?;
-                if size == 0 {  // infinite
-                    // create FunctionObject with boolean interpretations.
-                    let table_tu = Interpretation::Table{name: table_tu.clone(), ids: Ids::All};
-                    let table_uf = Interpretation::Infinite;
-                    let table_g  = Interpretation::Infinite;
-                    let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-                    solver.function_objects.insert(identifier, function_object);
-                } else {
+                let function_object = if size == 0 {  // infinite
+                        // create FunctionObject with boolean interpretations.
+                        let table_tu = Interpretation::Table{name: table_tu.clone(), ids: Ids::All};
+                        let table_uf = Interpretation::Infinite;
+                        let table_g  = Interpretation::Infinite;
+                        FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g }
+                    } else {
 
-                    // create UF view
-                    let missing = TableName(format!("{table_name}_UF"));
-                    let name_g = TableName(format!("{table_name}_G"));
+                        // create UF view
+                        let missing = TableName(format!("{table_name}_UF"));
+                        let name_g = TableName(format!("{table_name}_G"));
 
-                    create_missing_views(
-                        table_tu.clone(),
-                        &domain,
-                        &Some("false".to_string()),
-                        identifier.clone(),
-                        &missing,
-                        name_g.clone(),
-                        solver
-                    )?;
+                        create_missing_views(
+                            table_tu.clone(),
+                            &domain,
+                            &Some("false".to_string()),
+                            identifier.clone(),
+                            &missing,
+                            name_g.clone(),
+                            solver
+                        )?;
 
-                    // create FunctionObject with boolean interpretations.
-                    let table_tu = Interpretation::Table{name: table_tu, ids: Ids::All};
-                    let table_uf = Interpretation::Table{name: missing,  ids: Ids::All};
-                    let  table_g = Interpretation::Table{name: name_g,   ids: Ids::All};
-                    let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-                    solver.function_objects.insert(identifier, function_object);
-
-                }
-
+                        // create FunctionObject with boolean interpretations.
+                        let table_tu = Interpretation::Table{name: table_tu, ids: Ids::All};
+                        let table_uf = Interpretation::Table{name: missing,  ids: Ids::All};
+                        let  table_g = Interpretation::Table{name: name_g,   ids: Ids::All};
+                        FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g }
+                    };
+                solver.function_objects.insert(identifier.clone(), function_object.clone());
+                insert_functions2(identifier, domain, co_domain, function_object, solver);
                 Ok("".to_string())
             }
         },
     }
 }
 
-
 /// Interpret a predicate of arity 0
 fn interpret_pred_0(
     identifier: L<Identifier>,
     tuples: XSet,
+    co_domain: CanonicalSort,
     solver: &mut Solver,
 ) -> Result<String, SolverError> {
     let table_name = solver.create_table_name(identifier.to_string());
@@ -185,7 +184,8 @@ fn interpret_pred_0(
 
     // create FunctionObject with boolean interpretations.
     let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-    solver.function_objects.insert(identifier.clone(), function_object);
+    solver.function_objects.insert(identifier.clone(), function_object.clone());
+    insert_functions2(identifier, vec!(), co_domain, function_object, solver);
     Ok("".to_string())
 }
 
@@ -213,6 +213,8 @@ pub(crate) fn interpret_fun(
         FunctionObject::Constructor { .. } =>
             Err(SolverError::IdentifierError("Can't interpret a constructor", identifier)),
         FunctionObject::NotInterpreted { signature: (domain, co_domain, boolean) } => {
+            let domain = domain.clone();
+            let co_domain = co_domain.clone();
             if solver.grounded.contains(&identifier.0) {
                 // todo: convert interpretation to definition
                 return Err(SolverError::IdentifierError("Can't interpret a symbol after grounding its use", identifier))
@@ -234,7 +236,7 @@ pub(crate) fn interpret_fun(
                     let value = match value {
                         L(Term::SpecConstant(SpecConstant::Numeral(v)), _) => v.to_string(),
                         L(Term::SpecConstant(SpecConstant::Decimal(v)), _) => v.to_string(),
-                        _ => format!("\"{}\"", construct(&value, solver)?)
+                        _ => format!("\"{}\"", construct(&value, solver)?.1)
                     };
 
                     let sql = format!("CREATE VIEW {table_name}_G AS SELECT {value} as G");
@@ -243,7 +245,8 @@ pub(crate) fn interpret_fun(
                     // create FunctionObject.
                     let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
                     let function_object = FunctionObject::Interpreted(table_g);
-                    solver.function_objects.insert(identifier, function_object);
+                    solver.function_objects.insert(identifier.clone(), function_object.clone());
+                    insert_functions2(identifier, domain, co_domain, function_object, solver);
                 } else {
                     let (tu, uf, g) =
                         match value.to_string().as_str() {
@@ -270,11 +273,10 @@ pub(crate) fn interpret_fun(
                     let table_uf  = Interpretation::Table{name: TableName(format!("{table_name}_UF")), ids: Ids::All};
                     let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
                     let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-                    solver.function_objects.insert(identifier.clone(), function_object);
+                    solver.function_objects.insert(identifier.clone(), function_object.clone());
+                    insert_functions2(identifier, domain, co_domain, function_object, solver);
                 }
             } else {
-                let domain = domain.clone();
-                let co_domain = co_domain.clone();
                 let size = size(&domain, &solver)?;
 
                 if ! *boolean {
@@ -285,19 +287,17 @@ pub(crate) fn interpret_fun(
                     let mut ids = Ids::All;
                     let count = match tuples {
                         Left(tuples) => {
-                            create_interpretation_table(table_g.clone(), &domain, &Some(co_domain), solver)?;
+                            create_interpretation_table(table_g.clone(), &domain.clone(), &Some(co_domain.clone()), solver)?;
                             let mut tuples_strings = vec![];
                             for (XTuple(tuple), term) in &tuples {
                                 if tuple.len() == domain.len() {
-                                    let mut tuples_t = tuple.iter()
-                                        .map(|t| construct(t, solver) )
-                                        .collect::<Result<Vec<_>, SolverError>>()?;
+                                    let (_, mut tuples_t) = construct_tuple(tuple, solver)?;
                                     // value is the identifier or an id
                                     let value = if term.to_string() == "?" {
                                         ids = Ids::Some;
                                         format!("({identifier} {})", tuples_t.join(" "))
                                     } else {
-                                        construct(term, solver)?
+                                        construct(term, solver)?.1
                                     };
                                     tuples_t.push(value);
                                     tuples_strings.push(tuples_t);
@@ -330,7 +330,7 @@ pub(crate) fn interpret_fun(
                             ids = Ids::Some;
                             None
                         } else {
-                            Some(construct(&else_, solver)?)
+                            Some(construct(&else_, solver)?.1)
                         };
                         create_missing_views(
                             table_g.clone(),
@@ -347,7 +347,8 @@ pub(crate) fn interpret_fun(
 
                     let table_g = Interpretation::Table{name: table_g, ids};
                     let function_object = FunctionObject::Interpreted(table_g);
-                    solver.function_objects.insert(identifier, function_object);
+                    solver.function_objects.insert(identifier.clone(), function_object.clone());
+                    insert_functions2(identifier, domain, co_domain, function_object, solver);
 
                 } else {  // partial interpretation of predicate
 
@@ -367,9 +368,10 @@ pub(crate) fn interpret_fun(
                             let mut tuples_g  = vec![];
                             for (XTuple(tuple), term) in &tuples {
                                 if tuple.len() == domain.len() {
-                                    let mut tuples_t = tuple.iter()
+                                    let (_, mut tuples_t): (Vec<_>, Vec<String>) = tuple.iter()
                                         .map(|t| construct(t, solver) )
-                                        .collect::<Result<Vec<_>, SolverError>>()?;
+                                        .collect::<Result<Vec<_>, SolverError>>()?
+                                        .into_iter().unzip();
 
                                     match term.to_string().as_str() {
                                         "?" => {
@@ -429,7 +431,7 @@ pub(crate) fn interpret_fun(
                             ids = Ids::Some;
                             None
                         } else {
-                            Some(construct(&else_, solver)?)
+                            Some(construct(&else_, solver)?.1)
                         };
 
                         let missing = TableName(format!("{table_name}_U"));
@@ -465,7 +467,8 @@ pub(crate) fn interpret_fun(
                     let table_uf = Interpretation::Table{name: table_uf, ids: ids.clone()};
                     let table_g  = Interpretation::Table{name: table_g , ids: ids};
                     let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-                    solver.function_objects.insert(identifier, function_object);
+                    solver.function_objects.insert(identifier.clone(), function_object.clone());
+                    insert_functions2(identifier, domain, co_domain, function_object, solver);
                 }
             };
             Ok("".to_string())
@@ -563,39 +566,46 @@ fn create_interpretation_table(
 }
 
 
+fn construct_tuple(
+    tuple: &Vec<L<Term>>,
+    solver: &mut Solver
+) -> Result<(Vec<CanonicalSort>, Vec<String>), SolverError> {
+    Ok(tuple.iter()
+        .map(|t| construct(t, solver) )
+        .collect::<Result<Vec<_>, SolverError>>()?
+        .into_iter()
+        .unzip())
+}
+
+
 // LINK src/doc.md#_Constructor
 /// Returns the string representation of the id.
 /// Constructor applications are preceded by a space, e.g. ` (cons 0 nil)`
-fn construct(id: &L<Term>, solver: &mut Solver) -> Result<String, SolverError> {
+fn construct(id: &L<Term>, solver: &mut Solver) -> Result<(CanonicalSort, String), SolverError> {
     match id {
-        L(Term::SpecConstant(_), _) => Ok(id.to_string()),
+        L(Term::SpecConstant(c), _) => {
+            Ok((c.to_canonical_sort(), id.to_string()))
+        }
         L(Term::Identifier(qual_identifier), _) => {
-            if let Some(f_is) = get_function_object(qual_identifier, solver) {
-                match f_is {
-                    FunctionObject::Constructor => Ok(id.to_string()),
-                    _ => Err(SolverError::TermError("Not an id", id.clone())),
-                }
-            } else {
-                Err(SolverError::TermError("Invalid id in interpretation", id.clone()))
+            let (canonical, f_is) = get_function_object(id, qual_identifier, &vec![], solver)?;
+            match f_is {
+                FunctionObject::Constructor => Ok((canonical.clone(), id.to_string())),
+                _ => Err(SolverError::TermError("Not an id", id.clone())),
             }
         },
         L(Term::Application(qual_identifier, terms), _) => {
-            if let Some(f_is) = get_function_object(qual_identifier, solver) {
-                match f_is {
-                    FunctionObject::Constructor => {
-                        let new_terms = terms.iter()
-                            .map( |t| construct(t, solver))
-                            .collect::<Result<Vec<_>, SolverError>>()?.join(" ");
-                        Ok(format!(" ({qual_identifier} {new_terms})"))
-                    },
-                    FunctionObject::Predefined { .. }
-                    | FunctionObject::NotInterpreted { .. }
-                    | FunctionObject::Interpreted { .. }
-                    | FunctionObject::BooleanInterpreted { .. } =>
-                        Err(SolverError::TermError("Not an id", id.clone())),
-                }
-            } else {
-                Err(SolverError::TermError("Invalid id in interpretation", id.clone()))
+            let (sorts, new_terms) = construct_tuple(terms, solver)?;
+            let (canonical, f_is) = get_function_object(id, qual_identifier, &sorts, solver)?;
+            match f_is {
+                FunctionObject::Constructor => {
+                    let new_terms = new_terms.join(" ");
+                    Ok((canonical.clone(), format!(" ({qual_identifier} {new_terms})")))
+                },
+                FunctionObject::Predefined { .. }
+                | FunctionObject::NotInterpreted { .. }
+                | FunctionObject::Interpreted { .. }
+                | FunctionObject::BooleanInterpreted { .. } =>
+                    Err(SolverError::TermError("Not an id", id.clone())),
             }
         },
         L(Term::Let(_, _), _)
@@ -693,6 +703,7 @@ fn create_missing_views(
     Ok(())
 }
 
+
 /// Rename `table` to `table_K`, and make `table = table_K + missing``
 fn add_missing_rows(
     table: &TableName,  // table with partial interpretation
@@ -708,4 +719,20 @@ fn add_missing_rows(
     solver.conn.execute(&sql, ())?;
 
     Ok(())
+}
+
+
+fn insert_functions2(
+    identifier: L<Identifier>,
+    domain: Vec<CanonicalSort>,
+    co_domain: CanonicalSort,
+    function_object: FunctionObject,
+    solver: &mut Solver
+) -> () {
+    match solver.functions2.get_mut(&(identifier.clone(), domain.clone())) {
+        Some(map) => {
+            map.insert(co_domain, function_object);
+        },
+        None => unreachable!()  // because in sync with solver.function_objects
+    }
 }

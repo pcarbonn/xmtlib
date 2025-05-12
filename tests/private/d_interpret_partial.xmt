@@ -46,7 +46,7 @@ Functions2:
  - abs ()->Real : Predefined (false)
  - red ()->Color : Constructor
  - green ()->Color : Constructor
- - mix (Color, Color)->Color : Color * Color -> Color (false)
+ - mix (Color, Color)->Color : Non Boolean (_xmt_mix_G Partial)
 Groundings:
 ===  green ======================================
  -- Join(0)

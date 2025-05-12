@@ -11,7 +11,7 @@ pub struct Solver {
 				     IndexMap<CanonicalSort, FunctionObject>>,
     pub(crate) function_objects: IndexMap<L<Identifier>, FunctionObject>,
     pub(crate) assertions_to_ground: Vec<L<Term>>,
-    pub(crate) groundings: IndexMap<(L<Term>, bool), Grounding>,
+    pub(crate) groundings: IndexMap<(L<Term>, bool), (Grounding, CanonicalSort)>,
     pub(crate) grounded: IndexSet<Identifier>,
     pub(crate) db_names: IndexSet<String>,
 }
