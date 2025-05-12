@@ -103,7 +103,7 @@ pub(crate) fn declare_fun(
     let function_is = FunctionObject::NotInterpreted{signature: (domain.clone(), co_domain.clone(), boolean)};
 
     solver.interpretable_functions.insert(identifier.clone(), (domain.clone(), co_domain.clone()));
-    solver.functions2.insert((identifier.clone(), domain.clone()), IndexMap::from([(co_domain.clone(), function_is.clone())]));
+    solver.function_objects.insert((identifier.clone(), domain.clone()), IndexMap::from([(co_domain.clone(), function_is.clone())]));
 
     Ok(out)
 }
@@ -117,7 +117,7 @@ pub(crate) fn get_function_object<'a>(
 
     match function {
         QualIdentifier::Identifier(identifier) => {
-            match solver.functions2.get(&(identifier.clone(), sorts.clone())) {
+            match solver.function_objects.get(&(identifier.clone(), sorts.clone())) {
                 Some(map) => {
                     if map.len() == 1 {
                         Ok(map.first().unwrap())
@@ -129,7 +129,7 @@ pub(crate) fn get_function_object<'a>(
             }
         },
         QualIdentifier::Sorted(identifier, sort) =>
-            match solver.functions2.get(&(identifier.clone(), sorts.clone())) {
+            match solver.function_objects.get(&(identifier.clone(), sorts.clone())) {
                 Some(map) => {
                     if let Some(canonical) = solver.canonical_sorts.get(sort) {
                         match map.get(canonical) {

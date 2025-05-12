@@ -54,7 +54,7 @@ pub struct Solver {
 
     /// predicate and function symbols
     pub(crate) interpretable_functions: IndexMap<L<Identifier>, (Vec<CanonicalSort>, CanonicalSort)>,
-    pub(crate) functions2: IndexMap<(L<Identifier>, Vec<CanonicalSort>),
+    pub(crate) function_objects: IndexMap<(L<Identifier>, Vec<CanonicalSort>),
                                      IndexMap<CanonicalSort, FunctionObject>>,
 
     /// To support differed grounding of terms.
@@ -146,7 +146,7 @@ impl Solver {
         let id = |s: &str|
             L(Identifier::Simple(Symbol(s.to_string())), Offset(0));
 
-        let mut functions2 = IndexMap::new();
+        let mut function_objects = IndexMap::new();
 
 
         {// boolean pre-defined functions
@@ -154,7 +154,7 @@ impl Solver {
             // LINK src/doc.md#_Constructor
             for s in ["true", "false"] {
                 let func = FunctionObject::Constructor;
-                functions2.insert((id(s), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
+                function_objects.insert((id(s), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
             }
 
             // boolean pre-defined functions
@@ -172,15 +172,15 @@ impl Solver {
                     (">",        Predefined::Greater)
                             ] {
                 let func = FunctionObject::Predefined{ function, boolean: Some(true) };
-                functions2.insert((id(s), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
+                function_objects.insert((id(s), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
             }
 
             // ite, lte
             let func = FunctionObject::Predefined { function: Predefined::Ite, boolean: None };
-            functions2.insert((id("ite"), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
+            function_objects.insert((id("ite"), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
 
             let func = FunctionObject::Predefined { function: Predefined::_Let, boolean: None };
-            functions2.insert((id("let"), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
+            function_objects.insert((id("let"), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
         }
         { // non-boolean pre-defined functions
             let co_domain = CanonicalSort(sort("Real"));
@@ -193,7 +193,7 @@ impl Solver {
                     ("abs", Predefined::Abs),
                     ] {
                 let func = FunctionObject::Predefined{ function, boolean: Some(false) };
-                functions2.insert((id(s), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
+                function_objects.insert((id(s), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
             };
         }
         unsafe {
@@ -209,7 +209,7 @@ impl Solver {
                 sort_objects,
                 canonical_sorts,
                 interpretable_functions: IndexMap::new(),
-                functions2,
+                function_objects,
                 assertions_to_ground: vec![],
                 groundings: IndexMap::new(),
                 grounded: IndexSet::new(),
@@ -372,7 +372,7 @@ impl Solver {
                                 },
                                 "functions" => {
                                     yield_!(Ok("Functions2:\n".to_string()));
-                                    for ((symbol, domain), map) in &self.functions2 {
+                                    for ((symbol, domain), map) in &self.function_objects {
                                         let domain = domain.iter()
                                             .map(|s| s.to_string())
                                             .collect::<Vec<_>>().join(", ");

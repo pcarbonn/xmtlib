@@ -636,12 +636,12 @@ fn set_function_object(
 ) -> () {
 
     let key = (identifier.clone(), domain.clone());
-    match solver.functions2.get_mut(&key) {
+    match solver.function_objects.get_mut(&key) {
         Some(map) => {
             map.insert(co_domain.clone(), function_object);
         }
         None => {
-            solver.functions2.insert(key, IndexMap::from([(co_domain.clone(), function_object)]));
+            solver.function_objects.insert(key, IndexMap::from([(co_domain.clone(), function_object)]));
         }
     }
 }

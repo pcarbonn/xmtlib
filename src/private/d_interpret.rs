@@ -39,18 +39,15 @@ pub(crate) fn interpret_pred(
         let domain = domain.clone();
         let table_t = TableName(format!("{table_name}_T"));
 
-        // populate the table
+        // populate the T table
         match tuples {
             XSet::XSet(tuples) => {
                 create_interpretation_table(table_t.clone(), &domain, &None, solver)?;
                 let mut tuples_strings = vec![];
                 for XTuple(tuple) in &tuples {
-                    if tuple.len() == domain.len() {
-                        let (_, new_terms) = construct_tuple(tuple, solver)?;
-                        tuples_strings.push(new_terms);
-                    } else {
-                        return Err(SolverError::IdentifierError("Incorrect tuple length", identifier))
-                    }
+                    let (sorts, new_terms) = construct_tuple(tuple, solver)?;
+                    check_tuple(identifier.clone(), tuple, &sorts, &domain)?;
+                    tuples_strings.push(new_terms);
                 }
                 populate_table(&table_t, tuples_strings, solver)?;
             }
@@ -116,7 +113,7 @@ pub(crate) fn interpret_pred(
                 let  table_g = Interpretation::Table{name: name_g,   ids: Ids::All};
                 FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g }
             };
-        insert_functions2(identifier, domain, co_domain, function_object, solver);
+        insert_function_objects(identifier, domain, co_domain, function_object, solver);
         Ok("".to_string())
     }
 }
@@ -160,12 +157,12 @@ fn interpret_pred_0(
             }
         }
         XSet::XRange(_) => unreachable!(),
-        XSet::XSql(_)   => unreachable!()
+        XSet::XSql(_)   => todo!()
     };
 
     // create FunctionObject with boolean interpretations.
     let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-    insert_functions2(identifier, vec!(), co_domain, function_object, solver);
+    insert_function_objects(identifier, vec!(), co_domain, function_object, solver);
     Ok("".to_string())
 }
 
@@ -208,7 +205,7 @@ pub(crate) fn interpret_fun(
             // create FunctionObject.
             let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
             let function_object = FunctionObject::Interpreted(table_g);
-            insert_functions2(identifier, domain, co_domain, function_object, solver);
+            insert_function_objects(identifier, domain, co_domain, function_object, solver);
         } else {
             let (tu, uf, g) =
                 match value.to_string().as_str() {
@@ -235,7 +232,7 @@ pub(crate) fn interpret_fun(
             let table_uf  = Interpretation::Table{name: TableName(format!("{table_name}_UF")), ids: Ids::All};
             let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
             let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-            insert_functions2(identifier, domain, co_domain, function_object, solver);
+            insert_function_objects(identifier, domain, co_domain, function_object, solver);
         }
     } else {  // not a constant
         let size = size(&domain, &solver)?;
@@ -251,20 +248,22 @@ pub(crate) fn interpret_fun(
                     create_interpretation_table(table_g.clone(), &domain.clone(), &Some(co_domain.clone()), solver)?;
                     let mut tuples_strings = vec![];
                     for (XTuple(tuple), term) in &tuples {
-                        if tuple.len() == domain.len() {
-                            let (_, mut tuples_t) = construct_tuple(tuple, solver)?;
-                            // value is the identifier or an id
-                            let value = if term.to_string() == "?" {
+                        let (sorts, mut tuples_t) = construct_tuple(tuple, solver)?;
+                        check_tuple(identifier.clone(), tuple, &sorts, &domain)?;
+
+                        // value is the identifier or an id
+                        let value = if term.to_string() == "?" {
                                 ids = Ids::Some;
                                 format!("({identifier} {})", tuples_t.join(" "))
                             } else {
-                                construct(term, solver)?.1
+                                let (sort, value) = construct(term, solver)?;
+                                if sort != co_domain {
+                                    return Err(SolverError::TermError("Incorrect type of argument", term.clone()))
+                                }
+                                value
                             };
-                            tuples_t.push(value);
-                            tuples_strings.push(tuples_t);
-                        } else {
-                            return Err(SolverError::IdentifierError("Incorrect tuple length", identifier))
-                        }
+                        tuples_t.push(value);
+                        tuples_strings.push(tuples_t);
                     }
                     populate_table(&table_g, tuples_strings, solver)?;
                     tuples.len()
@@ -308,7 +307,7 @@ pub(crate) fn interpret_fun(
 
             let table_g = Interpretation::Table{name: table_g, ids};
             let function_object = FunctionObject::Interpreted(table_g);
-            insert_functions2(identifier, domain, co_domain, function_object, solver);
+            insert_function_objects(identifier, domain, co_domain, function_object, solver);
 
         } else {  // partial interpretation of predicate
 
@@ -327,37 +326,31 @@ pub(crate) fn interpret_fun(
                     let mut tuples_uf = vec![];
                     let mut tuples_g  = vec![];
                     for (XTuple(tuple), term) in &tuples {
-                        if tuple.len() == domain.len() {
-                            let (_, mut tuples_t): (Vec<_>, Vec<String>) = tuple.iter()
-                                .map(|t| construct(t, solver) )
-                                .collect::<Result<Vec<_>, SolverError>>()?
-                                .into_iter().unzip();
+                        let (sorts, mut tuples_t) = construct_tuple(tuple, solver)?;
+                        check_tuple(identifier.clone(), tuple, &sorts, &domain)?;
 
-                            match term.to_string().as_str() {
-                                "?" => {
-                                    ids = Ids::Some;
-                                    let value = format!("({identifier} {})", tuples_t.join(" "));
-                                    tuples_t.push(value);
-                                    tuples_tu.push(tuples_t.clone());
-                                    tuples_uf.push(tuples_t.clone());
-                                    tuples_g .push(tuples_t);
-                                },
-                                "true" => {
-                                    tuples_t.push("true".to_string());
-                                    tuples_tu.push(tuples_t.clone());
-                                    tuples_g .push(tuples_t);
-                                },
-                                "false" => {
-                                    tuples_t.push("false".to_string());
-                                    tuples_uf.push(tuples_t.clone());
-                                    tuples_g .push(tuples_t);
-                                },
-                                _ => {
-                                    return Err(SolverError::TermError("Unexpected value", term.clone()))
-                                }
+                        match term.to_string().as_str() {
+                            "?" => {
+                                ids = Ids::Some;
+                                let value = format!("({identifier} {})", tuples_t.join(" "));
+                                tuples_t.push(value);
+                                tuples_tu.push(tuples_t.clone());
+                                tuples_uf.push(tuples_t.clone());
+                                tuples_g .push(tuples_t);
+                            },
+                            "true" => {
+                                tuples_t.push("true".to_string());
+                                tuples_tu.push(tuples_t.clone());
+                                tuples_g .push(tuples_t);
+                            },
+                            "false" => {
+                                tuples_t.push("false".to_string());
+                                tuples_uf.push(tuples_t.clone());
+                                tuples_g .push(tuples_t);
+                            },
+                            _ => {
+                                return Err(SolverError::TermError("Unexpected value", term.clone()))
                             }
-                        } else {
-                            return Err(SolverError::IdentifierError("Incorrect tuple length", identifier))
                         }
                     }
                     populate_table(&table_tu, tuples_tu, solver)?;
@@ -427,7 +420,7 @@ pub(crate) fn interpret_fun(
             let table_uf = Interpretation::Table{name: table_uf, ids: ids.clone()};
             let table_g  = Interpretation::Table{name: table_g , ids: ids};
             let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-            insert_functions2(identifier, domain, co_domain, function_object, solver);
+            insert_function_objects(identifier, domain, co_domain, function_object, solver);
         }
     };
     Ok("".to_string())
@@ -706,7 +699,7 @@ fn get_signature(
             return Err(SolverError::IdentifierError("Can't interpret a symbol after grounding its use", identifier.clone()))
         };
         let not_interpreted =
-            if let Some(map) = solver.functions2.get(&(identifier.clone(), domain.clone())) {
+            if let Some(map) = solver.function_objects.get(&(identifier.clone(), domain.clone())) {
                 if let Some(FunctionObject::NotInterpreted { .. }) = map.get(co_domain) {
                     true
                 } else { false }
@@ -720,7 +713,35 @@ fn get_signature(
 }
 
 
-fn insert_functions2(
+/// Checks the sortedness of a tuple
+fn check_tuple(
+    identifier: L<Identifier>,
+    tuple: &Vec<L<Term>>,
+    sorts: &Vec<CanonicalSort>,  // assumed to have length of `tuple``
+    domain: &Vec<CanonicalSort>
+) -> Result<(), SolverError> {
+    if tuple.len() != domain.len() {
+        Err(SolverError::IdentifierError("Incorrect tuple length", identifier))
+    } else {
+        if domain.len() != sorts.len() {
+            if let Some(term) = tuple.first() {
+                Err(SolverError::TermError("Incorrect tuple length", term.clone()))
+            } else {
+                Err(SolverError::IdentifierError("Incorrect tuple length", identifier))
+            }
+        } else {
+            for (i, term) in tuple.into_iter().enumerate() {
+                if sorts[i] != domain[i] {
+                    return Err(SolverError::TermError("Incorrect type of argument", term.clone()))
+                }
+            }
+            Ok(())
+        }
+    }
+}
+
+
+fn insert_function_objects(
     identifier: L<Identifier>,
     domain: Vec<CanonicalSort>,
     co_domain: CanonicalSort,
@@ -728,7 +749,7 @@ fn insert_functions2(
     solver: &mut Solver
 ) -> () {
 
-    match solver.functions2.get_mut(&(identifier.clone(), domain.clone())) {
+    match solver.function_objects.get_mut(&(identifier.clone(), domain.clone())) {
         Some(map) => {
             map.insert(co_domain, function_object);
         },
