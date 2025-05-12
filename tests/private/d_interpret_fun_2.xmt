@@ -51,35 +51,35 @@
 (assert false)
 (assert (= (mix green green) green))
 (assert (= (mix green green) green green))
-Functions:
- - true: Constructor
- - false: Constructor
- - not: Predefined (true)
- - =>: Predefined (true)
- - and: Predefined (true)
- - or: Predefined (true)
- - xor: Predefined (true)
- - =: Predefined (true)
- - distinct: Predefined (true)
- - <=: Predefined (true)
- - <: Predefined (true)
- - >=: Predefined (true)
- - >: Predefined (true)
- - ite: Predefined (?)
- - let: Predefined (?)
- - +: Predefined (false)
- - -: Predefined (false)
- - *: Predefined (false)
- - div: Predefined (false)
- - mod: Predefined (false)
- - abs: Predefined (false)
- - red: Constructor
- - green: Constructor
- - C: Non Boolean (_xmt_c_G Complete)
- - c: Non Boolean (_xmt_c_2_G Complete)
- - p: Boolean (_xmt_p_TU Complete, _xmt_p_UF Complete, _xmt_p_G Complete)
- - Mix: Non Boolean (_xmt_mix_5_G Partial)
- - mix: Non Boolean (_xmt_mix_G Partial)
+Functions2:
+ - true ()->Bool : Constructor
+ - false ()->Bool : Constructor
+ - not ()->Bool : Predefined (true)
+ - => ()->Bool : Predefined (true)
+ - and ()->Bool : Predefined (true)
+ - or ()->Bool : Predefined (true)
+ - xor ()->Bool : Predefined (true)
+ - = ()->Bool : Predefined (true)
+ - distinct ()->Bool : Predefined (true)
+ - <= ()->Bool : Predefined (true)
+ - < ()->Bool : Predefined (true)
+ - >= ()->Bool : Predefined (true)
+ - > ()->Bool : Predefined (true)
+ - ite ()->Bool : Predefined (?)
+ - let ()->Bool : Predefined (?)
+ - + ()->Real : Predefined (false)
+ - - ()->Real : Predefined (false)
+ - * ()->Real : Predefined (false)
+ - div ()->Real : Predefined (false)
+ - mod ()->Real : Predefined (false)
+ - abs ()->Real : Predefined (false)
+ - red ()->Color : Constructor
+ - green ()->Color : Constructor
+ - C ()->Color : Non Boolean (_xmt_c_G Complete)
+ - c ()->Color : Non Boolean (_xmt_c_2_G Complete)
+ - p ()->Bool : Boolean (_xmt_p_TU Complete, _xmt_p_UF Complete, _xmt_p_G Complete)
+ - Mix (Color, Color)->Color : Non Boolean (_xmt_mix_5_G Partial)
+ - mix (Color, Color)->Color : Non Boolean (_xmt_mix_G Partial)
 Groundings:
 ===  c ======================================
  -- Join(0)

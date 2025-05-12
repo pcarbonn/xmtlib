@@ -114,6 +114,7 @@ impl GroundingQuery {
         var_joins: &IndexMap<Symbol, (Column, usize)>,  // the interpretation of the variables
         indent: &str
     ) -> (String, Ids) {
+
         match self {
             GroundingQuery::Join{variables, conditions, grounding, outer,
             natural_joins, theta_joins, ..} => {

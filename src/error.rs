@@ -69,6 +69,7 @@ pub fn format_error(input: &str, e: SolverError) -> String {
     }
 }
 
+
 /// Show the error in the context of the `input` source code.
 fn pretty_print(input: &str, location: LineCol, msg: String) -> String {
     if let Some(source) = input.lines().nth(location.line-1) {

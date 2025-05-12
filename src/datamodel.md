@@ -4,20 +4,21 @@ Below is a copy of a selection of the `struct` and `enum` declarations.
 pub struct Solver {
     pub(crate) backend: Backend,
     pub conn: Connection,
-    pub(crate) parametric_sorts: IndexMap<Symbol, ParametricObject>,
-    pub(crate) canonical_sorts: IndexMap<Sort, Sort>,
-    pub(crate) sorts: IndexMap<Sort, SortObject>,
-    pub(crate) functions: IndexMap<QualIdentifier, FunctionObject>,
-    // pub(crate) qualified_functions: IndexMap<QualIdentifier, FunctionObject>,
+    pub(crate) polymorphic_sorts: IndexMap<Symbol, PolymorphicObject>,
+    pub(crate) canonical_sorts: IndexMap<Sort, CanonicalSort>,
+    pub(crate) sort_objects: IndexMap<CanonicalSort, SortObject>,
+    pub(crate) interpretable_functions: IndexMap<L<Identifier>, (Vec<CanonicalSort>, CanonicalSort)>,
+    pub(crate) function_objects: IndexMap<(L<Identifier>, Vec<CanonicalSort>),
+				     IndexMap<CanonicalSort, FunctionObject>>,
     pub(crate) assertions_to_ground: Vec<L<Term>>,
-    pub(crate) groundings: IndexMap<(L<Term>, bool), Grounding>,
+    pub(crate) groundings: IndexMap<(L<Term>, bool), (Grounding, CanonicalSort)>,
     pub(crate) grounded: IndexSet<Identifier>,
     pub(crate) db_names: IndexSet<String>,
 }
-pub(crate) enum ParametricObject {
+pub(crate) enum PolymorphicObject {
+    SortDefinition{ variables: Vec<Symbol>, definiendum: Sort },
     Datatype(DatatypeDec),
-    DTDefinition{ variables: Vec<Symbol>, definiendum: Sort },
-    Recursive,
+    RecursiveDT(DatatypeDec),
     Unknown
 }
 pub(crate) enum SortObject{
@@ -27,10 +28,10 @@ pub(crate) enum SortObject{
     Unknown
 }
 pub(crate) enum FunctionObject {
-    Predefined{boolean: Option<bool>},
+    Predefined{function: Predefined, boolean: Option<bool>},
     Constructor,
-    NotInterpreted{signature: (Vec<Sort>, Sort, bool)},
-    NonBooleanInterpreted{ table_g: Interpretation},
+    NotInterpreted{signature: (Vec<CanonicalSort>, CanonicalSort, bool)},
+    Interpreted(Interpretation),
     BooleanInterpreted{table_tu: Interpretation, table_uf: Interpretation, table_g: Interpretation}
 }
 pub(crate) enum Interpretation {

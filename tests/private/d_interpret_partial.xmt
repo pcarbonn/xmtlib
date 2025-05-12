@@ -22,31 +22,31 @@
 (declare-datatype Color ((red ) (green )))
 (declare-fun mix (Color Color) Color)
 (assert (= (mix red red) red))
-Functions:
- - true: Constructor
- - false: Constructor
- - not: Predefined (true)
- - =>: Predefined (true)
- - and: Predefined (true)
- - or: Predefined (true)
- - xor: Predefined (true)
- - =: Predefined (true)
- - distinct: Predefined (true)
- - <=: Predefined (true)
- - <: Predefined (true)
- - >=: Predefined (true)
- - >: Predefined (true)
- - ite: Predefined (?)
- - let: Predefined (?)
- - +: Predefined (false)
- - -: Predefined (false)
- - *: Predefined (false)
- - div: Predefined (false)
- - mod: Predefined (false)
- - abs: Predefined (false)
- - red: Constructor
- - green: Constructor
- - mix: Non Boolean (_xmt_mix_G Partial)
+Functions2:
+ - true ()->Bool : Constructor
+ - false ()->Bool : Constructor
+ - not ()->Bool : Predefined (true)
+ - => ()->Bool : Predefined (true)
+ - and ()->Bool : Predefined (true)
+ - or ()->Bool : Predefined (true)
+ - xor ()->Bool : Predefined (true)
+ - = ()->Bool : Predefined (true)
+ - distinct ()->Bool : Predefined (true)
+ - <= ()->Bool : Predefined (true)
+ - < ()->Bool : Predefined (true)
+ - >= ()->Bool : Predefined (true)
+ - > ()->Bool : Predefined (true)
+ - ite ()->Bool : Predefined (?)
+ - let ()->Bool : Predefined (?)
+ - + ()->Real : Predefined (false)
+ - - ()->Real : Predefined (false)
+ - * ()->Real : Predefined (false)
+ - div ()->Real : Predefined (false)
+ - mod ()->Real : Predefined (false)
+ - abs ()->Real : Predefined (false)
+ - red ()->Color : Constructor
+ - green ()->Color : Constructor
+ - mix (Color, Color)->Color : Non Boolean (_xmt_mix_G Partial)
 Groundings:
 ===  green ======================================
  -- Join(0)
