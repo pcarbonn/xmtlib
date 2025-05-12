@@ -494,7 +494,6 @@ fn create_table(
             nullary.push(constructor.0.clone());
             let identifier = L(Identifier::Simple(constructor.clone()), Offset(0));
             set_function_object(&identifier, &vec![], &canonical_sort, FunctionObject::Constructor, solver);
-            solver.function_objects.insert(identifier, FunctionObject::Constructor);
         } else {
             for SelectorDec(selector, sort) in selectors {
                 // LINK src/doc.md#_Infinite
@@ -541,7 +540,6 @@ fn create_table(
                 .collect::<Result<_, _>>()?;
             let identifier = L(Identifier::Simple(constructor.clone()), Offset(0));
             set_function_object(&identifier, &domain, &canonical_sort, FunctionObject::Constructor, solver);
-            solver.function_objects.insert(identifier, FunctionObject::Constructor);
 
             if selectors.len() != 0 {  // otherwise, already in core table
 

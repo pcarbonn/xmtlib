@@ -102,8 +102,8 @@ pub(crate) fn declare_fun(
     let boolean = co_domain.to_string() == "Bool";
     let function_is = FunctionObject::NotInterpreted{signature: (domain.clone(), co_domain.clone(), boolean)};
 
+    solver.interpretable_functions.insert(identifier.clone(), (domain.clone(), co_domain.clone()));
     solver.functions2.insert((identifier.clone(), domain.clone()), IndexMap::from([(co_domain.clone(), function_is.clone())]));
-    solver.function_objects.insert(identifier, function_is);
 
     Ok(out)
 }

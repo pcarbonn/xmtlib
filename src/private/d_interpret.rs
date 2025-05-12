@@ -25,119 +25,98 @@ pub(crate) fn interpret_pred(
     // get the symbol declaration
     let table_name = solver.create_table_name(identifier.to_string());
 
-    let function_object = solver.function_objects.get(&identifier)
-        .ok_or(SolverError::IdentifierError("Unknown symbol", identifier.clone()))?;
+    let (domain, co_domain, boolean) = get_signature(&identifier, solver)?;
 
-    match function_object {
-        FunctionObject::Predefined { .. } =>
-            Err(SolverError::IdentifierError("Can't interpret a pre-defined symbol", identifier)),
-        FunctionObject::BooleanInterpreted { .. } =>
-            Err(SolverError::IdentifierError("Can't re-interpret an interpreted symbol", identifier)),
-        FunctionObject::Interpreted { .. } =>
-            Err(SolverError::IdentifierError("Can't re-interpret an interpreted symbol", identifier)),
-        FunctionObject::Constructor { .. } =>
-            Err(SolverError::IdentifierError("Can't interpret a constructor", identifier)),
-        FunctionObject::NotInterpreted { signature: (domain, co_domain, boolean) } => {
-            let domain = domain.clone();
-            let co_domain = co_domain.clone();
+    if ! boolean {
+        Err(SolverError::IdentifierError("Can't use `x-interpret-pred` for non-boolean symbol", identifier))
+    } else {
+        if domain.len() == 0 {
+            // special case: arity 0
+            return interpret_pred_0(identifier, tuples, co_domain, solver);
+        }
 
-            if solver.grounded.contains(&identifier.0) {
-                // todo: convert interpretation to definition
-                return Err(SolverError::IdentifierError("Can't interpret a symbol after grounding its use", identifier))
-            };
-            if ! *boolean {
-                Err(SolverError::IdentifierError("Can't use `x-interpret-pred` for non-boolean symbol", identifier))
-            } else {
-                if domain.len() == 0 {
-                    // special case: arity 0
-                    return interpret_pred_0(identifier, tuples, co_domain, solver);
-                }
+        let domain = domain.clone();
+        let table_t = TableName(format!("{table_name}_T"));
 
-                let domain = domain.clone();
-                let table_t = TableName(format!("{table_name}_T"));
-
-                // populate the table
-                match tuples {
-                    XSet::XSet(tuples) => {
-                        create_interpretation_table(table_t.clone(), &domain, &None, solver)?;
-                        let mut tuples_strings = vec![];
-                        for XTuple(tuple) in &tuples {
-                            if tuple.len() == domain.len() {
-                                let (_, new_terms) = construct_tuple(tuple, solver)?;
-                                tuples_strings.push(new_terms);
-                            } else {
-                                return Err(SolverError::IdentifierError("Incorrect tuple length", identifier))
-                            }
-                        }
-                        populate_table(&table_t, tuples_strings, solver)?;
-                    }
-                    XSet::XRange(ranges) => {
-                        if ranges.len() % 2 == 1 {
-                            return Err(SolverError::IdentifierError("Odd number of boundaries in range", identifier))
-                        };
-                        create_interpretation_table(table_t.clone(), &domain, &None, solver)?;
-                        let mut tuples_strings = vec![];
-                        for pairs in ranges.chunks(2) {
-                            if let L(Term::SpecConstant(SpecConstant::Numeral(a)), _) = &pairs[0] {
-                                if let L(Term::SpecConstant(SpecConstant::Numeral(b)), _) = &pairs[1] {
-                                    for i in a.0..(b.0+1) {
-                                        tuples_strings.push(vec![i.to_string()]);
-                                    }
-                                } else {
-                                    return Err(SolverError::TermError("Expecting an integer", pairs[1].clone()))
-                                }
-                            } else {
-                                return Err(SolverError::TermError("Expecting an integer", pairs[0].clone()))
-                            }
-                        }
-                        populate_table(&table_t, tuples_strings, solver)?;
-                    }
-                    XSet::XSql(sql) => {
-                        let sql = format!("CREATE VIEW {table_t} AS {}", sql.0);
-                        solver.conn.execute(&sql, ())?;
-                    }
-                };
-
-                // create TU view
-                let table_tu = TableName(format!("{table_name}_TU"));
-
-                let sql = format!("CREATE VIEW {table_tu} AS SELECT *, \"true\" as G from {table_t}");
-                solver.conn.execute(&sql, ())?;
-
-                let size = size(&domain, &solver)?;
-                let function_object = if size == 0 {  // infinite
-                        // create FunctionObject with boolean interpretations.
-                        let table_tu = Interpretation::Table{name: table_tu.clone(), ids: Ids::All};
-                        let table_uf = Interpretation::Infinite;
-                        let table_g  = Interpretation::Infinite;
-                        FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g }
+        // populate the table
+        match tuples {
+            XSet::XSet(tuples) => {
+                create_interpretation_table(table_t.clone(), &domain, &None, solver)?;
+                let mut tuples_strings = vec![];
+                for XTuple(tuple) in &tuples {
+                    if tuple.len() == domain.len() {
+                        let (_, new_terms) = construct_tuple(tuple, solver)?;
+                        tuples_strings.push(new_terms);
                     } else {
-
-                        // create UF view
-                        let missing = TableName(format!("{table_name}_UF"));
-                        let name_g = TableName(format!("{table_name}_G"));
-
-                        create_missing_views(
-                            table_tu.clone(),
-                            &domain,
-                            &Some("false".to_string()),
-                            identifier.clone(),
-                            &missing,
-                            name_g.clone(),
-                            solver
-                        )?;
-
-                        // create FunctionObject with boolean interpretations.
-                        let table_tu = Interpretation::Table{name: table_tu, ids: Ids::All};
-                        let table_uf = Interpretation::Table{name: missing,  ids: Ids::All};
-                        let  table_g = Interpretation::Table{name: name_g,   ids: Ids::All};
-                        FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g }
-                    };
-                solver.function_objects.insert(identifier.clone(), function_object.clone());
-                insert_functions2(identifier, domain, co_domain, function_object, solver);
-                Ok("".to_string())
+                        return Err(SolverError::IdentifierError("Incorrect tuple length", identifier))
+                    }
+                }
+                populate_table(&table_t, tuples_strings, solver)?;
             }
-        },
+            XSet::XRange(ranges) => {
+                if ranges.len() % 2 == 1 {
+                    return Err(SolverError::IdentifierError("Odd number of boundaries in range", identifier))
+                };
+                create_interpretation_table(table_t.clone(), &domain, &None, solver)?;
+                let mut tuples_strings = vec![];
+                for pairs in ranges.chunks(2) {
+                    if let L(Term::SpecConstant(SpecConstant::Numeral(a)), _) = &pairs[0] {
+                        if let L(Term::SpecConstant(SpecConstant::Numeral(b)), _) = &pairs[1] {
+                            for i in a.0..(b.0+1) {
+                                tuples_strings.push(vec![i.to_string()]);
+                            }
+                        } else {
+                            return Err(SolverError::TermError("Expecting an integer", pairs[1].clone()))
+                        }
+                    } else {
+                        return Err(SolverError::TermError("Expecting an integer", pairs[0].clone()))
+                    }
+                }
+                populate_table(&table_t, tuples_strings, solver)?;
+            }
+            XSet::XSql(sql) => {
+                let sql = format!("CREATE VIEW {table_t} AS {}", sql.0);
+                solver.conn.execute(&sql, ())?;
+            }
+        };
+
+        // create TU view
+        let table_tu = TableName(format!("{table_name}_TU"));
+
+        let sql = format!("CREATE VIEW {table_tu} AS SELECT *, \"true\" as G from {table_t}");
+        solver.conn.execute(&sql, ())?;
+
+        let size = size(&domain, &solver)?;
+        let function_object = if size == 0 {  // infinite
+                // create FunctionObject with boolean interpretations.
+                let table_tu = Interpretation::Table{name: table_tu.clone(), ids: Ids::All};
+                let table_uf = Interpretation::Infinite;
+                let table_g  = Interpretation::Infinite;
+                FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g }
+            } else {
+
+                // create UF view
+                let missing = TableName(format!("{table_name}_UF"));
+                let name_g = TableName(format!("{table_name}_G"));
+
+                create_missing_views(
+                    table_tu.clone(),
+                    &domain,
+                    &Some("false".to_string()),
+                    identifier.clone(),
+                    &missing,
+                    name_g.clone(),
+                    solver
+                )?;
+
+                // create FunctionObject with boolean interpretations.
+                let table_tu = Interpretation::Table{name: table_tu, ids: Ids::All};
+                let table_uf = Interpretation::Table{name: missing,  ids: Ids::All};
+                let  table_g = Interpretation::Table{name: name_g,   ids: Ids::All};
+                FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g }
+            };
+        insert_functions2(identifier, domain, co_domain, function_object, solver);
+        Ok("".to_string())
     }
 }
 
@@ -184,7 +163,6 @@ fn interpret_pred_0(
 
     // create FunctionObject with boolean interpretations.
     let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-    solver.function_objects.insert(identifier.clone(), function_object.clone());
     insert_functions2(identifier, vec!(), co_domain, function_object, solver);
     Ok("".to_string())
 }
@@ -198,282 +176,257 @@ pub(crate) fn interpret_fun(
 )-> Result<String, SolverError> {
     let table_name = solver.create_table_name(identifier.to_string());
 
-    // get the symbol declaration
+    let (domain, co_domain, boolean) = get_signature(&identifier, solver)?;
 
-    let function_object = solver.function_objects.get(&identifier)
-        .ok_or(SolverError::IdentifierError("Unknown symbol", identifier.clone()))?;
-
-    match function_object {
-        FunctionObject::Predefined { .. } =>
-            Err(SolverError::IdentifierError("Can't interpret a pre-defined symbol", identifier)),
-        FunctionObject::BooleanInterpreted { .. } =>
-            Err(SolverError::IdentifierError("Can't re-interpret an interpreted symbol", identifier)),
-        FunctionObject::Interpreted { .. } =>
-            Err(SolverError::IdentifierError("Can't re-interpret an interpreted symbol", identifier)),
-        FunctionObject::Constructor { .. } =>
-            Err(SolverError::IdentifierError("Can't interpret a constructor", identifier)),
-        FunctionObject::NotInterpreted { signature: (domain, co_domain, boolean) } => {
-            let domain = domain.clone();
-            let co_domain = co_domain.clone();
-            if solver.grounded.contains(&identifier.0) {
-                // todo: convert interpretation to definition
-                return Err(SolverError::IdentifierError("Can't interpret a symbol after grounding its use", identifier))
+    if domain.len() == 0 {  // constant
+        let value = match tuples {
+            Left(tuples) =>
+                if tuples.len() == 0 {  // (x-interpret-fun c (x-mapping ) 1)
+                    else_.clone().ok_or(SolverError::IdentifierError("no values", identifier.clone()))?
+                } else if tuples.len() == 1 {   // (x-interpret-fun c (x-mapping () 1))
+                    tuples[0].1.clone()
+                } else {
+                    return Err(SolverError::IdentifierError("too many tuples", identifier))
+                },
+            Right(_) =>
+                return Err(SolverError::IdentifierError("Can't use x-sql for constants yet", identifier))
+        };
+        if ! boolean {
+            let value = match value {
+                L(Term::SpecConstant(SpecConstant::Numeral(v)), _) => v.to_string(),
+                L(Term::SpecConstant(SpecConstant::Decimal(v)), _) => v.to_string(),
+                _ => format!("\"{}\"", construct(&value, solver)?.1)
             };
-            if domain.len() == 0 {  // constant
-                let value = match tuples {
-                    Left(tuples) =>
-                        if tuples.len() == 0 {  // (x-interpret-fun c (x-mapping ) 1)
-                            else_.clone().ok_or(SolverError::IdentifierError("no values", identifier.clone()))?
-                        } else if tuples.len() == 1 {   // (x-interpret-fun c (x-mapping () 1))
-                            tuples[0].1.clone()
-                        } else {
-                            return Err(SolverError::IdentifierError("too many tuples", identifier))
-                        },
-                    Right(_) =>
-                        return Err(SolverError::IdentifierError("Can't use x-sql for constants yet", identifier))
-                };
-                if ! *boolean {
-                    let value = match value {
-                        L(Term::SpecConstant(SpecConstant::Numeral(v)), _) => v.to_string(),
-                        L(Term::SpecConstant(SpecConstant::Decimal(v)), _) => v.to_string(),
-                        _ => format!("\"{}\"", construct(&value, solver)?.1)
-                    };
 
-                    let sql = format!("CREATE VIEW {table_name}_G AS SELECT {value} as G");
+            let sql = format!("CREATE VIEW {table_name}_G AS SELECT {value} as G");
+            solver.conn.execute(&sql, ())?;
+
+            // create FunctionObject.
+            let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
+            let function_object = FunctionObject::Interpreted(table_g);
+            insert_functions2(identifier, domain, co_domain, function_object, solver);
+        } else {
+            let (tu, uf, g) =
+                match value.to_string().as_str() {
+                    "true"  => (
+                        format!("CREATE VIEW {table_name}_TU AS SELECT \"true\" as G"),
+                        format!("CREATE VIEW {table_name}_UF AS SELECT \"true\" as G WHERE FALSE"),
+                        format!("CREATE VIEW {table_name}_G AS SELECT \"true\" as G"),
+                    ),
+                    "false" => (
+                        format!("CREATE VIEW {table_name}_TU AS SELECT \"false\" as G WHERE FALSE"),
+                        format!("CREATE VIEW {table_name}_UF AS SELECT \"false\" as G"),
+                        format!("CREATE VIEW {table_name}_G AS SELECT \"false\" as G"),
+                    ),
+                    _ => {
+                        return Err(SolverError::TermError("Expecting `true` or `false`", value))
+                    }
+            };
+            solver.conn.execute(&tu, ())?;
+            solver.conn.execute(&uf, ())?;
+            solver.conn.execute(&g, ())?;
+
+            // create FunctionObject.
+            let table_tu  = Interpretation::Table{name: TableName(format!("{table_name}_TU")), ids: Ids::All};
+            let table_uf  = Interpretation::Table{name: TableName(format!("{table_name}_UF")), ids: Ids::All};
+            let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
+            let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
+            insert_functions2(identifier, domain, co_domain, function_object, solver);
+        }
+    } else {
+        let size = size(&domain, &solver)?;
+
+        if ! boolean {
+
+            let table_g = TableName(format!("{table_name}_G"));
+
+            // populate the table
+            let mut ids = Ids::All;
+            let count = match tuples {
+                Left(tuples) => {
+                    create_interpretation_table(table_g.clone(), &domain.clone(), &Some(co_domain.clone()), solver)?;
+                    let mut tuples_strings = vec![];
+                    for (XTuple(tuple), term) in &tuples {
+                        if tuple.len() == domain.len() {
+                            let (_, mut tuples_t) = construct_tuple(tuple, solver)?;
+                            // value is the identifier or an id
+                            let value = if term.to_string() == "?" {
+                                ids = Ids::Some;
+                                format!("({identifier} {})", tuples_t.join(" "))
+                            } else {
+                                construct(term, solver)?.1
+                            };
+                            tuples_t.push(value);
+                            tuples_strings.push(tuples_t);
+                        } else {
+                            return Err(SolverError::IdentifierError("Incorrect tuple length", identifier))
+                        }
+                    }
+                    populate_table(&table_g, tuples_strings, solver)?;
+                    tuples.len()
+                },
+                Right(sql) => {
+                    let sql = format!("CREATE VIEW {table_g} AS {}", sql.0);
+                    solver.conn.execute(&sql, ())?;
+                    solver.conn.query_row(
+                        format!("SELECT COUNT(*) FROM {table_g}").as_str(),
+                        [],
+                        |row| row.get(0),
+                    )?
+                }
+            };
+
+            let missing = TableName(format!("{table_name}_U"));
+            if size == count {  // full interpretation
+                if let Some(else_) = else_ {
+                    return Err(SolverError::TermError("Unnecessary `else` value", else_.clone()))
+                }
+            } else if let Some(else_) = else_ {  // incomplete interpretation
+
+                let else_ = if else_.to_string() == "?" {
+                    ids = Ids::Some;
+                    None
+                } else {
+                    Some(construct(&else_, solver)?.1)
+                };
+                create_missing_views(
+                    table_g.clone(),
+                    &domain,
+                    &else_,
+                    identifier.clone(),
+                    &missing,
+                    table_g.clone(),
+                    solver
+                )?;
+            } else {
+                return Err(SolverError::IdentifierError("Missing `else` value", identifier))
+            };
+
+            let table_g = Interpretation::Table{name: table_g, ids};
+            let function_object = FunctionObject::Interpreted(table_g);
+            insert_functions2(identifier, domain, co_domain, function_object, solver);
+
+        } else {  // partial interpretation of predicate
+
+            let table_tu = TableName(format!("{table_name}_TU"));
+            let table_uf = TableName(format!("{table_name}_UF"));
+            let table_g  = TableName(format!("{table_name}_G"));
+
+            // populate the table
+            let mut ids = Ids::All;
+            let count = match tuples {
+                Left(tuples) => {
+                    create_interpretation_table(table_tu.clone(), &domain, &Some(co_domain.clone()), solver)?;
+                    create_interpretation_table(table_uf.clone(), &domain, &Some(co_domain.clone()), solver)?;
+                    create_interpretation_table(table_g .clone(), &domain, &Some(co_domain.clone()), solver)?;
+                    let mut tuples_tu = vec![];
+                    let mut tuples_uf = vec![];
+                    let mut tuples_g  = vec![];
+                    for (XTuple(tuple), term) in &tuples {
+                        if tuple.len() == domain.len() {
+                            let (_, mut tuples_t): (Vec<_>, Vec<String>) = tuple.iter()
+                                .map(|t| construct(t, solver) )
+                                .collect::<Result<Vec<_>, SolverError>>()?
+                                .into_iter().unzip();
+
+                            match term.to_string().as_str() {
+                                "?" => {
+                                    ids = Ids::Some;
+                                    let value = format!("({identifier} {})", tuples_t.join(" "));
+                                    tuples_t.push(value);
+                                    tuples_tu.push(tuples_t.clone());
+                                    tuples_uf.push(tuples_t.clone());
+                                    tuples_g .push(tuples_t);
+                                },
+                                "true" => {
+                                    tuples_t.push("true".to_string());
+                                    tuples_tu.push(tuples_t.clone());
+                                    tuples_g .push(tuples_t);
+                                },
+                                "false" => {
+                                    tuples_t.push("false".to_string());
+                                    tuples_uf.push(tuples_t.clone());
+                                    tuples_g .push(tuples_t);
+                                },
+                                _ => {
+                                    return Err(SolverError::TermError("Unexpected value", term.clone()))
+                                }
+                            }
+                        } else {
+                            return Err(SolverError::IdentifierError("Incorrect tuple length", identifier))
+                        }
+                    }
+                    populate_table(&table_tu, tuples_tu, solver)?;
+                    populate_table(&table_uf, tuples_uf, solver)?;
+                    populate_table(&table_g , tuples_g , solver)?;
+                    tuples.len()
+                },
+                Right(sql) => {
+                    let sql = format!("CREATE VIEW {table_g} AS {}", sql.0);
+                    solver.conn.execute(&sql, ())?;
+                    let sql = format!("CREATE VIEW {table_tu} AS SELECT FROM {table_g} WHERE G <> \"false\"");
+                    solver.conn.execute(&sql, ())?;
+                    let sql = format!("CREATE VIEW {table_uf} AS SELECT FROM {table_g} WHERE G <> \"true\"");
                     solver.conn.execute(&sql, ())?;
 
-                    // create FunctionObject.
-                    let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
-                    let function_object = FunctionObject::Interpreted(table_g);
-                    solver.function_objects.insert(identifier.clone(), function_object.clone());
-                    insert_functions2(identifier, domain, co_domain, function_object, solver);
-                } else {
-                    let (tu, uf, g) =
-                        match value.to_string().as_str() {
-                            "true"  => (
-                                format!("CREATE VIEW {table_name}_TU AS SELECT \"true\" as G"),
-                                format!("CREATE VIEW {table_name}_UF AS SELECT \"true\" as G WHERE FALSE"),
-                                format!("CREATE VIEW {table_name}_G AS SELECT \"true\" as G"),
-                            ),
-                            "false" => (
-                                format!("CREATE VIEW {table_name}_TU AS SELECT \"false\" as G WHERE FALSE"),
-                                format!("CREATE VIEW {table_name}_UF AS SELECT \"false\" as G"),
-                                format!("CREATE VIEW {table_name}_G AS SELECT \"false\" as G"),
-                            ),
-                            _ => {
-                                return Err(SolverError::TermError("Expecting `true` or `false`", value))
-                            }
-                    };
-                    solver.conn.execute(&tu, ())?;
-                    solver.conn.execute(&uf, ())?;
-                    solver.conn.execute(&g, ())?;
-
-                    // create FunctionObject.
-                    let table_tu  = Interpretation::Table{name: TableName(format!("{table_name}_TU")), ids: Ids::All};
-                    let table_uf  = Interpretation::Table{name: TableName(format!("{table_name}_UF")), ids: Ids::All};
-                    let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
-                    let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-                    solver.function_objects.insert(identifier.clone(), function_object.clone());
-                    insert_functions2(identifier, domain, co_domain, function_object, solver);
-                }
-            } else {
-                let size = size(&domain, &solver)?;
-
-                if ! *boolean {
-
-                    let table_g = TableName(format!("{table_name}_G"));
-
-                    // populate the table
-                    let mut ids = Ids::All;
-                    let count = match tuples {
-                        Left(tuples) => {
-                            create_interpretation_table(table_g.clone(), &domain.clone(), &Some(co_domain.clone()), solver)?;
-                            let mut tuples_strings = vec![];
-                            for (XTuple(tuple), term) in &tuples {
-                                if tuple.len() == domain.len() {
-                                    let (_, mut tuples_t) = construct_tuple(tuple, solver)?;
-                                    // value is the identifier or an id
-                                    let value = if term.to_string() == "?" {
-                                        ids = Ids::Some;
-                                        format!("({identifier} {})", tuples_t.join(" "))
-                                    } else {
-                                        construct(term, solver)?.1
-                                    };
-                                    tuples_t.push(value);
-                                    tuples_strings.push(tuples_t);
-                                } else {
-                                    return Err(SolverError::IdentifierError("Incorrect tuple length", identifier))
-                                }
-                            }
-                            populate_table(&table_g, tuples_strings, solver)?;
-                            tuples.len()
-                        },
-                        Right(sql) => {
-                            let sql = format!("CREATE VIEW {table_g} AS {}", sql.0);
-                            solver.conn.execute(&sql, ())?;
-                            solver.conn.query_row(
-                                format!("SELECT COUNT(*) FROM {table_g}").as_str(),
-                                [],
-                                |row| row.get(0),
-                            )?
-                        }
-                    };
-
-                    let missing = TableName(format!("{table_name}_U"));
-                    if size == count {  // full interpretation
-                        if let Some(else_) = else_ {
-                            return Err(SolverError::TermError("Unnecessary `else` value", else_.clone()))
-                        }
-                    } else if let Some(else_) = else_ {  // incomplete interpretation
-
-                        let else_ = if else_.to_string() == "?" {
-                            ids = Ids::Some;
-                            None
-                        } else {
-                            Some(construct(&else_, solver)?.1)
-                        };
-                        create_missing_views(
-                            table_g.clone(),
-                            &domain,
-                            &else_,
-                            identifier.clone(),
-                            &missing,
-                            table_g.clone(),
-                            solver
-                        )?;
-                    } else {
-                        return Err(SolverError::IdentifierError("Missing `else` value", identifier))
-                    };
-
-                    let table_g = Interpretation::Table{name: table_g, ids};
-                    let function_object = FunctionObject::Interpreted(table_g);
-                    solver.function_objects.insert(identifier.clone(), function_object.clone());
-                    insert_functions2(identifier, domain, co_domain, function_object, solver);
-
-                } else {  // partial interpretation of predicate
-
-                    let table_tu = TableName(format!("{table_name}_TU"));
-                    let table_uf = TableName(format!("{table_name}_UF"));
-                    let table_g  = TableName(format!("{table_name}_G"));
-
-                    // populate the table
-                    let mut ids = Ids::All;
-                    let count = match tuples {
-                        Left(tuples) => {
-                            create_interpretation_table(table_tu.clone(), &domain, &Some(co_domain.clone()), solver)?;
-                            create_interpretation_table(table_uf.clone(), &domain, &Some(co_domain.clone()), solver)?;
-                            create_interpretation_table(table_g .clone(), &domain, &Some(co_domain.clone()), solver)?;
-                            let mut tuples_tu = vec![];
-                            let mut tuples_uf = vec![];
-                            let mut tuples_g  = vec![];
-                            for (XTuple(tuple), term) in &tuples {
-                                if tuple.len() == domain.len() {
-                                    let (_, mut tuples_t): (Vec<_>, Vec<String>) = tuple.iter()
-                                        .map(|t| construct(t, solver) )
-                                        .collect::<Result<Vec<_>, SolverError>>()?
-                                        .into_iter().unzip();
-
-                                    match term.to_string().as_str() {
-                                        "?" => {
-                                            ids = Ids::Some;
-                                            let value = format!("({identifier} {})", tuples_t.join(" "));
-                                            tuples_t.push(value);
-                                            tuples_tu.push(tuples_t.clone());
-                                            tuples_uf.push(tuples_t.clone());
-                                            tuples_g .push(tuples_t);
-                                        },
-                                        "true" => {
-                                            tuples_t.push("true".to_string());
-                                            tuples_tu.push(tuples_t.clone());
-                                            tuples_g .push(tuples_t);
-                                        },
-                                        "false" => {
-                                            tuples_t.push("false".to_string());
-                                            tuples_uf.push(tuples_t.clone());
-                                            tuples_g .push(tuples_t);
-                                        },
-                                        _ => {
-                                            return Err(SolverError::TermError("Unexpected value", term.clone()))
-                                        }
-                                    }
-                                } else {
-                                    return Err(SolverError::IdentifierError("Incorrect tuple length", identifier))
-                                }
-                            }
-                            populate_table(&table_tu, tuples_tu, solver)?;
-                            populate_table(&table_uf, tuples_uf, solver)?;
-                            populate_table(&table_g , tuples_g , solver)?;
-                            tuples.len()
-                        },
-                        Right(sql) => {
-                            let sql = format!("CREATE VIEW {table_g} AS {}", sql.0);
-                            solver.conn.execute(&sql, ())?;
-                            let sql = format!("CREATE VIEW {table_tu} AS SELECT FROM {table_g} WHERE G <> \"false\"");
-                            solver.conn.execute(&sql, ())?;
-                            let sql = format!("CREATE VIEW {table_uf} AS SELECT FROM {table_g} WHERE G <> \"true\"");
-                            solver.conn.execute(&sql, ())?;
-
-                            solver.conn.query_row(
-                                format!("SELECT COUNT(*) FROM {table_g}").as_str(),
-                                [],
-                                |row| row.get(0),
-                            )?
-                        }
-                    };
-
-                    if size == count {  // full interpretation
-                        if let Some(else_) = else_ {
-                            return Err(SolverError::TermError("Unnecessary `else` value", else_.clone()))
-                        }
-                    } else if let Some(else_) = else_ {  // incomplete interpretation
-
-                        let value = if else_.to_string() == "?" {
-                            ids = Ids::Some;
-                            None
-                        } else {
-                            Some(construct(&else_, solver)?.1)
-                        };
-
-                        let missing = TableName(format!("{table_name}_U"));
-                        create_missing_views(  // add missing rows to _G
-                            table_g.clone(),
-                            &domain,
-                            &value,
-                            identifier.clone(),
-                            &missing,
-                            table_g.clone(),
-                            solver
-                        )?;
-
-                        match else_.to_string().as_str() {
-                            "?" => { // update TU, UF
-                                ids = Ids::Some;
-                                add_missing_rows(&table_tu, &missing, solver)?;
-                                add_missing_rows(&table_uf, &missing, solver)?;
-                            },
-                            "true" => { // update TU
-                                add_missing_rows(&table_tu, &missing, solver)?;
-                            },
-                            "false" => { // update UF
-                                add_missing_rows(&table_uf, &missing, solver)?;
-                            },
-                            _ => return Err(SolverError::TermError("Unexpected value", else_))
-                            }
-                    } else {
-                        return Err(SolverError::IdentifierError("Missing `else` value", identifier))
-                    };
-
-                    let table_tu = Interpretation::Table{name: table_tu, ids: ids.clone()};
-                    let table_uf = Interpretation::Table{name: table_uf, ids: ids.clone()};
-                    let table_g  = Interpretation::Table{name: table_g , ids: ids};
-                    let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-                    solver.function_objects.insert(identifier.clone(), function_object.clone());
-                    insert_functions2(identifier, domain, co_domain, function_object, solver);
+                    solver.conn.query_row(
+                        format!("SELECT COUNT(*) FROM {table_g}").as_str(),
+                        [],
+                        |row| row.get(0),
+                    )?
                 }
             };
-            Ok("".to_string())
+
+            if size == count {  // full interpretation
+                if let Some(else_) = else_ {
+                    return Err(SolverError::TermError("Unnecessary `else` value", else_.clone()))
+                }
+            } else if let Some(else_) = else_ {  // incomplete interpretation
+
+                let value = if else_.to_string() == "?" {
+                    ids = Ids::Some;
+                    None
+                } else {
+                    Some(construct(&else_, solver)?.1)
+                };
+
+                let missing = TableName(format!("{table_name}_U"));
+                create_missing_views(  // add missing rows to _G
+                    table_g.clone(),
+                    &domain,
+                    &value,
+                    identifier.clone(),
+                    &missing,
+                    table_g.clone(),
+                    solver
+                )?;
+
+                match else_.to_string().as_str() {
+                    "?" => { // update TU, UF
+                        ids = Ids::Some;
+                        add_missing_rows(&table_tu, &missing, solver)?;
+                        add_missing_rows(&table_uf, &missing, solver)?;
+                    },
+                    "true" => { // update TU
+                        add_missing_rows(&table_tu, &missing, solver)?;
+                    },
+                    "false" => { // update UF
+                        add_missing_rows(&table_uf, &missing, solver)?;
+                    },
+                    _ => return Err(SolverError::TermError("Unexpected value", else_))
+                    }
+            } else {
+                return Err(SolverError::IdentifierError("Missing `else` value", identifier))
+            };
+
+            let table_tu = Interpretation::Table{name: table_tu, ids: ids.clone()};
+            let table_uf = Interpretation::Table{name: table_uf, ids: ids.clone()};
+            let table_g  = Interpretation::Table{name: table_g , ids: ids};
+            let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
+            insert_functions2(identifier, domain, co_domain, function_object, solver);
         }
-    }
+    };
+    Ok("".to_string())
 }
 
 
@@ -581,7 +534,11 @@ fn construct_tuple(
 // LINK src/doc.md#_Constructor
 /// Returns the string representation of the id.
 /// Constructor applications are preceded by a space, e.g. ` (cons 0 nil)`
-fn construct(id: &L<Term>, solver: &mut Solver) -> Result<(CanonicalSort, String), SolverError> {
+fn construct(
+    id: &L<Term>,
+    solver: &mut Solver
+) -> Result<(CanonicalSort, String), SolverError> {
+
     match id {
         L(Term::SpecConstant(c), _) => {
             Ok((c.to_canonical_sort(), id.to_string()))
@@ -722,6 +679,36 @@ fn add_missing_rows(
 }
 
 
+fn get_signature(
+    identifier: &L<Identifier>,
+    solver: &mut Solver
+) -> Result<(Vec<CanonicalSort>, CanonicalSort, bool), SolverError> {
+
+    let (domain, co_domain) = solver.interpretable_functions.get(identifier)
+        .ok_or(SolverError::IdentifierError("Symbol cannot be interpreted", identifier.clone()))?;
+
+    let boolean = co_domain.to_string() == "Bool";
+
+    {  // verify that it can be interpreted
+        if solver.grounded.contains(&identifier.0) {
+            // todo: convert interpretation to definition
+            return Err(SolverError::IdentifierError("Can't interpret a symbol after grounding its use", identifier.clone()))
+        };
+        let not_interpreted =
+            if let Some(map) = solver.functions2.get(&(identifier.clone(), domain.clone())) {
+                if let Some(FunctionObject::NotInterpreted { .. }) = map.get(co_domain) {
+                    true
+                } else { false }
+            } else { false };
+
+        if ! not_interpreted {
+            return Err(SolverError::IdentifierError("Can't re-interpret a", identifier.clone()))
+        }
+    }
+    Ok((domain.clone(), co_domain.clone(), boolean))
+}
+
+
 fn insert_functions2(
     identifier: L<Identifier>,
     domain: Vec<CanonicalSort>,
@@ -733,6 +720,6 @@ fn insert_functions2(
         Some(map) => {
             map.insert(co_domain, function_object);
         },
-        None => unreachable!()  // because in sync with solver.function_objects
+        None => unreachable!()  // because in sync with solver.custom_signatures
     }
 }

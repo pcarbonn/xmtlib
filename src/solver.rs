@@ -53,9 +53,9 @@ pub struct Solver {
     pub(crate) sort_objects: IndexMap<CanonicalSort, SortObject>,
 
     /// predicate and function symbols
+    pub(crate) interpretable_functions: IndexMap<L<Identifier>, (Vec<CanonicalSort>, CanonicalSort)>,
     pub(crate) functions2: IndexMap<(L<Identifier>, Vec<CanonicalSort>),
                                      IndexMap<CanonicalSort, FunctionObject>>,
-    pub(crate) function_objects: IndexMap<L<Identifier>, FunctionObject>,
 
     /// To support differed grounding of terms.
     /// The string is the original assertion command.
@@ -147,7 +147,6 @@ impl Solver {
             L(Identifier::Simple(Symbol(s.to_string())), Offset(0));
 
         let mut functions2 = IndexMap::new();
-        let mut function_objects = IndexMap::new();
 
 
         {// boolean pre-defined functions
@@ -156,7 +155,6 @@ impl Solver {
             for s in ["true", "false"] {
                 let func = FunctionObject::Constructor;
                 functions2.insert((id(s), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
-                function_objects.insert(id(s), FunctionObject::Constructor);
             }
 
             // boolean pre-defined functions
@@ -175,17 +173,14 @@ impl Solver {
                             ] {
                 let func = FunctionObject::Predefined{ function, boolean: Some(true) };
                 functions2.insert((id(s), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
-                function_objects.insert(id(s), func);
             }
 
             // ite, lte
             let func = FunctionObject::Predefined { function: Predefined::Ite, boolean: None };
             functions2.insert((id("ite"), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
-            function_objects.insert(id("ite"), func);
 
             let func = FunctionObject::Predefined { function: Predefined::_Let, boolean: None };
             functions2.insert((id("let"), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
-            function_objects.insert(id("let"), func);
         }
         { // non-boolean pre-defined functions
             let co_domain = CanonicalSort(sort("Real"));
@@ -199,7 +194,6 @@ impl Solver {
                     ] {
                 let func = FunctionObject::Predefined{ function, boolean: Some(false) };
                 functions2.insert((id(s), vec![]), IndexMap::from([(co_domain.clone(), func.clone())]));
-                function_objects.insert(id(s), func);
             };
         }
         unsafe {
@@ -214,8 +208,8 @@ impl Solver {
                 polymorphic_sorts,
                 sort_objects,
                 canonical_sorts,
+                interpretable_functions: IndexMap::new(),
                 functions2,
-                function_objects,
                 assertions_to_ground: vec![],
                 groundings: IndexMap::new(),
                 grounded: IndexSet::new(),
