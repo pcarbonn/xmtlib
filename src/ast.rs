@@ -8,6 +8,8 @@
 
 // It also implements Display to generate a string in XMT-Lib format.
 
+#![allow(private_interfaces)]  // for public XSortedVar using private SortObject
+
 use std::fmt::Display;
 use std::hash::Hash;
 
@@ -15,6 +17,7 @@ use itertools::Itertools;
 use itertools::Either::{self, Left, Right};
 
 use crate::error::Offset;
+use crate::private::a_sort::SortObject;
 
 
 // //////////////////////////// Other tokens ////////////////////////////
@@ -287,7 +290,6 @@ impl std::fmt::Display for MatchCase {
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Term {
     /// `<spec_constant>`
@@ -306,7 +308,8 @@ pub enum Term {
     Match(Box<L<Term>>, Vec<MatchCase>),
     /// `(! <term> <attribute>+)`
     Annotation(Box<L<Term>>, Vec<Attribute>),
-    XSortedVar(Symbol, Option<Sort>),  // sort is None if the variable is declared by let
+    XSortedVar(Symbol, Sort, SortObject),
+    XLetVar(Symbol, Box<L<Term>>),
 }
 impl std::fmt::Display for Term {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -325,7 +328,8 @@ impl std::fmt::Display for Term {
                 write!(f, "(match {} ({}))", m0, m1.iter().format(" "))
             }
             Self::Annotation(m0, m1) => write!(f, "(! {} {})", m0, m1.iter().format(" ")),
-            Self::XSortedVar(symbol, _) => write!(f, "{symbol}", )
+            Self::XSortedVar(symbol, _, _) => write!(f, "{symbol}", ),
+            Self::XLetVar(symbol, _) => write!(f, "{symbol}", )
         }
     }
 }

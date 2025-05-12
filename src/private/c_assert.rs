@@ -6,7 +6,7 @@ use crate::ast::{Identifier, QualIdentifier, SortedVar, Symbol, Term, VarBinding
 use crate::error::{SolverError::{self, *}, Offset};
 use crate::solver::Solver;
 
-use crate::private::a_sort::{SortObject, get_sort_object};
+use crate::private::a_sort::get_sort_object;
 use crate::ast::L;
 
 
@@ -34,7 +34,7 @@ pub(crate) fn assert_(
 /// - todo: replace ambiguous simple identifier (constructor) by a qualified identifier
 pub(crate) fn annotate_term(
     term: &L<Term>,
-    variables: &mut IndexMap<Symbol, Option<SortedVar>>,  // can't use XSortedVar here because it's a term variant
+    variables: &mut IndexMap<Symbol, Term>,  // the Term is either XSortedVar or XLetVar
     //todo add expected_type to allow qualification of identifier
     solver: &Solver
 ) -> Result<L<Term>, SolverError> {
@@ -48,10 +48,13 @@ pub(crate) fn annotate_term(
             match qual_identifier {
                 QualIdentifier::Identifier(L(Identifier::Simple(ref symbol), _)) => {
                     match variables.get(symbol) {
-                        Some(Some(SortedVar(_, ref sort))) => // a regular variable
-                            Ok(L(Term::XSortedVar(symbol.clone(), Some(sort.clone())), *start)),
-                        Some(None) =>  // a variable introduced by a `let``
-                            Ok(L(Term::XSortedVar(symbol.clone(), None), *start)),
+                        Some(Term::XSortedVar(_, ref sort, ref sort_object)) =>
+                            Ok(L(Term::XSortedVar(symbol.clone(), sort.clone(), sort_object.clone()), *start)),
+
+                        Some(Term::XLetVar(_, ref expr)) =>  // a variable introduced by a `let``
+                            Ok(L(Term::XLetVar(symbol.clone(), expr.clone()), *start)),
+
+                        Some(_) => Err(InternalError(952656363)),  // variables has XSortedVar or XLetVar only
                         None =>
                             Ok(term.clone())  // a regular identifier
                     }
@@ -169,7 +172,8 @@ pub(crate) fn annotate_term(
             let mut new_var_bindings = vec![];
             for VarBinding(symbol, binding) in var_bindings {
                 let binding = annotate_term(&binding, variables, solver)?;
-                new_variables.insert(symbol.clone(), None);  // don't try to interpret the variable during grounding of term
+                let sorted_var = Term::XLetVar(symbol.clone(), Box::new(binding.clone()));
+                new_variables.insert(symbol.clone(), sorted_var);
                 new_var_bindings.push(VarBinding(symbol.clone(), binding))
             };
             let new_term = annotate_term(term, &mut new_variables, solver)?;
@@ -204,7 +208,8 @@ pub(crate) fn annotate_term(
             Ok(L(Term::Annotation(Box::new(new_term), attributes.clone()), *start))
         },
 
-        L(Term::XSortedVar(_, _), _) =>
+        L(Term::XSortedVar(_, _, _), _)
+        | L(Term::XLetVar(_, _), _) =>
             Err(InternalError(812685563)),  // XSortedVar not expected here
     }
 }
@@ -218,20 +223,16 @@ pub(crate) fn annotate_term(
 fn process_quantification (
     sorted_vars: &Vec<SortedVar>,
     term: &Box<L<Term>>,
-    variables: &mut IndexMap<Symbol, Option<SortedVar>>,
+    variables: &mut IndexMap<Symbol, Term>,
     solver: &Solver
 ) -> Result<L<Term>, SolverError> {
 
     let mut new_variables = variables.clone();
     for SortedVar(symbol, sort) in sorted_vars {
         match get_sort_object(sort, solver) {
-            Some(SortObject::Normal{..}) => {
-                new_variables.insert(symbol.clone(), Some(SortedVar(symbol.clone(), sort.clone())));
-            },
-            Some(SortObject::Infinite)
-            | Some(SortObject::Recursive)
-            | Some(SortObject::Unknown) => {
-                new_variables.insert(symbol.clone(), None);
+            Some(sort_object) => {
+                let sorted_var = Term::XSortedVar(symbol.clone(), sort.clone(), sort_object.clone());
+                new_variables.insert(symbol.clone(), sorted_var);
             },
             None => return Err(InternalError(2486645)),
         }

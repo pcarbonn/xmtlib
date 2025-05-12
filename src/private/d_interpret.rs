@@ -603,7 +603,8 @@ fn construct(id: &L<Term>, solver: &mut Solver) -> Result<String, SolverError> {
         | L(Term::Exists(_, _), _)
         | L(Term::Match(_, _), _)
         | L(Term::Annotation(_, _), _)
-        | L(Term::XSortedVar(_, _), _) =>
+        | L(Term::XSortedVar(_, _, _), _)
+        | L(Term::XLetVar(_, _), _) =>
             Err(SolverError::TermError("Invalid id in interpretation", id.clone()))
     }
 }

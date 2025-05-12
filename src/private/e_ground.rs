@@ -9,7 +9,7 @@ use crate::ast::{L, QualIdentifier, Identifier, Symbol, Term};
 use crate::error::{Offset, SolverError::{self, *}};
 use crate::solver::Solver;
 
-use crate::private::a_sort::{SortObject, get_sort_object};
+use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, get_function_object, Interpretation};
 use crate::private::e1_ground_view::{GroundingView, ViewType, QueryVariant,
     view_for_constant, view_for_variable, view_for_compound, view_for_aggregate, view_for_union};
@@ -205,32 +205,29 @@ pub(crate) fn ground_term_(
             let grounding = view_for_constant(spec_constant)?;
             Ok(Grounding::NonBoolean(grounding))
         },
-        L(Term::XSortedVar(symbol, sort), _) => {
+        L(Term::XSortedVar(symbol, sort, sorted_object), _) => {
 
-            // a variable
+            // a regular variable
             let base_table =
-                if let Some(sort) = sort {  // finite domain
-                    match get_sort_object(sort, solver) {
-                        Some(SortObject::Normal{table, ..}) => Some(table.clone()),
-                        Some(SortObject::Recursive)
-                        | Some(SortObject::Infinite)
-                        | Some(SortObject::Unknown) => None,
-                        None => None,
-                    }
-                } else {
-                    None
+                match sorted_object {
+                    SortObject::Normal{table, ..} => Some(table.clone()),
+                    SortObject::Recursive
+                    | SortObject::Infinite
+                    | SortObject::Unknown => None,
                 };
 
             let index = solver.groundings.len();
             let g = view_for_variable(symbol, base_table, index)?;
 
-            match sort {
-                Some(sort) if sort.to_string() == "bool" => {
-                    Ok(Grounding::Boolean { tu: g.clone(), uf: g.clone(), g })
-                },
-                _ => Ok(Grounding::NonBoolean(g))
+            if sort.to_string() == "bool" {
+                Ok(Grounding::Boolean { tu: g.clone(), uf: g.clone(), g })
+            } else {
+                Ok(Grounding::NonBoolean(g))
             }
         },
+        L(Term::XLetVar(_, _), _) => {
+            todo!()
+        }
         L(Term::Identifier(qual_identifier), _) => {
 
             // an identifier
