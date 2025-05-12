@@ -26,9 +26,9 @@ pub(crate) fn interpret_pred(
     // get the symbol declaration
     let table_name = solver.create_table_name(identifier.to_string());
 
-    let (domain, co_domain, boolean) = get_signature(&identifier, solver)?;
+    let (domain, co_domain) = get_signature(&identifier, solver)?;
 
-    if ! boolean {
+    if co_domain.to_string() != "Bool" {
         Err(SolverError::IdentifierError("Can't use `x-interpret-pred` for non-boolean symbol", identifier))
     } else {
         if domain.len() == 0 {
@@ -113,7 +113,7 @@ pub(crate) fn interpret_pred(
                 let  table_g = Interpretation::Table{name: name_g,   ids: Ids::All};
                 FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g }
             };
-        insert_function_objects(identifier, domain, co_domain, function_object, solver);
+        update_function_objects(identifier, domain, co_domain, function_object, solver);
         Ok("".to_string())
     }
 }
@@ -162,7 +162,7 @@ fn interpret_pred_0(
 
     // create FunctionObject with boolean interpretations.
     let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-    insert_function_objects(identifier, vec!(), co_domain, function_object, solver);
+    update_function_objects(identifier, vec!(), co_domain, function_object, solver);
     Ok("".to_string())
 }
 
@@ -177,9 +177,10 @@ pub(crate) fn interpret_fun(
 
     let table_name = solver.create_table_name(identifier.to_string());
 
-    let (domain, co_domain, boolean) = get_signature(&identifier, solver)?;
+    let (domain, co_domain) = get_signature(&identifier, solver)?;
 
     if domain.len() == 0 {  // constant
+
         let value = match tuples {
             Left(tuples) =>
                 if tuples.len() == 0 {  // (x-interpret-fun c (x-mapping ) 1)
@@ -192,7 +193,7 @@ pub(crate) fn interpret_fun(
             Right(_) =>
                 return Err(SolverError::IdentifierError("Can't use x-sql for constants yet", identifier))
         };
-        if ! boolean {
+        if co_domain.to_string() != "Bool" {  // boolean constant
             let value = match value {
                 L(Term::SpecConstant(SpecConstant::Numeral(v)), _) => v.to_string(),
                 L(Term::SpecConstant(SpecConstant::Decimal(v)), _) => v.to_string(),
@@ -205,8 +206,8 @@ pub(crate) fn interpret_fun(
             // create FunctionObject.
             let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
             let function_object = FunctionObject::Interpreted(table_g);
-            insert_function_objects(identifier, domain, co_domain, function_object, solver);
-        } else {
+            update_function_objects(identifier, domain, co_domain, function_object, solver);
+        } else {  // non-boolean constant
             let (tu, uf, g) =
                 match value.to_string().as_str() {
                     "true"  => (
@@ -232,12 +233,14 @@ pub(crate) fn interpret_fun(
             let table_uf  = Interpretation::Table{name: TableName(format!("{table_name}_UF")), ids: Ids::All};
             let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
             let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-            insert_function_objects(identifier, domain, co_domain, function_object, solver);
+            update_function_objects(identifier, domain, co_domain, function_object, solver);
         }
+
     } else {  // not a constant
+
         let size = size(&domain, &solver)?;
 
-        if ! boolean {
+        if co_domain.to_string() != "Bool" {  // non-boolean function
 
             let table_g = TableName(format!("{table_name}_G"));
 
@@ -307,7 +310,7 @@ pub(crate) fn interpret_fun(
 
             let table_g = Interpretation::Table{name: table_g, ids};
             let function_object = FunctionObject::Interpreted(table_g);
-            insert_function_objects(identifier, domain, co_domain, function_object, solver);
+            update_function_objects(identifier, domain, co_domain, function_object, solver);
 
         } else {  // partial interpretation of predicate
 
@@ -420,7 +423,7 @@ pub(crate) fn interpret_fun(
             let table_uf = Interpretation::Table{name: table_uf, ids: ids.clone()};
             let table_g  = Interpretation::Table{name: table_g , ids: ids};
             let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-            insert_function_objects(identifier, domain, co_domain, function_object, solver);
+            update_function_objects(identifier, domain, co_domain, function_object, solver);
         }
     };
     Ok("".to_string())
@@ -686,12 +689,10 @@ fn add_missing_rows(
 fn get_signature(
     identifier: &L<Identifier>,
     solver: &mut Solver
-) -> Result<(Vec<CanonicalSort>, CanonicalSort, bool), SolverError> {
+) -> Result<(Vec<CanonicalSort>, CanonicalSort), SolverError> {
 
     let (domain, co_domain) = solver.interpretable_functions.get(identifier)
         .ok_or(SolverError::IdentifierError("Symbol cannot be interpreted", identifier.clone()))?;
-
-    let boolean = co_domain.to_string() == "Bool";
 
     {  // verify that it can be interpreted
         if solver.grounded.contains(&identifier.0) {
@@ -709,7 +710,7 @@ fn get_signature(
             return Err(SolverError::IdentifierError("Can't re-interpret a", identifier.clone()))
         }
     }
-    Ok((domain.clone(), co_domain.clone(), boolean))
+    Ok((domain.clone(), co_domain.clone()))
 }
 
 
@@ -741,7 +742,7 @@ fn check_tuple(
 }
 
 
-fn insert_function_objects(
+fn update_function_objects(
     identifier: L<Identifier>,
     domain: Vec<CanonicalSort>,
     co_domain: CanonicalSort,
@@ -753,6 +754,6 @@ fn insert_function_objects(
         Some(map) => {
             map.insert(co_domain, function_object);
         },
-        None => unreachable!()  // because in sync with solver.custom_signatures
+        None => unreachable!()  // because it's always after get_signature
     }
 }
