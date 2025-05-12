@@ -22,6 +22,7 @@ pub(crate) fn interpret_pred(
     tuples: XSet,
     solver: &mut Solver,
 ) -> Result<String, SolverError> {
+
     // get the symbol declaration
     let table_name = solver.create_table_name(identifier.to_string());
 
@@ -127,6 +128,7 @@ fn interpret_pred_0(
     co_domain: CanonicalSort,
     solver: &mut Solver,
 ) -> Result<String, SolverError> {
+
     let table_name = solver.create_table_name(identifier.to_string());
 
     let table_tu = Interpretation::Table{name: TableName(format!("{table_name}_TU")), ids: Ids::All};
@@ -167,6 +169,7 @@ fn interpret_pred_0(
     Ok("".to_string())
 }
 
+
 pub(crate) fn interpret_fun(
     identifier: L<Identifier>,
     tuples: Either<Vec<(XTuple, L<Term>)>, String_>,
@@ -174,6 +177,7 @@ pub(crate) fn interpret_fun(
     _command: String,
     solver: &mut Solver,
 )-> Result<String, SolverError> {
+
     let table_name = solver.create_table_name(identifier.to_string());
 
     let (domain, co_domain, boolean) = get_signature(&identifier, solver)?;
@@ -233,7 +237,7 @@ pub(crate) fn interpret_fun(
             let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
             insert_functions2(identifier, domain, co_domain, function_object, solver);
         }
-    } else {
+    } else {  // not a constant
         let size = size(&domain, &solver)?;
 
         if ! boolean {
@@ -435,6 +439,7 @@ fn size(
     domain: &Vec<CanonicalSort>,
     solver: &Solver
 ) -> Result<usize, SolverError> {
+
     domain.iter()
         .map( |sort| {
             let sort_object = get_sort_object(&sort.0, solver);
@@ -523,6 +528,7 @@ fn construct_tuple(
     tuple: &Vec<L<Term>>,
     solver: &mut Solver
 ) -> Result<(Vec<CanonicalSort>, Vec<String>), SolverError> {
+
     Ok(tuple.iter()
         .map(|t| construct(t, solver) )
         .collect::<Result<Vec<_>, SolverError>>()?
@@ -582,6 +588,7 @@ fn populate_table(
     tuples_strings: Vec<Vec<String>>,
     solver: &mut Solver
 ) -> Result<(), SolverError> {
+
     if let Some(tuple) = tuples_strings.first() {
         let holes = (0..(tuple.len()))  // "?" n times
             .map(|_|"?")
@@ -667,6 +674,7 @@ fn add_missing_rows(
     missing: &TableName,
     solver: &mut Solver
 ) -> Result<(), SolverError> {
+
     let table_k = TableName(format!("{table}_K"));
 
     let sql = format!("ALTER TABLE {table} RENAME TO {table_k}");
@@ -677,6 +685,9 @@ fn add_missing_rows(
 
     Ok(())
 }
+
+
+///////////////////////////////// Utilities ///////////////////////////////////
 
 
 fn get_signature(
@@ -716,6 +727,7 @@ fn insert_functions2(
     function_object: FunctionObject,
     solver: &mut Solver
 ) -> () {
+
     match solver.functions2.get_mut(&(identifier.clone(), domain.clone())) {
         Some(map) => {
             map.insert(co_domain, function_object);

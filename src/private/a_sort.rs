@@ -194,6 +194,7 @@ fn recursive_sort(
     sort: &Sort,
     declaring: &IndexSet<Symbol>
 ) -> bool {
+
     match sort {
         Sort::Sort(L(Identifier::Simple(symb), _)) => {
             if declaring.contains(symb) { return true }
@@ -359,6 +360,7 @@ fn sort_mapping(
     variables: Vec<Symbol>,  // a variable representing a sort
     values: &Vec<Sort>  // monomorphic
 ) -> IndexMap<Sort, Sort> {
+
     let old_variables: Vec<Sort> = variables.iter()
         .map(|s| { Sort::Sort(L(Identifier::Simple(s.clone()), Offset(0)))})
         .collect();
@@ -479,6 +481,7 @@ fn create_table(
     constructor_decls: &Vec<ConstructorDec>,
     solver: &mut Solver
 ) -> Result<usize, SolverError> {
+
     let mut row_count;
 
     // running example: (declare-datatype P ((white ) (pair (first Color) (second Color))))
@@ -631,6 +634,7 @@ fn set_function_object(
     function_object: FunctionObject,
     solver: &mut Solver
 ) -> () {
+
     let key = (identifier.clone(), domain.clone());
     match solver.functions2.get_mut(&key) {
         Some(map) => {

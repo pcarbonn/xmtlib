@@ -102,6 +102,7 @@ impl Mapping {
         &self,
         variables: &OptionMap<Symbol, Column>
     ) -> Option<String> {
+
         let (exp, ids) = self.0.to_sql(variables);
         let col = self.1.to_string();
         if exp == col {
@@ -119,6 +120,7 @@ impl Mapping {
         &self,
         variables: &OptionMap<Symbol, Column>
     ) -> Option<String> {
+
         let (exp, ids) = self.0.to_sql(variables);
         let col = self.1.to_string();
         if exp == col {
@@ -347,6 +349,7 @@ fn sql_for(
     exprs: &Box<Vec<SQLExpr>>,
     variables: &OptionMap<Symbol, Column>,
 ) -> (String, Ids) {
+
     let ids =
         if application == "construct2" {
             Ids::All
@@ -367,6 +370,7 @@ fn collect_args(
     exprs: &Box<Vec<SQLExpr>>,
     variables: &OptionMap<Symbol, Column>
 ) -> (String, Ids) {
+
     let mut ids = ids;
     let terms = exprs.iter()
         .map(|e| {

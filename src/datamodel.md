@@ -8,7 +8,7 @@ pub struct Solver {
     pub(crate) canonical_sorts: IndexMap<Sort, CanonicalSort>,
     pub(crate) sort_objects: IndexMap<CanonicalSort, SortObject>,
     pub(crate) interpretable_functions: IndexMap<L<Identifier>, (Vec<CanonicalSort>, CanonicalSort)>,
-    pub(crate) functions2: IndexMap<(L<Identifier>, Vec<CanonicalSort>),
+    pub(crate) function_objects: IndexMap<(L<Identifier>, Vec<CanonicalSort>),
 				     IndexMap<CanonicalSort, FunctionObject>>,
     pub(crate) assertions_to_ground: Vec<L<Term>>,
     pub(crate) groundings: IndexMap<(L<Term>, bool), (Grounding, CanonicalSort)>,

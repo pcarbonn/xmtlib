@@ -114,6 +114,7 @@ pub(crate) fn get_function_object<'a>(
     sorts: &Vec<CanonicalSort>,
     solver: &'a Solver
 ) -> Result<(&'a CanonicalSort, &'a FunctionObject), SolverError> {
+
     match function {
         QualIdentifier::Identifier(identifier) => {
             match solver.functions2.get(&(identifier.clone(), sorts.clone())) {

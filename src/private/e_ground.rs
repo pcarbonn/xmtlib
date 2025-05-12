@@ -105,6 +105,7 @@ fn execute_query(
     query: String,
     conn: &mut Connection
 ) -> Result<Vec<String>, SolverError> {
+
     let mut stmt = conn.prepare(&query)?;
     if stmt.column_count() == 1 {  //  just G
         let row_iter = stmt.query_map([], |row| {

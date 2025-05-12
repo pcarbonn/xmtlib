@@ -254,6 +254,7 @@ impl Solver {
         &mut self,
         commands: Vec<Command>
     ) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {
+
         gen!({
             for command in commands {
                 for result in self.execute1(command) {
@@ -273,6 +274,7 @@ impl Solver {
         &mut self,
         c: Command
     ) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {
+
         gen!({
             let command = c.to_string();
             match c {

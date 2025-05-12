@@ -524,7 +524,6 @@ peg::parser!{
 /// Parses the source code in SMT-Lib format into a list of commands.
 pub(crate) fn parse(
     source: &str,
-
 ) -> Result<Vec<Command>, ParseError<LineCol>> {
     smt_lib::script(source)
 }

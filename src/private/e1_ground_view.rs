@@ -61,6 +61,7 @@ impl GroundingView {
         var_joins: &IndexMap<Symbol, (Column, usize)>,
         indent: &str
     ) -> (String, Ids) {
+
         match self {
             GroundingView::Empty => (format!("SELECT \"true\" AS G\n{indent} WHERE FALSE"), Ids::All),
             GroundingView::View { query, exclude, .. } =>
@@ -96,6 +97,7 @@ impl std::fmt::Display for Ids {
 pub(crate) fn view_for_constant(
     spec_constant: &SpecConstant
 ) -> Result<GroundingView, SolverError> {
+
     let query = GroundingQuery::Join {
         variables: OptionMap::new(),
         conditions: vec![],
@@ -118,6 +120,7 @@ pub(crate) fn view_for_variable(
     base_table: Option<TableName>,
     index: usize
 ) -> Result<GroundingView, SolverError> {
+
     let table_name = TableName("variable".to_string());
     let new_alias = TableAlias::new(table_name, index);
     if let Some(base_table) = base_table {
@@ -731,6 +734,7 @@ impl GroundingView {
         view_type: ViewType,
         solver: &mut Solver
     ) -> Result<GroundingView, SolverError> {
+
         match self {
             GroundingView::Empty => Ok(self.clone()),
             GroundingView::View{free_variables, query, exclude, all_ids, ..} =>
