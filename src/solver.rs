@@ -352,7 +352,7 @@ impl Solver {
                                     }
                                 },
                                 "polymorphic_sorts" => {
-                                    yield_!(Ok("Parametric datatypes:\n".to_string()));
+                                    yield_!(Ok("Polymorphic datatypes:\n".to_string()));
                                     for (sort, decl) in &self.polymorphic_sorts {
                                         match decl {
                                             PolymorphicObject::Datatype(decl) =>

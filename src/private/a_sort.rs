@@ -512,8 +512,6 @@ fn create_table(
         let ConstructorDec(constructor, selectors) = constructor_decl;
         if selectors.len() == 0 {
             nullary.push(constructor.0.clone());
-            let identifier = L(Identifier::Simple(constructor.clone()), Offset(0));
-            set_function_object(&identifier, &vec![], &canonical_sort, FunctionObject::Constructor, solver);
         } else {
             for SelectorDec(selector, sort) in selectors {
                 // LINK src/doc.md#_Infinite
@@ -525,6 +523,16 @@ fn create_table(
                 column_names.insert(selector.0.clone(), type_.to_string());
             }
         }
+
+        // add constructor function to solver
+        let domain = selectors.iter()
+            .map(|SelectorDec(_, sort)|
+                solver.canonical_sorts.get(sort)
+                    .ok_or(InternalError(78845662)))
+            .collect::<Result<Vec<_>,_>>()?
+            .into_iter().cloned().collect();
+        let identifier = L(Identifier::Simple(constructor.clone()), Offset(0));
+        set_function_object(&identifier, &domain, &canonical_sort, FunctionObject::Constructor, solver);
     }
     row_count = nullary.len();
 
@@ -544,7 +552,7 @@ fn create_table(
             let projection = column_names.iter().map(|(n, _)| format!("NULL AS {n}")).collect::<Vec<_>>().join(", ");
 
             // the first select is "SELECT NULL as constructor, NULL as first, NULL as second, Color_core.G as G from Color_core"
-            selects.push(format!("SELECT NULL as constructor, {projection}, {core}.G AS G from {core}"));
+            selects.push(format!("SELECT {core}.G as constructor, {projection}, {core}.G AS G from {core}"));
         }
 
         // LINK src/doc.md#_Constructor

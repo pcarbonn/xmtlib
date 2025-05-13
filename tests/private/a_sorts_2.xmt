@@ -30,7 +30,7 @@
 (declare-sort A 0)
 (declare-sort B 0)
 (define-sort MyPair () (Pair A B))
-Parametric datatypes:
+Polymorphic datatypes:
  - (unknown): Array
  - (recursive) Tree: (par (X) ((node (value X) (children (TreeList X)))))
  - (recursive) TreeList: (par (Y) ((empty ) (insert (head (Tree Y)) (tail (TreeList Y)))))

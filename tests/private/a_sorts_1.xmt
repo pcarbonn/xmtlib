@@ -32,7 +32,7 @@
 (define-sort PairColor () (Pair Color Color))
 (define-sort MyPairColor () (MyPair PairColor))
 (define-sort MyArray () (Array Color Color))
-Parametric datatypes:
+Polymorphic datatypes:
  - (unknown): Array
  - Pair: (par (X Y) ((white ) (pair (first X) (second Y))))
  - Triplet: (par (X) ((triplet (first (Pair X (Pair X X))))))

@@ -1,0 +1,161 @@
+(set-option :backend none)
+
+(declare-datatype Color  ( (red) (blue) (green) ))
+(declare-datatype Either ( (nil) (Left (b Color)) (Right (b Color)) ))
+
+(declare-fun p (Either) Bool)
+(x-interpret-pred p (x-set (nil) ((Left blue)) ((Right red))))
+(assert (p (Right red)))
+(assert (not (p nil)))
+(x-ground debug:)
+(x-debug solver polymorphic_sorts)
+(x-debug solver sorts)
+(x-debug solver functions)
+(x-debug db _xmt_either)
+(x-debug db _xmt_p_G)
+(x-debug solver groundings)
+(check-sat)
+-------------------------
+(declare-datatype Color ((red ) (blue ) (green )))
+(declare-datatype Either ((nil ) (Left (b Color)) (Right (b Color))))
+(declare-fun p (Either) Bool)
+(assert false)
+Polymorphic datatypes:
+ - (unknown): Array
+Sorts:
+ - (Bool: 2) Bool: ((true ) (false ))
+ - (infinite) Int
+ - (infinite) Real
+ - (infinite) RoundingMode
+ - (infinite) String
+ - (infinite) RegLan
+ - (_xmt_color: 3) Color: ((red ) (blue ) (green ))
+ - (_xmt_either: 7) Either: ((nil ) (Left (b Color)) (Right (b Color)))
+Functions2:
+ - true ()->Bool : Constructor
+ - false ()->Bool : Constructor
+ - not ()->Bool : Predefined (true)
+ - => ()->Bool : Predefined (true)
+ - and ()->Bool : Predefined (true)
+ - or ()->Bool : Predefined (true)
+ - xor ()->Bool : Predefined (true)
+ - = ()->Bool : Predefined (true)
+ - distinct ()->Bool : Predefined (true)
+ - <= ()->Bool : Predefined (true)
+ - < ()->Bool : Predefined (true)
+ - >= ()->Bool : Predefined (true)
+ - > ()->Bool : Predefined (true)
+ - ite ()->Bool : Predefined (?)
+ - let ()->Bool : Predefined (?)
+ - + ()->Real : Predefined (false)
+ - - ()->Real : Predefined (false)
+ - * ()->Real : Predefined (false)
+ - div ()->Real : Predefined (false)
+ - mod ()->Real : Predefined (false)
+ - abs ()->Real : Predefined (false)
+ - red ()->Color : Constructor
+ - blue ()->Color : Constructor
+ - green ()->Color : Constructor
+ - nil ()->Either : Constructor
+ - Left (Color)->Either : Constructor
+ - Right (Color)->Either : Constructor
+ - p (Either)->Bool : Boolean (_xmt_p_TU Complete, _xmt_p_UF Complete, _xmt_p_G Complete)
+ TABLE: _xmt_either
+┌─────────────┬─────────┬──────────────────┐
+│ constructor │ b       │ G                │
+├─────────────┼─────────┼──────────────────┤
+│ "Left"      │ "blue"  │ " (Left blue)"   │
+├─────────────┼─────────┼──────────────────┤
+│ "Left"      │ "green" │ " (Left green)"  │
+├─────────────┼─────────┼──────────────────┤
+│ "Left"      │ "red"   │ " (Left red)"    │
+├─────────────┼─────────┼──────────────────┤
+│ "Right"     │ "blue"  │ " (Right blue)"  │
+├─────────────┼─────────┼──────────────────┤
+│ "Right"     │ "green" │ " (Right green)" │
+├─────────────┼─────────┼──────────────────┤
+│ "Right"     │ "red"   │ " (Right red)"   │
+├─────────────┼─────────┼──────────────────┤
+│ "nil"       │ NULL    │ "nil"            │
+└─────────────┴─────────┴──────────────────┘
+ TABLE: _xmt_p_g
+┌──────────────────┬─────────┐
+│ a_1              │ G       │
+├──────────────────┼─────────┤
+│ " (Left blue)"   │ "true"  │
+├──────────────────┼─────────┤
+│ " (Left green)"  │ "false" │
+├──────────────────┼─────────┤
+│ " (Left red)"    │ "false" │
+├──────────────────┼─────────┤
+│ " (Right blue)"  │ "false" │
+├──────────────────┼─────────┤
+│ " (Right green)" │ "false" │
+├──────────────────┼─────────┤
+│ " (Right red)"   │ "true"  │
+├──────────────────┼─────────┤
+│ "nil"            │ "true"  │
+└──────────────────┴─────────┘
+Groundings:
+===  red ======================================
+ -- Join(0)
+SELECT "red" AS G
+===  (Right red) ======================================
+ -- Join(0)
+SELECT construct2("Right", "red") AS G
+=== (top) (p (Right red)) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+  FROM _xmt_p_TU AS _xmt_p_TU_2
+ WHERE construct2("Right", "red") = _xmt_p_TU_2.a_1
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT "false" AS G
+  FROM _xmt_p_UF AS _xmt_p_UF_2
+ WHERE construct2("Right", "red") = _xmt_p_UF_2.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_p_G_2.G AS G
+  FROM _xmt_p_G AS _xmt_p_G_2
+ WHERE construct2("Right", "red") = _xmt_p_G_2.a_1
+
+===  nil ======================================
+ -- Join(0)
+SELECT "nil" AS G
+===  (p nil) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+  FROM _xmt_p_TU AS _xmt_p_TU_4
+ WHERE "nil" = _xmt_p_TU_4.a_1
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT "false" AS G
+  FROM _xmt_p_UF AS _xmt_p_UF_4
+ WHERE "nil" = _xmt_p_UF_4.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_p_G_4.G AS G
+  FROM _xmt_p_G AS _xmt_p_G_4
+ WHERE "nil" = _xmt_p_G_4.a_1
+
+=== (top) (not (p nil)) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+  FROM _xmt_p_UF AS _xmt_p_UF_4
+ WHERE "nil" = _xmt_p_UF_4.a_1
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT "false" AS G
+  FROM _xmt_p_TU AS _xmt_p_TU_4
+ WHERE "nil" = _xmt_p_TU_4.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT not_(_xmt_p_G_4.G) AS G
+  FROM _xmt_p_G AS _xmt_p_G_4
+ WHERE "nil" = _xmt_p_G_4.a_1
+
+===========================================
+(check-sat)
