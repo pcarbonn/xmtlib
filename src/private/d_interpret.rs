@@ -665,8 +665,13 @@ fn create_missing_views(
 
 
 /// Rename `table` to `table_K`, and make `table = table_K + missing``
+///
+/// # Arguments:
+///
+/// * table: a table with a partial interpretation
+///
 fn add_missing_rows(
-    table: &TableName,  // table with partial interpretation
+    table: &TableName,
     missing: &TableName,
     solver: &mut Solver
 ) -> Result<(), SolverError> {
@@ -715,10 +720,15 @@ fn get_signature(
 
 
 /// Checks the sortedness of a tuple
+///
+/// # Arguments:
+///
+/// * sorts: assumed to have the length of `tuple`
+///
 fn check_tuple(
     identifier: L<Identifier>,
     tuple: &Vec<L<Term>>,
-    sorts: &Vec<CanonicalSort>,  // assumed to have length of `tuple``
+    sorts: &Vec<CanonicalSort>,
     domain: &Vec<CanonicalSort>
 ) -> Result<(), SolverError> {
     if tuple.len() != domain.len() {

@@ -109,9 +109,14 @@ impl std::fmt::Display for GroundingQuery {
 
 
 impl GroundingQuery {
+    /// # Arguments:
+    ///
+    /// * var_joins: maps variable symbols to the column interpreting the variable;
+    /// the usize is the arity of the function interpreted by the table having the column.
+    ///
     pub(crate) fn to_sql(
         &self,
-        var_joins: &IndexMap<Symbol, (Column, usize)>,  // the interpretation of the variables
+        var_joins: &IndexMap<Symbol, (Column, usize)>,
         indent: &str
     ) -> (String, Ids) {
 

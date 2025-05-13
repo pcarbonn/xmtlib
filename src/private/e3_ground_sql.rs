@@ -145,7 +145,7 @@ impl Mapping {
 
 
 impl SQLExpr {
-    // it can return an empty string !
+    /// it can return an empty string !
     pub(crate) fn to_sql(
         &self,
         variables: &OptionMap<Symbol, Column>

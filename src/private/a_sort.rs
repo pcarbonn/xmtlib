@@ -160,11 +160,17 @@ pub(crate) fn define_sort(
 
 
 /// adds a polymorphic declaration to the solver.
+///
+/// # Arguments:
+///
+/// * constructor_decs: this redundant argument is for convenience
+/// * declaring:  to detect mutually-recursive datatypes
+///
 pub(crate) fn create_polymorphic_sort(
     symb: &Symbol,
     dec: &DatatypeDec,
-    constructor_decs: &Vec<ConstructorDec>,  // this redundant argument is for convenience
-    declaring: &IndexSet<Symbol>,  // to detect mutually-recursive datatypes
+    constructor_decs: &Vec<ConstructorDec>,
+    declaring: &IndexSet<Symbol>,
     solver: &mut Solver
 ) -> Result<(), SolverError> {
 
@@ -219,10 +225,15 @@ fn recursive_sort(
 /// Adds a monomorphic declaration to the solver,
 /// and create database table of its extension.
 /// Also adds any required instantiation of parent sorts.
+///
+/// # Arguments:
+///
+/// * declaring: to detect mutually-recursive datatypes
+///
 pub(crate) fn create_monomorphic_sort(
     symb: &Symbol,
     decl: &DatatypeDec,
-    declaring: &IndexSet<Sort>,  // to detect mutually-recursive datatypes
+    declaring: &IndexSet<Sort>,
     solver: &mut Solver
 ) -> Result<(), SolverError> {
 
@@ -252,7 +263,7 @@ pub(crate) fn create_monomorphic_sort(
 /// Returns the type of grounding of the sort.
 /// This function is recursive.
 pub(crate) fn instantiate_sort(
-    sort: &Sort,  // monomorphic
+    sort: &Sort,
     declaring: &IndexSet<Sort>,
     solver: &mut Solver,
 ) -> Result<TypeInterpretation, SolverError> {
@@ -356,9 +367,15 @@ pub(crate) fn instantiate_sort(
 
 
 /// Creates a mapping from Sort-variables to Sort
+///
+/// # Arguments
+///
+/// * variables: list of variables representing a sort
+/// * values: list of monomorphic sorts
+///
 fn sort_mapping(
-    variables: Vec<Symbol>,  // a variable representing a sort
-    values: &Vec<Sort>  // monomorphic
+    variables: Vec<Symbol>,
+    values: &Vec<Sort>
 ) -> IndexMap<Sort, Sort> {
 
     let old_variables: Vec<Sort> = variables.iter()
@@ -410,7 +427,7 @@ fn insert_sort(
     sort: Sort,
     decl: Option<DatatypeDec>,
     grounding: TypeInterpretation,
-    alias: Option<(CanonicalSort, SortObject)>,  // SortObject::Normal
+    alias: Option<(CanonicalSort, SortObject)>,
     solver: &mut Solver,
 ) -> Result<TypeInterpretation, SolverError> {
 

@@ -56,6 +56,11 @@ impl std::fmt::Display for GroundingView {
 }
 
 impl GroundingView {
+    /// # Arguments:
+    ///
+    /// * var_joins: maps variable symbols to the column interpreting the variable;
+    /// the usize is the arity of the function interpreted by the table having the column.
+    ///
     pub(crate) fn to_sql(
         &self,
         var_joins: &IndexMap<Symbol, (Column, usize)>,
@@ -425,11 +430,17 @@ pub(crate) fn view_for_compound(
 
 
 /// Creates a query over an aggregate view, possibly adding a where clause if exclude is not empty
+///
+/// # Arguments:
+///
+/// * infinite_variables: a subset of the variables being quantified
+/// * agg: "and" for universal quantification, "or" for existential, and "" for top-level universal quantification
+///
 pub(crate) fn view_for_aggregate(
     sub_query: &GroundingView,
     free_variables: &OptionMap<Symbol, TableAlias>,
-    infinite_variables: &Vec<SortedVar>,  // variables being quantified
-    agg: &str,  // "and", "or" or ""
+    infinite_variables: &Vec<SortedVar>,
+    agg: &str,
     exclude: Option<bool>,
     table_alias: TableAlias
 ) -> Result<GroundingView, SolverError> {

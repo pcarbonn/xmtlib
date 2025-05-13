@@ -30,12 +30,16 @@ pub(crate) fn assert_(
 /// - merge nested conjunction (resp. disjunction)
 /// - remove duplicate conjuncts/disjuncts
 /// - push negation down disjunctions and conjunctions
+///
+/// # Arguments:
+///
+/// * variables: a mapping from Symbol to XSortedVar or XLetVar
+///
 
 /// - todo: replace ambiguous simple identifier (constructor) by a qualified identifier
 pub(crate) fn annotate_term(
     term: &L<Term>,
-    variables: &mut IndexMap<Symbol, Term>,  // the Term is either XSortedVar or XLetVar
-    //todo add expected_type to allow qualification of identifier
+    variables: &mut IndexMap<Symbol, Term>,
     solver: &Solver
 ) -> Result<L<Term>, SolverError> {
 

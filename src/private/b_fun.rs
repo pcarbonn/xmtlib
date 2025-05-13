@@ -101,8 +101,12 @@ pub(crate) fn declare_fun(
     Ok(out)
 }
 
+/// # Arguments:
+///
+/// * term: a function application (used for error reporting)
+///
 pub(crate) fn get_function_object<'a>(
-    term: &L<Term>,  // a function application; used for error reporting
+    term: &L<Term>,
     function: &'a QualIdentifier,
     sorts: &Vec<CanonicalSort>,
     solver: &'a Solver
