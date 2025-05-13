@@ -6,7 +6,7 @@ use std::fmt::Display;
 use indexmap::{IndexMap, IndexSet};
 
 use crate::ast::{Identifier, QualIdentifier, Sort, Symbol, Term};
-use crate::error::{SolverError, Offset};
+use crate::error::SolverError;
 use crate::solver::{Solver, CanonicalSort};
 use crate::private::a_sort::instantiate_sort;
 use crate::private::e1_ground_view::Ids;
@@ -92,7 +92,7 @@ pub(crate) fn declare_fun(
     let co_domain = solver.canonical_sorts.get(&co_domain)
         .ok_or(SolverError::ExprError("unknown co_domain".to_string()))?;
 
-    let identifier = L(Identifier::Simple(symbol), Offset(0));
+    let identifier = Identifier::new(&symbol);
     let function_is = FunctionObject::NotInterpreted;
 
     solver.interpretable_functions.insert(identifier.clone(), (domain.clone(), co_domain.clone()));

@@ -112,15 +112,15 @@ impl SpecConstant {
     pub(crate) fn to_canonical_sort(&self) -> CanonicalSort {
         match self {
             SpecConstant::Numeral(_) =>
-                CanonicalSort(Sort::Sort(L(Identifier::Simple(Symbol("Int".to_string())), Offset(0)))),
+                CanonicalSort(Sort::new(&Symbol("Int".to_string()))),
             SpecConstant::Decimal(_) =>
-                CanonicalSort(Sort::Sort(L(Identifier::Simple(Symbol("Real".to_string())), Offset(0)))),
+                CanonicalSort(Sort::new(&Symbol("Real".to_string()))),
             SpecConstant::Hexadecimal(_) =>
-                CanonicalSort(Sort::Sort(L(Identifier::Simple(Symbol("Int".to_string())), Offset(0)))),
+                CanonicalSort(Sort::new(&Symbol("Int".to_string()))),
             SpecConstant::Binary(_) =>
-                CanonicalSort(Sort::Sort(L(Identifier::Simple(Symbol("Int".to_string())), Offset(0)))),
+                CanonicalSort(Sort::new(&Symbol("Int".to_string()))),
             SpecConstant::String(_) =>
-                CanonicalSort(Sort::Sort(L(Identifier::Simple(Symbol("String".to_string())), Offset(0)))),
+                CanonicalSort(Sort::new(&Symbol("String".to_string()))),
         }
     }
 }
@@ -188,6 +188,13 @@ impl Display for Identifier {
     }
 }
 
+impl Identifier {
+    #[inline]
+    pub(crate) fn new(symbol: &Symbol) -> L<Identifier> {
+        L(Identifier::Simple(symbol.clone()), Offset(0))
+    }
+}
+
 
 // //////////////////////////// Sorts        ////////////////////////////
 
@@ -207,6 +214,13 @@ impl Display for Sort {
         }
     }
 }
+impl Sort {
+    #[inline]
+    pub(crate) fn new(symbol: &Symbol) -> Sort {
+        Sort::Sort(Identifier::new(symbol))
+    }
+}
+
 
 
 // //////////////////////////// Attributes   ////////////////////////////
@@ -260,6 +274,17 @@ impl Display for QualIdentifier {
         match self {
             Self::Identifier(m0) => write!(f, "{}", m0),
             Self::Sorted(m0, m1) => write!(f, "(as {} {})", m0, m1),
+        }
+    }
+}
+impl QualIdentifier {
+    #[inline]
+    pub(crate) fn new(symbol: &Symbol, sort: Option<Sort>) -> QualIdentifier {
+        let id = Identifier::new(symbol);
+        if let Some(sort) = sort {
+            QualIdentifier::Sorted(id, sort)
+        } else {
+            QualIdentifier::Identifier(id)
         }
     }
 }

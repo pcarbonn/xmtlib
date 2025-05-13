@@ -3,7 +3,7 @@
 use indexmap::{IndexMap, IndexSet};
 
 use crate::ast::{Identifier, QualIdentifier, SortedVar, Symbol, Term, VarBinding};
-use crate::error::{SolverError::{self, *}, Offset};
+use crate::error::SolverError::{self, *};
 use crate::solver::Solver;
 
 use crate::private::a_sort::get_sort_object;
@@ -69,9 +69,9 @@ pub(crate) fn annotate_term(
 
         L(Term::Application(qual_identifier, terms), start) => {
 
-            let and: QualIdentifier = QualIdentifier::Identifier(L(Identifier::Simple(Symbol("and".to_string())), Offset(0)));
-            let or: QualIdentifier = QualIdentifier::Identifier(L(Identifier::Simple(Symbol("or".to_string())), Offset(0)));
-            let not: QualIdentifier = QualIdentifier::Identifier(L(Identifier::Simple(Symbol("not".to_string())), Offset(0)));
+            let and: QualIdentifier = QualIdentifier::new(&Symbol("and".to_string()), None);
+            let or: QualIdentifier = QualIdentifier::new(&Symbol("or".to_string()), None);
+            let not: QualIdentifier = QualIdentifier::new(&Symbol("not".to_string()), None);
 
             match qual_identifier.to_string().as_str() {
                 "=>" => {

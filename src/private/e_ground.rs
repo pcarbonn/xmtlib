@@ -5,7 +5,7 @@ use std::future::Future;
 use genawaiter::{sync::Gen, sync::gen, yield_};
 use rusqlite::Connection;
 
-use crate::ast::{L, QualIdentifier, Identifier, Symbol, Term, Sort};
+use crate::ast::{L, QualIdentifier, Symbol, Term, Sort};
 use crate::error::{Offset, SolverError::{self, *}};
 use crate::solver::{CanonicalSort, Solver};
 
@@ -67,7 +67,7 @@ pub(crate) fn ground(
             terms
         } else {
             // faster, because it gives sqlite more scope for optimisation
-            let and_ = QualIdentifier::Identifier(L(Identifier::Simple(Symbol("and".to_string())), Offset(0)));
+            let and_ = QualIdentifier::new(&Symbol("and".to_string()), None);
             let term = L(Term::Application(and_, terms), Offset(0));
             vec![term]
         };
@@ -501,9 +501,9 @@ fn ground_compound(
                     "+" | "-" | "*" | "div" | "mod" | "abs" => {
                         let g = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
                         let sort = if sorts.iter().any(|s| s.to_string() == "Real") {
-                            CanonicalSort(Sort::Sort(L(Identifier::Simple(Symbol("Real".to_string())), Offset(0))))
+                            CanonicalSort(Sort::new(&Symbol("Real".to_string())))
                         } else {
-                            CanonicalSort(Sort::Sort(L(Identifier::Simple(Symbol("Int".to_string())), Offset(0))))
+                            CanonicalSort(Sort::new(&Symbol("Int".to_string())))
                         };
 
                         Ok((Grounding::NonBoolean( g ), sort))

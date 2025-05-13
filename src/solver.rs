@@ -10,7 +10,7 @@ use rusqlite::{Connection, Result};
 use z3_sys::*;
 
 use crate::ast::*;
-use crate::error::{format_error, SolverError, Offset};
+use crate::error::{format_error, SolverError};
 use crate::grammar::parse;
 use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, PolymorphicObject, SortObject};
 use crate::private::b_fun::{declare_fun, FunctionObject};
@@ -112,9 +112,9 @@ impl Solver {
         // create pre-defined sorts: Bool, Int, Real
         let mut sort_objects = IndexMap::new();
         let sort = |s: &str|
-            Sort::Sort(L(Identifier::Simple(Symbol(s.to_string())), Offset(0)));
+            Sort::new(&Symbol(s.to_string()));
         let canonical_sort = |s: &str|
-            CanonicalSort(Sort::Sort(L(Identifier::Simple(Symbol(s.to_string())), Offset(0))));
+            CanonicalSort(Sort::new(&Symbol(s.to_string())));
 
         let bool_decl = SortObject::Normal{
             datatype_dec: DatatypeDec::DatatypeDec(
@@ -144,7 +144,7 @@ impl Solver {
 
         // create function objects
         let id = |s: &str|
-            L(Identifier::Simple(Symbol(s.to_string())), Offset(0));
+            Identifier::new(&Symbol(s.to_string()));
 
         let mut function_objects = IndexMap::new();
 

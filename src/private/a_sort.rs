@@ -88,7 +88,7 @@ pub(crate) fn declare_datatypes(
             DatatypeDec::DatatypeDec(_) => {
                 // for recursivity detection
                 let declaring = sort_decs.iter()
-                    .map(|sd| Sort::Sort(L(Identifier::Simple(sd.0.clone()), Offset(0))))
+                    .map(|sd| Sort::new(&sd.0))
                     .collect();
                 create_monomorphic_sort(&symb, &dec, &declaring, solver)?
             }
@@ -108,7 +108,7 @@ pub(crate) fn declare_sort(
     let out = solver.exec(&command)?;
 
     if arity.0 == 0 {
-        let sort = Sort::Sort(L(Identifier::Simple(symb), Offset(0)));
+        let sort = Sort::new(&symb);
         insert_sort(sort, None, TypeInterpretation::Unknown, None, solver)?;
     } else {
         let dt_object = PolymorphicObject::Unknown;
@@ -145,8 +145,7 @@ pub(crate) fn define_sort(
                     match datatype_dec {
                         DatatypeDec::DatatypeDec(ref constructor_decs) =>
                             for ConstructorDec(symbol,_) in constructor_decs {
-                                let id = L(Identifier::Simple(symbol.clone()), Offset(0));
-                                let qualified = QualIdentifier::Identifier(id);
+                                let qualified = QualIdentifier::new(symbol, None);
                                 qualify.insert(symbol.clone(), qualified);
                             },
                         DatatypeDec::Par(..) => unreachable!(),
@@ -157,7 +156,7 @@ pub(crate) fn define_sort(
                 | SortObject::Infinite
                 | SortObject::Unknown => None,
             };
-        let new_sort = Sort::Sort(L(Identifier::Simple(symb), Offset(0)));
+        let new_sort = Sort::new(&symb);
         insert_sort(new_sort, new_decl, g, Some((canonical.clone(), new_sort_object.clone())), solver)?;
 
     } else {  // sort must is polymorphic
@@ -262,13 +261,13 @@ pub(crate) fn create_monomorphic_sort(
                 grounding = max(grounding, g);
             }
             // no qualification needed
-            let id = L(Identifier::Simple(constructor.clone()), Offset(0));
+            let id = Identifier::new(constructor);
             let qualified = QualIdentifier::Identifier(id);
             qualify.insert(constructor.clone(), qualified);
         }
 
         //
-        let key = Sort::Sort(L(Identifier::Simple(symb.clone()), Offset(0)));
+        let key = Sort::new(symb);
 
         insert_sort(key, Some((decl.clone(), qualify)), grounding, None, solver)?;
         Ok(())
@@ -351,9 +350,9 @@ pub(crate) fn instantiate_sort(
                                 let qualified = if variables_found.len() != var_count {
                                     // constructor is potentially ambiguous
                                     // -> use a qualified identifier
-                                    QualIdentifier::Sorted(L(Identifier::Simple(c.0.clone()), Offset(0)), sort.clone())
+                                    QualIdentifier::new(&c.0, Some(sort.clone()))
                                 } else {
-                                    QualIdentifier::Identifier(L(Identifier::Simple(c.0.clone()), Offset(0)))
+                                    QualIdentifier::new(&c.0, None)
                                 };
                                 qualify.insert(c.0.clone(), qualified);
                             }
@@ -420,7 +419,7 @@ fn sort_mapping(
 ) -> IndexMap<Sort, Sort> {
 
     let old_variables: Vec<Sort> = variables.iter()
-        .map(|s| { Sort::Sort(L(Identifier::Simple(s.clone()), Offset(0)))})
+        .map(|s| { Sort::new(s) })
         .collect();
     old_variables.into_iter()
         .zip(values.iter().cloned())
@@ -577,7 +576,7 @@ fn create_table(
                     .ok_or(InternalError(78845662)))
             .collect::<Result<Vec<_>,_>>()?
             .into_iter().cloned().collect();
-        let identifier = L(Identifier::Simple(constructor.clone()), Offset(0));
+        let identifier = Identifier::new(constructor);
         set_function_object(&identifier, &domain, &canonical_sort, FunctionObject::Constructor, solver);
     }
     row_count = nullary.len();
@@ -612,7 +611,7 @@ fn create_table(
                     .ok_or(SolverError::ExprError(format!("Unknown sort: {sort}")))
                     .map(Clone::clone))
                 .collect::<Result<_, _>>()?;
-            let identifier = L(Identifier::Simple(constructor.clone()), Offset(0));
+            let identifier = Identifier::new(constructor);
             set_function_object(&identifier, &domain, &canonical_sort, FunctionObject::Constructor, solver);
 
             if selectors.len() != 0 {  // otherwise, already in core table
@@ -704,7 +703,7 @@ fn create_table(
         let table_uf = Interpretation::Table { name: view_f, ids: Ids::All };
 
         let function = FunctionObject::BooleanInterpreted{table_g, table_tu, table_uf};
-        let bool_sort = CanonicalSort(Sort::Sort(L(Identifier::Simple(Symbol("Bool".to_string())), Offset(0))));
+        let bool_sort = CanonicalSort(Sort::new(&Symbol("Bool".to_string())));
         set_function_object(&identifier, &vec![canonical_sort.clone()], &bool_sort, function, solver);
     }
     Ok(row_count)
