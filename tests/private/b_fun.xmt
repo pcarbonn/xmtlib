@@ -52,10 +52,10 @@ Functions2:
  - red ()->Color : Constructor
  - green ()->Color : Constructor
  - pair (Color, Color)->(Pair Color) : Constructor
- - bright (Color)->Bool : Color -> Bool (true)
- - invert (Color)->Color : Color -> Color (false)
- - brightest ((Pair Color))->Color : (Pair Color) -> Color (false)
- - colorOf ((Pair Color))->(Pair Color) : (Pair Color) -> (Pair Color) (false)
+ - bright (Color)->Bool : Not interpreted
+ - invert (Color)->Color : Not interpreted
+ - brightest ((Pair Color))->Color : Not interpreted
+ - colorOf ((Pair Color))->(Pair Color) : Not interpreted
 Tables and Views:
  - Bool (table)
  - _xmt_color (table)

@@ -120,7 +120,7 @@ Functions2:
  - same (Color, Color)->Bool : Boolean (_xmt_same_TU Complete, _xmt_same_UF Complete, _xmt_same_G Complete)
  - hue (Color, Color)->Hue : Constructor
  - dim (Hue)->Bool : Boolean (_xmt_dim_TU Complete, _xmt_dim_UF Complete, _xmt_dim_G Complete)
- - dark (Color)->Bool : Color -> Bool (true)
+ - dark (Color)->Bool : Not interpreted
 Groundings:
 === (top) p ======================================
 ----- T ------------------------------------------------------------

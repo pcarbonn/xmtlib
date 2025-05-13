@@ -526,9 +526,9 @@ fn ground_compound(
                 Ok((Grounding::NonBoolean(grounding_query), out_sort))
             }
         },
-        FunctionObject::NotInterpreted { signature: (_, _, boolean)} => { // custom function
+        FunctionObject::NotInterpreted => { // custom function
             let variant = QueryVariant::Apply;
-            if *boolean {
+            if out_sort.to_string() == "Bool" {
 
                 // custom boolean function
                 let (mut tus, mut ufs) = collect_tu_uf(&groundings);

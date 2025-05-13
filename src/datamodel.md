@@ -30,7 +30,7 @@ pub(crate) enum SortObject{
 pub(crate) enum FunctionObject {
     Predefined{function: Predefined, boolean: Option<bool>},
     Constructor,
-    NotInterpreted{signature: (Vec<CanonicalSort>, CanonicalSort, bool)},
+    NotInterpreted,
     Interpreted(Interpretation),
     BooleanInterpreted{table_tu: Interpretation, table_uf: Interpretation, table_g: Interpretation}
 }

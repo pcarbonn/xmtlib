@@ -44,7 +44,7 @@ Functions2:
  - mod ()->Real : Predefined (false)
  - abs ()->Real : Predefined (false)
  - Edge (Int, Int)->Bool : Boolean (_xmt_edge_TU Complete, (infinite), (infinite))
- - phi (Int, Int, Int)->Bool : Int * Int * Int -> Bool (true)
+ - phi (Int, Int, Int)->Bool : Not interpreted
 Groundings:
 ===  x ======================================
  -- Join(0)

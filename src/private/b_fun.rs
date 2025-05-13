@@ -22,7 +22,7 @@ use crate::ast::L;
 pub(crate) enum FunctionObject {
     Predefined{function: Predefined, boolean: Option<bool>},  // None = unknown for `ite, let` --> need special code
     Constructor,
-    NotInterpreted{signature: (Vec<CanonicalSort>, CanonicalSort, bool)},  // signature used to create table, when later interpreted
+    NotInterpreted,
     Interpreted(Interpretation),
     BooleanInterpreted{table_tu: Interpretation, table_uf: Interpretation, table_g: Interpretation}
 }
@@ -48,14 +48,8 @@ impl Display for FunctionObject {
                 },
             Self::Constructor =>
                 write!(f, "Constructor"),
-            Self::NotInterpreted{signature} => {
-                let (domain, co_domain, boolean) = signature;
-                let domain = domain.iter()
-                    .map(|s| s.to_string())
-                    .collect::<Vec<_>>().join(" * ");
-                let co_domain = co_domain.to_string();
-                write!(f,"{domain} -> {co_domain} ({boolean})")
-            }
+            Self::NotInterpreted =>
+                write!(f,"Not interpreted"),
             Self::Interpreted(table_g) =>
                 write!(f, "Non Boolean ({table_g})"),
             Self::BooleanInterpreted{table_tu, table_uf, table_g} =>
@@ -99,8 +93,7 @@ pub(crate) fn declare_fun(
         .ok_or(SolverError::ExprError("unknown co_domain".to_string()))?;
 
     let identifier = L(Identifier::Simple(symbol), Offset(0));
-    let boolean = co_domain.to_string() == "Bool";
-    let function_is = FunctionObject::NotInterpreted{signature: (domain.clone(), co_domain.clone(), boolean)};
+    let function_is = FunctionObject::NotInterpreted;
 
     solver.interpretable_functions.insert(identifier.clone(), (domain.clone(), co_domain.clone()));
     solver.function_objects.insert((identifier.clone(), domain.clone()), IndexMap::from([(co_domain.clone(), function_is.clone())]));
