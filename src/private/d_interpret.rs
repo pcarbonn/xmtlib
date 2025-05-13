@@ -547,8 +547,10 @@ fn construct(
         }
         L(Term::Identifier(qual_identifier), _) => {
             let (canonical, f_is) = get_function_object(id, qual_identifier, &vec![], solver)?;
+            let mut construction = id.to_string();
+            if construction.starts_with("(") { construction = format!(" {construction}") }
             match f_is {
-                FunctionObject::Constructor => Ok((canonical.clone(), id.to_string())),
+                FunctionObject::Constructor => Ok((canonical.clone(), construction)),
                 _ => Err(SolverError::TermError("Not an id", id.clone())),
             }
         },

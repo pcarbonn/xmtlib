@@ -11,8 +11,7 @@ use indexmap::{IndexMap, IndexSet};
 use itertools::Itertools;
 use rusqlite::{params, Connection};
 
-use crate::ast::{ConstructorDec, DatatypeDec, Identifier, Index, L,
-    Numeral, SelectorDec, Sort, SortDec, Symbol};
+use crate::ast::{ConstructorDec, DatatypeDec, Identifier, Index, Numeral, SelectorDec, Sort, SortDec, Symbol, L};
 use crate::error::{SolverError::{self, InternalError}, Offset};
 use crate::solver::{Solver, CanonicalSort};
 use crate::private::b_fun::{Interpretation, FunctionObject};
@@ -214,7 +213,7 @@ fn recursive_sort(
             }
         },
         Sort::Sort(L(Identifier::Indexed(..), _))
-        | Sort::Parametric(L(Identifier::Indexed(..), _), _) => ()
+        | Sort::Parametric(L(Identifier::Indexed(..), _), _) => unreachable!()
     }
     return false
 }
@@ -252,6 +251,7 @@ pub(crate) fn create_monomorphic_sort(
 
         //
         let key = Sort::Sort(L(Identifier::Simple(symb.clone()), Offset(0)));
+
         insert_sort(key, Some(decl.clone()), grounding, None, solver)?;
         Ok(())
 
@@ -294,7 +294,7 @@ pub(crate) fn instantiate_sort(
 
                     let mut grounding = TypeInterpretation::Normal;
                     match polymorphic_object.clone() {
-                          PolymorphicObject::Datatype(DatatypeDec::Par(variables, constructors))
+                        PolymorphicObject::Datatype(DatatypeDec::Par(variables, constructors))
                         | PolymorphicObject::RecursiveDT(DatatypeDec::Par(variables, constructors)) => {
                             // variables: (X Y)
                             // constructors: ( ( white ) (pair (first X) (second Y))))
@@ -302,7 +302,14 @@ pub(crate) fn instantiate_sort(
 
                             // build substitution map : Sort -> Sort
                             // X->Color, Y->Color
-                            let subs = sort_mapping(variables, parameters);
+                            let subs = sort_mapping(&variables, parameters);
+
+                            let var_count = variables.len();
+                            let mut variable_set = IndexSet::new();
+                            variable_set.extend(variables.into_iter());
+                            if variable_set.len() != var_count {
+                                return Err(SolverError::IdentifierError("Duplicate variable", id.clone()))
+                            }
 
                             // instantiate constructors
                             let mut declaring = declaring.clone();
@@ -314,7 +321,7 @@ pub(crate) fn instantiate_sort(
                                     let (new_g, new_sort) = substitute_in_sort(&s.1, &subs, &declaring, solver)?;
                                     grounding = max(grounding, new_g);
                                     let new_selector = SelectorDec(s.0, new_sort);  // (pair (first Color) (second Color))
-                                    new_selectors.push(new_selector)
+                                    new_selectors.push(new_selector);
                                 }
                                 let new_c = ConstructorDec(c.0.clone(), new_selectors);
                                 new_constructors.push(new_c);
@@ -333,7 +340,7 @@ pub(crate) fn instantiate_sort(
                             // parent_decl: (define-sort MyPair (T) (Pair T T))
 
                             // substitute to get new sort
-                            let subs = sort_mapping(variables, parameters); // T->Color
+                            let subs = sort_mapping(&variables, parameters); // T->Color
                             let (new_g, new_sort) = substitute_in_sort(&definiendum, &subs, declaring, solver)?; // (Pair Color Color)
 
                             // get the name of the table
@@ -375,7 +382,7 @@ pub(crate) fn instantiate_sort(
 /// * values: list of monomorphic sorts
 ///
 fn sort_mapping(
-    variables: Vec<Symbol>,
+    variables: &Vec<Symbol>,
     values: &Vec<Sort>
 ) -> IndexMap<Sort, Sort> {
 
@@ -438,45 +445,43 @@ fn insert_sort(
         let (canonical, sort_object) =
             match grounding {
                 TypeInterpretation::Normal => {  // create table for the sort
-                    if let Some(datatype_dec) = decl {
-                        match datatype_dec {
-                            DatatypeDec::DatatypeDec(ref constructor_decls) => {
-                                if let Some(alias) = alias {
-                                    alias.clone()
-                                } else {
-                                    let (table, canonical) =
-                                        match sort {
-                                            Sort::Sort(L(Identifier::Simple(Symbol(ref name)), _)) =>
-                                                (solver.create_table_name(name.to_string()),
-                                                CanonicalSort(sort.clone())),
-                                            Sort::Sort(_) =>
-                                                (TableName(format!("Sort_{}", i)),
-                                                CanonicalSort(sort.clone())),
-                                            Sort::Parametric(ref id, ref sorts) => {
-                                                let canonicals = sorts.iter()
-                                                    .map(|s|
-                                                        solver.canonical_sorts.get(s)
-                                                            .cloned()
-                                                            .ok_or(SolverError::ExprError("unknown sort".to_string())))
-                                                    .collect::<Result<Vec<_>,_>>()?
-                                                    .into_iter()  // decanonicalize them
-                                                    .map(|canonical| canonical.0)
-                                                    .collect();
+                    match decl {
+                        Some(DatatypeDec::DatatypeDec(ref constructor_decls)) => {
+                            let datatype_dec = decl.clone().unwrap();  // can't fail
+                            if let Some(alias) = alias {
+                                alias.clone()
+                            } else {
+                                let (table, canonical) =
+                                    match sort {
+                                        Sort::Sort(L(Identifier::Simple(Symbol(ref name)), _)) =>
+                                            (solver.create_table_name(name.to_string()),
+                                            CanonicalSort(sort.clone())),
+                                        Sort::Sort(_) =>
+                                            (TableName(format!("Sort_{}", i)),
+                                            CanonicalSort(sort.clone())),
+                                        Sort::Parametric(ref id, ref sorts) => {
+                                            let canonicals = sorts.iter()
+                                                .map(|s|
+                                                    solver.canonical_sorts.get(s)
+                                                        .cloned()
+                                                        .ok_or(SolverError::ExprError("unknown sort".to_string())))
+                                                .collect::<Result<Vec<_>,_>>()?
+                                                .into_iter()  // decanonicalize them
+                                                .map(|canonical| canonical.0)
+                                                .collect();
 
-                                                (TableName(format!("Sort_{}", i)),
-                                                CanonicalSort(Sort::Parametric(id.clone(), canonicals)))
-                                            }
-                                        };
-                                    let row_count = create_table(&table, &canonical, &constructor_decls, solver)?;
-                                    (canonical, SortObject::Normal{datatype_dec, table, row_count})
-                                }
-                            },
-                            DatatypeDec::Par(..) => {
-                                return Err(InternalError(8458555))
-                            },
+                                            (TableName(format!("Sort_{}", i)),
+                                            CanonicalSort(Sort::Parametric(id.clone(), canonicals)))
+                                        }
+                                    };
+                                let row_count = create_table(&table, &canonical, &constructor_decls, solver)?;
+                                (canonical, SortObject::Normal{datatype_dec, table, row_count})
+                            }
                         }
-                    } else {
-                        unreachable!()
+                        Some(DatatypeDec::Par(..)) => {
+                            return Err(InternalError(8458555))
+                        }
+                        None => unreachable!()
                     }
                 },
                 TypeInterpretation::Unknown => (CanonicalSort(sort.clone()), SortObject::Unknown),
@@ -507,7 +512,7 @@ fn create_table(
     // LINK src/doc.md#_Constructor
     // 1st pass: collect nullary constructors and selectors
     // in ((white ) (pair (first Color) (second Color)))
-    let mut nullary: Vec<String> = vec![]; // white
+    let mut nullary = vec![]; // white
     let mut column_names: IndexMap<String, String> = IndexMap::new();  // first: Text, second: Int
     for constructor_decl in constructor_decls {
         let ConstructorDec(constructor, selectors) = constructor_decl;
