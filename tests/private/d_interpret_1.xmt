@@ -116,9 +116,12 @@ Functions2:
  - P ()->Bool : Boolean (_xmt_p_3_TU Complete, _xmt_p_3_UF Complete, _xmt_p_3_G Complete)
  - red ()->Color : Constructor
  - green ()->Color : Constructor
+ - (_ is red) (Color)->Bool : Boolean (_xmt_color_red_tester_t Complete, _xmt_color_red_tester_f Complete, _xmt_color_red_tester_g Complete)
+ - (_ is green) (Color)->Bool : Boolean (_xmt_color_green_tester_t Complete, _xmt_color_green_tester_f Complete, _xmt_color_green_tester_g Complete)
  - bright (Color)->Bool : Boolean (_xmt_bright_TU Complete, _xmt_bright_UF Complete, _xmt_bright_G Complete)
  - same (Color, Color)->Bool : Boolean (_xmt_same_TU Complete, _xmt_same_UF Complete, _xmt_same_G Complete)
  - hue (Color, Color)->Hue : Constructor
+ - (_ is hue) (Hue)->Bool : Boolean (_xmt_hue_hue_tester_t Complete, _xmt_hue_hue_tester_f Complete, _xmt_hue_hue_tester_g Complete)
  - dim (Hue)->Bool : Boolean (_xmt_dim_TU Complete, _xmt_dim_UF Complete, _xmt_dim_G Complete)
  - dark (Color)->Bool : Not interpreted
 Groundings:
@@ -379,6 +382,12 @@ Tables and Views:
  - _xmt_p_3_UF (view)
  - _xmt_p_3_G (view)
  - _xmt_color (table)
+ - _xmt_color_red_tester_g (view)
+ - _xmt_color_red_tester_t (view)
+ - _xmt_color_red_tester_f (view)
+ - _xmt_color_green_tester_g (view)
+ - _xmt_color_green_tester_t (view)
+ - _xmt_color_green_tester_f (view)
  - _xmt_bright_T (table)
  - _xmt_bright_TU (view)
  - _xmt_bright_UF (view)
@@ -388,6 +397,9 @@ Tables and Views:
  - _xmt_same_UF (view)
  - _xmt_same_G (view)
  - _xmt_hue (table)
+ - _xmt_hue_hue_tester_g (view)
+ - _xmt_hue_hue_tester_t (view)
+ - _xmt_hue_hue_tester_f (view)
  - _xmt_dim_T (table)
  - _xmt_dim_TU (view)
  - _xmt_dim_UF (view)

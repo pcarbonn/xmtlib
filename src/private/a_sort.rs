@@ -11,12 +11,13 @@ use indexmap::{IndexMap, IndexSet};
 use itertools::Itertools;
 use rusqlite::{params, Connection};
 
-use crate::ast::{ConstructorDec, DatatypeDec, Identifier, Numeral, SelectorDec, Sort, SortDec, Symbol};
+use crate::ast::{ConstructorDec, DatatypeDec, Identifier, Index, L,
+    Numeral, SelectorDec, Sort, SortDec, Symbol};
 use crate::error::{SolverError::{self, InternalError}, Offset};
 use crate::solver::{Solver, CanonicalSort};
-use crate::private::b_fun::FunctionObject;
+use crate::private::b_fun::{Interpretation, FunctionObject};
+use crate::private::e1_ground_view::Ids;
 use crate::private::e2_ground_query::TableName;
-use crate::ast::L;
 
 #[allow(unused_imports)]
 use debug_print::debug_println as dprintln;
@@ -281,7 +282,7 @@ pub(crate) fn instantiate_sort(
     } else {
         match sort {
             Sort::Sort(_) =>   // check if recursive
-                Err(SolverError::ExprError(format!("Unknown sort: {sort}").to_string())),
+                Err(SolverError::ExprError(format!("Unknown sort: {sort}"))),
 
             Sort::Parametric(id, parameters) => {
                 // running example: sort is (Pair Color Color)
@@ -623,6 +624,38 @@ fn create_table(
             .collect::<Vec<_>>().join(", ");
         let insert = format!("INSERT INTO {table} (constructor, {columns}, G) {}", selects.join( " UNION "));
         solver.conn.execute(&insert, ())?;
+    }
+
+    // add tester function in solver
+    for constructor_decl in constructor_decls { // e.g. (pair (first Color) (second Color))
+        let ConstructorDec(constructor, _selectors) = constructor_decl;
+
+        // tester: (_ is pair)
+        let identifier = L(Identifier::Indexed(Symbol("is".to_string()), vec![Index::Symbol(constructor.clone())]), Offset(0));
+
+        let view_g = solver.create_table_name(format!("{table}_{constructor}_tester_G"));
+        let sql = if column_names.len() == 0 {
+                format!("CREATE VIEW {view_g} AS SELECT G AS a_1, CASE G WHEN \"{constructor}\" THEN \"true\" ELSE \"false\" END AS G FROM {table}")
+            } else {
+                format!("CREATE VIEW {view_g} AS SELECT G AS a_1, CASE constructor WHEN \"{constructor}\" THEN \"true\" ELSE \"false\" END AS G FROM {table}")
+            };
+        solver.conn.execute(&sql, ())?;
+
+        let table_g = Interpretation::Table { name: view_g.clone(), ids: Ids::All };
+
+        let view_t = solver.create_table_name(format!("{table}_{constructor}_tester_T"));
+        let sql = format!("CREATE VIEW {view_t} AS SELECT * FROM {view_g} WHERE G = \"true\"");
+        solver.conn.execute(&sql, ())?;
+        let table_tu = Interpretation::Table { name: view_t, ids: Ids::All };
+
+        let view_f = solver.create_table_name(format!("{table}_{constructor}_tester_F"));
+        let sql = format!("CREATE VIEW {view_f} AS SELECT * FROM {view_g} WHERE G = \"false\"");
+        solver.conn.execute(&sql, ())?;
+        let table_uf = Interpretation::Table { name: view_f, ids: Ids::All };
+
+        let function = FunctionObject::BooleanInterpreted{table_g, table_tu, table_uf};
+        let bool_sort = CanonicalSort(Sort::Sort(L(Identifier::Simple(Symbol("Bool".to_string())), Offset(0))));
+        set_function_object(&identifier, &vec![canonical_sort.clone()], &bool_sort, function, solver);
     }
     Ok(row_count)
 }

@@ -75,32 +75,34 @@ Functions2:
  - abs ()->Real : Predefined (false)
  - red ()->Color : Constructor
  - green ()->Color : Constructor
+ - (_ is red) (Color)->Bool : Boolean (_xmt_color_red_tester_t Complete, _xmt_color_red_tester_f Complete, _xmt_color_red_tester_g Complete)
+ - (_ is green) (Color)->Bool : Boolean (_xmt_color_green_tester_t Complete, _xmt_color_green_tester_f Complete, _xmt_color_green_tester_g Complete)
  - C ()->Color : Non Boolean (_xmt_c_G Complete)
- - c ()->Color : Non Boolean (_xmt_c_2_G Complete)
+ - c ()->Color : Non Boolean (_xmt_c_8_G Complete)
  - p ()->Bool : Boolean (_xmt_p_TU Complete, _xmt_p_UF Complete, _xmt_p_G Complete)
- - Mix (Color, Color)->Color : Non Boolean (_xmt_mix_5_G Partial)
+ - Mix (Color, Color)->Color : Non Boolean (_xmt_mix_11_G Partial)
  - mix (Color, Color)->Color : Non Boolean (_xmt_mix_G Partial)
 Groundings:
 ===  c ======================================
  -- Join(0)
-SELECT _xmt_c_2_G.G AS G
-  FROM _xmt_c_2_G AS _xmt_c_2_G
+SELECT _xmt_c_8_G.G AS G
+  FROM _xmt_c_8_G AS _xmt_c_8_G
 ===  green ======================================
  -- Join(0)
 SELECT "green" AS G
 === (top) (= c green) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT eq_(_xmt_c_2_G.G, "green") AS G
-  FROM _xmt_c_2_G AS _xmt_c_2_G
+SELECT eq_(_xmt_c_8_G.G, "green") AS G
+  FROM _xmt_c_8_G AS _xmt_c_8_G
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT eq_(_xmt_c_2_G.G, "green") AS G
-  FROM _xmt_c_2_G AS _xmt_c_2_G
+SELECT eq_(_xmt_c_8_G.G, "green") AS G
+  FROM _xmt_c_8_G AS _xmt_c_8_G
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT eq_(_xmt_c_2_G.G, "green") AS G
-  FROM _xmt_c_2_G AS _xmt_c_2_G
+SELECT eq_(_xmt_c_8_G.G, "green") AS G
+  FROM _xmt_c_8_G AS _xmt_c_8_G
 
 ===  x ======================================
  -- Join(0)
@@ -215,15 +217,21 @@ SELECT or_aggregate(G) as G
 Tables and Views:
  - Bool (table)
  - _xmt_color (table)
+ - _xmt_color_red_tester_g (view)
+ - _xmt_color_red_tester_t (view)
+ - _xmt_color_red_tester_f (view)
+ - _xmt_color_green_tester_g (view)
+ - _xmt_color_green_tester_t (view)
+ - _xmt_color_green_tester_f (view)
  - _xmt_c_G (view)
- - _xmt_c_2_G (view)
+ - _xmt_c_8_G (view)
  - _xmt_p_TU (view)
  - _xmt_p_UF (view)
  - _xmt_p_G (view)
  - _xmt_mix_G (table)
- - _xmt_mix_5_K (table)
- - _xmt_mix_5_U (view)
- - _xmt_mix_5_G (view)
+ - _xmt_mix_11_K (table)
+ - _xmt_mix_11_U (view)
+ - _xmt_mix_11_G (view)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
  TABLE: _xmt_p_uf

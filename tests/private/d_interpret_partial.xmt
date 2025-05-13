@@ -46,6 +46,8 @@ Functions2:
  - abs ()->Real : Predefined (false)
  - red ()->Color : Constructor
  - green ()->Color : Constructor
+ - (_ is red) (Color)->Bool : Boolean (_xmt_color_red_tester_t Complete, _xmt_color_red_tester_f Complete, _xmt_color_red_tester_g Complete)
+ - (_ is green) (Color)->Bool : Boolean (_xmt_color_green_tester_t Complete, _xmt_color_green_tester_f Complete, _xmt_color_green_tester_g Complete)
  - mix (Color, Color)->Color : Non Boolean (_xmt_mix_G Partial)
 Groundings:
 ===  green ======================================
@@ -140,6 +142,12 @@ SELECT or_aggregate(G) as G
 Tables and Views:
  - Bool (table)
  - _xmt_color (table)
+ - _xmt_color_red_tester_g (view)
+ - _xmt_color_red_tester_t (view)
+ - _xmt_color_red_tester_f (view)
+ - _xmt_color_green_tester_g (view)
+ - _xmt_color_green_tester_t (view)
+ - _xmt_color_green_tester_f (view)
  - _xmt_mix_K (table)
  - _xmt_mix_U (view)
  - _xmt_mix_G (view)

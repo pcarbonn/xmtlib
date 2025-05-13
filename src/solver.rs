@@ -497,16 +497,18 @@ impl Solver {
 
     /// Sanitize a name.  Removes non-alphanumeric characters, and adds a number if empty or ambiguous.
     pub(crate) fn create_table_name(self: &mut Solver, name: String) -> TableName {
-        let re = Regex::new(r"[\+\-/\*=\%\?\!\.\$\&\^<>@]").unwrap();
+        let re = Regex::new(r"[\+\-/\*=\%\?\!\.\$\&\^<>@\|]").unwrap();
         let db_name = re.replace_all(&name, "").to_string().to_lowercase();
         let index = self.db_names.len();
         let db_name =
             if db_name.len() == 0 {
                 format!("_xmt_{index}")
             } else {
-                let temp = format!("_xmt_{db_name}");
+                let temp =
+                    if db_name.starts_with("_xmt_") { db_name.clone() }
+                    else { format!("_xmt_{db_name}") };
                 if self.db_names.contains(&temp) {
-                    format!("_xmt_{db_name}_{index}")
+                    format!("{temp}_{index}")
                 } else {
                     temp
                 }

@@ -51,7 +51,10 @@ Functions2:
  - abs ()->Real : Predefined (false)
  - red ()->Color : Constructor
  - green ()->Color : Constructor
+ - (_ is red) (Color)->Bool : Boolean (_xmt_color_red_tester_t Complete, _xmt_color_red_tester_f Complete, _xmt_color_red_tester_g Complete)
+ - (_ is green) (Color)->Bool : Boolean (_xmt_color_green_tester_t Complete, _xmt_color_green_tester_f Complete, _xmt_color_green_tester_g Complete)
  - pair (Color, Color)->(Pair Color) : Constructor
+ - (_ is pair) ((Pair Color))->Bool : Boolean (_xmt_sort_7_pair_tester_t Complete, _xmt_sort_7_pair_tester_f Complete, _xmt_sort_7_pair_tester_g Complete)
  - bright (Color)->Bool : Not interpreted
  - invert (Color)->Color : Not interpreted
  - brightest ((Pair Color))->Color : Not interpreted
@@ -59,4 +62,13 @@ Functions2:
 Tables and Views:
  - Bool (table)
  - _xmt_color (table)
+ - _xmt_color_red_tester_g (view)
+ - _xmt_color_red_tester_t (view)
+ - _xmt_color_red_tester_f (view)
+ - _xmt_color_green_tester_g (view)
+ - _xmt_color_green_tester_t (view)
+ - _xmt_color_green_tester_f (view)
  - Sort_7 (table)
+ - _xmt_sort_7_pair_tester_g (view)
+ - _xmt_sort_7_pair_tester_t (view)
+ - _xmt_sort_7_pair_tester_f (view)

@@ -6,7 +6,10 @@
 (declare-fun p (Either) Bool)
 (x-interpret-pred p (x-set (nil) ((Left blue)) ((Right red))))
 (assert (p (Right red)))
-(assert (not (p nil)))
+(assert (p nil))
+(assert (not (p (Left red))))
+(assert ((_ is nil) nil))
+(assert ((_ is Left) (Left blue)))
 (x-ground debug:)
 (x-debug solver polymorphic_sorts)
 (x-debug solver sorts)
@@ -19,7 +22,6 @@
 (declare-datatype Color ((red ) (blue ) (green )))
 (declare-datatype Either ((nil ) (Left (b Color)) (Right (b Color))))
 (declare-fun p (Either) Bool)
-(assert false)
 Polymorphic datatypes:
  - (unknown): Array
 Sorts:
@@ -56,9 +58,15 @@ Functions2:
  - red ()->Color : Constructor
  - blue ()->Color : Constructor
  - green ()->Color : Constructor
+ - (_ is red) (Color)->Bool : Boolean (_xmt_color_red_tester_t Complete, _xmt_color_red_tester_f Complete, _xmt_color_red_tester_g Complete)
+ - (_ is blue) (Color)->Bool : Boolean (_xmt_color_blue_tester_t Complete, _xmt_color_blue_tester_f Complete, _xmt_color_blue_tester_g Complete)
+ - (_ is green) (Color)->Bool : Boolean (_xmt_color_green_tester_t Complete, _xmt_color_green_tester_f Complete, _xmt_color_green_tester_g Complete)
  - nil ()->Either : Constructor
  - Left (Color)->Either : Constructor
  - Right (Color)->Either : Constructor
+ - (_ is nil) (Either)->Bool : Boolean (_xmt_either_nil_tester_t Complete, _xmt_either_nil_tester_f Complete, _xmt_either_nil_tester_g Complete)
+ - (_ is Left) (Either)->Bool : Boolean (_xmt_either_left_tester_t Complete, _xmt_either_left_tester_f Complete, _xmt_either_left_tester_g Complete)
+ - (_ is Right) (Either)->Bool : Boolean (_xmt_either_right_tester_t Complete, _xmt_either_right_tester_f Complete, _xmt_either_right_tester_g Complete)
  - p (Either)->Bool : Boolean (_xmt_p_TU Complete, _xmt_p_UF Complete, _xmt_p_G Complete)
  TABLE: _xmt_either
 ┌─────────────┬─────────┬──────────────────┐
@@ -123,7 +131,7 @@ SELECT _xmt_p_G_2.G AS G
 ===  nil ======================================
  -- Join(0)
 SELECT "nil" AS G
-===  (p nil) ======================================
+=== (top) (p nil) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
 SELECT "true" AS G
@@ -140,22 +148,82 @@ SELECT _xmt_p_G_4.G AS G
   FROM _xmt_p_G AS _xmt_p_G_4
  WHERE "nil" = _xmt_p_G_4.a_1
 
-=== (top) (not (p nil)) ======================================
+===  (Left red) ======================================
+ -- Join(0)
+SELECT construct2("Left", "red") AS G
+===  (p (Left red)) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
 SELECT "true" AS G
-  FROM _xmt_p_UF AS _xmt_p_UF_4
- WHERE "nil" = _xmt_p_UF_4.a_1
+  FROM _xmt_p_TU AS _xmt_p_TU_6
+ WHERE construct2("Left", "red") = _xmt_p_TU_6.a_1
 ----- F ------------------------------------------------------------
 -- Join(0)
 SELECT "false" AS G
-  FROM _xmt_p_TU AS _xmt_p_TU_4
- WHERE "nil" = _xmt_p_TU_4.a_1
+  FROM _xmt_p_UF AS _xmt_p_UF_6
+ WHERE construct2("Left", "red") = _xmt_p_UF_6.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT not_(_xmt_p_G_4.G) AS G
-  FROM _xmt_p_G AS _xmt_p_G_4
- WHERE "nil" = _xmt_p_G_4.a_1
+SELECT _xmt_p_G_6.G AS G
+  FROM _xmt_p_G AS _xmt_p_G_6
+ WHERE construct2("Left", "red") = _xmt_p_G_6.a_1
+
+=== (top) (not (p (Left red))) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+  FROM _xmt_p_UF AS _xmt_p_UF_6
+ WHERE construct2("Left", "red") = _xmt_p_UF_6.a_1
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT "false" AS G
+  FROM _xmt_p_TU AS _xmt_p_TU_6
+ WHERE construct2("Left", "red") = _xmt_p_TU_6.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT not_(_xmt_p_G_6.G) AS G
+  FROM _xmt_p_G AS _xmt_p_G_6
+ WHERE construct2("Left", "red") = _xmt_p_G_6.a_1
+
+=== (top) ((_ is nil) nil) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+  FROM _xmt_either_nil_tester_t AS _xmt_either_nil_tester_t_8
+ WHERE "nil" = _xmt_either_nil_tester_t_8.a_1
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT "false" AS G
+  FROM _xmt_either_nil_tester_f AS _xmt_either_nil_tester_f_8
+ WHERE "nil" = _xmt_either_nil_tester_f_8.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_either_nil_tester_g_8.G AS G
+  FROM _xmt_either_nil_tester_g AS _xmt_either_nil_tester_g_8
+ WHERE "nil" = _xmt_either_nil_tester_g_8.a_1
+
+===  blue ======================================
+ -- Join(0)
+SELECT "blue" AS G
+===  (Left blue) ======================================
+ -- Join(0)
+SELECT construct2("Left", "blue") AS G
+=== (top) ((_ is Left) (Left blue)) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+  FROM _xmt_either_left_tester_t AS _xmt_either_left_tester_t_11
+ WHERE construct2("Left", "blue") = _xmt_either_left_tester_t_11.a_1
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT "false" AS G
+  FROM _xmt_either_left_tester_f AS _xmt_either_left_tester_f_11
+ WHERE construct2("Left", "blue") = _xmt_either_left_tester_f_11.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_either_left_tester_g_11.G AS G
+  FROM _xmt_either_left_tester_g AS _xmt_either_left_tester_g_11
+ WHERE construct2("Left", "blue") = _xmt_either_left_tester_g_11.a_1
 
 ===========================================
 (check-sat)
