@@ -11,7 +11,7 @@ use indexmap::{IndexMap, IndexSet};
 use itertools::Itertools;
 use rusqlite::{params, Connection};
 
-use crate::ast::{ConstructorDec, DatatypeDec, Identifier, Index, Numeral, SelectorDec, Sort, SortDec, Symbol, L};
+use crate::ast::{ConstructorDec, DatatypeDec, Identifier, Index, Numeral, QualIdentifier, SelectorDec, Sort, SortDec, Symbol, L};
 use crate::error::{SolverError::{self, InternalError}, Offset};
 use crate::solver::{Solver, CanonicalSort};
 use crate::private::b_fun::{Interpretation, FunctionObject};
@@ -139,8 +139,20 @@ pub(crate) fn define_sort(
         let new_decl =
             match new_sort_object.clone()
              {
-                SortObject::Normal{datatype_dec, ..} =>
-                    Some(datatype_dec.clone()),
+                SortObject::Normal{datatype_dec, ..} => {
+                    // no qualification of constructors needed
+                    let mut qualify = IndexMap::new();
+                    match datatype_dec {
+                        DatatypeDec::DatatypeDec(ref constructor_decs) =>
+                            for ConstructorDec(symbol,_) in constructor_decs {
+                                let id = L(Identifier::Simple(symbol.clone()), Offset(0));
+                                let qualified = QualIdentifier::Identifier(id);
+                                qualify.insert(symbol.clone(), qualified);
+                            },
+                        DatatypeDec::Par(..) => unreachable!(),
+                    }
+                    Some((datatype_dec.clone(), qualify))
+                },
                 SortObject::Recursive
                 | SortObject::Infinite
                 | SortObject::Unknown => None,
@@ -213,7 +225,8 @@ fn recursive_sort(
             }
         },
         Sort::Sort(L(Identifier::Indexed(..), _))
-        | Sort::Parametric(L(Identifier::Indexed(..), _), _) => unreachable!()
+        | Sort::Parametric(L(Identifier::Indexed(..), _), _) =>
+            ()  // cannot match symbol
     }
     return false
 }
@@ -240,19 +253,24 @@ pub(crate) fn create_monomorphic_sort(
     if let DatatypeDec::DatatypeDec(constructor_decls) = decl {
 
         let mut grounding = TypeInterpretation::Normal;
+        let mut qualify = IndexMap::new();
         // instantiate parent sorts first
         for constructor_decl in constructor_decls {
-            let ConstructorDec(_, selectors) = constructor_decl;
+            let ConstructorDec(constructor, selectors) = constructor_decl;
             for SelectorDec(_, sort) in selectors {
                 let g = instantiate_sort(&sort, declaring, solver)?;
                 grounding = max(grounding, g);
             }
+            // no qualification needed
+            let id = L(Identifier::Simple(constructor.clone()), Offset(0));
+            let qualified = QualIdentifier::Identifier(id);
+            qualify.insert(constructor.clone(), qualified);
         }
 
         //
         let key = Sort::Sort(L(Identifier::Simple(symb.clone()), Offset(0)));
 
-        insert_sort(key, Some(decl.clone()), grounding, None, solver)?;
+        insert_sort(key, Some((decl.clone(), qualify)), grounding, None, solver)?;
         Ok(())
 
     } else {
@@ -315,21 +333,35 @@ pub(crate) fn instantiate_sort(
                             let mut declaring = declaring.clone();
                             declaring.insert(sort.clone());
                             let mut new_constructors = vec![]; // ( ( white ) (pair (first Color) (second Color))))
+                            let mut qualify = IndexMap::new();
                             for c in constructors {  // ( white ), (pair (first X) (second Y))
                                 let mut new_selectors = vec![];
+                                let mut variables_found= IndexSet::new();
                                 for s in c.1 {  // (first X), (second Y)
                                     let (new_g, new_sort) = substitute_in_sort(&s.1, &subs, &declaring, solver)?;
                                     grounding = max(grounding, new_g);
                                     let new_selector = SelectorDec(s.0, new_sort);  // (pair (first Color) (second Color))
                                     new_selectors.push(new_selector);
+
+                                    variables_of(&s.1, &variable_set, &mut variables_found);
                                 }
                                 let new_c = ConstructorDec(c.0.clone(), new_selectors);
                                 new_constructors.push(new_c);
+
+                                let qualified = if variables_found.len() != var_count {
+                                    // constructor is potentially ambiguous
+                                    // -> use a qualified identifier
+                                    QualIdentifier::Sorted(L(Identifier::Simple(c.0.clone()), Offset(0)), sort.clone())
+                                } else {
+                                    QualIdentifier::Identifier(L(Identifier::Simple(c.0.clone()), Offset(0)))
+                                };
+                                qualify.insert(c.0.clone(), qualified);
                             }
+
 
                             // add the declaration to the solver
                             let new_decl = DatatypeDec::DatatypeDec(new_constructors);
-                            insert_sort(sort.clone(), Some(new_decl), grounding, None, solver)
+                            insert_sort(sort.clone(), Some((new_decl, qualify)), grounding, None, solver)
                         },
                           PolymorphicObject::Datatype(DatatypeDec::DatatypeDec(_))
                         | PolymorphicObject::RecursiveDT(DatatypeDec::DatatypeDec(_))=> {
@@ -353,7 +385,8 @@ pub(crate) fn instantiate_sort(
                             match sort_object {
                                 SortObject::Normal{datatype_dec, ..} => {
                                     let alias = Some((canonical.clone(), sort_object.clone()));
-                                    insert_sort(sort.clone(), Some(datatype_dec.clone()), new_g, alias, solver)
+                                    let qualify = IndexMap::new();  //  not used because of alias
+                                    insert_sort(sort.clone(), Some((datatype_dec.clone(), qualify)), new_g, alias, solver)
                                 },
                                 SortObject::Infinite
                                 | SortObject::Recursive
@@ -433,9 +466,9 @@ fn substitute_in_sort(
 /// Make the monomorphic sort known to the solver, and create its table
 fn insert_sort(
     sort: Sort,
-    decl: Option<DatatypeDec>,
+    decl: Option<(DatatypeDec, IndexMap<Symbol, QualIdentifier>)>,
     grounding: TypeInterpretation,
-    alias: Option<(CanonicalSort, SortObject)>,
+    alias: Option<(CanonicalSort, SortObject)>,  // TODO: combine with decl ?
     solver: &mut Solver,
 ) -> Result<TypeInterpretation, SolverError> {
 
@@ -446,8 +479,8 @@ fn insert_sort(
             match grounding {
                 TypeInterpretation::Normal => {  // create table for the sort
                     match decl {
-                        Some(DatatypeDec::DatatypeDec(ref constructor_decls)) => {
-                            let datatype_dec = decl.clone().unwrap();  // can't fail
+                        Some((DatatypeDec::DatatypeDec(ref constructor_decls), ref qualify)) => {
+                            let datatype_dec = decl.clone().unwrap().0;  // can't fail
                             if let Some(alias) = alias {
                                 alias.clone()
                             } else {
@@ -474,11 +507,11 @@ fn insert_sort(
                                             CanonicalSort(Sort::Parametric(id.clone(), canonicals)))
                                         }
                                     };
-                                let row_count = create_table(&table, &canonical, &constructor_decls, solver)?;
+                                let row_count = create_table(&table, &canonical, &constructor_decls, qualify, solver)?;
                                 (canonical, SortObject::Normal{datatype_dec, table, row_count})
                             }
                         }
-                        Some(DatatypeDec::Par(..)) => {
+                        Some((DatatypeDec::Par(..), _)) => {
                             return Err(InternalError(8458555))
                         }
                         None => unreachable!()
@@ -502,6 +535,7 @@ fn create_table(
     table: &TableName,
     canonical_sort: &CanonicalSort,
     constructor_decls: &Vec<ConstructorDec>,
+    qualify: &IndexMap<Symbol, QualIdentifier>,
     solver: &mut Solver
 ) -> Result<usize, SolverError> {
 
@@ -517,7 +551,13 @@ fn create_table(
     for constructor_decl in constructor_decls {
         let ConstructorDec(constructor, selectors) = constructor_decl;
         if selectors.len() == 0 {
-            nullary.push(constructor.0.clone());
+            let mut code = qualify.get(constructor)
+                .ok_or(InternalError(1785965))?
+                .to_string();
+            if code.starts_with("(") {
+                code = format!(" {code}")  // ` (as nil T)` is a constructor (with leading space)
+            }
+            nullary.push((constructor.clone(), code));
         } else {
             for SelectorDec(selector, sort) in selectors {
                 // LINK src/doc.md#_Infinite
@@ -557,8 +597,8 @@ fn create_table(
             //  "NULL as first, NULL as second"
             let projection = column_names.iter().map(|(n, _)| format!("NULL AS {n}")).collect::<Vec<_>>().join(", ");
 
-            // the first select is "SELECT NULL as constructor, NULL as first, NULL as second, Color_core.G as G from Color_core"
-            selects.push(format!("SELECT {core}.G as constructor, {projection}, {core}.G AS G from {core}"));
+            // the first select is "SELECT "white" as constructor, NULL as first, NULL as second, Color_core.G as G from Color_core"
+            selects.push(format!("SELECT {core}.constructor AS constructor, {projection}, {core}.G AS G FROM {core}"));
         }
 
         // LINK src/doc.md#_Constructor
@@ -600,7 +640,12 @@ fn create_table(
                 row_count += row_product;
 
                 // "pair"
-                let constructor = &constructor.0;
+                let mut qualified = qualify.get(constructor)
+                    .ok_or(InternalError(79443695256))?
+                    .to_string();
+                if qualified.starts_with("(") {
+                    qualified = format!(" {qualified}")  // ` (as nil T)` is a constructor (with leading space)
+                }
 
                 // "T1.G AS first, T2.G as second"
                 let projection = columns.iter()
@@ -610,7 +655,7 @@ fn create_table(
                 // "T1.G, T2.G"
                 let parameters = (0..selectors.len()).map(|i| format!("T{i}.G")).collect::<Vec<_>>().join(", ");
                 // construct("pair", T1.G, T2.G) AS G
-                let g = format!("construct(\"{}\", {}) AS G", constructor, parameters);
+                let g = format!("construct(\"{qualified}\", {parameters}) AS G");
 
                 // "Color as T1 join Color as T2"
                 let joins = tables.iter().enumerate().map(|(i, t)| format!("{t} as T{i}")).join(" JOIN ");
@@ -668,17 +713,46 @@ fn create_table(
 /// creates a table in the DB containing the nullary constructors
 fn create_core_table(
     table: &TableName,
-    values: Vec<String>,
+    values: Vec<(Symbol, String)>,
     conn: &mut Connection
 ) -> Result<(), SolverError> {
 
-    conn.execute(&format!("CREATE TABLE {table} (G TEXT PRIMARY KEY)"), ())?;
+    conn.execute(&format!("CREATE TABLE {table} (constructor, G TEXT TEXT PRIMARY KEY)"), ())?;
 
-    let mut stmt = conn.prepare(&format!("INSERT INTO {table} (G) VALUES (?)"))?;
-    for value in values {
-        stmt.execute(params![value])?;
+    let mut stmt = conn.prepare(&format!("INSERT INTO {table} (constructor, G) VALUES (?, ?)"))?;
+    for (symbol, code) in values {
+        stmt.execute(params![symbol.to_string(), code])?;
     }
     Ok(())
+}
+
+/// Determines the variables in a sort.
+/// This is useful to determine if a constructor may be ambiguous.
+///
+/// # Arguments:
+///
+/// * variables: the variables in the scope
+/// * result: accumulator of the variables found
+///
+fn variables_of(
+    sort: &Sort,
+    variables: &IndexSet<Symbol>,
+    result: &mut IndexSet<Symbol>
+) -> () {
+    match sort {
+        Sort::Sort(L(Identifier::Simple(id), _))
+        | Sort::Sort(L(Identifier::Indexed(id, _), _)) => {
+            if variables.contains(id) {
+                result.insert(id.clone());
+            }
+        },
+        Sort::Parametric(L(Identifier::Simple(_), _), sorts)
+        | Sort::Parametric(L(Identifier::Indexed(_, _), _), sorts) => {
+            for sort in sorts {
+                variables_of(sort, variables, result)
+            }
+        },
+    }
 }
 
 

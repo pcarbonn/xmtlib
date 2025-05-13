@@ -27,4 +27,134 @@
 (declare-datatype Material ((soft ) (hard )))
 (declare-datatype Either (par (T) ((nil ) (Left (b T)) (Right (b T)))))
 (declare-fun p ((Either Color)) Bool)
-****** Database Error: FOREIGN KEY constraint failed
+Tables and Views:
+ - Bool (table)
+ - _xmt_color (table)
+ - _xmt_color_red_tester_g (view)
+ - _xmt_color_red_tester_t (view)
+ - _xmt_color_red_tester_f (view)
+ - _xmt_color_blue_tester_g (view)
+ - _xmt_color_blue_tester_t (view)
+ - _xmt_color_blue_tester_f (view)
+ - _xmt_color_green_tester_g (view)
+ - _xmt_color_green_tester_t (view)
+ - _xmt_color_green_tester_f (view)
+ - _xmt_material (table)
+ - _xmt_material_soft_tester_g (view)
+ - _xmt_material_soft_tester_t (view)
+ - _xmt_material_soft_tester_f (view)
+ - _xmt_material_hard_tester_g (view)
+ - _xmt_material_hard_tester_t (view)
+ - _xmt_material_hard_tester_f (view)
+ - Sort_8_core (table)
+ - Sort_8 (table)
+ - _xmt_sort_8_nil_tester_g (view)
+ - _xmt_sort_8_nil_tester_t (view)
+ - _xmt_sort_8_nil_tester_f (view)
+ - _xmt_sort_8_left_tester_g (view)
+ - _xmt_sort_8_left_tester_t (view)
+ - _xmt_sort_8_left_tester_f (view)
+ - _xmt_sort_8_right_tester_g (view)
+ - _xmt_sort_8_right_tester_t (view)
+ - _xmt_sort_8_right_tester_f (view)
+ - _xmt_p_T (table)
+ - _xmt_p_TU (view)
+ - _xmt_p_UF (view)
+ - _xmt_p_G (view)
+ - sqlite_stat1 (table)
+ - sqlite_stat4 (table)
+ TABLE: sort_8
+┌─────────────┬─────────┬────────────────────────────┐
+│ constructor │ b       │ G                          │
+├─────────────┼─────────┼────────────────────────────┤
+│ "Left"      │ "blue"  │ " (Left blue)"             │
+├─────────────┼─────────┼────────────────────────────┤
+│ "Left"      │ "green" │ " (Left green)"            │
+├─────────────┼─────────┼────────────────────────────┤
+│ "Left"      │ "red"   │ " (Left red)"              │
+├─────────────┼─────────┼────────────────────────────┤
+│ "Right"     │ "blue"  │ " (Right blue)"            │
+├─────────────┼─────────┼────────────────────────────┤
+│ "Right"     │ "green" │ " (Right green)"           │
+├─────────────┼─────────┼────────────────────────────┤
+│ "Right"     │ "red"   │ " (Right red)"             │
+├─────────────┼─────────┼────────────────────────────┤
+│ "nil"       │ NULL    │ " (as nil (Either Color))" │
+└─────────────┴─────────┴────────────────────────────┘
+Polymorphic datatypes:
+ - (unknown): Array
+ - Either: (par (T) ((nil ) (Left (b T)) (Right (b T))))
+Sorts:
+ - (Bool: 2) Bool: ((true ) (false ))
+ - (infinite) Int
+ - (infinite) Real
+ - (infinite) RoundingMode
+ - (infinite) String
+ - (infinite) RegLan
+ - (_xmt_color: 3) Color: ((red ) (blue ) (green ))
+ - (_xmt_material: 2) Material: ((soft ) (hard ))
+ - (Sort_8: 7) (Either Color): ((nil ) (Left (b Color)) (Right (b Color)))
+Functions2:
+ - true ()->Bool : Constructor
+ - false ()->Bool : Constructor
+ - not ()->Bool : Predefined (true)
+ - => ()->Bool : Predefined (true)
+ - and ()->Bool : Predefined (true)
+ - or ()->Bool : Predefined (true)
+ - xor ()->Bool : Predefined (true)
+ - = ()->Bool : Predefined (true)
+ - distinct ()->Bool : Predefined (true)
+ - <= ()->Bool : Predefined (true)
+ - < ()->Bool : Predefined (true)
+ - >= ()->Bool : Predefined (true)
+ - > ()->Bool : Predefined (true)
+ - ite ()->Bool : Predefined (?)
+ - let ()->Bool : Predefined (?)
+ - + ()->Real : Predefined (false)
+ - - ()->Real : Predefined (false)
+ - * ()->Real : Predefined (false)
+ - div ()->Real : Predefined (false)
+ - mod ()->Real : Predefined (false)
+ - abs ()->Real : Predefined (false)
+ - red ()->Color : Constructor
+ - blue ()->Color : Constructor
+ - green ()->Color : Constructor
+ - (_ is red) (Color)->Bool : Boolean (_xmt_color_red_tester_t Complete, _xmt_color_red_tester_f Complete, _xmt_color_red_tester_g Complete)
+ - (_ is blue) (Color)->Bool : Boolean (_xmt_color_blue_tester_t Complete, _xmt_color_blue_tester_f Complete, _xmt_color_blue_tester_g Complete)
+ - (_ is green) (Color)->Bool : Boolean (_xmt_color_green_tester_t Complete, _xmt_color_green_tester_f Complete, _xmt_color_green_tester_g Complete)
+ - soft ()->Material : Constructor
+ - hard ()->Material : Constructor
+ - (_ is soft) (Material)->Bool : Boolean (_xmt_material_soft_tester_t Complete, _xmt_material_soft_tester_f Complete, _xmt_material_soft_tester_g Complete)
+ - (_ is hard) (Material)->Bool : Boolean (_xmt_material_hard_tester_t Complete, _xmt_material_hard_tester_f Complete, _xmt_material_hard_tester_g Complete)
+ - nil ()->(Either Color) : Constructor
+ - Left (Color)->(Either Color) : Constructor
+ - Right (Color)->(Either Color) : Constructor
+ - (_ is nil) ((Either Color))->Bool : Boolean (_xmt_sort_8_nil_tester_t Complete, _xmt_sort_8_nil_tester_f Complete, _xmt_sort_8_nil_tester_g Complete)
+ - (_ is Left) ((Either Color))->Bool : Boolean (_xmt_sort_8_left_tester_t Complete, _xmt_sort_8_left_tester_f Complete, _xmt_sort_8_left_tester_g Complete)
+ - (_ is Right) ((Either Color))->Bool : Boolean (_xmt_sort_8_right_tester_t Complete, _xmt_sort_8_right_tester_f Complete, _xmt_sort_8_right_tester_g Complete)
+ - p ((Either Color))->Bool : Boolean (_xmt_p_TU Complete, _xmt_p_UF Complete, _xmt_p_G Complete)
+ TABLE: _xmt_p_g
+┌────────────────────────────┬─────────┐
+│ a_1                        │ G       │
+├────────────────────────────┼─────────┤
+│ " (Left blue)"             │ "true"  │
+├────────────────────────────┼─────────┤
+│ " (Left green)"            │ "false" │
+├────────────────────────────┼─────────┤
+│ " (Left red)"              │ "false" │
+├────────────────────────────┼─────────┤
+│ " (Right blue)"            │ "false" │
+├────────────────────────────┼─────────┤
+│ " (Right green)"           │ "false" │
+├────────────────────────────┼─────────┤
+│ " (Right red)"             │ "true"  │
+├────────────────────────────┼─────────┤
+│ " (as nil (Either Color))" │ "true"  │
+└────────────────────────────┴─────────┘
+error: at position (22, 10): Unknown table
+
+   |
+22 | (x-debug db _xmt_sort_7_left_tester_g)
+   |          ^ Unknown table
+
+   |
