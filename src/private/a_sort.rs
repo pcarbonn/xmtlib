@@ -166,13 +166,20 @@ pub(crate) fn create_polymorphic_sort(
 ) -> Result<(), SolverError> {
 
     let mut recursive = false;
-    for constructor_dec in constructor_decs {
-        for SelectorDec(_, sort) in &constructor_dec.1 {
+    let mut constructor_set = IndexSet::new();  // to check for duplicate
+    for constructor_decl in constructor_decs {
+        let ConstructorDec(constructor, selectors) = constructor_decl;
+        constructor_set.insert(constructor);
+
+        for SelectorDec(_, sort) in selectors {
             if recursive_sort(sort, declaring) {
                 recursive = true;
                 break
             }
         }
+    }
+    if constructor_set.len() != constructor_decs.len() {
+        return Err(SolverError::ExprError(format!("Duplicate constructor for {symb}.").to_string()))
     }
 
     if recursive {
@@ -236,8 +243,11 @@ pub(crate) fn create_monomorphic_sort(
         let mut grounding = TypeInterpretation::Normal;
         let mut qualify = IndexMap::new();
         // instantiate parent sorts first
+        let mut constructor_set = IndexSet::new();  // to check for duplicate
         for constructor_decl in constructor_decls {
             let ConstructorDec(constructor, selectors) = constructor_decl;
+            constructor_set.insert(constructor);
+
             for SelectorDec(_, sort) in selectors {
                 let g = instantiate_sort(&sort, declaring, solver)?;
                 grounding = max(grounding, g);
@@ -245,6 +255,9 @@ pub(crate) fn create_monomorphic_sort(
             // no qualification needed
             let qualified = QualIdentifier::new(constructor, None);
             qualify.insert(constructor.clone(), qualified);
+        }
+        if constructor_set.len() != constructor_decls.len() {
+            return Err(SolverError::ExprError(format!("Duplicate constructor for {symb}").to_string()))
         }
 
         insert_sort(key, grounding, Some((decl.clone(), qualify)), solver)?;
@@ -561,7 +574,7 @@ fn create_table(
             .collect::<Result<Vec<_>,_>>()?
             .into_iter().cloned().collect();
         let identifier = Identifier::new(constructor);
-        set_function_object(&identifier, &domain, &canonical_sort, FunctionObject::Constructor, solver);
+        set_function_object(&identifier, &domain, &canonical_sort, FunctionObject::Constructor, solver)?;
     }
     row_count = nullary.len();
 
@@ -589,14 +602,6 @@ fn create_table(
         //      from Color as T1 join Color as T2"
         for constructor_decl in constructor_decls { // e.g. (pair (first Color) (second Color))
             let ConstructorDec(constructor, selectors) = constructor_decl;
-
-            let domain: Vec<CanonicalSort> = selectors.iter()
-                .map(|SelectorDec(_, sort)| solver.canonical_sorts.get(sort)
-                    .ok_or(SolverError::ExprError(format!("Unknown sort: {sort}")))
-                    .map(Clone::clone))
-                .collect::<Result<_, _>>()?;
-            let identifier = Identifier::new(constructor);
-            set_function_object(&identifier, &domain, &canonical_sort, FunctionObject::Constructor, solver);
 
             if selectors.len() != 0 {  // otherwise, already in core table
 
@@ -661,17 +666,17 @@ fn create_table(
 
     // add tester function in solver
     for constructor_decl in constructor_decls { // e.g. (pair (first Color) (second Color))
-        let ConstructorDec(constructor, _selectors) = constructor_decl;
+        let ConstructorDec(constructor, selectors) = constructor_decl;
 
-        // tester: (_ is pair)
+        { // tester: (_ is pair)
         let identifier = L(Identifier::Indexed(Symbol("is".to_string()), vec![Index::Symbol(constructor.clone())]), Offset(0));
 
         let view_g = solver.create_table_name(format!("{table}_{constructor}_tester_G"));
-        let sql = if column_names.len() == 0 {
-                format!("CREATE VIEW {view_g} AS SELECT G AS a_1, CASE G WHEN \"{constructor}\" THEN \"true\" ELSE \"false\" END AS G FROM {table}")
-            } else {
-                format!("CREATE VIEW {view_g} AS SELECT G AS a_1, CASE constructor WHEN \"{constructor}\" THEN \"true\" ELSE \"false\" END AS G FROM {table}")
-            };
+        let sql = format!(r#"
+            CREATE VIEW {view_g} AS
+            SELECT G AS a_1,
+                   CASE constructor WHEN "{constructor}" THEN "true" ELSE "false" END AS G
+              FROM {table}"#);
         solver.conn.execute(&sql, ())?;
 
         let table_g = Interpretation::Table { name: view_g.clone(), ids: Ids::All };
@@ -688,7 +693,30 @@ fn create_table(
 
         let function = FunctionObject::BooleanInterpreted{table_g, table_tu, table_uf};
         let bool_sort = CanonicalSort(Sort::new(&Symbol("Bool".to_string())));
-        set_function_object(&identifier, &vec![canonical_sort.clone()], &bool_sort, function, solver);
+        set_function_object(&identifier, &vec![canonical_sort.clone()], &bool_sort, function, solver)?;
+        }
+        { // selectors: first P->Color, second P->Color
+        let canonicals = selectors.iter()
+            .map( |SelectorDec(_, sort)|
+                solver.canonical_sorts.get(sort)
+                .ok_or(InternalError(84552662)))
+            .collect::<Result<Vec<_>,_>>()?
+            .into_iter().cloned().collect::<Vec<_>>();
+        for (SelectorDec(selector, _), canonical) in selectors.iter().zip(canonicals.iter()) {
+            let identifier = Identifier::new(selector);
+            let view_g = solver.create_table_name(format!("{table}_{selector}_selector_G"));
+            let sql = format!(r#"
+                CREATE VIEW {view_g} AS
+                SELECT G AS a_1,
+                      {selector} AS G
+                  FROM {table}"#);
+            solver.conn.execute(&sql, ())?;
+
+            let table_g = Interpretation::Table { name: view_g, ids: Ids::All };
+            let function = FunctionObject::Interpreted(table_g);
+            set_function_object(&identifier, &vec![canonical_sort.clone()], canonical, function, solver)?;
+        }
+        }
     }
     Ok(row_count)
 }
@@ -754,15 +782,20 @@ fn set_function_object(
     co_domain: &CanonicalSort,
     function_object: FunctionObject,
     solver: &mut Solver
-) -> () {
+) -> Result<(), SolverError> {
 
     let key = (identifier.clone(), domain.clone());
     match solver.function_objects.get_mut(&key) {
         Some(map) => {
-            map.insert(co_domain.clone(), function_object);
+            if ! map.contains_key(co_domain) {
+                map.insert(co_domain.clone(), function_object);
+            } else {
+                return Err(SolverError::IdentifierError("Duplicate function declaration", identifier.clone()));
+            }
         }
         None => {
             solver.function_objects.insert(key, IndexMap::from([(co_domain.clone(), function_object)]));
         }
     }
+    Ok(())
 }

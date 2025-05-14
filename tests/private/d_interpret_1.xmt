@@ -122,6 +122,8 @@ Functions2:
  - same (Color, Color)->Bool : Boolean (_xmt_same_TU Complete, _xmt_same_UF Complete, _xmt_same_G Complete)
  - hue (Color, Color)->Hue : Constructor
  - (_ is hue) (Hue)->Bool : Boolean (_xmt_hue_hue_tester_t Complete, _xmt_hue_hue_tester_f Complete, _xmt_hue_hue_tester_g Complete)
+ - first (Hue)->Color : Non Boolean (_xmt_hue_first_selector_g Complete)
+ - second (Hue)->Color : Non Boolean (_xmt_hue_second_selector_g Complete)
  - dim (Hue)->Bool : Boolean (_xmt_dim_TU Complete, _xmt_dim_UF Complete, _xmt_dim_G Complete)
  - dark (Color)->Bool : Not interpreted
 Groundings:
@@ -400,6 +402,8 @@ Tables and Views:
  - _xmt_hue_hue_tester_g (view)
  - _xmt_hue_hue_tester_t (view)
  - _xmt_hue_hue_tester_f (view)
+ - _xmt_hue_first_selector_g (view)
+ - _xmt_hue_second_selector_g (view)
  - _xmt_dim_T (table)
  - _xmt_dim_TU (view)
  - _xmt_dim_UF (view)

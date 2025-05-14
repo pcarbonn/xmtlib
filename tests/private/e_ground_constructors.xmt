@@ -1,7 +1,7 @@
 (set-option :backend none)
 
 (declare-datatype Color  ( (red) (blue) (green) ))
-(declare-datatype Either ( (nil) (Left (b Color)) (Right (b Color)) ))
+(declare-datatype Either ( (nil) (Left (b Color)) (Right (right Color)) ))
 
 (declare-fun p (Either) Bool)
 (x-interpret-pred p (x-set (nil) ((Left blue)) ((Right red))))
@@ -10,6 +10,7 @@
 (assert (not (p (Left red))))
 (assert ((_ is nil) nil))
 (assert ((_ is Left) (Left blue)))
+(assert (= red (b (Left red))))
 (x-ground debug:)
 (x-debug solver polymorphic_sorts)
 (x-debug solver sorts)
@@ -20,7 +21,7 @@
 (check-sat)
 -------------------------
 (declare-datatype Color ((red ) (blue ) (green )))
-(declare-datatype Either ((nil ) (Left (b Color)) (Right (b Color))))
+(declare-datatype Either ((nil ) (Left (b Color)) (Right (right Color))))
 (declare-fun p (Either) Bool)
 Polymorphic datatypes:
  - (unknown): Array
@@ -32,7 +33,7 @@ Sorts:
  - (infinite) String
  - (infinite) RegLan
  - (_xmt_color: 3) Color: ((red ) (blue ) (green ))
- - (_xmt_either: 7) Either: ((nil ) (Left (b Color)) (Right (b Color)))
+ - (_xmt_either: 7) Either: ((nil ) (Left (b Color)) (Right (right Color)))
 Functions2:
  - true ()->Bool : Constructor
  - false ()->Bool : Constructor
@@ -66,26 +67,28 @@ Functions2:
  - Right (Color)->Either : Constructor
  - (_ is nil) (Either)->Bool : Boolean (_xmt_either_nil_tester_t Complete, _xmt_either_nil_tester_f Complete, _xmt_either_nil_tester_g Complete)
  - (_ is Left) (Either)->Bool : Boolean (_xmt_either_left_tester_t Complete, _xmt_either_left_tester_f Complete, _xmt_either_left_tester_g Complete)
+ - b (Either)->Color : Non Boolean (_xmt_either_b_selector_g Complete)
  - (_ is Right) (Either)->Bool : Boolean (_xmt_either_right_tester_t Complete, _xmt_either_right_tester_f Complete, _xmt_either_right_tester_g Complete)
+ - right (Either)->Color : Non Boolean (_xmt_either_right_selector_g Complete)
  - p (Either)->Bool : Boolean (_xmt_p_TU Complete, _xmt_p_UF Complete, _xmt_p_G Complete)
  TABLE: _xmt_either
-┌─────────────┬─────────┬──────────────────┐
-│ constructor │ b       │ G                │
-├─────────────┼─────────┼──────────────────┤
-│ "Left"      │ "blue"  │ " (Left blue)"   │
-├─────────────┼─────────┼──────────────────┤
-│ "Left"      │ "green" │ " (Left green)"  │
-├─────────────┼─────────┼──────────────────┤
-│ "Left"      │ "red"   │ " (Left red)"    │
-├─────────────┼─────────┼──────────────────┤
-│ "Right"     │ "blue"  │ " (Right blue)"  │
-├─────────────┼─────────┼──────────────────┤
-│ "Right"     │ "green" │ " (Right green)" │
-├─────────────┼─────────┼──────────────────┤
-│ "Right"     │ "red"   │ " (Right red)"   │
-├─────────────┼─────────┼──────────────────┤
-│ "nil"       │ NULL    │ "nil"            │
-└─────────────┴─────────┴──────────────────┘
+┌─────────────┬─────────┬─────────┬──────────────────┐
+│ constructor │ b       │ right   │ G                │
+├─────────────┼─────────┼─────────┼──────────────────┤
+│ "Left"      │ "blue"  │ NULL    │ " (Left blue)"   │
+├─────────────┼─────────┼─────────┼──────────────────┤
+│ "Left"      │ "green" │ NULL    │ " (Left green)"  │
+├─────────────┼─────────┼─────────┼──────────────────┤
+│ "Left"      │ "red"   │ NULL    │ " (Left red)"    │
+├─────────────┼─────────┼─────────┼──────────────────┤
+│ "Right"     │ NULL    │ "blue"  │ " (Right blue)"  │
+├─────────────┼─────────┼─────────┼──────────────────┤
+│ "Right"     │ NULL    │ "green" │ " (Right green)" │
+├─────────────┼─────────┼─────────┼──────────────────┤
+│ "Right"     │ NULL    │ "red"   │ " (Right red)"   │
+├─────────────┼─────────┼─────────┼──────────────────┤
+│ "nil"       │ NULL    │ NULL    │ "nil"            │
+└─────────────┴─────────┴─────────┴──────────────────┘
  TABLE: _xmt_p_g
 ┌──────────────────┬─────────┐
 │ a_1              │ G       │
@@ -224,6 +227,28 @@ SELECT "false" AS G
 SELECT _xmt_either_left_tester_g_11.G AS G
   FROM _xmt_either_left_tester_g AS _xmt_either_left_tester_g_11
  WHERE construct2("Left", "blue") = _xmt_either_left_tester_g_11.a_1
+
+===  (b (Left red)) ======================================
+ -- Join(0)
+SELECT _xmt_either_b_selector_g_12.G AS G
+  FROM _xmt_either_b_selector_g AS _xmt_either_b_selector_g_12
+ WHERE construct2("Left", "red") = _xmt_either_b_selector_g_12.a_1
+=== (top) (= red (b (Left red))) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT eq_("red", _xmt_either_b_selector_g_12.G) AS G
+  FROM _xmt_either_b_selector_g AS _xmt_either_b_selector_g_12
+ WHERE construct2("Left", "red") = _xmt_either_b_selector_g_12.a_1
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT eq_("red", _xmt_either_b_selector_g_12.G) AS G
+  FROM _xmt_either_b_selector_g AS _xmt_either_b_selector_g_12
+ WHERE construct2("Left", "red") = _xmt_either_b_selector_g_12.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT eq_("red", _xmt_either_b_selector_g_12.G) AS G
+  FROM _xmt_either_b_selector_g AS _xmt_either_b_selector_g_12
+ WHERE construct2("Left", "red") = _xmt_either_b_selector_g_12.a_1
 
 ===========================================
 (check-sat)

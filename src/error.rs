@@ -58,6 +58,8 @@ pub fn format_error(input: &str, e: SolverError) -> String {
         },
 
         IdentifierError(msg, id) => {
+            let msg = if id.start() != Offset(0) { msg.to_string() }
+                else { format!("{msg} for {id}") };
             match offset_to_line_col_utf8(&input, id.start()) {
                 None => format!("****** Error: {}\n", msg),
                 Some(location) =>

@@ -2,7 +2,7 @@
 
 (declare-datatype Color  ( (red) (blue) (green) ))
 (declare-datatype Material ( (soft) (hard) ))
-(declare-datatype Either (par (T) ( (nil) (Left (b T)) (Right (b T)) )))
+(declare-datatype Either (par (T) ( (nil) (Left (b T)) (Right (right T)) )))
 
 (declare-fun p ((Either Color)) Bool)
 (x-interpret-pred p (x-set ((as nil (Either Color))) ((Left blue)) ((Right red))))
@@ -12,6 +12,7 @@
 (assert (not (p (Left red))))
 (assert ((_ is nil) (as nil (Either Material))))
 (assert ((_ is Left) (Left blue)))
+(assert (= red (b (Left red))))
 (x-ground debug:)
 (x-debug db tables)
 (x-debug db Sort_8)
@@ -25,7 +26,7 @@
 -------------------------
 (declare-datatype Color ((red ) (blue ) (green )))
 (declare-datatype Material ((soft ) (hard )))
-(declare-datatype Either (par (T) ((nil ) (Left (b T)) (Right (b T)))))
+(declare-datatype Either (par (T) ((nil ) (Left (b T)) (Right (right T)))))
 (declare-fun p ((Either Color)) Bool)
 (declare-fun q ((Either Material)) Color)
 Tables and Views:
@@ -55,9 +56,11 @@ Tables and Views:
  - _xmt_sort_8_left_tester_g (view)
  - _xmt_sort_8_left_tester_t (view)
  - _xmt_sort_8_left_tester_f (view)
+ - _xmt_sort_8_b_selector_g (view)
  - _xmt_sort_8_right_tester_g (view)
  - _xmt_sort_8_right_tester_t (view)
  - _xmt_sort_8_right_tester_f (view)
+ - _xmt_sort_8_right_selector_g (view)
  - _xmt_p_T (table)
  - _xmt_p_TU (view)
  - _xmt_p_UF (view)
@@ -70,32 +73,34 @@ Tables and Views:
  - _xmt_sort_9_left_tester_g (view)
  - _xmt_sort_9_left_tester_t (view)
  - _xmt_sort_9_left_tester_f (view)
+ - _xmt_sort_9_b_selector_g (view)
  - _xmt_sort_9_right_tester_g (view)
  - _xmt_sort_9_right_tester_t (view)
  - _xmt_sort_9_right_tester_f (view)
+ - _xmt_sort_9_right_selector_g (view)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
  TABLE: sort_8
-┌─────────────┬─────────┬────────────────────────────┐
-│ constructor │ b       │ G                          │
-├─────────────┼─────────┼────────────────────────────┤
-│ "Left"      │ "blue"  │ " (Left blue)"             │
-├─────────────┼─────────┼────────────────────────────┤
-│ "Left"      │ "green" │ " (Left green)"            │
-├─────────────┼─────────┼────────────────────────────┤
-│ "Left"      │ "red"   │ " (Left red)"              │
-├─────────────┼─────────┼────────────────────────────┤
-│ "Right"     │ "blue"  │ " (Right blue)"            │
-├─────────────┼─────────┼────────────────────────────┤
-│ "Right"     │ "green" │ " (Right green)"           │
-├─────────────┼─────────┼────────────────────────────┤
-│ "Right"     │ "red"   │ " (Right red)"             │
-├─────────────┼─────────┼────────────────────────────┤
-│ "nil"       │ NULL    │ " (as nil (Either Color))" │
-└─────────────┴─────────┴────────────────────────────┘
+┌─────────────┬─────────┬─────────┬────────────────────────────┐
+│ constructor │ b       │ right   │ G                          │
+├─────────────┼─────────┼─────────┼────────────────────────────┤
+│ "Left"      │ "blue"  │ NULL    │ " (Left blue)"             │
+├─────────────┼─────────┼─────────┼────────────────────────────┤
+│ "Left"      │ "green" │ NULL    │ " (Left green)"            │
+├─────────────┼─────────┼─────────┼────────────────────────────┤
+│ "Left"      │ "red"   │ NULL    │ " (Left red)"              │
+├─────────────┼─────────┼─────────┼────────────────────────────┤
+│ "Right"     │ NULL    │ "blue"  │ " (Right blue)"            │
+├─────────────┼─────────┼─────────┼────────────────────────────┤
+│ "Right"     │ NULL    │ "green" │ " (Right green)"           │
+├─────────────┼─────────┼─────────┼────────────────────────────┤
+│ "Right"     │ NULL    │ "red"   │ " (Right red)"             │
+├─────────────┼─────────┼─────────┼────────────────────────────┤
+│ "nil"       │ NULL    │ NULL    │ " (as nil (Either Color))" │
+└─────────────┴─────────┴─────────┴────────────────────────────┘
 Polymorphic datatypes:
  - (unknown): Array
- - Either: (par (T) ((nil ) (Left (b T)) (Right (b T))))
+ - Either: (par (T) ((nil ) (Left (b T)) (Right (right T))))
 Sorts:
  - (Bool: 2) Bool: ((true ) (false ))
  - (infinite) Int
@@ -105,8 +110,8 @@ Sorts:
  - (infinite) RegLan
  - (_xmt_color: 3) Color: ((red ) (blue ) (green ))
  - (_xmt_material: 2) Material: ((soft ) (hard ))
- - (Sort_8: 7) (Either Color): ((nil ) (Left (b Color)) (Right (b Color)))
- - (Sort_9: 5) (Either Material): ((nil ) (Left (b Material)) (Right (b Material)))
+ - (Sort_8: 7) (Either Color): ((nil ) (Left (b Color)) (Right (right Color)))
+ - (Sort_9: 5) (Either Material): ((nil ) (Left (b Material)) (Right (right Material)))
 Functions2:
  - true ()->Bool : Constructor
  - false ()->Bool : Constructor
@@ -145,13 +150,17 @@ Functions2:
  - Right (Color)->(Either Color) : Constructor
  - (_ is nil) ((Either Color))->Bool : Boolean (_xmt_sort_8_nil_tester_t Complete, _xmt_sort_8_nil_tester_f Complete, _xmt_sort_8_nil_tester_g Complete)
  - (_ is Left) ((Either Color))->Bool : Boolean (_xmt_sort_8_left_tester_t Complete, _xmt_sort_8_left_tester_f Complete, _xmt_sort_8_left_tester_g Complete)
+ - b ((Either Color))->Color : Non Boolean (_xmt_sort_8_b_selector_g Complete)
  - (_ is Right) ((Either Color))->Bool : Boolean (_xmt_sort_8_right_tester_t Complete, _xmt_sort_8_right_tester_f Complete, _xmt_sort_8_right_tester_g Complete)
+ - right ((Either Color))->Color : Non Boolean (_xmt_sort_8_right_selector_g Complete)
  - p ((Either Color))->Bool : Boolean (_xmt_p_TU Complete, _xmt_p_UF Complete, _xmt_p_G Complete)
  - Left (Material)->(Either Material) : Constructor
  - Right (Material)->(Either Material) : Constructor
  - (_ is nil) ((Either Material))->Bool : Boolean (_xmt_sort_9_nil_tester_t Complete, _xmt_sort_9_nil_tester_f Complete, _xmt_sort_9_nil_tester_g Complete)
  - (_ is Left) ((Either Material))->Bool : Boolean (_xmt_sort_9_left_tester_t Complete, _xmt_sort_9_left_tester_f Complete, _xmt_sort_9_left_tester_g Complete)
+ - b ((Either Material))->Material : Non Boolean (_xmt_sort_9_b_selector_g Complete)
  - (_ is Right) ((Either Material))->Bool : Boolean (_xmt_sort_9_right_tester_t Complete, _xmt_sort_9_right_tester_f Complete, _xmt_sort_9_right_tester_g Complete)
+ - right ((Either Material))->Material : Non Boolean (_xmt_sort_9_right_selector_g Complete)
  - q ((Either Material))->Color : Not interpreted
  TABLE: _xmt_p_g
 ┌────────────────────────────┬─────────┐
@@ -312,6 +321,28 @@ SELECT "false" AS G
 SELECT _xmt_sort_8_left_tester_g_12.G AS G
   FROM _xmt_sort_8_left_tester_g AS _xmt_sort_8_left_tester_g_12
  WHERE construct2("Left", "blue") = _xmt_sort_8_left_tester_g_12.a_1
+
+===  (b (Left red)) ======================================
+ -- Join(0)
+SELECT _xmt_sort_8_b_selector_g_13.G AS G
+  FROM _xmt_sort_8_b_selector_g AS _xmt_sort_8_b_selector_g_13
+ WHERE construct2("Left", "red") = _xmt_sort_8_b_selector_g_13.a_1
+=== (top) (= red (b (Left red))) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT eq_("red", _xmt_sort_8_b_selector_g_13.G) AS G
+  FROM _xmt_sort_8_b_selector_g AS _xmt_sort_8_b_selector_g_13
+ WHERE construct2("Left", "red") = _xmt_sort_8_b_selector_g_13.a_1
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT eq_("red", _xmt_sort_8_b_selector_g_13.G) AS G
+  FROM _xmt_sort_8_b_selector_g AS _xmt_sort_8_b_selector_g_13
+ WHERE construct2("Left", "red") = _xmt_sort_8_b_selector_g_13.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT eq_("red", _xmt_sort_8_b_selector_g_13.G) AS G
+  FROM _xmt_sort_8_b_selector_g AS _xmt_sort_8_b_selector_g_13
+ WHERE construct2("Left", "red") = _xmt_sort_8_b_selector_g_13.a_1
 
 ===========================================
 (check-sat)

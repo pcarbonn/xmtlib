@@ -69,6 +69,8 @@ Functions2:
  - (_ is green) (Color)->Bool : Boolean (_xmt_color_green_tester_t Complete, _xmt_color_green_tester_f Complete, _xmt_color_green_tester_g Complete)
  - hue (Color, Color)->Hue : Constructor
  - (_ is hue) (Hue)->Bool : Boolean (_xmt_hue_hue_tester_t Complete, _xmt_hue_hue_tester_f Complete, _xmt_hue_hue_tester_g Complete)
+ - first (Hue)->Color : Non Boolean (_xmt_hue_first_selector_g Complete)
+ - second (Hue)->Color : Non Boolean (_xmt_hue_second_selector_g Complete)
  - dim (Hue)->Bool : Boolean (_xmt_dim_TU Complete, _xmt_dim_UF Complete, _xmt_dim_G Complete)
 Groundings:
 ===  x ======================================

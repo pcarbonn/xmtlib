@@ -98,18 +98,27 @@ Functions2:
  - pair (Color, Color)->(Pair Color Color) : Constructor
  - (_ is white) ((Pair Color Color))->Bool : Boolean (_xmt_sort_8_white_tester_t Complete, _xmt_sort_8_white_tester_f Complete, _xmt_sort_8_white_tester_g Complete)
  - (_ is pair) ((Pair Color Color))->Bool : Boolean (_xmt_sort_8_pair_tester_t Complete, _xmt_sort_8_pair_tester_f Complete, _xmt_sort_8_pair_tester_g Complete)
+ - first ((Pair Color Color))->Color : Non Boolean (_xmt_sort_8_first_selector_g Complete)
+ - second ((Pair Color Color))->Color : Non Boolean (_xmt_sort_8_second_selector_g Complete)
  - p ((Pair Color Color))->P : Constructor
  - (_ is p) (P)->Bool : Boolean (_xmt_p_p_tester_t Complete, _xmt_p_p_tester_f Complete, _xmt_p_p_tester_g Complete)
+ - x (P)->(Pair Color Color) : Non Boolean (_xmt_p_x_selector_g Complete)
  - pair (Color, (Pair Color Color))->(Pair Color (Pair Color Color)) : Constructor
  - (_ is white) ((Pair Color (Pair Color Color)))->Bool : Boolean (_xmt_sort_10_white_tester_t Complete, _xmt_sort_10_white_tester_f Complete, _xmt_sort_10_white_tester_g Complete)
  - (_ is pair) ((Pair Color (Pair Color Color)))->Bool : Boolean (_xmt_sort_10_pair_tester_t Complete, _xmt_sort_10_pair_tester_f Complete, _xmt_sort_10_pair_tester_g Complete)
+ - first ((Pair Color (Pair Color Color)))->Color : Non Boolean (_xmt_sort_10_first_selector_g Complete)
+ - second ((Pair Color (Pair Color Color)))->(Pair Color Color) : Non Boolean (_xmt_sort_10_second_selector_g Complete)
  - triplet ((Pair Color (Pair Color Color)))->(Triplet Color) : Constructor
  - (_ is triplet) ((Triplet Color))->Bool : Boolean (_xmt_sort_11_triplet_tester_t Complete, _xmt_sort_11_triplet_tester_f Complete, _xmt_sort_11_triplet_tester_g Complete)
+ - first ((Triplet Color))->(Pair Color (Pair Color Color)) : Non Boolean (_xmt_sort_11_first_selector_g Complete)
  - q ((Triplet Color))->Q : Constructor
  - (_ is q) (Q)->Bool : Boolean (_xmt_q_q_tester_t Complete, _xmt_q_q_tester_f Complete, _xmt_q_q_tester_g Complete)
+ - x (Q)->(Triplet Color) : Non Boolean (_xmt_q_x_selector_g Complete)
  - pair ((Pair Color Color), (Pair Color Color))->(Pair (Pair Color Color) (Pair Color Color)) : Constructor
  - (_ is white) ((Pair (Pair Color Color) (Pair Color Color)))->Bool : Boolean (_xmt_sort_18_white_tester_t Complete, _xmt_sort_18_white_tester_f Complete, _xmt_sort_18_white_tester_g Complete)
  - (_ is pair) ((Pair (Pair Color Color) (Pair Color Color)))->Bool : Boolean (_xmt_sort_18_pair_tester_t Complete, _xmt_sort_18_pair_tester_f Complete, _xmt_sort_18_pair_tester_g Complete)
+ - first ((Pair (Pair Color Color) (Pair Color Color)))->(Pair Color Color) : Non Boolean (_xmt_sort_18_first_selector_g Complete)
+ - second ((Pair (Pair Color Color) (Pair Color Color)))->(Pair Color Color) : Non Boolean (_xmt_sort_18_second_selector_g Complete)
 Tables and Views:
  - Bool (table)
  - _xmt_color (table)
@@ -134,10 +143,13 @@ Tables and Views:
  - _xmt_sort_8_pair_tester_g (view)
  - _xmt_sort_8_pair_tester_t (view)
  - _xmt_sort_8_pair_tester_f (view)
+ - _xmt_sort_8_first_selector_g (view)
+ - _xmt_sort_8_second_selector_g (view)
  - _xmt_p (table)
  - _xmt_p_p_tester_g (view)
  - _xmt_p_p_tester_t (view)
  - _xmt_p_p_tester_f (view)
+ - _xmt_p_x_selector_g (view)
  - Sort_10_core (table)
  - Sort_10 (table)
  - _xmt_sort_10_white_tester_g (view)
@@ -146,14 +158,18 @@ Tables and Views:
  - _xmt_sort_10_pair_tester_g (view)
  - _xmt_sort_10_pair_tester_t (view)
  - _xmt_sort_10_pair_tester_f (view)
+ - _xmt_sort_10_first_selector_g (view)
+ - _xmt_sort_10_second_selector_g (view)
  - Sort_11 (table)
  - _xmt_sort_11_triplet_tester_g (view)
  - _xmt_sort_11_triplet_tester_t (view)
  - _xmt_sort_11_triplet_tester_f (view)
+ - _xmt_sort_11_first_selector_g (view)
  - _xmt_q (table)
  - _xmt_q_q_tester_g (view)
  - _xmt_q_q_tester_t (view)
  - _xmt_q_q_tester_f (view)
+ - _xmt_q_x_selector_g (view)
  - Sort_18_core (table)
  - Sort_18 (table)
  - _xmt_sort_18_white_tester_g (view)
@@ -162,6 +178,8 @@ Tables and Views:
  - _xmt_sort_18_pair_tester_g (view)
  - _xmt_sort_18_pair_tester_t (view)
  - _xmt_sort_18_pair_tester_f (view)
+ - _xmt_sort_18_first_selector_g (view)
+ - _xmt_sort_18_second_selector_g (view)
  TABLE: _xmt_q
 ┌─────────────┬───────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────────────┐
 │ constructor │ x                                                         │ G                                                              │
