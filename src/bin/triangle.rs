@@ -2,7 +2,7 @@
 
 // cargo run --release --bin triangle
 
-//! This files examplifies the use of `xmt-lib` as a crate.
+//! This file examplifies the use of `xmt-lib` as a crate.
 //! (Click Source to view the source code)
 
 
@@ -14,7 +14,7 @@ use xmt_lib::solver::Solver;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
 
-    let n = 8000+1;
+    let n = 200+1;
 
     let start = Instant::now();
 

@@ -2,7 +2,7 @@
 
 // cargo run --release --bin triangle
 
-//! This files examplifies the use of `xmt-lib` as a crate.
+//! This file examplifies the use of `xmt-lib` as a crate.
 
 
 use std::time::Instant;

@@ -1,19 +1,20 @@
 // cargo watch -x "doc --no-deps"
 
-//! THIS IS NOT READY FOR RELEASE YET !
 //!
 //! xmt-lib denotes:
-//! * an expressive language for interacting with [SMT](https://fr.wikipedia.org/wiki/Satisfiability_modulo_theories) solvers;
+//! * an extension of the [SMT-Lib 2.6](https://smt-lib.org/language.shtml) language
+//!   to communicate with [SMT](https://fr.wikipedia.org/wiki/Satisfiability_modulo_theories) solvers;
 //! * a program that executes commands in that language.
 //!
-//! They are inspired by the [FO(.)](https://fo-dot.readthedocs.io/en/latest/FO-dot.html) language
-//! and [IDP-Z3](https://www.idp-z3.be/) reasoning engine developed by KU Leuven.
-//!
-//! The program can be used to find (optimal) solutions of combinatorial/configuration problems
-//! and perform various reasoning tasks with knowledge represented in logical forms.
-//! Of note, the xmt-lib program has a fast "grounder"
+//! The program can be used to find (optimal) solutions of combinatorial/configuration problems.
+// and perform various reasoning tasks with knowledge represented in logical forms.
+//! It is faster than standard SMT solvers for the model expansion task,
+//! i.e., the task of finding a model of a logic formula
+//! when the interpretation of some symbols of the vocabulary is known.
+//! This performance gain comes from using a fast "grounder"
 //! based on the [sqlite](https://sqlite.org) relational database engine.
-//! The program can be called by another program (API interface) and can run standalone (CLI interface).
+//! Grounding is illustrated by an example below.
+// The program can be called by another program (API interface) and can run standalone (CLI interface).
 //!
 //! xmt-lib extends the [SMT-Lib 2.6](https://smt-lib.org/language.shtml) language with the following commands:
 //!
@@ -21,12 +22,11 @@
 //! * `x-interpret-const`, to specify the interpretation of a constant;
 //! * `x-interpret-pred`, to specify the interpretation of a boolean function symbol;
 //! * `x-interpret-fun`, to specify the interpretation of a function symbol;
-//! * `x-ground`, to ground assertions, i.e., to expand the finite quantifications,
+//! * `x-ground`, to ground assertions, i.e., to expand the quantifications in the submitted assertions,
 //! taking into account the known interpretations.
 //!
-//! It supports the Core, Int and Real [theories of SMT-Lib](https://smt-lib.org/theories.shtml).
-//!
-//! Future developments include support for more expressivity:
+//! xmt-lib supports the Core, Int and Real [theories of SMT-Lib](https://smt-lib.org/theories.shtml).
+//! Future extensions of the language are expected to provide more expressivity and reasoning capabilities:
 //! - [ ] partial functions
 //! - [ ] aggregates
 //! - [ ] inductive definitions
@@ -34,25 +34,33 @@
 //! - [ ] more reasoning tasks
 //!
 //!
+//! xmt-lib is inspired by the [FO(.)](https://fo-dot.readthedocs.io/en/latest/FO-dot.html) language
+//! and [IDP-Z3](https://www.idp-z3.be/) reasoning engine developed by KU Leuven.
+
+//!
 //! # Usage
 //!
-//! This example shows how to use the xmt-lib crate to flag triangles in a graph, i.e. to assert:
+//! We consider the following statement in a graph problem:
 //!
-//! `∀ x,y,z: Edge(x,y) and Edge(y,z) and Edge(z, x) => RedTriangle(x, y, z).`
+//! `∀ x,y,z: Edge(x,y) and Edge(y,z) and Edge(z, x) => Triangle(x, y, z).`
 //!
-//! * Install [z3](https://github.com/Z3Prover/z3) so that `z3` is in your `PATH`
-//! * add `xmt-lib = "<version>"` to your `cargo.toml` file.
-//! * add the following code, e.g., to `fn main()`:
+//! * Install [z3](https://github.com/Z3Prover/z3) so that `z3` is in your `PATH`;
+//! * create a Rust project in a directory, [using cargo](https://doc.rust-lang.org/book/ch01-03-hello-cargo.html);
+//! * add `xmt-lib = "<insert the current version>"` to its `cargo.toml` file, e.g. `xmt-lib = "0.1.0"`;
+//! * create `main.rs` with the source code listed below;
+//! * run `cargo run --release`
+//!
 //! ```
+//! // main.rs
 //! use xmt_lib::solver::Solver;
 //!
 //! fn main() -> () {
-//!     let connection = None;
+//!     let connection = None;  // i.e., do not use a pre-existing sqlite database
 //!     let mut solver = Solver::new(connection);
 //!     let commands = r#"
-//!         (set-option :backend Z3)
+//!         (set-option :backend none)
 //!         (declare-fun Edge (Int Int) Bool)
-//!         (declare-fun RedTriangle (Int Int Int) Bool)
+//!         (declare-fun Triangle (Int Int Int) Bool)
 //!         (x-interpret-pred Edge
 //!             (x-set
 //!                 (1 2)
@@ -62,9 +70,9 @@
 //!         )
 //!         (assert (forall ((x Int) (y Int) (z Int))
 //!                     (=> (and (Edge x y) (Edge y z) (Edge x z))
-//!                         (RedTriangle x y z)
+//!                         (Triangle x y z)
 //!                     )))
-//!         (check-sat)
+//!         (x-ground)
 //!     "#;
 //!     let results = solver.parse_and_execute(&commands);
 //!     for result in results {
@@ -73,17 +81,61 @@
 //! }
 //! ```
 //!
-//! Executing the code will yield this output:
-//! ```text
-//! sat
-//! ```
-//!
 //! If the Rust toolchain [cannot find `z3.h`](https://github.com/prove-rs/z3.rs/tree/master/z3-sys#finding-z3-libraries),
 //! change the xmt-lib line in your Cargo.toml file to:
 //!
 //! ```text
-//! xmt-lib = [version = "<version>", features = ["static-link-z3"]]
+//! xmt-lib = [version = "<insert the current version>", features = ["static-link-z3"]]
 //! ```
+//!
+//! Executing the code will yield the output below:
+//!
+//! ```text
+//! (declare-fun Edge (Int Int) Bool)
+//! (declare-fun Triangle (Int Int Int) Bool)
+//! (assert (Triangle 1 2 3))
+//! ```
+//!
+//!
+//! To check satisfiability of the formula, replace the first line of the xmt-lib code by:
+//!
+//! ```text
+//!         (set-option :backend Z3)
+//! ```
+//!
+//! and `(x-ground)` by `(check-sat)` in the last line.
+//! Running the program will now yield `sat`, meaning that the formula is satisfiable.
+//! You can obtain an interpretation of `Triangle` satisfying the formula
+//! using the `get-model` and `get_value` commands of [SMT-Lib 2.6](https://smt-lib.org/papers/smt-lib-reference-v2.6-r2024-09-20.pdf).
+//! Every command of SMT-Lib 2.6 are supported.
+//!
+//!
+//!
+//! # Benefits
+//!
+//! To represent the `x-interpret-pred` command above in pure SMT-Lib,
+//! one would have to use a function definition (or an equivalent assertion):
+//!
+//! ```text
+//! (define-fun Edge ((x Int) (y Int)) Bool
+//!     (or (and (= x 1) (= y 2))
+//!         (and (= x 2) (= y 3))
+//!         (and (= x 1) (= y 3))
+//!     ))
+//! ```
+//!
+//! However, this approach does not scale well.
+//! It takes more than 1 minute to verify satisfiability for a graph with 200 nodes and 200 triangles with SMT-Lib,
+//! but only 30 ms with xmt-lib (and 300 ms for 10,000 nodes and triangles).
+//!
+//! Another approach is to use a finite domain for Node (instead of Int),
+//! to expand the quantification over that domain using a procedural programming language,
+//! and to simplify the resulting expression using the known interpretation of `Edge`.
+//! This also does not scale well, unless sophisticated grounding algorithms are used.
+//!
+//! Another benefit is that it is possible for xmt-lib to directly read data in a sqlite database, using `(x-sq`.
+//!
+//!
 //!
 //! # Rust API interface
 //!
