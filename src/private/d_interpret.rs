@@ -1,7 +1,7 @@
 // Copyright Pierre Carbonnelle, 2025.
 
 use itertools::Either::{self, Left, Right};
-use rusqlite::params_from_iter;
+use rusqlite::{Error, params_from_iter};
 use unzip_n::unzip_n;
 
 unzip_n!(pub 4);
@@ -596,7 +596,15 @@ fn populate_table(
         let mut stmt = solver.conn.prepare(&stmt)?;
 
         for tuples_t in tuples_strings.iter() {
-            stmt.execute(params_from_iter(tuples_t))?;
+            if let Err(Error::SqliteFailure(e, msg)) = stmt.execute(params_from_iter(tuples_t)){
+                let data = tuples_t.join(", ");
+                let msg = if let Some(msg) = msg {
+                    format!("{msg} for data: \"{data}\"")
+                } else {
+                    data
+                };
+                return  Err(SolverError::DatabaseError(Error::SqliteFailure(e, Some(msg))))
+            };
         }
     }
     Ok(())

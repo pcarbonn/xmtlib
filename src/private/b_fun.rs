@@ -134,7 +134,7 @@ pub(crate) fn get_function_object<'a>(
                                 Ok((canonical, function_object)),
                             None => Err(SolverError::TermError("Inappropriate identifier qualification", term.clone()))
                         }
-                    } else { Err(SolverError::TermError("Incorrect function application", term.clone())) }
+                    } else { Err(SolverError::TermError("Inappropriate sort qualifier", term.clone())) }
                 }
                 None => Err(SolverError::TermError("Unknown symbol", term.clone()))
             }
