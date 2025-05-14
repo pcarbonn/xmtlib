@@ -61,7 +61,7 @@ Sorts:
  - (Sort_18: 26) (MyPair PairColor) (= (Pair (Pair Color Color) (Pair Color Color))): ((white ) (pair (first PairColor) (second PairColor)))
  - (Sort_18: 26) MyPairColor (= (Pair (Pair Color Color) (Pair Color Color))): ((white ) (pair (first PairColor) (second PairColor)))
  - (unknown) (Array Color Color)
- - (unknown) MyArray
+ - (unknown) MyArray (= (Array Color Color))
 Functions2:
  - true ()->Bool : Constructor
  - false ()->Bool : Constructor

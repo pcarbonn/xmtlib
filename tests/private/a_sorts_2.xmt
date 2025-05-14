@@ -48,11 +48,11 @@ Sorts:
  - (_xmt_color: 2) Color: ((red ) (green ))
  - (recursive) (TreeList Color)
  - (recursive) (Tree Color)
- - (recursive) TreeListColor
+ - (recursive) TreeListColor (= (TreeList Color))
  - (unknown) A
  - (unknown) B
  - (unknown) (Pair A B)
- - (unknown) MyPair
+ - (unknown) MyPair (= (Pair A B))
 Functions2:
  - true ()->Bool : Constructor
  - false ()->Bool : Constructor

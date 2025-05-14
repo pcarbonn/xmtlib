@@ -109,7 +109,7 @@ pub(crate) fn declare_sort(
 
     if arity.0 == 0 {
         let sort = Sort::new(&symb);
-        insert_sort(sort, None, TypeInterpretation::Unknown, None, solver)?;
+        insert_sort(sort, TypeInterpretation::Unknown, None, solver)?;
     } else {
         let dt_object = PolymorphicObject::Unknown;
         solver.polymorphic_sorts.insert(symb, dt_object);
@@ -129,6 +129,7 @@ pub(crate) fn define_sort(
     let out = solver.exec(&command)?;
 
     if variables.len() == 0 {  // monomorphic
+        let new_sort = Sort::new(&symb);
         let declaring = IndexSet::new();
         let g = instantiate_sort(&definiendum, &declaring, solver)?;
 
@@ -136,28 +137,7 @@ pub(crate) fn define_sort(
             .ok_or(InternalError(845667))?;
         let new_sort_object = solver.sort_objects.get(canonical)
             .ok_or(InternalError(482664))?;
-        let new_decl =
-            match new_sort_object.clone()
-             {
-                SortObject::Normal{datatype_dec, ..} => {
-                    // no qualification of constructors needed
-                    let mut qualify = IndexMap::new();
-                    match datatype_dec {
-                        DatatypeDec::DatatypeDec(ref constructor_decs) =>
-                            for ConstructorDec(symbol,_) in constructor_decs {
-                                let qualified = QualIdentifier::new(symbol, None);
-                                qualify.insert(symbol.clone(), qualified);
-                            },
-                        DatatypeDec::Par(..) => unreachable!(),
-                    }
-                    Some((datatype_dec.clone(), qualify))
-                },
-                SortObject::Recursive
-                | SortObject::Infinite
-                | SortObject::Unknown => None,
-            };
-        let new_sort = Sort::new(&symb);
-        insert_sort(new_sort, new_decl, g, Some((canonical.clone(), new_sort_object.clone())), solver)?;
+        insert_alias(new_sort, g, canonical.clone(), new_sort_object.clone(), solver)?;
 
     } else {  // sort must is polymorphic
         solver.polymorphic_sorts.insert(symb, PolymorphicObject::SortDefinition{variables, definiendum});
@@ -251,6 +231,8 @@ pub(crate) fn create_monomorphic_sort(
 
     if let DatatypeDec::DatatypeDec(constructor_decls) = decl {
 
+        let key = Sort::new(symb);
+
         let mut grounding = TypeInterpretation::Normal;
         let mut qualify = IndexMap::new();
         // instantiate parent sorts first
@@ -261,21 +243,18 @@ pub(crate) fn create_monomorphic_sort(
                 grounding = max(grounding, g);
             }
             // no qualification needed
-            let id = Identifier::new(constructor);
-            let qualified = QualIdentifier::Identifier(id);
+            let qualified = QualIdentifier::new(constructor, None);
             qualify.insert(constructor.clone(), qualified);
         }
 
-        //
-        let key = Sort::new(symb);
-
-        insert_sort(key, Some((decl.clone(), qualify)), grounding, None, solver)?;
+        insert_sort(key, grounding, Some((decl.clone(), qualify)), solver)?;
         Ok(())
 
     } else {
         Err(InternalError(5428868))  // unexpected polymorphic datatype
     }
 }
+
 
 /// Create a monomorphic sort and its parents in the solver, if not present.
 /// Returns the type of grounding of the sort.
@@ -295,7 +274,7 @@ pub(crate) fn instantiate_sort(
             SortObject::Recursive  => Ok(TypeInterpretation::Recursive),
         }
     } else if declaring.contains(sort) {
-        insert_sort(sort.clone(), None, TypeInterpretation::Recursive, None, solver)
+        insert_sort(sort.clone(), TypeInterpretation::Recursive, None, solver)
     } else {
         match sort {
             Sort::Sort(_) =>   // check if recursive
@@ -348,19 +327,18 @@ pub(crate) fn instantiate_sort(
                                 new_constructors.push(new_c);
 
                                 let qualified = if variables_found.len() != var_count {
-                                    // constructor is potentially ambiguous
-                                    // -> use a qualified identifier
-                                    QualIdentifier::new(&c.0, Some(sort.clone()))
-                                } else {
-                                    QualIdentifier::new(&c.0, None)
-                                };
+                                        // constructor is potentially ambiguous
+                                        // -> use a qualified identifier
+                                        QualIdentifier::new(&c.0, Some(sort.clone()))
+                                    } else {
+                                        QualIdentifier::new(&c.0, None)
+                                    };
                                 qualify.insert(c.0.clone(), qualified);
                             }
 
-
                             // add the declaration to the solver
                             let new_decl = DatatypeDec::DatatypeDec(new_constructors);
-                            insert_sort(sort.clone(), Some((new_decl, qualify)), grounding, None, solver)
+                            insert_sort(sort.clone(), grounding, Some((new_decl, qualify)), solver)
                         },
                           PolymorphicObject::Datatype(DatatypeDec::DatatypeDec(_))
                         | PolymorphicObject::RecursiveDT(DatatypeDec::DatatypeDec(_))=> {
@@ -381,25 +359,14 @@ pub(crate) fn instantiate_sort(
                                 .ok_or(InternalError(7842966))?;
 
                             // create sort object
-                            match sort_object {
-                                SortObject::Normal{datatype_dec, ..} => {
-                                    let alias = Some((canonical.clone(), sort_object.clone()));
-                                    let qualify = IndexMap::new();  //  not used because of alias
-                                    insert_sort(sort.clone(), Some((datatype_dec.clone(), qualify)), new_g, alias, solver)
-                                },
-                                SortObject::Infinite
-                                | SortObject::Recursive
-                                | SortObject::Unknown => {
-                                    insert_sort(sort.clone(), None, new_g, None, solver)
-                                }
-                            }
+                            insert_alias(sort.clone(), new_g, canonical.clone(), sort_object.clone(), solver)
                         }
                         PolymorphicObject::Unknown => {
-                            insert_sort(sort.clone(), None, TypeInterpretation::Unknown, None, solver)
+                            insert_sort(sort.clone(), TypeInterpretation::Unknown, None, solver)
                         }
                     }
                 } else {  // indexed identifier
-                    insert_sort(sort.clone(), None, TypeInterpretation::Unknown, None, solver)
+                    insert_sort(sort.clone(), TypeInterpretation::Unknown, None, solver)
                 }
             },
         }}
@@ -425,6 +392,7 @@ fn sort_mapping(
         .zip(values.iter().cloned())
         .collect()
 }
+
 
 /// Converts a polymorphic sort to a monomorphic sort.
 fn substitute_in_sort(
@@ -463,52 +431,55 @@ fn substitute_in_sort(
 
 
 /// Make the monomorphic sort known to the solver, and create its table
+///
+/// # Arguments:
+///
+/// * decl: only when `grounding` is TypeInterpretation::Normal
+///
 fn insert_sort(
     sort: Sort,
-    decl: Option<(DatatypeDec, IndexMap<Symbol, QualIdentifier>)>,
     grounding: TypeInterpretation,
-    alias: Option<(CanonicalSort, SortObject)>,  // TODO: combine with decl ?
+    decl: Option<(DatatypeDec, IndexMap<Symbol, QualIdentifier>)>,
     solver: &mut Solver,
 ) -> Result<TypeInterpretation, SolverError> {
 
     if ! solver.canonical_sorts.contains_key(&sort) { // a new sort
 
-        let i = solver.sort_objects.len();
         let (canonical, sort_object) =
             match grounding {
+                TypeInterpretation::Unknown => (CanonicalSort(sort.clone()), SortObject::Unknown),
+                TypeInterpretation::Infinite => (CanonicalSort(sort.clone()), SortObject::Infinite),
+                TypeInterpretation::Recursive => (CanonicalSort(sort.clone()), SortObject::Recursive),
                 TypeInterpretation::Normal => {  // create table for the sort
                     match decl {
                         Some((DatatypeDec::DatatypeDec(ref constructor_decls), ref qualify)) => {
                             let datatype_dec = decl.clone().unwrap().0;  // can't fail
-                            if let Some(alias) = alias {
-                                alias.clone()
-                            } else {
-                                let (table, canonical) =
-                                    match sort {
-                                        Sort::Sort(L(Identifier::Simple(Symbol(ref name)), _)) =>
-                                            (solver.create_table_name(name.to_string()),
-                                            CanonicalSort(sort.clone())),
-                                        Sort::Sort(_) =>
-                                            (TableName(format!("Sort_{}", i)),
-                                            CanonicalSort(sort.clone())),
-                                        Sort::Parametric(ref id, ref sorts) => {
-                                            let canonicals = sorts.iter()
-                                                .map(|s|
-                                                    solver.canonical_sorts.get(s)
-                                                        .cloned()
-                                                        .ok_or(SolverError::ExprError("unknown sort".to_string())))
-                                                .collect::<Result<Vec<_>,_>>()?
-                                                .into_iter()  // decanonicalize them
-                                                .map(|canonical| canonical.0)
-                                                .collect();
+                            let i = solver.sort_objects.len();
+                            let (table, canonical) =
+                                match sort {
+                                    Sort::Sort(L(Identifier::Simple(Symbol(ref name)), _)) =>
+                                        (solver.create_table_name(name.to_string()),
+                                        CanonicalSort(sort.clone())),
+                                    Sort::Sort(_) =>
+                                        (TableName(format!("Sort_{}", i)),
+                                        CanonicalSort(sort.clone())),
+                                    Sort::Parametric(ref id, ref sorts) => {
+                                        let canonicals = sorts.iter()
+                                            .map(|s|
+                                                solver.canonical_sorts.get(s)
+                                                    .cloned()
+                                                    .ok_or(SolverError::ExprError("unknown sort".to_string())))
+                                            .collect::<Result<Vec<_>,_>>()?
+                                            .into_iter()  // decanonicalize them
+                                            .map(|canonical| canonical.0)
+                                            .collect();
 
-                                            (TableName(format!("Sort_{}", i)),
-                                            CanonicalSort(Sort::Parametric(id.clone(), canonicals)))
-                                        }
-                                    };
-                                let row_count = create_table(&table, &canonical, &constructor_decls, qualify, solver)?;
-                                (canonical, SortObject::Normal{datatype_dec, table, row_count})
-                            }
+                                        (TableName(format!("Sort_{}", i)),
+                                        CanonicalSort(Sort::Parametric(id.clone(), canonicals)))
+                                    }
+                                };
+                            let row_count = create_table(&table, &canonical, &constructor_decls, qualify, solver)?;
+                            (canonical, SortObject::Normal{datatype_dec, table, row_count})
                         }
                         Some((DatatypeDec::Par(..), _)) => {
                             return Err(InternalError(8458555))
@@ -516,12 +487,25 @@ fn insert_sort(
                         None => unreachable!()
                     }
                 },
-                TypeInterpretation::Unknown => (CanonicalSort(sort.clone()), SortObject::Unknown),
-                TypeInterpretation::Infinite => (CanonicalSort(sort.clone()), SortObject::Infinite),
-                TypeInterpretation::Recursive => (CanonicalSort(sort.clone()), SortObject::Recursive),
             };
+        solver.canonical_sorts.insert(sort, canonical.clone());
+        solver.sort_objects.insert(canonical, sort_object);
+    }
 
-        // update solver.sort_objects
+    Ok(grounding)
+}
+
+
+/// Make the monomorphic sort known to the solver, and create its table
+fn insert_alias(
+    sort: Sort,
+    grounding: TypeInterpretation,
+    canonical: CanonicalSort,
+    sort_object: SortObject,
+    solver: &mut Solver,
+) -> Result<TypeInterpretation, SolverError> {
+
+    if ! solver.canonical_sorts.contains_key(&sort) { // a new sort
         solver.canonical_sorts.insert(sort, canonical.clone());
         solver.sort_objects.insert(canonical, sort_object);
     }
@@ -708,6 +692,7 @@ fn create_table(
     }
     Ok(row_count)
 }
+
 
 /// creates a table in the DB containing the nullary constructors
 fn create_core_table(
