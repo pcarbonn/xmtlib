@@ -484,7 +484,7 @@ pub enum Command {
     DefineSort(Symbol, Vec<Symbol>, Sort),
     SetOption(Option_),
     XDebug(L<Identifier>, L<Identifier>),
-    XGround(bool),  // true if in debug mode (avoids random ordering of grounded assertions)
+    XGround{no: bool, debug: bool},
     XInterpretPred(L<Identifier>, XSet),
     XInterpretFun(L<Identifier>, Either<Vec<(XTuple, L<Term>)>, String_>, Option<L<Term>>),
     Verbatim(String),
@@ -564,7 +564,11 @@ impl Display for Command {
                 }
             },
             Self::XDebug(s1, s2) => write!(f, "(x-debug {s1} {s2})\n"),
-            Self::XGround(debug)=> write!(f, "(x-ground{})\n", if *debug {" debug:"} else {""}),
+            Self::XGround{no, debug}=>
+                write!(f, "(x-ground{}{})\n",
+                            if *no {" no:"} else {""},
+                            if *debug {" debug:"} else {""}
+                        ),
             Self::Verbatim(s) => write!(f, "{s}\n"),
         }
     }

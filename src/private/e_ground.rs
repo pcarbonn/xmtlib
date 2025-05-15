@@ -51,6 +51,7 @@ impl std::fmt::Display for Grounding {
 
 /// ground the pending assertions
 pub(crate) fn ground(
+    no: bool,
     debug: bool,
     solver: &mut Solver
 ) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {
@@ -59,39 +60,47 @@ pub(crate) fn ground(
         // update statistics in DB
         solver.conn.execute("ANALYZE", []).unwrap();
 
-        // concatenate the assertions to be grounded
-        let terms = solver.assertions_to_ground.clone();
-
-        let terms = if debug {
-            // slower, but avoid random ordering of grounded assertions
-            terms
+        if no {
+            for term in solver.assertions_to_ground.clone() {
+                let assert = format!("(assert {term})\n");
+                yield_!(solver.exec(&assert));
+            }
         } else {
-            // faster, because it gives sqlite more scope for optimisation
-            let and_ = QualIdentifier::new(&Symbol("and".to_string()), None);
-            let term = L(Term::Application(and_, terms), Offset(0));
-            vec![term]
-        };
 
-        for term in terms {
-            match ground_term(&term, true, solver) {
-                Ok((g, _)) => {
-                    match g {
-                        Grounding::NonBoolean(_) => yield_!(Err(SolverError::TermError("Expecting a boolean", term.clone()))),
-                        Grounding::Boolean{uf, ..} => {
-                            // execute the UF query
-                            let query = uf.to_string();
-                            match execute_query(query, &mut solver.conn) {
-                                Ok(asserts) => {
-                                    for assert in asserts {
-                                        yield_!(solver.exec(&assert));
-                                    }
-                                },
-                                Err(e) => yield_!(Err(e))
+            // concatenate the assertions to be grounded
+            let terms = solver.assertions_to_ground.clone();
+
+            let terms = if debug {
+                // slower, but avoid random ordering of grounded assertions
+                terms
+            } else {
+                // faster, because it gives sqlite more scope for optimisation
+                let and_ = QualIdentifier::new(&Symbol("and".to_string()), None);
+                let term = L(Term::Application(and_, terms), Offset(0));
+                vec![term]
+            };
+
+            for term in terms {
+                match ground_term(&term, true, solver) {
+                    Ok((g, _)) => {
+                        match g {
+                            Grounding::NonBoolean(_) => yield_!(Err(SolverError::TermError("Expecting a boolean", term.clone()))),
+                            Grounding::Boolean{uf, ..} => {
+                                // execute the UF query
+                                let query = uf.to_string();
+                                match execute_query(query, &mut solver.conn) {
+                                    Ok(asserts) => {
+                                        for assert in asserts {
+                                            yield_!(solver.exec(&assert));
+                                        }
+                                    },
+                                    Err(e) => yield_!(Err(e))
+                                }
                             }
                         }
-                    }
-                },
-                Err(e) => yield_!(Err(e))
+                    },
+                    Err(e) => yield_!(Err(e))
+                }
             }
         }
 

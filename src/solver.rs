@@ -291,7 +291,7 @@ impl Solver {
                     yield_!(assert_(&term, self))
                 }
                 Command::CheckSat => {
-                    for res in ground(false, self) {
+                    for res in ground(false, false, self) {
                         yield_!(res)
                     }
                     match self.exec(&command) {
@@ -419,8 +419,8 @@ impl Solver {
                     }
                 },
 
-                Command::XGround(debug) => {
-                    for res in ground(debug, self) {
+                Command::XGround{no, debug} => {
+                    for res in ground(no, debug, self) {
                         yield_!(res)
                     }
                 }
