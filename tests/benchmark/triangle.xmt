@@ -209,7 +209,7 @@ SELECT x, y, z,
                         FROM _xmt_edge_UF AS _xmt_edge_UF_2
                       ) AS negate_3_UF
                 JOIN _xmt_node AS _xmt_node_4
-              UNION
+              UNION ALL
               -- Join(14)
               SELECT _xmt_node.G AS x,
                      negate_6_UF.y AS y,
@@ -222,7 +222,7 @@ SELECT x, y, z,
                         FROM _xmt_edge_UF AS _xmt_edge_UF_5
                       ) AS negate_6_UF
                 JOIN _xmt_node
-              UNION
+              UNION ALL
               -- Join(14)
               SELECT negate_8_UF.x AS x,
                      _xmt_node_1.G AS y,
@@ -235,7 +235,7 @@ SELECT x, y, z,
                         FROM _xmt_edge_UF AS _xmt_edge_UF_7
                       ) AS negate_8_UF
                 JOIN _xmt_node AS _xmt_node_1
-              UNION
+              UNION ALL
               -- Join(14)
               SELECT _xmt_node.G AS x,
                      _xmt_node_1.G AS y,
@@ -438,7 +438,7 @@ SELECT G as G
                               JOIN _xmt_edge_TU AS _xmt_edge_TU_7
                                     ON _xmt_edge_TU_2.a_1 = _xmt_edge_TU_7.a_1 AND _xmt_edge_TU_5.a_2 = _xmt_edge_TU_7.a_2)
                       WHERE G <> "true")
-              UNION
+              UNION ALL
               -- Agg (14)
               SELECT G as G
                FROM (-- Join(21)
@@ -446,7 +446,7 @@ SELECT G as G
                             "false" AS G
                        FROM _xmt_edge_UF AS _xmt_edge_UF_12
                       WHERE _xmt_edge_UF_12.a_1 = _xmt_edge_UF_12.a_2)
-              UNION
+              UNION ALL
               -- Agg (14)
               SELECT or_aggregate(G) as G
                FROM (-- Join(21)

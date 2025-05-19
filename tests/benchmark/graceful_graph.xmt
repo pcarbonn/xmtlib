@@ -1,0 +1,1376 @@
+(set-option :backend none)
+
+(declare-fun node (Int) Bool)
+(x-interpret-pred node (x-range 1 9 ) )
+
+(declare-fun val (Int) Bool)
+(x-interpret-pred val (x-range 0 25 ) )
+
+(declare-fun edge (Int Int) Bool)
+(x-interpret-pred edge (x-set (5 1) (5 9) (4 9) (3 9) (2 9) (1 9) (5 8) (4 8) (3 8) (2 8) (1 8) (5 7) (4 7) (3 7) (2 7) (1 7) (5 6) (4 6) (3 6) (2 6) (1 6) (4 5) (3 4) (2 3) (1 2)))
+
+(declare-fun edge_value (Int Int) Int)
+; co-domain of edge_value
+(assert (forall ((x Int) (y Int))
+            (=> (and (node x) (node y))
+                (val (edge_value x y))
+            )))
+
+(declare-fun value (Int) Int)
+; co-domain of value
+(assert (forall ((x Int))
+            (=> (node x)
+                (val (value x))
+            )))
+
+; TODO - !V in val: V  >  0 => (#{X, Y in node: (edge_value(X,Y)  =  V) }  =  1).
+
+; ! N1, N2 in node: N1 ~= N2 => value(N1) ~= value(N2).
+(assert (forall ((N1 Int) (N2 Int))
+            (=> (and (node N1) (node N2) (not (= N1 N2)))
+                (not (= (value N1) (value N2))))))
+
+; !x, y in node: ~edge(x, y) => edge_value(x, y) = 0.
+(assert (forall ((x Int) (y Int))
+            (=> (and (node x) (node y) (not (edge x y)))
+                (= (edge_value x y) 0))))
+
+; !x, y in node: edge(x, y) & value(x) >= value(y) => edge_value(x, y) = value(x) - value(y).
+(assert (forall ((x Int) (y Int))
+            (=> (and (edge x y) (>= (value x) (value y)))
+                (= (edge_value x y) (- (value x) (value y))))))
+
+; !x, y in node: edge(x, y) & value(y) > value(x) => edge_value(x, y) = value(y) - value(x).
+(assert (forall ((x Int) (y Int))
+            (=> (and (edge x y) (> (value y) (value x)))
+                (= (edge_value x y) (- (value y) (value x))))))
+
+(x-ground)
+(x-debug solver functions)
+(x-debug solver groundings)
+-------------------------
+(declare-fun node (Int) Bool)
+(declare-fun val (Int) Bool)
+(declare-fun edge (Int Int) Bool)
+(declare-fun edge_value (Int Int) Int)
+(declare-fun value (Int) Int)
+(assert (val (edge_value 1 1)))
+(assert (val (edge_value 1 2)))
+(assert (val (edge_value 1 3)))
+(assert (val (edge_value 1 4)))
+(assert (val (edge_value 1 5)))
+(assert (val (edge_value 1 6)))
+(assert (val (edge_value 1 7)))
+(assert (val (edge_value 1 8)))
+(assert (val (edge_value 1 9)))
+(assert (val (edge_value 2 1)))
+(assert (val (edge_value 2 2)))
+(assert (val (edge_value 2 3)))
+(assert (val (edge_value 2 4)))
+(assert (val (edge_value 2 5)))
+(assert (val (edge_value 2 6)))
+(assert (val (edge_value 2 7)))
+(assert (val (edge_value 2 8)))
+(assert (val (edge_value 2 9)))
+(assert (val (edge_value 3 1)))
+(assert (val (edge_value 3 2)))
+(assert (val (edge_value 3 3)))
+(assert (val (edge_value 3 4)))
+(assert (val (edge_value 3 5)))
+(assert (val (edge_value 3 6)))
+(assert (val (edge_value 3 7)))
+(assert (val (edge_value 3 8)))
+(assert (val (edge_value 3 9)))
+(assert (val (edge_value 4 1)))
+(assert (val (edge_value 4 2)))
+(assert (val (edge_value 4 3)))
+(assert (val (edge_value 4 4)))
+(assert (val (edge_value 4 5)))
+(assert (val (edge_value 4 6)))
+(assert (val (edge_value 4 7)))
+(assert (val (edge_value 4 8)))
+(assert (val (edge_value 4 9)))
+(assert (val (edge_value 5 1)))
+(assert (val (edge_value 5 2)))
+(assert (val (edge_value 5 3)))
+(assert (val (edge_value 5 4)))
+(assert (val (edge_value 5 5)))
+(assert (val (edge_value 5 6)))
+(assert (val (edge_value 5 7)))
+(assert (val (edge_value 5 8)))
+(assert (val (edge_value 5 9)))
+(assert (val (edge_value 6 1)))
+(assert (val (edge_value 6 2)))
+(assert (val (edge_value 6 3)))
+(assert (val (edge_value 6 4)))
+(assert (val (edge_value 6 5)))
+(assert (val (edge_value 6 6)))
+(assert (val (edge_value 6 7)))
+(assert (val (edge_value 6 8)))
+(assert (val (edge_value 6 9)))
+(assert (val (edge_value 7 1)))
+(assert (val (edge_value 7 2)))
+(assert (val (edge_value 7 3)))
+(assert (val (edge_value 7 4)))
+(assert (val (edge_value 7 5)))
+(assert (val (edge_value 7 6)))
+(assert (val (edge_value 7 7)))
+(assert (val (edge_value 7 8)))
+(assert (val (edge_value 7 9)))
+(assert (val (edge_value 8 1)))
+(assert (val (edge_value 8 2)))
+(assert (val (edge_value 8 3)))
+(assert (val (edge_value 8 4)))
+(assert (val (edge_value 8 5)))
+(assert (val (edge_value 8 6)))
+(assert (val (edge_value 8 7)))
+(assert (val (edge_value 8 8)))
+(assert (val (edge_value 8 9)))
+(assert (val (edge_value 9 1)))
+(assert (val (edge_value 9 2)))
+(assert (val (edge_value 9 3)))
+(assert (val (edge_value 9 4)))
+(assert (val (edge_value 9 5)))
+(assert (val (edge_value 9 6)))
+(assert (val (edge_value 9 7)))
+(assert (val (edge_value 9 8)))
+(assert (val (edge_value 9 9)))
+(assert (val (value 1)))
+(assert (val (value 2)))
+(assert (val (value 3)))
+(assert (val (value 4)))
+(assert (val (value 5)))
+(assert (val (value 6)))
+(assert (val (value 7)))
+(assert (val (value 8)))
+(assert (val (value 9)))
+(assert (or true (not (= (value 1) (value 1)))))
+(assert (or false (not (= (value 1) (value 2)))))
+(assert (or false (not (= (value 1) (value 3)))))
+(assert (or false (not (= (value 1) (value 4)))))
+(assert (or false (not (= (value 1) (value 5)))))
+(assert (or false (not (= (value 1) (value 6)))))
+(assert (or false (not (= (value 1) (value 7)))))
+(assert (or false (not (= (value 1) (value 8)))))
+(assert (or false (not (= (value 1) (value 9)))))
+(assert (or false (not (= (value 2) (value 1)))))
+(assert (or true (not (= (value 2) (value 2)))))
+(assert (or false (not (= (value 2) (value 3)))))
+(assert (or false (not (= (value 2) (value 4)))))
+(assert (or false (not (= (value 2) (value 5)))))
+(assert (or false (not (= (value 2) (value 6)))))
+(assert (or false (not (= (value 2) (value 7)))))
+(assert (or false (not (= (value 2) (value 8)))))
+(assert (or false (not (= (value 2) (value 9)))))
+(assert (or false (not (= (value 3) (value 1)))))
+(assert (or false (not (= (value 3) (value 2)))))
+(assert (or true (not (= (value 3) (value 3)))))
+(assert (or false (not (= (value 3) (value 4)))))
+(assert (or false (not (= (value 3) (value 5)))))
+(assert (or false (not (= (value 3) (value 6)))))
+(assert (or false (not (= (value 3) (value 7)))))
+(assert (or false (not (= (value 3) (value 8)))))
+(assert (or false (not (= (value 3) (value 9)))))
+(assert (or false (not (= (value 4) (value 1)))))
+(assert (or false (not (= (value 4) (value 2)))))
+(assert (or false (not (= (value 4) (value 3)))))
+(assert (or true (not (= (value 4) (value 4)))))
+(assert (or false (not (= (value 4) (value 5)))))
+(assert (or false (not (= (value 4) (value 6)))))
+(assert (or false (not (= (value 4) (value 7)))))
+(assert (or false (not (= (value 4) (value 8)))))
+(assert (or false (not (= (value 4) (value 9)))))
+(assert (or false (not (= (value 5) (value 1)))))
+(assert (or false (not (= (value 5) (value 2)))))
+(assert (or false (not (= (value 5) (value 3)))))
+(assert (or false (not (= (value 5) (value 4)))))
+(assert (or true (not (= (value 5) (value 5)))))
+(assert (or false (not (= (value 5) (value 6)))))
+(assert (or false (not (= (value 5) (value 7)))))
+(assert (or false (not (= (value 5) (value 8)))))
+(assert (or false (not (= (value 5) (value 9)))))
+(assert (or false (not (= (value 6) (value 1)))))
+(assert (or false (not (= (value 6) (value 2)))))
+(assert (or false (not (= (value 6) (value 3)))))
+(assert (or false (not (= (value 6) (value 4)))))
+(assert (or false (not (= (value 6) (value 5)))))
+(assert (or true (not (= (value 6) (value 6)))))
+(assert (or false (not (= (value 6) (value 7)))))
+(assert (or false (not (= (value 6) (value 8)))))
+(assert (or false (not (= (value 6) (value 9)))))
+(assert (or false (not (= (value 7) (value 1)))))
+(assert (or false (not (= (value 7) (value 2)))))
+(assert (or false (not (= (value 7) (value 3)))))
+(assert (or false (not (= (value 7) (value 4)))))
+(assert (or false (not (= (value 7) (value 5)))))
+(assert (or false (not (= (value 7) (value 6)))))
+(assert (or true (not (= (value 7) (value 7)))))
+(assert (or false (not (= (value 7) (value 8)))))
+(assert (or false (not (= (value 7) (value 9)))))
+(assert (or false (not (= (value 8) (value 1)))))
+(assert (or false (not (= (value 8) (value 2)))))
+(assert (or false (not (= (value 8) (value 3)))))
+(assert (or false (not (= (value 8) (value 4)))))
+(assert (or false (not (= (value 8) (value 5)))))
+(assert (or false (not (= (value 8) (value 6)))))
+(assert (or false (not (= (value 8) (value 7)))))
+(assert (or true (not (= (value 8) (value 8)))))
+(assert (or false (not (= (value 8) (value 9)))))
+(assert (or false (not (= (value 9) (value 1)))))
+(assert (or false (not (= (value 9) (value 2)))))
+(assert (or false (not (= (value 9) (value 3)))))
+(assert (or false (not (= (value 9) (value 4)))))
+(assert (or false (not (= (value 9) (value 5)))))
+(assert (or false (not (= (value 9) (value 6)))))
+(assert (or false (not (= (value 9) (value 7)))))
+(assert (or false (not (= (value 9) (value 8)))))
+(assert (or true (not (= (value 9) (value 9)))))
+(assert (or (not (not (edge 1 1))) (= (edge_value 1 1) 0)))
+(assert (or (not (not (edge 1 2))) (= (edge_value 1 2) 0)))
+(assert (or (not (not (edge 1 3))) (= (edge_value 1 3) 0)))
+(assert (or (not (not (edge 1 4))) (= (edge_value 1 4) 0)))
+(assert (or (not (not (edge 1 5))) (= (edge_value 1 5) 0)))
+(assert (or (not (not (edge 1 6))) (= (edge_value 1 6) 0)))
+(assert (or (not (not (edge 1 7))) (= (edge_value 1 7) 0)))
+(assert (or (not (not (edge 1 8))) (= (edge_value 1 8) 0)))
+(assert (or (not (not (edge 1 9))) (= (edge_value 1 9) 0)))
+(assert (or (not (not (edge 2 1))) (= (edge_value 2 1) 0)))
+(assert (or (not (not (edge 2 2))) (= (edge_value 2 2) 0)))
+(assert (or (not (not (edge 2 3))) (= (edge_value 2 3) 0)))
+(assert (or (not (not (edge 2 4))) (= (edge_value 2 4) 0)))
+(assert (or (not (not (edge 2 5))) (= (edge_value 2 5) 0)))
+(assert (or (not (not (edge 2 6))) (= (edge_value 2 6) 0)))
+(assert (or (not (not (edge 2 7))) (= (edge_value 2 7) 0)))
+(assert (or (not (not (edge 2 8))) (= (edge_value 2 8) 0)))
+(assert (or (not (not (edge 2 9))) (= (edge_value 2 9) 0)))
+(assert (or (not (not (edge 3 1))) (= (edge_value 3 1) 0)))
+(assert (or (not (not (edge 3 2))) (= (edge_value 3 2) 0)))
+(assert (or (not (not (edge 3 3))) (= (edge_value 3 3) 0)))
+(assert (or (not (not (edge 3 4))) (= (edge_value 3 4) 0)))
+(assert (or (not (not (edge 3 5))) (= (edge_value 3 5) 0)))
+(assert (or (not (not (edge 3 6))) (= (edge_value 3 6) 0)))
+(assert (or (not (not (edge 3 7))) (= (edge_value 3 7) 0)))
+(assert (or (not (not (edge 3 8))) (= (edge_value 3 8) 0)))
+(assert (or (not (not (edge 3 9))) (= (edge_value 3 9) 0)))
+(assert (or (not (not (edge 4 1))) (= (edge_value 4 1) 0)))
+(assert (or (not (not (edge 4 2))) (= (edge_value 4 2) 0)))
+(assert (or (not (not (edge 4 3))) (= (edge_value 4 3) 0)))
+(assert (or (not (not (edge 4 4))) (= (edge_value 4 4) 0)))
+(assert (or (not (not (edge 4 5))) (= (edge_value 4 5) 0)))
+(assert (or (not (not (edge 4 6))) (= (edge_value 4 6) 0)))
+(assert (or (not (not (edge 4 7))) (= (edge_value 4 7) 0)))
+(assert (or (not (not (edge 4 8))) (= (edge_value 4 8) 0)))
+(assert (or (not (not (edge 4 9))) (= (edge_value 4 9) 0)))
+(assert (or (not (not (edge 5 1))) (= (edge_value 5 1) 0)))
+(assert (or (not (not (edge 5 2))) (= (edge_value 5 2) 0)))
+(assert (or (not (not (edge 5 3))) (= (edge_value 5 3) 0)))
+(assert (or (not (not (edge 5 4))) (= (edge_value 5 4) 0)))
+(assert (or (not (not (edge 5 5))) (= (edge_value 5 5) 0)))
+(assert (or (not (not (edge 5 6))) (= (edge_value 5 6) 0)))
+(assert (or (not (not (edge 5 7))) (= (edge_value 5 7) 0)))
+(assert (or (not (not (edge 5 8))) (= (edge_value 5 8) 0)))
+(assert (or (not (not (edge 5 9))) (= (edge_value 5 9) 0)))
+(assert (or (not (not (edge 6 1))) (= (edge_value 6 1) 0)))
+(assert (or (not (not (edge 6 2))) (= (edge_value 6 2) 0)))
+(assert (or (not (not (edge 6 3))) (= (edge_value 6 3) 0)))
+(assert (or (not (not (edge 6 4))) (= (edge_value 6 4) 0)))
+(assert (or (not (not (edge 6 5))) (= (edge_value 6 5) 0)))
+(assert (or (not (not (edge 6 6))) (= (edge_value 6 6) 0)))
+(assert (or (not (not (edge 6 7))) (= (edge_value 6 7) 0)))
+(assert (or (not (not (edge 6 8))) (= (edge_value 6 8) 0)))
+(assert (or (not (not (edge 6 9))) (= (edge_value 6 9) 0)))
+(assert (or (not (not (edge 7 1))) (= (edge_value 7 1) 0)))
+(assert (or (not (not (edge 7 2))) (= (edge_value 7 2) 0)))
+(assert (or (not (not (edge 7 3))) (= (edge_value 7 3) 0)))
+(assert (or (not (not (edge 7 4))) (= (edge_value 7 4) 0)))
+(assert (or (not (not (edge 7 5))) (= (edge_value 7 5) 0)))
+(assert (or (not (not (edge 7 6))) (= (edge_value 7 6) 0)))
+(assert (or (not (not (edge 7 7))) (= (edge_value 7 7) 0)))
+(assert (or (not (not (edge 7 8))) (= (edge_value 7 8) 0)))
+(assert (or (not (not (edge 7 9))) (= (edge_value 7 9) 0)))
+(assert (or (not (not (edge 8 1))) (= (edge_value 8 1) 0)))
+(assert (or (not (not (edge 8 2))) (= (edge_value 8 2) 0)))
+(assert (or (not (not (edge 8 3))) (= (edge_value 8 3) 0)))
+(assert (or (not (not (edge 8 4))) (= (edge_value 8 4) 0)))
+(assert (or (not (not (edge 8 5))) (= (edge_value 8 5) 0)))
+(assert (or (not (not (edge 8 6))) (= (edge_value 8 6) 0)))
+(assert (or (not (not (edge 8 7))) (= (edge_value 8 7) 0)))
+(assert (or (not (not (edge 8 8))) (= (edge_value 8 8) 0)))
+(assert (or (not (not (edge 8 9))) (= (edge_value 8 9) 0)))
+(assert (or (not (not (edge 9 1))) (= (edge_value 9 1) 0)))
+(assert (or (not (not (edge 9 2))) (= (edge_value 9 2) 0)))
+(assert (or (not (not (edge 9 3))) (= (edge_value 9 3) 0)))
+(assert (or (not (not (edge 9 4))) (= (edge_value 9 4) 0)))
+(assert (or (not (not (edge 9 5))) (= (edge_value 9 5) 0)))
+(assert (or (not (not (edge 9 6))) (= (edge_value 9 6) 0)))
+(assert (or (not (not (edge 9 7))) (= (edge_value 9 7) 0)))
+(assert (or (not (not (edge 9 8))) (= (edge_value 9 8) 0)))
+(assert (or (not (not (edge 9 9))) (= (edge_value 9 9) 0)))
+(assert (or (not (>= (value 5) (value 1))) (= (edge_value 5 1) (- (value 5) (value 1)))))
+(assert (or (not (>= (value 5) (value 9))) (= (edge_value 5 9) (- (value 5) (value 9)))))
+(assert (or (not (>= (value 4) (value 9))) (= (edge_value 4 9) (- (value 4) (value 9)))))
+(assert (or (not (>= (value 3) (value 9))) (= (edge_value 3 9) (- (value 3) (value 9)))))
+(assert (or (not (>= (value 2) (value 9))) (= (edge_value 2 9) (- (value 2) (value 9)))))
+(assert (or (not (>= (value 1) (value 9))) (= (edge_value 1 9) (- (value 1) (value 9)))))
+(assert (or (not (>= (value 5) (value 8))) (= (edge_value 5 8) (- (value 5) (value 8)))))
+(assert (or (not (>= (value 4) (value 8))) (= (edge_value 4 8) (- (value 4) (value 8)))))
+(assert (or (not (>= (value 3) (value 8))) (= (edge_value 3 8) (- (value 3) (value 8)))))
+(assert (or (not (>= (value 2) (value 8))) (= (edge_value 2 8) (- (value 2) (value 8)))))
+(assert (or (not (>= (value 1) (value 8))) (= (edge_value 1 8) (- (value 1) (value 8)))))
+(assert (or (not (>= (value 5) (value 7))) (= (edge_value 5 7) (- (value 5) (value 7)))))
+(assert (or (not (>= (value 4) (value 7))) (= (edge_value 4 7) (- (value 4) (value 7)))))
+(assert (or (not (>= (value 3) (value 7))) (= (edge_value 3 7) (- (value 3) (value 7)))))
+(assert (or (not (>= (value 2) (value 7))) (= (edge_value 2 7) (- (value 2) (value 7)))))
+(assert (or (not (>= (value 1) (value 7))) (= (edge_value 1 7) (- (value 1) (value 7)))))
+(assert (or (not (>= (value 5) (value 6))) (= (edge_value 5 6) (- (value 5) (value 6)))))
+(assert (or (not (>= (value 4) (value 6))) (= (edge_value 4 6) (- (value 4) (value 6)))))
+(assert (or (not (>= (value 3) (value 6))) (= (edge_value 3 6) (- (value 3) (value 6)))))
+(assert (or (not (>= (value 2) (value 6))) (= (edge_value 2 6) (- (value 2) (value 6)))))
+(assert (or (not (>= (value 1) (value 6))) (= (edge_value 1 6) (- (value 1) (value 6)))))
+(assert (or (not (>= (value 4) (value 5))) (= (edge_value 4 5) (- (value 4) (value 5)))))
+(assert (or (not (>= (value 3) (value 4))) (= (edge_value 3 4) (- (value 3) (value 4)))))
+(assert (or (not (>= (value 2) (value 3))) (= (edge_value 2 3) (- (value 2) (value 3)))))
+(assert (or (not (>= (value 1) (value 2))) (= (edge_value 1 2) (- (value 1) (value 2)))))
+(assert (or (not (> (value 1) (value 5))) (= (edge_value 5 1) (- (value 1) (value 5)))))
+(assert (or (not (> (value 9) (value 5))) (= (edge_value 5 9) (- (value 9) (value 5)))))
+(assert (or (not (> (value 9) (value 4))) (= (edge_value 4 9) (- (value 9) (value 4)))))
+(assert (or (not (> (value 9) (value 3))) (= (edge_value 3 9) (- (value 9) (value 3)))))
+(assert (or (not (> (value 9) (value 2))) (= (edge_value 2 9) (- (value 9) (value 2)))))
+(assert (or (not (> (value 9) (value 1))) (= (edge_value 1 9) (- (value 9) (value 1)))))
+(assert (or (not (> (value 8) (value 5))) (= (edge_value 5 8) (- (value 8) (value 5)))))
+(assert (or (not (> (value 8) (value 4))) (= (edge_value 4 8) (- (value 8) (value 4)))))
+(assert (or (not (> (value 8) (value 3))) (= (edge_value 3 8) (- (value 8) (value 3)))))
+(assert (or (not (> (value 8) (value 2))) (= (edge_value 2 8) (- (value 8) (value 2)))))
+(assert (or (not (> (value 8) (value 1))) (= (edge_value 1 8) (- (value 8) (value 1)))))
+(assert (or (not (> (value 7) (value 5))) (= (edge_value 5 7) (- (value 7) (value 5)))))
+(assert (or (not (> (value 7) (value 4))) (= (edge_value 4 7) (- (value 7) (value 4)))))
+(assert (or (not (> (value 7) (value 3))) (= (edge_value 3 7) (- (value 7) (value 3)))))
+(assert (or (not (> (value 7) (value 2))) (= (edge_value 2 7) (- (value 7) (value 2)))))
+(assert (or (not (> (value 7) (value 1))) (= (edge_value 1 7) (- (value 7) (value 1)))))
+(assert (or (not (> (value 6) (value 5))) (= (edge_value 5 6) (- (value 6) (value 5)))))
+(assert (or (not (> (value 6) (value 4))) (= (edge_value 4 6) (- (value 6) (value 4)))))
+(assert (or (not (> (value 6) (value 3))) (= (edge_value 3 6) (- (value 6) (value 3)))))
+(assert (or (not (> (value 6) (value 2))) (= (edge_value 2 6) (- (value 6) (value 2)))))
+(assert (or (not (> (value 6) (value 1))) (= (edge_value 1 6) (- (value 6) (value 1)))))
+(assert (or (not (> (value 5) (value 4))) (= (edge_value 4 5) (- (value 5) (value 4)))))
+(assert (or (not (> (value 4) (value 3))) (= (edge_value 3 4) (- (value 4) (value 3)))))
+(assert (or (not (> (value 3) (value 2))) (= (edge_value 2 3) (- (value 3) (value 2)))))
+(assert (or (not (> (value 2) (value 1))) (= (edge_value 1 2) (- (value 2) (value 1)))))
+Functions2:
+ - true ()->Bool : Constructor
+ - false ()->Bool : Constructor
+ - not ()->Bool : Predefined (true)
+ - => ()->Bool : Predefined (true)
+ - and ()->Bool : Predefined (true)
+ - or ()->Bool : Predefined (true)
+ - xor ()->Bool : Predefined (true)
+ - = ()->Bool : Predefined (true)
+ - distinct ()->Bool : Predefined (true)
+ - <= ()->Bool : Predefined (true)
+ - < ()->Bool : Predefined (true)
+ - >= ()->Bool : Predefined (true)
+ - > ()->Bool : Predefined (true)
+ - ite ()->Bool : Predefined (?)
+ - let ()->Bool : Predefined (?)
+ - + ()->Real : Predefined (false)
+ - - ()->Real : Predefined (false)
+ - * ()->Real : Predefined (false)
+ - div ()->Real : Predefined (false)
+ - mod ()->Real : Predefined (false)
+ - abs ()->Real : Predefined (false)
+ - node (Int)->Bool : Boolean (_xmt_node_TU Complete, (infinite), (infinite))
+ - val (Int)->Bool : Boolean (_xmt_val_TU Complete, (infinite), (infinite))
+ - edge (Int, Int)->Bool : Boolean (_xmt_edge_TU Complete, (infinite), (infinite))
+ - edge_value (Int, Int)->Int : Not interpreted
+ - value (Int)->Int : Not interpreted
+Groundings:
+===  x ======================================
+ -- Join(0)
+SELECT "x" AS x,
+       "x" AS G
+===  (node x) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_node_TU_1.a_1 AS x,
+       "true" AS G
+  FROM _xmt_node_TU AS _xmt_node_TU_1
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("node", "x") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("node", "x") AS G
+
+===  (not (node x)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("not", apply("node", "x")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_node_TU_1.a_1 AS x,
+       "false" AS G
+  FROM _xmt_node_TU AS _xmt_node_TU_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("not", apply("node", "x")) AS G
+
+===  y ======================================
+ -- Join(0)
+SELECT "y" AS y,
+       "y" AS G
+===  (node y) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_node_TU_4.a_1 AS y,
+       "true" AS G
+  FROM _xmt_node_TU AS _xmt_node_TU_4
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "y" AS y,
+       apply("node", "y") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "y" AS y,
+       apply("node", "y") AS G
+
+===  (not (node y)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "y" AS y,
+       apply("not", apply("node", "y")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_node_TU_4.a_1 AS y,
+       "false" AS G
+  FROM _xmt_node_TU AS _xmt_node_TU_4
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "y" AS y,
+       apply("not", apply("node", "y")) AS G
+
+===  (edge_value x y) ======================================
+ -- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("edge_value", "x", "y") AS G
+===  (val (edge_value x y)) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("=",apply("edge_value", "x", "y"), _xmt_val_TU_7.a_1) AS if_, 
+       "true" AS G
+  FROM _xmt_val_TU AS _xmt_val_TU_7
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("val", apply("edge_value", "x", "y")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("val", apply("edge_value", "x", "y")) AS G
+
+===  (or (not (node x)) (not (node y)) (val (edge_value x y))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT x, y,
+       or_aggregate(and_(if_, G)) as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("not", apply("node", "x")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("not", apply("node", "y")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("=",apply("edge_value", "x", "y"), _xmt_val_TU_7.a_1) AS if_, 
+              "true" AS G
+         FROM _xmt_val_TU AS _xmt_val_TU_7)
+ GROUP BY x, y
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_node_TU_1.a_1 AS x,
+       _xmt_node_TU_4.a_1 AS y,
+       apply("val", apply("edge_value", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1)) AS G
+  FROM _xmt_node_TU AS _xmt_node_TU_1
+  JOIN _xmt_node_TU AS _xmt_node_TU_4
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("or", apply("not", apply("node", "x")), apply("not", apply("node", "y")), apply("val", apply("edge_value", "x", "y"))) AS G
+
+=== (top) (forall ((x Int) (y Int)) (or (not (node x)) (not (node y)) (val (edge_value x y)))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("or", apply("not", apply("node", "x")), apply("not", apply("node", "y")), apply("val", apply("edge_value", "x", "y"))) AS G)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_node_TU_1.a_1 AS x,
+              _xmt_node_TU_4.a_1 AS y,
+              apply("val", apply("edge_value", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1)) AS G
+         FROM _xmt_node_TU AS _xmt_node_TU_1
+         JOIN _xmt_node_TU AS _xmt_node_TU_4)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("or", apply("not", apply("node", "x")), apply("not", apply("node", "y")), apply("val", apply("edge_value", "x", "y"))) AS G)
+
+===  (value x) ======================================
+ -- Join(0)
+SELECT "x" AS x,
+       apply("value", "x") AS G
+===  (val (value x)) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("=",apply("value", "x"), _xmt_val_TU_11.a_1) AS if_, 
+       "true" AS G
+  FROM _xmt_val_TU AS _xmt_val_TU_11
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("val", apply("value", "x")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("val", apply("value", "x")) AS G
+
+===  (or (not (node x)) (val (value x))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT x,
+       or_aggregate(and_(if_, G)) as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              apply("not", apply("node", "x")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "x" AS x,
+              apply("=",apply("value", "x"), _xmt_val_TU_11.a_1) AS if_, 
+              "true" AS G
+         FROM _xmt_val_TU AS _xmt_val_TU_11)
+ GROUP BY x
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_node_TU_1.a_1 AS x,
+       apply("val", apply("value", _xmt_node_TU_1.a_1)) AS G
+  FROM _xmt_node_TU AS _xmt_node_TU_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("or", apply("not", apply("node", "x")), apply("val", apply("value", "x"))) AS G
+
+=== (top) (forall ((x Int)) (or (not (node x)) (val (value x)))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              apply("or", apply("not", apply("node", "x")), apply("val", apply("value", "x"))) AS G)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_node_TU_1.a_1 AS x,
+              apply("val", apply("value", _xmt_node_TU_1.a_1)) AS G
+         FROM _xmt_node_TU AS _xmt_node_TU_1)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              apply("or", apply("not", apply("node", "x")), apply("val", apply("value", "x"))) AS G)
+
+===  N1 ======================================
+ -- Join(0)
+SELECT "N1" AS N1,
+       "N1" AS G
+===  (node N1) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_node_TU_15.a_1 AS N1,
+       "true" AS G
+  FROM _xmt_node_TU AS _xmt_node_TU_15
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       apply("node", "N1") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       apply("node", "N1") AS G
+
+===  (not (node N1)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       apply("not", apply("node", "N1")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_node_TU_15.a_1 AS N1,
+       "false" AS G
+  FROM _xmt_node_TU AS _xmt_node_TU_15
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       apply("not", apply("node", "N1")) AS G
+
+===  N2 ======================================
+ -- Join(0)
+SELECT "N2" AS N2,
+       "N2" AS G
+===  (node N2) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_node_TU_18.a_1 AS N2,
+       "true" AS G
+  FROM _xmt_node_TU AS _xmt_node_TU_18
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "N2" AS N2,
+       apply("node", "N2") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "N2" AS N2,
+       apply("node", "N2") AS G
+
+===  (not (node N2)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "N2" AS N2,
+       apply("not", apply("node", "N2")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_node_TU_18.a_1 AS N2,
+       "false" AS G
+  FROM _xmt_node_TU AS _xmt_node_TU_18
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "N2" AS N2,
+       apply("not", apply("node", "N2")) AS G
+
+===  (= N1 N2) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       "N2" AS N2,
+       apply("=", "N1", "N2") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       "N2" AS N2,
+       apply("=", "N1", "N2") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       "N2" AS N2,
+       apply("=", "N1", "N2") AS G
+
+===  (not (= N1 N2)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       "N2" AS N2,
+       apply("not", apply("=", "N1", "N2")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       "N2" AS N2,
+       apply("not", apply("=", "N1", "N2")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       "N2" AS N2,
+       apply("not", apply("=", "N1", "N2")) AS G
+
+===  (not (not (= N1 N2))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       "N2" AS N2,
+       apply("not", apply("not", apply("=", "N1", "N2"))) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       "N2" AS N2,
+       apply("not", apply("not", apply("=", "N1", "N2"))) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       "N2" AS N2,
+       apply("not", apply("not", apply("=", "N1", "N2"))) AS G
+
+===  (value N1) ======================================
+ -- Join(0)
+SELECT "N1" AS N1,
+       apply("value", "N1") AS G
+===  (value N2) ======================================
+ -- Join(0)
+SELECT "N2" AS N2,
+       apply("value", "N2") AS G
+===  (= (value N1) (value N2)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       "N2" AS N2,
+       apply("=", apply("value", "N1"), apply("value", "N2")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       "N2" AS N2,
+       apply("=", apply("value", "N1"), apply("value", "N2")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       "N2" AS N2,
+       apply("=", apply("value", "N1"), apply("value", "N2")) AS G
+
+===  (not (= (value N1) (value N2))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       "N2" AS N2,
+       apply("not", apply("=", apply("value", "N1"), apply("value", "N2"))) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       "N2" AS N2,
+       apply("not", apply("=", apply("value", "N1"), apply("value", "N2"))) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       "N2" AS N2,
+       apply("not", apply("=", apply("value", "N1"), apply("value", "N2"))) AS G
+
+===  (or (not (node N1)) (not (node N2)) (not (not (= N1 N2))) (not (= (value N1) (value N2)))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT N1, N2,
+       or_aggregate(G) as G
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT "N1" AS N1,
+                     "N2" AS N2,
+                     apply("not", apply("node", "N1")) AS G
+              UNION ALL
+              -- Join(14)
+              SELECT "N1" AS N1,
+                     "N2" AS N2,
+                     apply("not", apply("node", "N2")) AS G
+              UNION ALL
+              -- Join(14)
+              SELECT "N1" AS N1,
+                     "N2" AS N2,
+                     apply("not", apply("not", apply("=", "N1", "N2"))) AS G
+              UNION ALL
+              -- Join(14)
+              SELECT "N1" AS N1,
+                     "N2" AS N2,
+                     apply("not", apply("=", apply("value", "N1"), apply("value", "N2"))) AS G)
+        WHERE G <> "false")
+ GROUP BY N1, N2
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_node_TU_15.a_1 AS N1,
+       _xmt_node_TU_18.a_1 AS N2,
+       apply("or", not_(not_(eq_(_xmt_node_TU_15.a_1, _xmt_node_TU_18.a_1))), apply("not", apply("=", apply("value", _xmt_node_TU_15.a_1), apply("value", _xmt_node_TU_18.a_1)))) AS G
+  FROM _xmt_node_TU AS _xmt_node_TU_15
+  JOIN _xmt_node_TU AS _xmt_node_TU_18
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "N1" AS N1,
+       "N2" AS N2,
+       apply("or", apply("not", apply("node", "N1")), apply("not", apply("node", "N2")), apply("not", apply("not", apply("=", "N1", "N2"))), apply("not", apply("=", apply("value", "N1"), apply("value", "N2")))) AS G
+
+=== (top) (forall ((N1 Int) (N2 Int)) (or (not (node N1)) (not (node N2)) (not (not (= N1 N2))) (not (= (value N1) (value N2))))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT "(forall ((N1 Int) (N2 Int)) " || and_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT "N1" AS N1,
+              "N2" AS N2,
+              apply("or", apply("not", apply("node", "N1")), apply("not", apply("node", "N2")), apply("not", apply("not", apply("=", "N1", "N2"))), apply("not", apply("=", apply("value", "N1"), apply("value", "N2")))) AS G)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_node_TU_15.a_1 AS N1,
+                     _xmt_node_TU_18.a_1 AS N2,
+                     apply("or", not_(not_(eq_(_xmt_node_TU_15.a_1, _xmt_node_TU_18.a_1))), apply("not", apply("=", apply("value", _xmt_node_TU_15.a_1), apply("value", _xmt_node_TU_18.a_1)))) AS G
+                FROM _xmt_node_TU AS _xmt_node_TU_15
+                JOIN _xmt_node_TU AS _xmt_node_TU_18)
+        WHERE G <> "true")
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT "(forall ((N1 Int) (N2 Int)) " || and_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT "N1" AS N1,
+              "N2" AS N2,
+              apply("or", apply("not", apply("node", "N1")), apply("not", apply("node", "N2")), apply("not", apply("not", apply("=", "N1", "N2"))), apply("not", apply("=", apply("value", "N1"), apply("value", "N2")))) AS G)
+
+===  (edge x y) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_edge_TU_29.a_1 AS x,
+       _xmt_edge_TU_29.a_2 AS y,
+       "true" AS G
+  FROM _xmt_edge_TU AS _xmt_edge_TU_29
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("edge", "x", "y") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("edge", "x", "y") AS G
+
+===  (not (edge x y)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("not", apply("edge", "x", "y")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_edge_TU_29.a_1 AS x,
+       _xmt_edge_TU_29.a_2 AS y,
+       "false" AS G
+  FROM _xmt_edge_TU AS _xmt_edge_TU_29
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("not", apply("edge", "x", "y")) AS G
+
+===  (not (not (edge x y))) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_edge_TU_29.a_1 AS x,
+       _xmt_edge_TU_29.a_2 AS y,
+       "true" AS G
+  FROM _xmt_edge_TU AS _xmt_edge_TU_29
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("not", apply("not", apply("edge", "x", "y"))) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("not", apply("not", apply("edge", "x", "y"))) AS G
+
+===  0 ======================================
+ -- Join(0)
+SELECT 0 AS G
+===  (= (edge_value x y) 0) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("=", apply("edge_value", "x", "y"), 0) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("=", apply("edge_value", "x", "y"), 0) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("=", apply("edge_value", "x", "y"), 0) AS G
+
+===  (or (not (node x)) (not (node y)) (not (not (edge x y))) (= (edge_value x y) 0)) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT x, y,
+       or_aggregate(G) as G
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT "x" AS x,
+                     "y" AS y,
+                     apply("not", apply("node", "x")) AS G
+              UNION ALL
+              -- Join(14)
+              SELECT "x" AS x,
+                     "y" AS y,
+                     apply("not", apply("node", "y")) AS G
+              UNION ALL
+              -- Join(14)
+              SELECT _xmt_edge_TU_29.a_1 AS x,
+                     _xmt_edge_TU_29.a_2 AS y,
+                     "true" AS G
+                FROM _xmt_edge_TU AS _xmt_edge_TU_29
+              UNION ALL
+              -- Join(14)
+              SELECT "x" AS x,
+                     "y" AS y,
+                     apply("=", apply("edge_value", "x", "y"), 0) AS G)
+        WHERE G <> "false")
+ GROUP BY x, y
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_node_TU_1.a_1 AS x,
+       _xmt_node_TU_4.a_1 AS y,
+       apply("or", apply("not", apply("not", apply("edge", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1))), apply("=", apply("edge_value", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1), 0)) AS G
+  FROM _xmt_node_TU AS _xmt_node_TU_1
+  JOIN _xmt_node_TU AS _xmt_node_TU_4
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("or", apply("not", apply("node", "x")), apply("not", apply("node", "y")), apply("not", apply("not", apply("edge", "x", "y"))), apply("=", apply("edge_value", "x", "y"), 0)) AS G
+
+=== (top) (forall ((x Int) (y Int)) (or (not (node x)) (not (node y)) (not (not (edge x y))) (= (edge_value x y) 0))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("or", apply("not", apply("node", "x")), apply("not", apply("node", "y")), apply("not", apply("not", apply("edge", "x", "y"))), apply("=", apply("edge_value", "x", "y"), 0)) AS G)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_node_TU_1.a_1 AS x,
+                     _xmt_node_TU_4.a_1 AS y,
+                     apply("or", apply("not", apply("not", apply("edge", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1))), apply("=", apply("edge_value", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1), 0)) AS G
+                FROM _xmt_node_TU AS _xmt_node_TU_1
+                JOIN _xmt_node_TU AS _xmt_node_TU_4)
+        WHERE G <> "true")
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("or", apply("not", apply("node", "x")), apply("not", apply("node", "y")), apply("not", apply("not", apply("edge", "x", "y"))), apply("=", apply("edge_value", "x", "y"), 0)) AS G)
+
+===  (value y) ======================================
+ -- Join(0)
+SELECT "y" AS y,
+       apply("value", "y") AS G
+===  (>= (value x) (value y)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply(">=", apply("value", "x"), apply("value", "y")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply(">=", apply("value", "x"), apply("value", "y")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply(">=", apply("value", "x"), apply("value", "y")) AS G
+
+===  (not (>= (value x) (value y))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("not", apply(">=", apply("value", "x"), apply("value", "y"))) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("not", apply(">=", apply("value", "x"), apply("value", "y"))) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("not", apply(">=", apply("value", "x"), apply("value", "y"))) AS G
+
+===  (- (value x) (value y)) ======================================
+ -- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("-", apply("value", "x"), apply("value", "y")) AS G
+===  (= (edge_value x y) (- (value x) (value y))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "x"), apply("value", "y"))) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "x"), apply("value", "y"))) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "x"), apply("value", "y"))) AS G
+
+===  (or (not (edge x y)) (not (>= (value x) (value y))) (= (edge_value x y) (- (value x) (value y)))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT x, y,
+       or_aggregate(G) as G
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT "x" AS x,
+                     "y" AS y,
+                     apply("not", apply("edge", "x", "y")) AS G
+              UNION ALL
+              -- Join(14)
+              SELECT "x" AS x,
+                     "y" AS y,
+                     apply("not", apply(">=", apply("value", "x"), apply("value", "y"))) AS G
+              UNION ALL
+              -- Join(14)
+              SELECT "x" AS x,
+                     "y" AS y,
+                     apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "x"), apply("value", "y"))) AS G)
+        WHERE G <> "false")
+ GROUP BY x, y
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_edge_TU_29.a_1 AS x,
+       _xmt_edge_TU_29.a_2 AS y,
+       apply("or", apply("not", apply(">=", apply("value", _xmt_edge_TU_29.a_1), apply("value", _xmt_edge_TU_29.a_2))), apply("=", apply("edge_value", _xmt_edge_TU_29.a_1, _xmt_edge_TU_29.a_2), apply("-", apply("value", _xmt_edge_TU_29.a_1), apply("value", _xmt_edge_TU_29.a_2)))) AS G
+  FROM _xmt_edge_TU AS _xmt_edge_TU_29
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("or", apply("not", apply("edge", "x", "y")), apply("not", apply(">=", apply("value", "x"), apply("value", "y"))), apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "x"), apply("value", "y")))) AS G
+
+=== (top) (forall ((x Int) (y Int)) (or (not (edge x y)) (not (>= (value x) (value y))) (= (edge_value x y) (- (value x) (value y))))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("or", apply("not", apply("edge", "x", "y")), apply("not", apply(">=", apply("value", "x"), apply("value", "y"))), apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "x"), apply("value", "y")))) AS G)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_edge_TU_29.a_1 AS x,
+                     _xmt_edge_TU_29.a_2 AS y,
+                     apply("or", apply("not", apply(">=", apply("value", _xmt_edge_TU_29.a_1), apply("value", _xmt_edge_TU_29.a_2))), apply("=", apply("edge_value", _xmt_edge_TU_29.a_1, _xmt_edge_TU_29.a_2), apply("-", apply("value", _xmt_edge_TU_29.a_1), apply("value", _xmt_edge_TU_29.a_2)))) AS G
+                FROM _xmt_edge_TU AS _xmt_edge_TU_29)
+        WHERE G <> "true")
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("or", apply("not", apply("edge", "x", "y")), apply("not", apply(">=", apply("value", "x"), apply("value", "y"))), apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "x"), apply("value", "y")))) AS G)
+
+===  (> (value y) (value x)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "y" AS y,
+       "x" AS x,
+       apply(">", apply("value", "y"), apply("value", "x")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "y" AS y,
+       "x" AS x,
+       apply(">", apply("value", "y"), apply("value", "x")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "y" AS y,
+       "x" AS x,
+       apply(">", apply("value", "y"), apply("value", "x")) AS G
+
+===  (not (> (value y) (value x))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "y" AS y,
+       "x" AS x,
+       apply("not", apply(">", apply("value", "y"), apply("value", "x"))) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "y" AS y,
+       "x" AS x,
+       apply("not", apply(">", apply("value", "y"), apply("value", "x"))) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "y" AS y,
+       "x" AS x,
+       apply("not", apply(">", apply("value", "y"), apply("value", "x"))) AS G
+
+===  (- (value y) (value x)) ======================================
+ -- Join(0)
+SELECT "y" AS y,
+       "x" AS x,
+       apply("-", apply("value", "y"), apply("value", "x")) AS G
+===  (= (edge_value x y) (- (value y) (value x))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "y"), apply("value", "x"))) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "y"), apply("value", "x"))) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "y"), apply("value", "x"))) AS G
+
+===  (or (not (edge x y)) (not (> (value y) (value x))) (= (edge_value x y) (- (value y) (value x)))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT x, y,
+       or_aggregate(G) as G
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT "x" AS x,
+                     "y" AS y,
+                     apply("not", apply("edge", "x", "y")) AS G
+              UNION ALL
+              -- Join(14)
+              SELECT "x" AS x,
+                     "y" AS y,
+                     apply("not", apply(">", apply("value", "y"), apply("value", "x"))) AS G
+              UNION ALL
+              -- Join(14)
+              SELECT "x" AS x,
+                     "y" AS y,
+                     apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "y"), apply("value", "x"))) AS G)
+        WHERE G <> "false")
+ GROUP BY x, y
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_edge_TU_29.a_1 AS x,
+       _xmt_edge_TU_29.a_2 AS y,
+       apply("or", apply("not", apply(">", apply("value", _xmt_edge_TU_29.a_2), apply("value", _xmt_edge_TU_29.a_1))), apply("=", apply("edge_value", _xmt_edge_TU_29.a_1, _xmt_edge_TU_29.a_2), apply("-", apply("value", _xmt_edge_TU_29.a_2), apply("value", _xmt_edge_TU_29.a_1)))) AS G
+  FROM _xmt_edge_TU AS _xmt_edge_TU_29
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("or", apply("not", apply("edge", "x", "y")), apply("not", apply(">", apply("value", "y"), apply("value", "x"))), apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "y"), apply("value", "x")))) AS G
+
+=== (top) (forall ((x Int) (y Int)) (or (not (edge x y)) (not (> (value y) (value x))) (= (edge_value x y) (- (value y) (value x))))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("or", apply("not", apply("edge", "x", "y")), apply("not", apply(">", apply("value", "y"), apply("value", "x"))), apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "y"), apply("value", "x")))) AS G)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_edge_TU_29.a_1 AS x,
+                     _xmt_edge_TU_29.a_2 AS y,
+                     apply("or", apply("not", apply(">", apply("value", _xmt_edge_TU_29.a_2), apply("value", _xmt_edge_TU_29.a_1))), apply("=", apply("edge_value", _xmt_edge_TU_29.a_1, _xmt_edge_TU_29.a_2), apply("-", apply("value", _xmt_edge_TU_29.a_2), apply("value", _xmt_edge_TU_29.a_1)))) AS G
+                FROM _xmt_edge_TU AS _xmt_edge_TU_29)
+        WHERE G <> "true")
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("or", apply("not", apply("edge", "x", "y")), apply("not", apply(">", apply("value", "y"), apply("value", "x"))), apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "y"), apply("value", "x")))) AS G)
+
+=== (top) (and (forall ((x Int) (y Int)) (or (not (node x)) (not (node y)) (val (edge_value x y)))) (forall ((x Int)) (or (not (node x)) (val (value x)))) (forall ((N1 Int) (N2 Int)) (or (not (node N1)) (not (node N2)) (not (not (= N1 N2))) (not (= (value N1) (value N2))))) (forall ((x Int) (y Int)) (or (not (node x)) (not (node y)) (not (not (edge x y))) (= (edge_value x y) 0))) (forall ((x Int) (y Int)) (or (not (edge x y)) (not (>= (value x) (value y))) (= (edge_value x y) (- (value x) (value y))))) (forall ((x Int) (y Int)) (or (not (edge x y)) (not (> (value y) (value x))) (= (edge_value x y) (- (value y) (value x)))))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT apply("and", Agg_9_TU.G, Agg_13_TU.G, Agg_28_TU.G, Agg_35_TU.G, Agg_42_TU.G, Agg_48_TU.G) AS G
+  FROM (-- Agg (8)
+        SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
+         FROM (-- Join(15)
+               SELECT "x" AS x,
+                      "y" AS y,
+                      apply("or", apply("not", apply("node", "x")), apply("not", apply("node", "y")), apply("val", apply("edge_value", "x", "y"))) AS G)
+        ) AS Agg_9_TU
+  JOIN (-- Agg (8)
+        SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
+         FROM (-- Join(15)
+               SELECT "x" AS x,
+                      apply("or", apply("not", apply("node", "x")), apply("val", apply("value", "x"))) AS G)
+        ) AS Agg_13_TU
+  JOIN (-- Agg (8)
+        SELECT "(forall ((N1 Int) (N2 Int)) " || and_aggregate(G) || ")" as G
+         FROM (-- Join(15)
+               SELECT "N1" AS N1,
+                      "N2" AS N2,
+                      apply("or", apply("not", apply("node", "N1")), apply("not", apply("node", "N2")), apply("not", apply("not", apply("=", "N1", "N2"))), apply("not", apply("=", apply("value", "N1"), apply("value", "N2")))) AS G)
+        ) AS Agg_28_TU
+  JOIN (-- Agg (8)
+        SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
+         FROM (-- Join(15)
+               SELECT "x" AS x,
+                      "y" AS y,
+                      apply("or", apply("not", apply("node", "x")), apply("not", apply("node", "y")), apply("not", apply("not", apply("edge", "x", "y"))), apply("=", apply("edge_value", "x", "y"), 0)) AS G)
+        ) AS Agg_35_TU
+  JOIN (-- Agg (8)
+        SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
+         FROM (-- Join(15)
+               SELECT "x" AS x,
+                      "y" AS y,
+                      apply("or", apply("not", apply("edge", "x", "y")), apply("not", apply(">=", apply("value", "x"), apply("value", "y"))), apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "x"), apply("value", "y")))) AS G)
+        ) AS Agg_42_TU
+  JOIN (-- Agg (8)
+        SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
+         FROM (-- Join(15)
+               SELECT "x" AS x,
+                      "y" AS y,
+                      apply("or", apply("not", apply("edge", "x", "y")), apply("not", apply(">", apply("value", "y"), apply("value", "x"))), apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "y"), apply("value", "x")))) AS G)
+        ) AS Agg_48_TU
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Agg (14)
+              SELECT G as G
+               FROM (-- Join(21)
+                     SELECT _xmt_node_TU_1.a_1 AS x,
+                            _xmt_node_TU_4.a_1 AS y,
+                            apply("val", apply("edge_value", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1)) AS G
+                       FROM _xmt_node_TU AS _xmt_node_TU_1
+                       JOIN _xmt_node_TU AS _xmt_node_TU_4)
+              UNION ALL
+              -- Agg (14)
+              SELECT G as G
+               FROM (-- Join(21)
+                     SELECT _xmt_node_TU_1.a_1 AS x,
+                            apply("val", apply("value", _xmt_node_TU_1.a_1)) AS G
+                       FROM _xmt_node_TU AS _xmt_node_TU_1)
+              UNION ALL
+              -- Agg (14)
+              SELECT G as G
+               FROM (-- exclude(21)
+                     SELECT *
+                      FROM (-- Join(28)
+                            SELECT _xmt_node_TU_15.a_1 AS N1,
+                                   _xmt_node_TU_18.a_1 AS N2,
+                                   apply("or", not_(not_(eq_(_xmt_node_TU_15.a_1, _xmt_node_TU_18.a_1))), apply("not", apply("=", apply("value", _xmt_node_TU_15.a_1), apply("value", _xmt_node_TU_18.a_1)))) AS G
+                              FROM _xmt_node_TU AS _xmt_node_TU_15
+                              JOIN _xmt_node_TU AS _xmt_node_TU_18)
+                      WHERE G <> "true")
+              UNION ALL
+              -- Agg (14)
+              SELECT G as G
+               FROM (-- exclude(21)
+                     SELECT *
+                      FROM (-- Join(28)
+                            SELECT _xmt_node_TU_1.a_1 AS x,
+                                   _xmt_node_TU_4.a_1 AS y,
+                                   apply("or", apply("not", apply("not", apply("edge", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1))), apply("=", apply("edge_value", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1), 0)) AS G
+                              FROM _xmt_node_TU AS _xmt_node_TU_1
+                              JOIN _xmt_node_TU AS _xmt_node_TU_4)
+                      WHERE G <> "true")
+              UNION ALL
+              -- Agg (14)
+              SELECT G as G
+               FROM (-- exclude(21)
+                     SELECT *
+                      FROM (-- Join(28)
+                            SELECT _xmt_edge_TU_29.a_1 AS x,
+                                   _xmt_edge_TU_29.a_2 AS y,
+                                   apply("or", apply("not", apply(">=", apply("value", _xmt_edge_TU_29.a_1), apply("value", _xmt_edge_TU_29.a_2))), apply("=", apply("edge_value", _xmt_edge_TU_29.a_1, _xmt_edge_TU_29.a_2), apply("-", apply("value", _xmt_edge_TU_29.a_1), apply("value", _xmt_edge_TU_29.a_2)))) AS G
+                              FROM _xmt_edge_TU AS _xmt_edge_TU_29)
+                      WHERE G <> "true")
+              UNION ALL
+              -- Agg (14)
+              SELECT G as G
+               FROM (-- exclude(21)
+                     SELECT *
+                      FROM (-- Join(28)
+                            SELECT _xmt_edge_TU_29.a_1 AS x,
+                                   _xmt_edge_TU_29.a_2 AS y,
+                                   apply("or", apply("not", apply(">", apply("value", _xmt_edge_TU_29.a_2), apply("value", _xmt_edge_TU_29.a_1))), apply("=", apply("edge_value", _xmt_edge_TU_29.a_1, _xmt_edge_TU_29.a_2), apply("-", apply("value", _xmt_edge_TU_29.a_2), apply("value", _xmt_edge_TU_29.a_1)))) AS G
+                              FROM _xmt_edge_TU AS _xmt_edge_TU_29)
+                      WHERE G <> "true"))
+        WHERE G <> "true")
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT apply("and", Agg_9_G.G, Agg_13_G.G, Agg_28_G.G, Agg_35_G.G, Agg_42_G.G, Agg_48_G.G) AS G
+  FROM (-- Agg (8)
+        SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
+         FROM (-- Join(15)
+               SELECT "x" AS x,
+                      "y" AS y,
+                      apply("or", apply("not", apply("node", "x")), apply("not", apply("node", "y")), apply("val", apply("edge_value", "x", "y"))) AS G)
+        ) AS Agg_9_G
+  JOIN (-- Agg (8)
+        SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
+         FROM (-- Join(15)
+               SELECT "x" AS x,
+                      apply("or", apply("not", apply("node", "x")), apply("val", apply("value", "x"))) AS G)
+        ) AS Agg_13_G
+  JOIN (-- Agg (8)
+        SELECT "(forall ((N1 Int) (N2 Int)) " || and_aggregate(G) || ")" as G
+         FROM (-- Join(15)
+               SELECT "N1" AS N1,
+                      "N2" AS N2,
+                      apply("or", apply("not", apply("node", "N1")), apply("not", apply("node", "N2")), apply("not", apply("not", apply("=", "N1", "N2"))), apply("not", apply("=", apply("value", "N1"), apply("value", "N2")))) AS G)
+        ) AS Agg_28_G
+  JOIN (-- Agg (8)
+        SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
+         FROM (-- Join(15)
+               SELECT "x" AS x,
+                      "y" AS y,
+                      apply("or", apply("not", apply("node", "x")), apply("not", apply("node", "y")), apply("not", apply("not", apply("edge", "x", "y"))), apply("=", apply("edge_value", "x", "y"), 0)) AS G)
+        ) AS Agg_35_G
+  JOIN (-- Agg (8)
+        SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
+         FROM (-- Join(15)
+               SELECT "x" AS x,
+                      "y" AS y,
+                      apply("or", apply("not", apply("edge", "x", "y")), apply("not", apply(">=", apply("value", "x"), apply("value", "y"))), apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "x"), apply("value", "y")))) AS G)
+        ) AS Agg_42_G
+  JOIN (-- Agg (8)
+        SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
+         FROM (-- Join(15)
+               SELECT "x" AS x,
+                      "y" AS y,
+                      apply("or", apply("not", apply("edge", "x", "y")), apply("not", apply(">", apply("value", "y"), apply("value", "x"))), apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "y"), apply("value", "x")))) AS G)
+        ) AS Agg_48_G
+
+===========================================

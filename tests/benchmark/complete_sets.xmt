@@ -1,0 +1,188 @@
+(set-option :backend none)
+(declare-fun Domain (Int) Bool)
+(declare-fun p (Int) Bool)
+(declare-fun q (Int) Bool)
+(x-interpret-pred Domain (x-set (1) (5) (7)) )
+(x-interpret-pred p (x-set (1) ) )
+(x-interpret-pred q (x-set (5) (7)) )
+(assert (forall ((x Int)) (=> (Domain x)
+                              (or (p x) (q x)))))
+
+(x-ground)
+(x-debug solver functions)
+(x-debug solver groundings)
+-------------------------
+(declare-fun Domain (Int) Bool)
+(declare-fun p (Int) Bool)
+(declare-fun q (Int) Bool)
+(assert (or (p 1) (q 1)))
+(assert (or (p 5) (q 5)))
+(assert (or (p 7) (q 7)))
+Functions2:
+ - true ()->Bool : Constructor
+ - false ()->Bool : Constructor
+ - not ()->Bool : Predefined (true)
+ - => ()->Bool : Predefined (true)
+ - and ()->Bool : Predefined (true)
+ - or ()->Bool : Predefined (true)
+ - xor ()->Bool : Predefined (true)
+ - = ()->Bool : Predefined (true)
+ - distinct ()->Bool : Predefined (true)
+ - <= ()->Bool : Predefined (true)
+ - < ()->Bool : Predefined (true)
+ - >= ()->Bool : Predefined (true)
+ - > ()->Bool : Predefined (true)
+ - ite ()->Bool : Predefined (?)
+ - let ()->Bool : Predefined (?)
+ - + ()->Real : Predefined (false)
+ - - ()->Real : Predefined (false)
+ - * ()->Real : Predefined (false)
+ - div ()->Real : Predefined (false)
+ - mod ()->Real : Predefined (false)
+ - abs ()->Real : Predefined (false)
+ - Domain (Int)->Bool : Boolean (_xmt_domain_TU Complete, (infinite), (infinite))
+ - p (Int)->Bool : Boolean (_xmt_p_TU Complete, (infinite), (infinite))
+ - q (Int)->Bool : Boolean (_xmt_q_TU Complete, (infinite), (infinite))
+Groundings:
+===  x ======================================
+ -- Join(0)
+SELECT "x" AS x,
+       "x" AS G
+===  (Domain x) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_domain_TU_1.a_1 AS x,
+       "true" AS G
+  FROM _xmt_domain_TU AS _xmt_domain_TU_1
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("Domain", "x") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("Domain", "x") AS G
+
+===  (not (Domain x)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("not", apply("Domain", "x")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_domain_TU_1.a_1 AS x,
+       "false" AS G
+  FROM _xmt_domain_TU AS _xmt_domain_TU_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("not", apply("Domain", "x")) AS G
+
+===  (p x) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_p_TU_3.a_1 AS x,
+       "true" AS G
+  FROM _xmt_p_TU AS _xmt_p_TU_3
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("p", "x") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("p", "x") AS G
+
+===  (q x) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_q_TU_4.a_1 AS x,
+       "true" AS G
+  FROM _xmt_q_TU AS _xmt_q_TU_4
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("q", "x") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("q", "x") AS G
+
+===  (or (not (Domain x)) (p x) (q x)) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT x,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              apply("not", apply("Domain", "x")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_p_TU_3.a_1 AS x,
+              "true" AS G
+         FROM _xmt_p_TU AS _xmt_p_TU_3
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_q_TU_4.a_1 AS x,
+              "true" AS G
+         FROM _xmt_q_TU AS _xmt_q_TU_4)
+ GROUP BY x
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_domain_TU_1.a_1 AS x,
+       apply("or", apply("p", _xmt_domain_TU_1.a_1), apply("q", _xmt_domain_TU_1.a_1)) AS G
+  FROM _xmt_domain_TU AS _xmt_domain_TU_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("or", apply("not", apply("Domain", "x")), apply("p", "x"), apply("q", "x")) AS G
+
+=== (top) (forall ((x Int)) (or (not (Domain x)) (p x) (q x))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              apply("or", apply("not", apply("Domain", "x")), apply("p", "x"), apply("q", "x")) AS G)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_domain_TU_1.a_1 AS x,
+              apply("or", apply("p", _xmt_domain_TU_1.a_1), apply("q", _xmt_domain_TU_1.a_1)) AS G
+         FROM _xmt_domain_TU AS _xmt_domain_TU_1)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              apply("or", apply("not", apply("Domain", "x")), apply("p", "x"), apply("q", "x")) AS G)
+
+=== (top) (and (forall ((x Int)) (or (not (Domain x)) (p x) (q x)))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT Agg_6_TU.G AS G
+  FROM (-- Agg (8)
+        SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
+         FROM (-- Join(15)
+               SELECT "x" AS x,
+                      apply("or", apply("not", apply("Domain", "x")), apply("p", "x"), apply("q", "x")) AS G)
+        ) AS Agg_6_TU
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_domain_TU_1.a_1 AS x,
+              apply("or", apply("p", _xmt_domain_TU_1.a_1), apply("q", _xmt_domain_TU_1.a_1)) AS G
+         FROM _xmt_domain_TU AS _xmt_domain_TU_1)
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT Agg_6_G.G AS G
+  FROM (-- Agg (8)
+        SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
+         FROM (-- Join(15)
+               SELECT "x" AS x,
+                      apply("or", apply("not", apply("Domain", "x")), apply("p", "x"), apply("q", "x")) AS G)
+        ) AS Agg_6_G
+
+===========================================

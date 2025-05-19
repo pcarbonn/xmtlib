@@ -175,12 +175,12 @@ SELECT y, x,
               SELECT "y" AS y,
                      "x" AS x,
                      apply("not", apply("domain", "y")) AS G
-              UNION
+              UNION ALL
               -- Join(14)
               SELECT "y" AS y,
                      "x" AS x,
                      apply("not", apply("<", "y", "x")) AS G
-              UNION
+              UNION ALL
               -- Join(14)
               SELECT "y" AS y,
                      "x" AS x,
@@ -307,7 +307,7 @@ SELECT x,
         FROM (-- Join(14)
               SELECT "x" AS x,
                      apply("not", apply("domain", "x")) AS G
-              UNION
+              UNION ALL
               -- Join(14)
               SELECT Outer_0.x AS x,
                      bool_eq_("true", Outer_0.G, Agg_13_UF.G) AS G
