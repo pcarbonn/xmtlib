@@ -558,9 +558,10 @@ pub(crate) fn view_for_union(
                                 let column = Column::new(table_name, symbol);
                                 q_variables.insert(symbol.clone(), Some(column));
                             } else if let Some(table_name) = sub_table_name {  // create cross-product
-                                let column = Column::new(table_name, symbol);
+                                // table_name is a sort table
+                                let column = Column::new(table_name, &Symbol("G".to_string()));
                                 q_variables.insert(symbol.clone(), Some(column));
-                                let natural_join = NaturalJoin::CrossProduct(table_name.clone(), symbol.clone());
+                                let natural_join = NaturalJoin::CrossProduct(table_name.clone(), Symbol("G".to_string()));
                                 natural_joins.insert(natural_join);
                                 extended = true;
                             } else {  // infinite variable

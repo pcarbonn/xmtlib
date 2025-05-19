@@ -17,6 +17,7 @@
 (assert (exists ((x Node) (y Node)) (Edge x y)))
 (x-ground)
 (x-debug solver groundings)
+(x-debug db _xmt_node)
 (check-sat)
 -------------------------
 (declare-datatype Node ((|1| ) (|2| ) (|3| )))
@@ -199,7 +200,7 @@ SELECT x, y, z,
         FROM (-- Join(14)
               SELECT negate_3_UF.x AS x,
                      negate_3_UF.y AS y,
-                     _xmt_node_4.z AS z,
+                     _xmt_node_4.G AS z,
                      negate_3_UF.G AS G
                 FROM (-- Join(22)
                       SELECT _xmt_edge_UF_2.a_1 AS x,
@@ -210,7 +211,7 @@ SELECT x, y, z,
                 JOIN _xmt_node AS _xmt_node_4
               UNION
               -- Join(14)
-              SELECT _xmt_node.x AS x,
+              SELECT _xmt_node.G AS x,
                      negate_6_UF.y AS y,
                      negate_6_UF.z AS z,
                      negate_6_UF.G AS G
@@ -224,7 +225,7 @@ SELECT x, y, z,
               UNION
               -- Join(14)
               SELECT negate_8_UF.x AS x,
-                     _xmt_node_1.y AS y,
+                     _xmt_node_1.G AS y,
                      negate_8_UF.z AS z,
                      negate_8_UF.G AS G
                 FROM (-- Join(22)
@@ -488,4 +489,14 @@ SELECT apply("and", Agg_11_G.G, Agg_13_G.G, Agg_14_G.G) AS G
         ) AS Agg_14_G
 
 ===========================================
+ TABLE: _xmt_node
+┌─────────────┬───────┐
+│ constructor │ G     │
+├─────────────┼───────┤
+│ "|1|"       │ "|1|" │
+├─────────────┼───────┤
+│ "|2|"       │ "|2|" │
+├─────────────┼───────┤
+│ "|3|"       │ "|3|" │
+└─────────────┴───────┘
 (check-sat)

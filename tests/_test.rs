@@ -25,6 +25,7 @@ use xmt_lib::solver::Solver;
 #[test] fn test_e_ground()      { test_file(Path::new("tests/private/e_ground.xmt")) }
 #[test] fn test_e_ground_comparison()   { test_file(Path::new("tests/private/e_ground_comparison.xmt")) }
 #[test] fn test_e_ground_boolean_eq()   { test_file(Path::new("tests/private/e_ground_boolean_eq.xmt")) }
+#[test] fn test_e_ground_boolean_eq_2()   { test_file(Path::new("tests/private/e_ground_boolean_eq_2.xmt")) }
 #[test] fn test_e_ground_compound_1()      { test_file(Path::new("tests/private/e_ground_compound_1.xmt")) }
 #[test] fn test_e_ground_compound_2()      { test_file(Path::new("tests/private/e_ground_compound_2.xmt")) }
 #[test] fn test_e_ground_constructors()      { test_file(Path::new("tests/private/e_ground_constructors.xmt")) }
