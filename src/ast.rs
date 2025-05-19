@@ -456,6 +456,37 @@ impl Display for DatatypeDec {
     }
 }
 
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct FunctionDef {
+    /// `<symbol> (` <sorted_var> * ) <sort> <term>
+    pub symbol: Symbol,
+    pub sorted_vars: Vec<SortedVar>,
+    pub co_domain: Sort,
+    pub term: L<Term>
+}
+impl Display for FunctionDef {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let FunctionDef{symbol, sorted_vars, co_domain, term} = self;
+        write!(f, "{symbol} ({}) {co_domain} {term}", sorted_vars.iter().format(" "))
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct FunctionDec {
+    /// `<symbol> (` <sorted_var> * ) <sort> <term>
+    pub symbol: Symbol,
+    pub sorted_vars: Vec<SortedVar>,
+    pub co_domain: Sort
+}
+impl Display for FunctionDec{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let FunctionDec{symbol, sorted_vars, co_domain} = self;
+        write!(f, "({symbol} ({}) {co_domain})", sorted_vars.iter().format(" "))
+    }
+}
+
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum XSet {
     XSet(Vec<XTuple>),
@@ -481,6 +512,8 @@ pub enum Command {
     DeclareDatatypes(Vec<SortDec>, Vec<DatatypeDec>),
     DeclareFun(Symbol, Vec<Sort>, Sort),
     DeclareSort(Symbol, Numeral),
+    DefineFun(FunctionDef, bool),  // true for recursive
+    DefineFunsRec(Vec<FunctionDec>, Vec<L<Term>>),
     DefineSort(Symbol, Vec<Symbol>, Sort),
     SetOption(Option_),
     XDebug(L<Identifier>, L<Identifier>),
@@ -512,14 +545,18 @@ impl Display for Command {
                 write!(f, "(declare-fun {m0} ({sorts}) {m2})\n")
             }
             Self::DeclareSort(m0, m1) => write!(f, "(declare-sort {m0} {m1})\n"),
-            // Self::DefineFun(m0) => write!(f, "(define-fun {})\n", m0),
-            // Self::DefineFunRec(m0) => write!(f, "(define-fun-rec {})\n", m0),
-            // Self::DefineFunsRec(m0, m1) => {
-            //     write!(
-            //         f, "(define-funs-rec ({}) ({}))\n", m0.iter().format(" "), m1.iter()
-            //         .format(" ")
-            //     )
-            // }
+            Self::DefineFun(m0, recursive) =>
+                if *recursive {
+                    write!(f, "(define-fun-rec {})\n", m0)
+                } else {
+                    write!(f, "(define-fun {})\n", m0)
+                },
+            Self::DefineFunsRec(m0, m1) => {
+                write!(
+                    f, "(define-funs-rec ({}) ({}))\n", m0.iter().format(" "), m1.iter()
+                    .format(" ")
+                )
+            }
             Self::DefineSort(m0, m1, m2) => {
                 let variables = m1.iter().format(" ");
                 write!(f, "(define-sort {m0} ({variables}) {m2})\n")

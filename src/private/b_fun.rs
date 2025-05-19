@@ -5,7 +5,7 @@ use std::fmt::Display;
 
 use indexmap::{IndexMap, IndexSet};
 
-use crate::ast::{Identifier, QualIdentifier, Sort, Symbol, Term};
+use crate::ast::{FunctionDef, FunctionDec, Identifier, QualIdentifier, Sort, SortedVar, Symbol, Term};
 use crate::error::SolverError;
 use crate::solver::{Solver, CanonicalSort};
 use crate::private::a_sort::instantiate_sort;
@@ -69,6 +69,7 @@ impl Display for Interpretation {
     }
 }
 
+
 pub(crate) fn declare_fun(
     symbol: Symbol,
     domain: Vec<Sort>,
@@ -79,13 +80,14 @@ pub(crate) fn declare_fun(
 
     let out = solver.exec(&command)?;  // this also validates the declaration
 
-    // instantiate the sorts, if needed
-    let declaring = IndexSet::new();
-    for sort in &domain {
-        instantiate_sort(&sort, &declaring, solver)?;
+    { // instantiate the sorts, if needed
+        for sort in &domain {
+            let declaring = IndexSet::new();
+            instantiate_sort(&sort, &declaring, solver)?;
+        }
+        let declaring = IndexSet::new();
+        instantiate_sort(&co_domain, &declaring, solver)?;
     }
-    instantiate_sort(&co_domain, &declaring, solver)?;
-
     let domain = domain.iter()
         .map( | sort | solver.canonical_sorts.get(sort).unwrap().clone())
         .collect::<Vec<_>>();
@@ -100,6 +102,85 @@ pub(crate) fn declare_fun(
 
     Ok(out)
 }
+
+
+pub(crate) fn define_fun(
+    def: FunctionDef,
+    _recursive: bool,
+    command: String,
+    solver: &mut Solver
+) -> Result<String, SolverError> {
+
+    let out = solver.exec(&command)?;  // this also validates the declaration
+
+    let FunctionDef{ symbol, sorted_vars, co_domain, .. } = def;
+
+    { // instantiate the sorts, if needed
+        let domain = sorted_vars.iter()
+            .map(|SortedVar(_, sort)| sort)
+            .collect::<Vec<_>>();
+        for sort in domain {
+            let declaring = IndexSet::new();
+            instantiate_sort(&sort, &declaring, solver)?;
+        }
+        let declaring = IndexSet::new();
+        instantiate_sort(&co_domain, &declaring, solver)?;
+    }
+    let domain = sorted_vars.iter()
+        .map( | SortedVar(_, sort) | solver.canonical_sorts.get(sort).unwrap().clone())
+        .collect::<Vec<_>>();
+    let co_domain = solver.canonical_sorts.get(&co_domain)
+        .ok_or(SolverError::ExprError("unknown co_domain".to_string()))?;
+
+    let identifier = Identifier::new(&symbol);
+    let function_is = FunctionObject::NotInterpreted;
+
+    solver.interpretable_functions.insert(identifier.clone(), (domain.clone(), co_domain.clone()));
+    solver.function_objects.insert((identifier.clone(), domain.clone()), IndexMap::from([(co_domain.clone(), function_is.clone())]));
+
+    Ok(out)
+}
+
+
+pub(crate) fn define_funs_rec(
+    decs: Vec<FunctionDec>,
+    terms: Vec<L<Term>>,
+    command: String,
+    solver: &mut Solver
+) -> Result<String, SolverError> {
+
+    let out = solver.exec(&command)?;  // this also validates the declaration
+
+    for (dec, _) in decs.iter().zip(terms.iter()) {
+        let FunctionDec{ symbol, sorted_vars, co_domain } = dec;
+
+        { // instantiate the sorts, if needed
+            let domain = sorted_vars.iter()
+                .map(|SortedVar(_, sort)| sort)
+                .collect::<Vec<_>>();
+            for sort in domain {
+                let declaring = IndexSet::new();
+                instantiate_sort(&sort, &declaring, solver)?;
+            }
+            let declaring = IndexSet::new();
+            instantiate_sort(&co_domain, &declaring, solver)?;
+        }
+        let domain = sorted_vars.iter()
+            .map( | SortedVar(_, sort) | solver.canonical_sorts.get(sort).unwrap().clone())
+            .collect::<Vec<_>>();
+        let co_domain = solver.canonical_sorts.get(co_domain)
+            .ok_or(SolverError::ExprError("unknown co_domain".to_string()))?;
+
+        let identifier = Identifier::new(&symbol);
+        let function_is = FunctionObject::NotInterpreted;
+
+        solver.interpretable_functions.insert(identifier.clone(), (domain.clone(), co_domain.clone()));
+        solver.function_objects.insert((identifier.clone(), domain.clone()), IndexMap::from([(co_domain.clone(), function_is.clone())]));
+    }
+
+    Ok(out)
+}
+
 
 /// # Arguments:
 ///

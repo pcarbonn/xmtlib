@@ -13,7 +13,7 @@
 //! when the interpretation of some symbols of the vocabulary is known.
 //! This performance gain comes from using a fast "grounder"
 //! based on the [sqlite](https://sqlite.org) relational database engine.
-//! Grounding is illustrated by an example below.
+//! This grounder also allows xmt-lib to access data in a sqlite database.
 // The program can be called by another program (API interface) and can run standalone (CLI interface).
 //!
 //! xmt-lib extends the [SMT-Lib 2.6](https://smt-lib.org/language.shtml) language with the following commands:
@@ -163,7 +163,7 @@
 //! This command has the following variants:
 //!
 //! * `set-option :backend none` to obtain the translation of xmt-lib commands to SMT-Lib 2.6;
-//! * `set-option :backend Z3` for immediate execution of commands by a Z3 solver.
+//! * `set-option :backend Z3` for immediate execution of translated commands by a Z3 solver.
 //!
 //! By default, the backend is Z3.
 //! It can only be changed at the start of a session.
@@ -171,7 +171,7 @@
 //!
 //! ## (x-interpret-const ...)
 //!
-//! An `x-interpret-const` command specifies the interpretation of constant.
+//! An `x-interpret-const` command specifies the interpretation of a constant.
 //! Such an intepretation can be given only once.
 //!
 //! Example: `(x-interpret-const c 1 )`.
@@ -204,7 +204,8 @@
 //! The SELECT is run using the sqlite connection of the solver.
 //! The SELECT must return `n` columns named `a_0, .. a_n`
 //! where `n` is the arity of the symbol being interpreted.
-//! These columns must be of type INTEGER for integers, REAL for reals, and TEXT otherwise.
+//! These columns must be of type INTEGER for integers, REAL for reals, and TEXT otherwise,
+//! and contain nullary constructors.
 //!
 //! * `(x-range`, e.g., `(x-interpret-pred Row (x-range 1 8) )`.
 //! The values making Row true are 1, 2, 3, 4, 5, 6, 7, 8.
@@ -213,11 +214,11 @@
 //!
 //! The list of tuples may not have duplicate tuples,
 //! and the values in the tuples must be of the appropriate type for the predicate.
-//! Furthermore, for the `(x-sql` variant, the values must be nullary constructors.
-//! (note: these rules are not enforced by the xmtlib crate for the `(x-sql` variant)
+//!
+//! Note that the data integrity rules are not enforced for the `(x-sql` variant.
 //!
 //! Note that interpreted predicates may take any value in a model obtained by `(get-model)`.
-//! So, in our firstexample, `(Edge a b)` may have any value in a model.
+//! So, in our first example, `(Edge 1 1)` may have any value in a model.
 //!
 //!
 //! ## (x-interpret-fun ...)
@@ -282,61 +283,14 @@
 //!
 //! # Command-line interface
 //!
+//! Usage: xmt-lib <FILE_PATH>
 //!
-//! The following examples show how to use xmt-lib to flag triangles in a graph, i.e. to assert:
+//! Arguments:
+//! <FILE_PATH>  Path to the script file containing XMT-Lib commands.
 //!
-//! `∀ x,y,z: Edge(x,y) and Edge(y,z) and Edge(z, x) => RedTriangle(x, y, z).`
-//!
-//! * Install the Rust toolchain using [rustup](https://rustup.rs/).
-//! * Install [z3](https://github.com/Z3Prover/z3) so that `z3` is in your `PATH`
-//! * Download the xmtlib repository.
-//! * Create a `Triangle.xmt` file with the following xmt-lib content:
-//!
-//! ```text
-//!     (set-option :backend none)
-//!     (declare-fun Edge (Int Int) Bool)
-//!     (declare-fun RedTriangle (Int Int Int) Bool)
-//!     (x-interpret-pred Edge
-//!         (x-set
-//!             (1 2)
-//!             (2 3)
-//!             (1 3)
-//!         )
-//!     )
-//!     (assert (forall ((x Int) (y Int) (z Int))
-//!                 (=> (and (Edge x y) (Edge y z) (Edge x z))
-//!                     (RedTriangle x y z)
-//!                 )))
-//!     (check-sat)  ; implicitly runs (x-ground)
-//! ```
-//!
-//! * In the xmtlib directory, run `cargo run --release -- path/to/Triangle.xmt`
-//!
-//! Note: If the Rust toolchain [cannot find `z3.h`](https://github.com/prove-rs/z3.rs/tree/master/z3-sys#finding-z3-libraries),
-//! modify the last line in the `Cargo.toml` file in the xmtlib directory to:
-//!
-//! ```text
-//! z3 = { version = "0.8.1", features = ["static-link-z3"] }
-//! ```
-//! and re-run the `cargo` command (it will take a few minutes).
-//!
-//! The program will output the translation to SMT-Lib 2.6:
-//! ```text
-//! (declare-fun Edge (Int Int) Bool)
-//! (declare-fun RedTriangle (Int Int Int) Bool)
-//! (assert (RedTriangle 1 2 3))
-//! (check-sat)
-//! ```
-//!
-//! The grounding of the assertion is simply `(assert (RedTriangle 1 2 3))`,
-//! once the interpretation of Edge is taken into account.
-//!
-//! To check satisfiability, submit the output to a SMT solver,
-//! or replace the first line of Triangle.xmt with:
-//!
-//! ```text
-//!    (set-option :backend Z3)
-//! ```
+//! Options:
+//! -h, --help     Print help
+//! -V, --version  Print version
 //!
 
 mod ast;

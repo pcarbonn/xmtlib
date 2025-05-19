@@ -17,7 +17,7 @@ use crate::solver::Solver;
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
-    /// Path to the problem file in XMT-Lib format.
+    /// Path to the script file containing XMT-Lib commands.
     file_path: PathBuf,
 }
 

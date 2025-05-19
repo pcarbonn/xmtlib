@@ -349,10 +349,30 @@ peg::parser!{
               ")"
             { DatatypeDec::DatatypeDec(c) }
 
+        rule function_dec() -> FunctionDec
+            = "(" _
+              symbol:symbol() _
+              "(" _
+              sorted_vars:(sorted_var() ** _ ) _
+              ")" _
+              co_domain:sort() _
+              ")"
+            { FunctionDec{ symbol, sorted_vars, co_domain} }
+
+        rule function_def() -> FunctionDef
+            = symbol:symbol() _
+              "(" _
+              sorted_vars:(sorted_var() ** _ ) _
+              ")" _
+              co_domain:sort() _
+              term:term()
+            { FunctionDef{ symbol, sorted_vars, co_domain, term} }
+
         rule set_option() -> Command
             = "set-option" _
               option:option()
             { SetOption(option) }
+
 
         rule command() -> Command
             = "(" _
@@ -363,6 +383,9 @@ peg::parser!{
                       / declare_datatypes()
                       / declare_fun()
                       / declare_sort()
+                      / define_fun()
+                      / define_fun_rec()
+                      / define_funs_rec()
                       / define_sort()
                       / set_option()
                       / xinterpret_const()
@@ -419,6 +442,26 @@ peg::parser!{
               symbol:symbol() _
               numeral:numeral()
             { DeclareSort(symbol, numeral) }
+
+        rule define_fun() -> Command
+            = "define-fun" _
+              function_def: function_def()
+            { DefineFun(function_def, false) }
+
+        rule define_fun_rec() -> Command
+            = "define-fun-rec" _
+              function_def: function_def()
+            { DefineFun(function_def, true) }
+
+        rule define_funs_rec() -> Command
+            = "define-funs-rec" _
+              "(" _
+              func_decs: (function_dec() ++ _ ) _
+              ")" _
+              "(" _
+              terms: (term() ++ _ ) _
+              ")"
+            { DefineFunsRec(func_decs, terms) }
 
         rule define_sort() -> Command
             = "define-sort" _
@@ -489,9 +532,6 @@ peg::parser!{
 
         rule verbatim() -> Command
             = command: ( "check-sat-assuming"
-                         / "define-fun"
-                         / "define-fun-rec"
-                         / "define-funs-rec"
                          / "echo"
                          / "get-assertions"
                          / "get-assignment"

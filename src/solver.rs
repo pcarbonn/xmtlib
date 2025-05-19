@@ -13,7 +13,7 @@ use crate::ast::*;
 use crate::error::{format_error, SolverError};
 use crate::grammar::parse;
 use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, define_sort, PolymorphicObject, SortObject};
-use crate::private::b_fun::{declare_fun, FunctionObject};
+use crate::private::b_fun::{declare_fun, define_fun, define_funs_rec, FunctionObject};
 use crate::private::c_assert::assert_;
 use crate::private::d_interpret::{interpret_pred, interpret_fun};
 use crate::private::e_ground::{ground, Grounding};
@@ -317,6 +317,11 @@ impl Solver {
                 Command::DeclareSort(symb, numeral) =>
                     yield_!(declare_sort(symb, numeral, command, self)),
 
+                Command::DefineFun(def, rec) => yield_!(define_fun(def, rec, command, self)),
+
+                Command::DefineFunsRec(decs, terms) =>
+                    yield_!(define_funs_rec(decs, terms, command, self)),
+
                 Command::DefineSort(symb, variables, sort) =>
                     yield_!(define_sort(symb, variables, sort, command, self)),
 
@@ -426,12 +431,7 @@ impl Solver {
                 }
 
                 Command::Verbatim(_) => {
-                    match self.exec(&command) {
-                        Ok(res) => yield_!(Ok(res)),
-                        Err(err) => {
-                            yield_!(Err(err));
-                        }
-                    };
+                    yield_!(self.exec(&command))
                 },
             }
         })
