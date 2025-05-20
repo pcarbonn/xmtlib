@@ -1,7 +1,5 @@
 // Copyright Pierre Carbonnelle, 2025.
 
-// cargo run --release --bin triangle
-
 //! This file examplifies the use of `xmt-lib` as a crate.
 
 

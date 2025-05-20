@@ -10,10 +10,10 @@
 // and perform various reasoning tasks with knowledge represented in logical forms.
 //! It is faster than standard SMT solvers for the model expansion task,
 //! i.e., the task of finding a model of a logic formula
-//! when the interpretation of some symbols of the vocabulary is known.
+//! when the interpretation of some symbols of the vocabulary is already known.
 //! This performance gain comes from using a fast "grounder"
 //! based on the [sqlite](https://sqlite.org) relational database engine.
-//! This grounder also allows xmt-lib to access data in a sqlite database.
+//! This grounder also allows xmt-lib to access data stored in a sqlite database.
 // The program can be called by another program (API interface) and can run standalone (CLI interface).
 //!
 //! xmt-lib extends the [SMT-Lib 2.6](https://smt-lib.org/language.shtml) language with the following commands:
