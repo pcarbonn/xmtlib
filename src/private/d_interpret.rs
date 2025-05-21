@@ -612,7 +612,7 @@ fn populate_table(
 
 /// Create the `missing` and `all` views given the known rows in the `from` table.
 /// `all` is the union of `from` and `missing`,
-/// and covers the domain of the domain of `identifier`.
+/// and covers the domain of `identifier`.
 /// The `G` column for the missing rows is `value` (either an SMT-lib string or unknown).
 /// `from` is renamed to `.._K` if it is the same as `all``.
 fn create_missing_views(
@@ -625,7 +625,7 @@ fn create_missing_views(
     solver: &mut Solver
 ) -> Result<(), SolverError> {
 
-    // rename `from` if it is thes same as `all`
+    // rename `from` if it is the same as `all`
     let from = if from == all {
         // replace suffix by `_K`
             let new = TableName(format!("{}_K", from.0.rsplit_once('_').unwrap().0));
