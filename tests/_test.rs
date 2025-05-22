@@ -15,7 +15,7 @@ use xmt_lib::solver::Solver;
 
 
 #[test] fn test_sandbox()      {
-    assert!(test_file(Path::new("tests/sandbox.xmt")));
+    assert!(test_file(Path::new("tests/private/e_ground_nested_q.xmt")));
 }
 
 
@@ -57,15 +57,21 @@ fn test_file(path: &Path) -> bool {
     let input = expected.split("\n-------------------------\n").collect::<Vec<&str>>()[0];
 
     // execute file
-    let mut solver = Solver::new(None);
-    let results = solver.parse_and_execute(&input);
-    let result = results.into_iter().collect::<Vec<_>>().join("");
-
-    // compare to expected
-    let actual = input.to_owned() + "\n-------------------------\n"+ &result;
-    if actual != expected {  // write to file
-        let mut expected_file = File::create(path).expect("creation failed");
-        expected_file.write(actual.as_bytes(),).expect("write failed");
+    let panic = std::panic::catch_unwind(|| {
+        let mut solver = Solver::new(None);
+        let results = solver.parse_and_execute(&input);
+        let result = results.into_iter().collect::<Vec<_>>().join("");
+        result
+    });
+    if let Ok(result) = panic {
+        // compare to expected
+        let actual = input.to_owned() + "\n-------------------------\n"+ &result;
+        if actual != expected {  // write to file
+            let mut expected_file = File::create(path).expect("creation failed");
+            expected_file.write(actual.as_bytes(),).expect("write failed");
+        }
+        actual == expected
+    } else {
+        false
     }
-    actual == expected
 }

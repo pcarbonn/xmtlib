@@ -37,6 +37,7 @@ pub(crate) enum GroundingQuery {
         agg: String,  // "" (top-level), "and" or "or"
         free_variables: OptionMap<Symbol, TableAlias>,  // None for infinite variables
         infinite_variables: Vec<SortedVar>,
+        default: Option<bool>,  // to generate Y cross-product
         sub_view: Box<GroundingView>,  // the sub_view has more variables than free_variables
 
         // precise: always false
@@ -315,11 +316,12 @@ impl GroundingQuery {
                (format!("{comment}SELECT {distinct}{variables_}{condition}{grounding_}{tables}"),
                 ids)
             }
-            GroundingQuery::Aggregate { agg, free_variables, infinite_variables, sub_view, .. } => {
-                if let GroundingView::View { condition, ..} = **sub_view {
+            GroundingQuery::Aggregate { agg, free_variables, infinite_variables, sub_view, default, .. } => {
+                if let GroundingView::View { free_variables: ref sub_free_variables, condition, ..} = **sub_view {
                     // SELECT {free_variables},
                     //        "(forall ({infinite_vars}) " || and_aggregate(implies_(if_, G)) || ")" AS G
-                    //   FROM {sub_view}
+                    //   FROM (SELECT {free_variables}, {default} as G
+                    //         UNION ALL {sub_view})
                     //  GROUP BY {free_variables*}
 
                     let free = free_variables.iter()
@@ -378,10 +380,43 @@ impl GroundingQuery {
                         var_joins.shift_remove(symbol);
                     }
 
+                    let default = match default {
+                        None => "".to_string(),
+                        Some(default) => {
+                            // SELECT {sub_free_variables*}, "true" AS if_, {default} AS G from {cross-product} UNION ALL
+                            let mut subs = vec![];
+                            let mut joins = vec! [];
+                            let mut cancel = false;
+                            for (symb, _) in sub_free_variables.iter() {
+                                match free_variables.get(symb){
+                                    None => subs.push(format!("NULL AS {symb}")),
+                                    Some(Some(table_alias)) => {
+                                        subs.push(format!("{table_alias}.G AS {symb}"));
+                                        joins.push(format!("{} AS {table_alias}", table_alias.base_table))
+                                    },
+                                    Some(None) => {  // TODO infinite variable => cancel
+                                        cancel = true;
+                                    }
+                                }
+                            };
+                            if cancel {
+                                "".to_string ()
+                            } else {
+                                let subs = if subs.len() == 0 { "".to_string() }
+                                    else { format!("{}, ", subs.join(", ")) };
+                                let joins = if joins.len() == 0 { "".to_string() }
+                                    else { format!("FROM {} ", joins.join(" JOIN "))};
+                                let if_ = if condition { "\true\" AS if_, "}
+                                    else { "" }.to_string();
+
+                                format!("SELECT {subs}{if_}\"{default}\" AS G {joins}UNION ALL ")
+                            }
+                        }
+                    };
                     let (sub_view, ids) = sub_view.to_sql(&var_joins, format!("{indent}{INDENT}").as_str());
 
                     let comment = format!("-- Agg ({})\n{indent}", indent.len());
-                    (format!("{comment}SELECT {free}{grounding} as G\n{indent} FROM ({sub_view}){group_by}"),
+                    (format!("{comment}SELECT {free}{grounding} as G\n{indent} FROM ({default}{sub_view}){group_by}"),
                      ids)
                 } else {  // empty view
                     ("{}".to_string(), Ids::All)
@@ -480,11 +515,16 @@ impl GroundingQuery {
                 let table_alias = TableAlias{base_table, index: 0};
                 GroundingView::new(table_alias, free_variables, query, exclude, all_ids)
             }
-            GroundingQuery::Aggregate { agg, infinite_variables, sub_view, .. } => {
+            GroundingQuery::Aggregate { agg, infinite_variables, sub_view, default,.. } => {
+                let default = match default {
+                    Some(default) => Some(! default),
+                    None => None,
+                };
                 let query = GroundingQuery::Aggregate {
                     agg : (if agg == "or" { "and" } else { "or" }).to_string(),
                     free_variables: free_variables.clone(),
                     infinite_variables: infinite_variables.clone(),
+                    default,
                     sub_view: Box::new(sub_view.negate(index, view_type, solver)?)
                 };
                 let table_alias = TableAlias{base_table, index: 1};

@@ -124,19 +124,25 @@ SELECT or_aggregate(G) as G
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_mix_G_5.a_1 AS x,
-              eq_(_xmt_mix_G_5.G, _xmt_mix_G_5.a_1) AS G
-         FROM _xmt_mix_G AS _xmt_mix_G_5
-        WHERE _xmt_mix_G_5.a_1 = _xmt_mix_G_5.a_2)
+ FROM (SELECT NULL AS x, "false" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_mix_G_5.a_1 AS x,
+                     eq_(_xmt_mix_G_5.G, _xmt_mix_G_5.a_1) AS G
+                FROM _xmt_mix_G AS _xmt_mix_G_5
+               WHERE _xmt_mix_G_5.a_1 = _xmt_mix_G_5.a_2)
+        WHERE G <> "false")
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_mix_G_5.a_1 AS x,
-              eq_(_xmt_mix_G_5.G, _xmt_mix_G_5.a_1) AS G
-         FROM _xmt_mix_G AS _xmt_mix_G_5
-        WHERE _xmt_mix_G_5.a_1 = _xmt_mix_G_5.a_2)
+ FROM (SELECT NULL AS x, "false" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_mix_G_5.a_1 AS x,
+                     eq_(_xmt_mix_G_5.G, _xmt_mix_G_5.a_1) AS G
+                FROM _xmt_mix_G AS _xmt_mix_G_5
+               WHERE _xmt_mix_G_5.a_1 = _xmt_mix_G_5.a_2)
+        WHERE G <> "false")
 
 ===========================================
 Tables and Views:

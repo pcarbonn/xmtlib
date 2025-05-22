@@ -162,19 +162,22 @@ SELECT Agg_5_G.x AS x,
 === (top) (forall ((x Int)) (or (not (domain x)) (exists ((y Int)) (Q x y)))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT Agg_5_G.x AS x,
-              apply("or", apply("not", apply("domain", Agg_5_G.x)), Agg_5_G.G) AS G
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(7)
+       SELECT _xmt_domain_TU_1.a_1 AS x,
+              Agg_5_UF.G AS G
          FROM (-- Agg (15)
                SELECT x,
                       "(exists ((y Int)) " || or_aggregate(G) || ")" as G
                 FROM (-- Join(22)
-                      SELECT "x" AS x,
+                      SELECT _xmt_domain_TU_1.a_1 AS x,
                              "y" AS y,
-                             apply("Q", "x", "y") AS G)
+                             apply("Q", _xmt_domain_TU_1.a_1, "y") AS G
+                        FROM _xmt_domain_TU AS _xmt_domain_TU_1)
                 GROUP BY x
-               ) AS Agg_5_G)
+               ) AS Agg_5_UF
+         JOIN _xmt_domain_TU AS _xmt_domain_TU_1
+        WHERE  Agg_5_UF.x = _xmt_domain_TU_1.a_1)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
@@ -195,19 +198,22 @@ SELECT G as G
         WHERE  Agg_5_UF.x = _xmt_domain_TU_1.a_1)
 ----- G ------------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT Agg_5_G.x AS x,
-              apply("or", apply("not", apply("domain", Agg_5_G.x)), Agg_5_G.G) AS G
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(7)
+       SELECT _xmt_domain_TU_1.a_1 AS x,
+              Agg_5_UF.G AS G
          FROM (-- Agg (15)
                SELECT x,
                       "(exists ((y Int)) " || or_aggregate(G) || ")" as G
                 FROM (-- Join(22)
-                      SELECT "x" AS x,
+                      SELECT _xmt_domain_TU_1.a_1 AS x,
                              "y" AS y,
-                             apply("Q", "x", "y") AS G)
+                             apply("Q", _xmt_domain_TU_1.a_1, "y") AS G
+                        FROM _xmt_domain_TU AS _xmt_domain_TU_1)
                 GROUP BY x
-               ) AS Agg_5_G)
+               ) AS Agg_5_UF
+         JOIN _xmt_domain_TU AS _xmt_domain_TU_1
+        WHERE  Agg_5_UF.x = _xmt_domain_TU_1.a_1)
 
 ===  (domain2 x y) ======================================
 ----- T ------------------------------------------------------------
@@ -302,20 +308,23 @@ SELECT Agg_5_G.x AS x,
 === (top) (forall ((x Int) (y Int)) (or (not (domain2 x y)) (exists ((y Int)) (Q x y)))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT Agg_5_G.x AS x,
-              "y" AS y,
-              apply("or", apply("not", apply("domain2", Agg_5_G.x, "y")), Agg_5_G.G) AS G
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- Join(7)
+       SELECT _xmt_domain2_TU_8.a_1 AS x,
+              _xmt_domain2_TU_8.a_2 AS y,
+              Agg_5_UF.G AS G
          FROM (-- Agg (15)
                SELECT x,
                       "(exists ((y Int)) " || or_aggregate(G) || ")" as G
                 FROM (-- Join(22)
-                      SELECT "x" AS x,
+                      SELECT  DISTINCT _xmt_domain2_TU_8.a_1 AS x,
                              "y" AS y,
-                             apply("Q", "x", "y") AS G)
+                             apply("Q", _xmt_domain2_TU_8.a_1, "y") AS G
+                        FROM _xmt_domain2_TU AS _xmt_domain2_TU_8)
                 GROUP BY x
-               ) AS Agg_5_G)
+               ) AS Agg_5_UF
+         JOIN _xmt_domain2_TU AS _xmt_domain2_TU_8
+        WHERE  Agg_5_UF.x = _xmt_domain2_TU_8.a_1)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
@@ -337,19 +346,22 @@ SELECT G as G
         WHERE  Agg_5_UF.x = _xmt_domain2_TU_8.a_1)
 ----- G ------------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT Agg_5_G.x AS x,
-              "y" AS y,
-              apply("or", apply("not", apply("domain2", Agg_5_G.x, "y")), Agg_5_G.G) AS G
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- Join(7)
+       SELECT _xmt_domain2_TU_8.a_1 AS x,
+              _xmt_domain2_TU_8.a_2 AS y,
+              Agg_5_UF.G AS G
          FROM (-- Agg (15)
                SELECT x,
                       "(exists ((y Int)) " || or_aggregate(G) || ")" as G
                 FROM (-- Join(22)
-                      SELECT "x" AS x,
+                      SELECT  DISTINCT _xmt_domain2_TU_8.a_1 AS x,
                              "y" AS y,
-                             apply("Q", "x", "y") AS G)
+                             apply("Q", _xmt_domain2_TU_8.a_1, "y") AS G
+                        FROM _xmt_domain2_TU AS _xmt_domain2_TU_8)
                 GROUP BY x
-               ) AS Agg_5_G)
+               ) AS Agg_5_UF
+         JOIN _xmt_domain2_TU AS _xmt_domain2_TU_8
+        WHERE  Agg_5_UF.x = _xmt_domain2_TU_8.a_1)
 
 ===========================================

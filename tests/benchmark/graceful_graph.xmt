@@ -514,11 +514,13 @@ SELECT "x" AS x,
 === (top) (forall ((x Int) (y Int)) (or (not (node x)) (not (node y)) (val (edge_value x y)))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              "y" AS y,
-              apply("or", apply("not", apply("node", "x")), apply("not", apply("node", "y")), apply("val", apply("edge_value", "x", "y"))) AS G)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- Join(7)
+       SELECT _xmt_node_TU_1.a_1 AS x,
+              _xmt_node_TU_4.a_1 AS y,
+              apply("val", apply("edge_value", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1)) AS G
+         FROM _xmt_node_TU AS _xmt_node_TU_1
+         JOIN _xmt_node_TU AS _xmt_node_TU_4)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
@@ -530,11 +532,13 @@ SELECT G as G
          JOIN _xmt_node_TU AS _xmt_node_TU_4)
 ----- G ------------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              "y" AS y,
-              apply("or", apply("not", apply("node", "x")), apply("not", apply("node", "y")), apply("val", apply("edge_value", "x", "y"))) AS G)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- Join(7)
+       SELECT _xmt_node_TU_1.a_1 AS x,
+              _xmt_node_TU_4.a_1 AS y,
+              apply("val", apply("edge_value", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1)) AS G
+         FROM _xmt_node_TU AS _xmt_node_TU_1
+         JOIN _xmt_node_TU AS _xmt_node_TU_4)
 
 ===  (value x) ======================================
  -- Join(0)
@@ -584,10 +588,11 @@ SELECT "x" AS x,
 === (top) (forall ((x Int)) (or (not (node x)) (val (value x)))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              apply("or", apply("not", apply("node", "x")), apply("val", apply("value", "x"))) AS G)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(7)
+       SELECT _xmt_node_TU_1.a_1 AS x,
+              apply("val", apply("value", _xmt_node_TU_1.a_1)) AS G
+         FROM _xmt_node_TU AS _xmt_node_TU_1)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
@@ -597,10 +602,11 @@ SELECT G as G
          FROM _xmt_node_TU AS _xmt_node_TU_1)
 ----- G ------------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              apply("or", apply("not", apply("node", "x")), apply("val", apply("value", "x"))) AS G)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(7)
+       SELECT _xmt_node_TU_1.a_1 AS x,
+              apply("val", apply("value", _xmt_node_TU_1.a_1)) AS G
+         FROM _xmt_node_TU AS _xmt_node_TU_1)
 
 ===  N1 ======================================
  -- Join(0)
@@ -807,11 +813,16 @@ SELECT "N1" AS N1,
 === (top) (forall ((N1 Int) (N2 Int)) (or (not (node N1)) (not (node N2)) (not (not (= N1 N2))) (not (= (value N1) (value N2))))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((N1 Int) (N2 Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "N1" AS N1,
-              "N2" AS N2,
-              apply("or", apply("not", apply("node", "N1")), apply("not", apply("node", "N2")), apply("not", apply("not", apply("=", "N1", "N2"))), apply("not", apply("=", apply("value", "N1"), apply("value", "N2")))) AS G)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS N1, NULL AS N2, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_node_TU_15.a_1 AS N1,
+                     _xmt_node_TU_18.a_1 AS N2,
+                     apply("or", not_(not_(eq_(_xmt_node_TU_15.a_1, _xmt_node_TU_18.a_1))), apply("not", apply("=", apply("value", _xmt_node_TU_15.a_1), apply("value", _xmt_node_TU_18.a_1)))) AS G
+                FROM _xmt_node_TU AS _xmt_node_TU_15
+                JOIN _xmt_node_TU AS _xmt_node_TU_18)
+        WHERE G <> "true")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
@@ -826,11 +837,16 @@ SELECT G as G
         WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((N1 Int) (N2 Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "N1" AS N1,
-              "N2" AS N2,
-              apply("or", apply("not", apply("node", "N1")), apply("not", apply("node", "N2")), apply("not", apply("not", apply("=", "N1", "N2"))), apply("not", apply("=", apply("value", "N1"), apply("value", "N2")))) AS G)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS N1, NULL AS N2, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_node_TU_15.a_1 AS N1,
+                     _xmt_node_TU_18.a_1 AS N2,
+                     apply("or", not_(not_(eq_(_xmt_node_TU_15.a_1, _xmt_node_TU_18.a_1))), apply("not", apply("=", apply("value", _xmt_node_TU_15.a_1), apply("value", _xmt_node_TU_18.a_1)))) AS G
+                FROM _xmt_node_TU AS _xmt_node_TU_15
+                JOIN _xmt_node_TU AS _xmt_node_TU_18)
+        WHERE G <> "true")
 
 ===  (edge x y) ======================================
 ----- T ------------------------------------------------------------
@@ -951,11 +967,16 @@ SELECT "x" AS x,
 === (top) (forall ((x Int) (y Int)) (or (not (node x)) (not (node y)) (not (not (edge x y))) (= (edge_value x y) 0))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              "y" AS y,
-              apply("or", apply("not", apply("node", "x")), apply("not", apply("node", "y")), apply("not", apply("not", apply("edge", "x", "y"))), apply("=", apply("edge_value", "x", "y"), 0)) AS G)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_node_TU_1.a_1 AS x,
+                     _xmt_node_TU_4.a_1 AS y,
+                     apply("or", apply("not", apply("not", apply("edge", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1))), apply("=", apply("edge_value", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1), 0)) AS G
+                FROM _xmt_node_TU AS _xmt_node_TU_1
+                JOIN _xmt_node_TU AS _xmt_node_TU_4)
+        WHERE G <> "true")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
@@ -970,11 +991,16 @@ SELECT G as G
         WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              "y" AS y,
-              apply("or", apply("not", apply("node", "x")), apply("not", apply("node", "y")), apply("not", apply("not", apply("edge", "x", "y"))), apply("=", apply("edge_value", "x", "y"), 0)) AS G)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_node_TU_1.a_1 AS x,
+                     _xmt_node_TU_4.a_1 AS y,
+                     apply("or", apply("not", apply("not", apply("edge", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1))), apply("=", apply("edge_value", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1), 0)) AS G
+                FROM _xmt_node_TU AS _xmt_node_TU_1
+                JOIN _xmt_node_TU AS _xmt_node_TU_4)
+        WHERE G <> "true")
 
 ===  (value y) ======================================
  -- Join(0)
@@ -1074,11 +1100,15 @@ SELECT "x" AS x,
 === (top) (forall ((x Int) (y Int)) (or (not (edge x y)) (not (>= (value x) (value y))) (= (edge_value x y) (- (value x) (value y))))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              "y" AS y,
-              apply("or", apply("not", apply("edge", "x", "y")), apply("not", apply(">=", apply("value", "x"), apply("value", "y"))), apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "x"), apply("value", "y")))) AS G)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_edge_TU_29.a_1 AS x,
+                     _xmt_edge_TU_29.a_2 AS y,
+                     apply("or", apply("not", apply(">=", apply("value", _xmt_edge_TU_29.a_1), apply("value", _xmt_edge_TU_29.a_2))), apply("=", apply("edge_value", _xmt_edge_TU_29.a_1, _xmt_edge_TU_29.a_2), apply("-", apply("value", _xmt_edge_TU_29.a_1), apply("value", _xmt_edge_TU_29.a_2)))) AS G
+                FROM _xmt_edge_TU AS _xmt_edge_TU_29)
+        WHERE G <> "true")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
@@ -1092,11 +1122,15 @@ SELECT G as G
         WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              "y" AS y,
-              apply("or", apply("not", apply("edge", "x", "y")), apply("not", apply(">=", apply("value", "x"), apply("value", "y"))), apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "x"), apply("value", "y")))) AS G)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_edge_TU_29.a_1 AS x,
+                     _xmt_edge_TU_29.a_2 AS y,
+                     apply("or", apply("not", apply(">=", apply("value", _xmt_edge_TU_29.a_1), apply("value", _xmt_edge_TU_29.a_2))), apply("=", apply("edge_value", _xmt_edge_TU_29.a_1, _xmt_edge_TU_29.a_2), apply("-", apply("value", _xmt_edge_TU_29.a_1), apply("value", _xmt_edge_TU_29.a_2)))) AS G
+                FROM _xmt_edge_TU AS _xmt_edge_TU_29)
+        WHERE G <> "true")
 
 ===  (> (value y) (value x)) ======================================
 ----- TU -----------------------------------------------------------
@@ -1192,11 +1226,15 @@ SELECT "x" AS x,
 === (top) (forall ((x Int) (y Int)) (or (not (edge x y)) (not (> (value y) (value x))) (= (edge_value x y) (- (value y) (value x))))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              "y" AS y,
-              apply("or", apply("not", apply("edge", "x", "y")), apply("not", apply(">", apply("value", "y"), apply("value", "x"))), apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "y"), apply("value", "x")))) AS G)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_edge_TU_29.a_1 AS x,
+                     _xmt_edge_TU_29.a_2 AS y,
+                     apply("or", apply("not", apply(">", apply("value", _xmt_edge_TU_29.a_2), apply("value", _xmt_edge_TU_29.a_1))), apply("=", apply("edge_value", _xmt_edge_TU_29.a_1, _xmt_edge_TU_29.a_2), apply("-", apply("value", _xmt_edge_TU_29.a_2), apply("value", _xmt_edge_TU_29.a_1)))) AS G
+                FROM _xmt_edge_TU AS _xmt_edge_TU_29)
+        WHERE G <> "true")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
@@ -1210,56 +1248,81 @@ SELECT G as G
         WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              "y" AS y,
-              apply("or", apply("not", apply("edge", "x", "y")), apply("not", apply(">", apply("value", "y"), apply("value", "x"))), apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "y"), apply("value", "x")))) AS G)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_edge_TU_29.a_1 AS x,
+                     _xmt_edge_TU_29.a_2 AS y,
+                     apply("or", apply("not", apply(">", apply("value", _xmt_edge_TU_29.a_2), apply("value", _xmt_edge_TU_29.a_1))), apply("=", apply("edge_value", _xmt_edge_TU_29.a_1, _xmt_edge_TU_29.a_2), apply("-", apply("value", _xmt_edge_TU_29.a_2), apply("value", _xmt_edge_TU_29.a_1)))) AS G
+                FROM _xmt_edge_TU AS _xmt_edge_TU_29)
+        WHERE G <> "true")
 
 === (top) (and (forall ((x Int) (y Int)) (or (not (node x)) (not (node y)) (val (edge_value x y)))) (forall ((x Int)) (or (not (node x)) (val (value x)))) (forall ((N1 Int) (N2 Int)) (or (not (node N1)) (not (node N2)) (not (not (= N1 N2))) (not (= (value N1) (value N2))))) (forall ((x Int) (y Int)) (or (not (node x)) (not (node y)) (not (not (edge x y))) (= (edge_value x y) 0))) (forall ((x Int) (y Int)) (or (not (edge x y)) (not (>= (value x) (value y))) (= (edge_value x y) (- (value x) (value y))))) (forall ((x Int) (y Int)) (or (not (edge x y)) (not (> (value y) (value x))) (= (edge_value x y) (- (value y) (value x)))))) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
 SELECT apply("and", Agg_9_TU.G, Agg_13_TU.G, Agg_28_TU.G, Agg_35_TU.G, Agg_42_TU.G, Agg_48_TU.G) AS G
   FROM (-- Agg (8)
-        SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
-         FROM (-- Join(15)
-               SELECT "x" AS x,
-                      "y" AS y,
-                      apply("or", apply("not", apply("node", "x")), apply("not", apply("node", "y")), apply("val", apply("edge_value", "x", "y"))) AS G)
+        SELECT and_aggregate(G) as G
+         FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- Join(15)
+               SELECT _xmt_node_TU_1.a_1 AS x,
+                      _xmt_node_TU_4.a_1 AS y,
+                      apply("val", apply("edge_value", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1)) AS G
+                 FROM _xmt_node_TU AS _xmt_node_TU_1
+                 JOIN _xmt_node_TU AS _xmt_node_TU_4)
         ) AS Agg_9_TU
   JOIN (-- Agg (8)
-        SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
-         FROM (-- Join(15)
-               SELECT "x" AS x,
-                      apply("or", apply("not", apply("node", "x")), apply("val", apply("value", "x"))) AS G)
+        SELECT and_aggregate(G) as G
+         FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(15)
+               SELECT _xmt_node_TU_1.a_1 AS x,
+                      apply("val", apply("value", _xmt_node_TU_1.a_1)) AS G
+                 FROM _xmt_node_TU AS _xmt_node_TU_1)
         ) AS Agg_13_TU
   JOIN (-- Agg (8)
-        SELECT "(forall ((N1 Int) (N2 Int)) " || and_aggregate(G) || ")" as G
-         FROM (-- Join(15)
-               SELECT "N1" AS N1,
-                      "N2" AS N2,
-                      apply("or", apply("not", apply("node", "N1")), apply("not", apply("node", "N2")), apply("not", apply("not", apply("=", "N1", "N2"))), apply("not", apply("=", apply("value", "N1"), apply("value", "N2")))) AS G)
+        SELECT and_aggregate(G) as G
+         FROM (SELECT NULL AS N1, NULL AS N2, "true" AS G UNION ALL -- exclude(15)
+               SELECT *
+                FROM (-- Join(22)
+                      SELECT _xmt_node_TU_15.a_1 AS N1,
+                             _xmt_node_TU_18.a_1 AS N2,
+                             apply("or", not_(not_(eq_(_xmt_node_TU_15.a_1, _xmt_node_TU_18.a_1))), apply("not", apply("=", apply("value", _xmt_node_TU_15.a_1), apply("value", _xmt_node_TU_18.a_1)))) AS G
+                        FROM _xmt_node_TU AS _xmt_node_TU_15
+                        JOIN _xmt_node_TU AS _xmt_node_TU_18)
+                WHERE G <> "true")
         ) AS Agg_28_TU
   JOIN (-- Agg (8)
-        SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
-         FROM (-- Join(15)
-               SELECT "x" AS x,
-                      "y" AS y,
-                      apply("or", apply("not", apply("node", "x")), apply("not", apply("node", "y")), apply("not", apply("not", apply("edge", "x", "y"))), apply("=", apply("edge_value", "x", "y"), 0)) AS G)
+        SELECT and_aggregate(G) as G
+         FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(15)
+               SELECT *
+                FROM (-- Join(22)
+                      SELECT _xmt_node_TU_1.a_1 AS x,
+                             _xmt_node_TU_4.a_1 AS y,
+                             apply("or", apply("not", apply("not", apply("edge", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1))), apply("=", apply("edge_value", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1), 0)) AS G
+                        FROM _xmt_node_TU AS _xmt_node_TU_1
+                        JOIN _xmt_node_TU AS _xmt_node_TU_4)
+                WHERE G <> "true")
         ) AS Agg_35_TU
   JOIN (-- Agg (8)
-        SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
-         FROM (-- Join(15)
-               SELECT "x" AS x,
-                      "y" AS y,
-                      apply("or", apply("not", apply("edge", "x", "y")), apply("not", apply(">=", apply("value", "x"), apply("value", "y"))), apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "x"), apply("value", "y")))) AS G)
+        SELECT and_aggregate(G) as G
+         FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(15)
+               SELECT *
+                FROM (-- Join(22)
+                      SELECT _xmt_edge_TU_29.a_1 AS x,
+                             _xmt_edge_TU_29.a_2 AS y,
+                             apply("or", apply("not", apply(">=", apply("value", _xmt_edge_TU_29.a_1), apply("value", _xmt_edge_TU_29.a_2))), apply("=", apply("edge_value", _xmt_edge_TU_29.a_1, _xmt_edge_TU_29.a_2), apply("-", apply("value", _xmt_edge_TU_29.a_1), apply("value", _xmt_edge_TU_29.a_2)))) AS G
+                        FROM _xmt_edge_TU AS _xmt_edge_TU_29)
+                WHERE G <> "true")
         ) AS Agg_42_TU
   JOIN (-- Agg (8)
-        SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
-         FROM (-- Join(15)
-               SELECT "x" AS x,
-                      "y" AS y,
-                      apply("or", apply("not", apply("edge", "x", "y")), apply("not", apply(">", apply("value", "y"), apply("value", "x"))), apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "y"), apply("value", "x")))) AS G)
+        SELECT and_aggregate(G) as G
+         FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(15)
+               SELECT *
+                FROM (-- Join(22)
+                      SELECT _xmt_edge_TU_29.a_1 AS x,
+                             _xmt_edge_TU_29.a_2 AS y,
+                             apply("or", apply("not", apply(">", apply("value", _xmt_edge_TU_29.a_2), apply("value", _xmt_edge_TU_29.a_1))), apply("=", apply("edge_value", _xmt_edge_TU_29.a_1, _xmt_edge_TU_29.a_2), apply("-", apply("value", _xmt_edge_TU_29.a_2), apply("value", _xmt_edge_TU_29.a_1)))) AS G
+                        FROM _xmt_edge_TU AS _xmt_edge_TU_29)
+                WHERE G <> "true")
         ) AS Agg_48_TU
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -1332,45 +1395,66 @@ SELECT G as G
 -- Join(0)
 SELECT apply("and", Agg_9_G.G, Agg_13_G.G, Agg_28_G.G, Agg_35_G.G, Agg_42_G.G, Agg_48_G.G) AS G
   FROM (-- Agg (8)
-        SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
-         FROM (-- Join(15)
-               SELECT "x" AS x,
-                      "y" AS y,
-                      apply("or", apply("not", apply("node", "x")), apply("not", apply("node", "y")), apply("val", apply("edge_value", "x", "y"))) AS G)
+        SELECT and_aggregate(G) as G
+         FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- Join(15)
+               SELECT _xmt_node_TU_1.a_1 AS x,
+                      _xmt_node_TU_4.a_1 AS y,
+                      apply("val", apply("edge_value", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1)) AS G
+                 FROM _xmt_node_TU AS _xmt_node_TU_1
+                 JOIN _xmt_node_TU AS _xmt_node_TU_4)
         ) AS Agg_9_G
   JOIN (-- Agg (8)
-        SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
-         FROM (-- Join(15)
-               SELECT "x" AS x,
-                      apply("or", apply("not", apply("node", "x")), apply("val", apply("value", "x"))) AS G)
+        SELECT and_aggregate(G) as G
+         FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(15)
+               SELECT _xmt_node_TU_1.a_1 AS x,
+                      apply("val", apply("value", _xmt_node_TU_1.a_1)) AS G
+                 FROM _xmt_node_TU AS _xmt_node_TU_1)
         ) AS Agg_13_G
   JOIN (-- Agg (8)
-        SELECT "(forall ((N1 Int) (N2 Int)) " || and_aggregate(G) || ")" as G
-         FROM (-- Join(15)
-               SELECT "N1" AS N1,
-                      "N2" AS N2,
-                      apply("or", apply("not", apply("node", "N1")), apply("not", apply("node", "N2")), apply("not", apply("not", apply("=", "N1", "N2"))), apply("not", apply("=", apply("value", "N1"), apply("value", "N2")))) AS G)
+        SELECT and_aggregate(G) as G
+         FROM (SELECT NULL AS N1, NULL AS N2, "true" AS G UNION ALL -- exclude(15)
+               SELECT *
+                FROM (-- Join(22)
+                      SELECT _xmt_node_TU_15.a_1 AS N1,
+                             _xmt_node_TU_18.a_1 AS N2,
+                             apply("or", not_(not_(eq_(_xmt_node_TU_15.a_1, _xmt_node_TU_18.a_1))), apply("not", apply("=", apply("value", _xmt_node_TU_15.a_1), apply("value", _xmt_node_TU_18.a_1)))) AS G
+                        FROM _xmt_node_TU AS _xmt_node_TU_15
+                        JOIN _xmt_node_TU AS _xmt_node_TU_18)
+                WHERE G <> "true")
         ) AS Agg_28_G
   JOIN (-- Agg (8)
-        SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
-         FROM (-- Join(15)
-               SELECT "x" AS x,
-                      "y" AS y,
-                      apply("or", apply("not", apply("node", "x")), apply("not", apply("node", "y")), apply("not", apply("not", apply("edge", "x", "y"))), apply("=", apply("edge_value", "x", "y"), 0)) AS G)
+        SELECT and_aggregate(G) as G
+         FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(15)
+               SELECT *
+                FROM (-- Join(22)
+                      SELECT _xmt_node_TU_1.a_1 AS x,
+                             _xmt_node_TU_4.a_1 AS y,
+                             apply("or", apply("not", apply("not", apply("edge", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1))), apply("=", apply("edge_value", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1), 0)) AS G
+                        FROM _xmt_node_TU AS _xmt_node_TU_1
+                        JOIN _xmt_node_TU AS _xmt_node_TU_4)
+                WHERE G <> "true")
         ) AS Agg_35_G
   JOIN (-- Agg (8)
-        SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
-         FROM (-- Join(15)
-               SELECT "x" AS x,
-                      "y" AS y,
-                      apply("or", apply("not", apply("edge", "x", "y")), apply("not", apply(">=", apply("value", "x"), apply("value", "y"))), apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "x"), apply("value", "y")))) AS G)
+        SELECT and_aggregate(G) as G
+         FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(15)
+               SELECT *
+                FROM (-- Join(22)
+                      SELECT _xmt_edge_TU_29.a_1 AS x,
+                             _xmt_edge_TU_29.a_2 AS y,
+                             apply("or", apply("not", apply(">=", apply("value", _xmt_edge_TU_29.a_1), apply("value", _xmt_edge_TU_29.a_2))), apply("=", apply("edge_value", _xmt_edge_TU_29.a_1, _xmt_edge_TU_29.a_2), apply("-", apply("value", _xmt_edge_TU_29.a_1), apply("value", _xmt_edge_TU_29.a_2)))) AS G
+                        FROM _xmt_edge_TU AS _xmt_edge_TU_29)
+                WHERE G <> "true")
         ) AS Agg_42_G
   JOIN (-- Agg (8)
-        SELECT "(forall ((x Int) (y Int)) " || and_aggregate(G) || ")" as G
-         FROM (-- Join(15)
-               SELECT "x" AS x,
-                      "y" AS y,
-                      apply("or", apply("not", apply("edge", "x", "y")), apply("not", apply(">", apply("value", "y"), apply("value", "x"))), apply("=", apply("edge_value", "x", "y"), apply("-", apply("value", "y"), apply("value", "x")))) AS G)
+        SELECT and_aggregate(G) as G
+         FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(15)
+               SELECT *
+                FROM (-- Join(22)
+                      SELECT _xmt_edge_TU_29.a_1 AS x,
+                             _xmt_edge_TU_29.a_2 AS y,
+                             apply("or", apply("not", apply(">", apply("value", _xmt_edge_TU_29.a_2), apply("value", _xmt_edge_TU_29.a_1))), apply("=", apply("edge_value", _xmt_edge_TU_29.a_1, _xmt_edge_TU_29.a_2), apply("-", apply("value", _xmt_edge_TU_29.a_2), apply("value", _xmt_edge_TU_29.a_1)))) AS G
+                        FROM _xmt_edge_TU AS _xmt_edge_TU_29)
+                WHERE G <> "true")
         ) AS Agg_48_G
 
 ===========================================

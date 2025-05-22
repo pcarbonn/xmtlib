@@ -1,17 +1,23 @@
 (set-option :backend none)
 (declare-fun p (Int) Bool)
 (declare-fun q (Int) Bool)
+(declare-fun r (Int) Bool)
 (x-interpret-pred p (x-set (1) (5) (7)) )
 (x-interpret-pred q (x-set (1) (3) (8)) )
 (assert (exists ((x Int)) (and (p x) (q x))))
 
+(echo t)
+(x-interpret-pred r (x-set (3)) )
+(assert (exists ((x Int)) (and (p x) (r x))))
 (x-ground)
 (x-debug solver functions)
 (x-debug solver groundings)
 -------------------------
 (declare-fun p (Int) Bool)
 (declare-fun q (Int) Bool)
-(assert (exists ((x Int)) (and (p x) (q x))))
+(declare-fun r (Int) Bool)
+(t)
+(assert false)
 Functions2:
  - true ()->Bool : Constructor
  - false ()->Bool : Constructor
@@ -36,6 +42,7 @@ Functions2:
  - abs ()->Real : Predefined (false)
  - p (Int)->Bool : Boolean (_xmt_p_TU Complete, (infinite), (infinite))
  - q (Int)->Bool : Boolean (_xmt_q_TU Complete, (infinite), (infinite))
+ - r (Int)->Bool : Boolean (_xmt_r_TU Complete, (infinite), (infinite))
 Groundings:
 ===  x ======================================
  -- Join(0)
@@ -108,21 +115,96 @@ SELECT or_aggregate(G) as G
                ON _xmt_p_TU_1.a_1 = _xmt_q_TU_2.a_1)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
-SELECT "(exists ((x Int)) " || or_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              apply("and", apply("p", "x"), apply("q", "x")) AS G)
+SELECT or_aggregate(G) as G
+ FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(7)
+       SELECT _xmt_p_TU_1.a_1 AS x,
+              "true" AS G
+         FROM _xmt_p_TU AS _xmt_p_TU_1
+         JOIN _xmt_q_TU AS _xmt_q_TU_2
+               ON _xmt_p_TU_1.a_1 = _xmt_q_TU_2.a_1)
 ----- G ------------------------------------------------------------
 -- Agg (0)
-SELECT "(exists ((x Int)) " || or_aggregate(G) || ")" as G
+SELECT or_aggregate(G) as G
+ FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(7)
+       SELECT _xmt_p_TU_1.a_1 AS x,
+              "true" AS G
+         FROM _xmt_p_TU AS _xmt_p_TU_1
+         JOIN _xmt_q_TU AS _xmt_q_TU_2
+               ON _xmt_p_TU_1.a_1 = _xmt_q_TU_2.a_1)
+
+===  (r x) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_r_TU_5.a_1 AS x,
+       "true" AS G
+  FROM _xmt_r_TU AS _xmt_r_TU_5
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("r", "x") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("r", "x") AS G
+
+===  (and (p x) (r x)) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_p_TU_1.a_1 AS x,
+       "true" AS G
+  FROM _xmt_p_TU AS _xmt_p_TU_1
+  JOIN _xmt_r_TU AS _xmt_r_TU_5
+        ON _xmt_p_TU_1.a_1 = _xmt_r_TU_5.a_1
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT x,
+       and_aggregate(G) as G
  FROM (-- Join(7)
        SELECT "x" AS x,
-              apply("and", apply("p", "x"), apply("q", "x")) AS G)
+              apply("p", "x") AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "x" AS x,
+              apply("r", "x") AS G)
+ GROUP BY x
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("and", apply("p", "x"), apply("r", "x")) AS G
 
-=== (top) (and (exists ((x Int)) (and (p x) (q x)))) ======================================
+=== (top) (exists ((x Int)) (and (p x) (r x))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT _xmt_p_TU_1.a_1 AS x,
+              "true" AS G
+         FROM _xmt_p_TU AS _xmt_p_TU_1
+         JOIN _xmt_r_TU AS _xmt_r_TU_5
+               ON _xmt_p_TU_1.a_1 = _xmt_r_TU_5.a_1)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT or_aggregate(G) as G
+ FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(7)
+       SELECT _xmt_p_TU_1.a_1 AS x,
+              "true" AS G
+         FROM _xmt_p_TU AS _xmt_p_TU_1
+         JOIN _xmt_r_TU AS _xmt_r_TU_5
+               ON _xmt_p_TU_1.a_1 = _xmt_r_TU_5.a_1)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT or_aggregate(G) as G
+ FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(7)
+       SELECT _xmt_p_TU_1.a_1 AS x,
+              "true" AS G
+         FROM _xmt_p_TU AS _xmt_p_TU_1
+         JOIN _xmt_r_TU AS _xmt_r_TU_5
+               ON _xmt_p_TU_1.a_1 = _xmt_r_TU_5.a_1)
+
+=== (top) (and (exists ((x Int)) (and (p x) (q x))) (exists ((x Int)) (and (p x) (r x)))) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT Agg_4_TU.G AS G
+SELECT apply("and", Agg_4_TU.G, Agg_7_TU.G) AS G
   FROM (-- Agg (8)
         SELECT or_aggregate(G) as G
          FROM (-- Join(15)
@@ -132,20 +214,58 @@ SELECT Agg_4_TU.G AS G
                  JOIN _xmt_q_TU AS _xmt_q_TU_2
                        ON _xmt_p_TU_1.a_1 = _xmt_q_TU_2.a_1)
         ) AS Agg_4_TU
+  JOIN (-- Agg (8)
+        SELECT or_aggregate(G) as G
+         FROM (-- Join(15)
+               SELECT _xmt_p_TU_1.a_1 AS x,
+                      "true" AS G
+                 FROM _xmt_p_TU AS _xmt_p_TU_1
+                 JOIN _xmt_r_TU AS _xmt_r_TU_5
+                       ON _xmt_p_TU_1.a_1 = _xmt_r_TU_5.a_1)
+        ) AS Agg_7_TU
 ----- UF -----------------------------------------------------------
 -- Agg (0)
-SELECT "(exists ((x Int)) " || or_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              apply("and", apply("p", "x"), apply("q", "x")) AS G)
+SELECT G as G
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Agg (14)
+              SELECT or_aggregate(G) as G
+               FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(21)
+                     SELECT _xmt_p_TU_1.a_1 AS x,
+                            "true" AS G
+                       FROM _xmt_p_TU AS _xmt_p_TU_1
+                       JOIN _xmt_q_TU AS _xmt_q_TU_2
+                             ON _xmt_p_TU_1.a_1 = _xmt_q_TU_2.a_1)
+              UNION ALL
+              -- Agg (14)
+              SELECT or_aggregate(G) as G
+               FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(21)
+                     SELECT _xmt_p_TU_1.a_1 AS x,
+                            "true" AS G
+                       FROM _xmt_p_TU AS _xmt_p_TU_1
+                       JOIN _xmt_r_TU AS _xmt_r_TU_5
+                             ON _xmt_p_TU_1.a_1 = _xmt_r_TU_5.a_1))
+        WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT Agg_4_G.G AS G
+SELECT apply("and", Agg_4_G.G, Agg_7_G.G) AS G
   FROM (-- Agg (8)
-        SELECT "(exists ((x Int)) " || or_aggregate(G) || ")" as G
-         FROM (-- Join(15)
-               SELECT "x" AS x,
-                      apply("and", apply("p", "x"), apply("q", "x")) AS G)
+        SELECT or_aggregate(G) as G
+         FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(15)
+               SELECT _xmt_p_TU_1.a_1 AS x,
+                      "true" AS G
+                 FROM _xmt_p_TU AS _xmt_p_TU_1
+                 JOIN _xmt_q_TU AS _xmt_q_TU_2
+                       ON _xmt_p_TU_1.a_1 = _xmt_q_TU_2.a_1)
         ) AS Agg_4_G
+  JOIN (-- Agg (8)
+        SELECT or_aggregate(G) as G
+         FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(15)
+               SELECT _xmt_p_TU_1.a_1 AS x,
+                      "true" AS G
+                 FROM _xmt_p_TU AS _xmt_p_TU_1
+                 JOIN _xmt_r_TU AS _xmt_r_TU_5
+                       ON _xmt_p_TU_1.a_1 = _xmt_r_TU_5.a_1)
+        ) AS Agg_7_G
 
 ===========================================

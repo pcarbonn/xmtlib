@@ -140,10 +140,11 @@ SELECT "x" AS x,
 === (top) (forall ((x Int)) (or (not (Domain x)) (p x) (q x))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              apply("or", apply("not", apply("Domain", "x")), apply("p", "x"), apply("q", "x")) AS G)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(7)
+       SELECT _xmt_domain_TU_1.a_1 AS x,
+              apply("or", apply("p", _xmt_domain_TU_1.a_1), apply("q", _xmt_domain_TU_1.a_1)) AS G
+         FROM _xmt_domain_TU AS _xmt_domain_TU_1)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
@@ -153,20 +154,22 @@ SELECT G as G
          FROM _xmt_domain_TU AS _xmt_domain_TU_1)
 ----- G ------------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              apply("or", apply("not", apply("Domain", "x")), apply("p", "x"), apply("q", "x")) AS G)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(7)
+       SELECT _xmt_domain_TU_1.a_1 AS x,
+              apply("or", apply("p", _xmt_domain_TU_1.a_1), apply("q", _xmt_domain_TU_1.a_1)) AS G
+         FROM _xmt_domain_TU AS _xmt_domain_TU_1)
 
 === (top) (and (forall ((x Int)) (or (not (Domain x)) (p x) (q x)))) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
 SELECT Agg_6_TU.G AS G
   FROM (-- Agg (8)
-        SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
-         FROM (-- Join(15)
-               SELECT "x" AS x,
-                      apply("or", apply("not", apply("Domain", "x")), apply("p", "x"), apply("q", "x")) AS G)
+        SELECT and_aggregate(G) as G
+         FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(15)
+               SELECT _xmt_domain_TU_1.a_1 AS x,
+                      apply("or", apply("p", _xmt_domain_TU_1.a_1), apply("q", _xmt_domain_TU_1.a_1)) AS G
+                 FROM _xmt_domain_TU AS _xmt_domain_TU_1)
         ) AS Agg_6_TU
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -179,10 +182,11 @@ SELECT G as G
 -- Join(0)
 SELECT Agg_6_G.G AS G
   FROM (-- Agg (8)
-        SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
-         FROM (-- Join(15)
-               SELECT "x" AS x,
-                      apply("or", apply("not", apply("Domain", "x")), apply("p", "x"), apply("q", "x")) AS G)
+        SELECT and_aggregate(G) as G
+         FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(15)
+               SELECT _xmt_domain_TU_1.a_1 AS x,
+                      apply("or", apply("p", _xmt_domain_TU_1.a_1), apply("q", _xmt_domain_TU_1.a_1)) AS G
+                 FROM _xmt_domain_TU AS _xmt_domain_TU_1)
         ) AS Agg_6_G
 
 ===========================================

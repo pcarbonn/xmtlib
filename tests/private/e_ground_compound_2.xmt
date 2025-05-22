@@ -117,13 +117,17 @@ SELECT _xmt_p_G_3.a_1 AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(implies_(if_, G)) as G
- FROM (-- Join(7)
-       SELECT _xmt_p_G_3.a_1 AS x,
-              and_(apply("=",apply("f", "a"), _xmt_p_G_3.a_2), apply("=",apply("f", "b"), _xmt_p_G_6.a_2)) AS if_,
-              and_(_xmt_p_G_3.G, _xmt_p_G_6.G) AS G
-         FROM _xmt_p_G AS _xmt_p_G_3
-         JOIN _xmt_p_G AS _xmt_p_G_6
-               ON _xmt_p_G_3.a_1 = _xmt_p_G_6.a_1)
+ FROM (SELECT NULL AS x, 	rue" AS if_, "true" AS G UNION ALL -- Join(7)
+       SELECT _xmt_p_UF_3.a_1 AS x,
+              apply("=",apply("f", "a"), _xmt_p_UF_3.a_2) AS if_, 
+              _xmt_p_UF_3.G AS G
+         FROM _xmt_p_UF AS _xmt_p_UF_3
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_p_UF_6.a_1 AS x,
+              apply("=",apply("f", "b"), _xmt_p_UF_6.a_2) AS if_, 
+              _xmt_p_UF_6.G AS G
+         FROM _xmt_p_UF AS _xmt_p_UF_6)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
@@ -145,13 +149,17 @@ SELECT G as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(implies_(if_, G)) as G
- FROM (-- Join(7)
-       SELECT _xmt_p_G_3.a_1 AS x,
-              and_(apply("=",apply("f", "a"), _xmt_p_G_3.a_2), apply("=",apply("f", "b"), _xmt_p_G_6.a_2)) AS if_,
-              and_(_xmt_p_G_3.G, _xmt_p_G_6.G) AS G
-         FROM _xmt_p_G AS _xmt_p_G_3
-         JOIN _xmt_p_G AS _xmt_p_G_6
-               ON _xmt_p_G_3.a_1 = _xmt_p_G_6.a_1)
+ FROM (SELECT NULL AS x, 	rue" AS if_, "true" AS G UNION ALL -- Join(7)
+       SELECT _xmt_p_UF_3.a_1 AS x,
+              apply("=",apply("f", "a"), _xmt_p_UF_3.a_2) AS if_, 
+              _xmt_p_UF_3.G AS G
+         FROM _xmt_p_UF AS _xmt_p_UF_3
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_p_UF_6.a_1 AS x,
+              apply("=",apply("f", "b"), _xmt_p_UF_6.a_2) AS if_, 
+              _xmt_p_UF_6.G AS G
+         FROM _xmt_p_UF AS _xmt_p_UF_6)
 
 ===  (f x) ======================================
  -- Join(0)
@@ -182,11 +190,14 @@ SELECT _xmt_p_G_10.a_1 AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(implies_(if_, G)) as G
- FROM (-- Join(7)
-       SELECT _xmt_p_G_10.a_1 AS x,
-              apply("=",apply("f", _xmt_p_G_10.a_1), _xmt_p_G_10.a_2) AS if_, 
-              _xmt_p_G_10.G AS G
-         FROM _xmt_p_G AS _xmt_p_G_10)
+ FROM (SELECT NULL AS x, 	rue" AS if_, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_p_UF_10.a_1 AS x,
+                     apply("=",apply("f", _xmt_p_UF_10.a_1), _xmt_p_UF_10.a_2) AS if_, 
+                     _xmt_p_UF_10.G AS G
+                FROM _xmt_p_UF AS _xmt_p_UF_10)
+        WHERE G <> "true")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT implies_(if_, G) as G
@@ -201,11 +212,14 @@ SELECT implies_(if_, G) as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(implies_(if_, G)) as G
- FROM (-- Join(7)
-       SELECT _xmt_p_G_10.a_1 AS x,
-              apply("=",apply("f", _xmt_p_G_10.a_1), _xmt_p_G_10.a_2) AS if_, 
-              _xmt_p_G_10.G AS G
-         FROM _xmt_p_G AS _xmt_p_G_10)
+ FROM (SELECT NULL AS x, 	rue" AS if_, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_p_UF_10.a_1 AS x,
+                     apply("=",apply("f", _xmt_p_UF_10.a_1), _xmt_p_UF_10.a_2) AS if_, 
+                     _xmt_p_UF_10.G AS G
+                FROM _xmt_p_UF AS _xmt_p_UF_10)
+        WHERE G <> "true")
 
 ===========================================
 Tables and Views:

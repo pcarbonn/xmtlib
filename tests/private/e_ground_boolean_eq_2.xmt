@@ -262,46 +262,49 @@ SELECT _xmt_p_2_9.x AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_p_2_9.x AS x,
-              _xmt_p_2_9.y AS y,
-              bool_eq_("true", _xmt_p_2_9.G, agg_union_6.G) AS G
-         FROM (-- Join(15)
-               SELECT _xmt_t.G AS x,
-                      _xmt_t_1.G AS y,
-                      apply("p", _xmt_t.G, _xmt_t_1.G) AS G
-                 FROM _xmt_t
-                 JOIN _xmt_t AS _xmt_t_1
-               ) AS _xmt_p_2_9
-         FULL JOIN (-- Agg (15)
-               SELECT x, y,
-                      and_aggregate(G) as G
-                FROM (-- exclude(22)
-                      SELECT *
-                       FROM (-- Join(29)
-                             SELECT _xmt__4_12.x AS x,
-                                    _xmt_t_1.G AS y,
-                                    _xmt__4_12.G AS G
-                               FROM (-- Join(37)
-                                     SELECT _xmt_t.G AS x,
-                                            eq_(_xmt_t.G, "A") AS G
-                                       FROM _xmt_t
-                                     ) AS _xmt__4_12
-                               JOIN _xmt_t AS _xmt_t_1
-                             UNION ALL
-                             -- Join(29)
-                             SELECT _xmt_t.G AS x,
-                                    _xmt__5_15.y AS y,
-                                    _xmt__5_15.G AS G
-                               FROM (-- Join(37)
-                                     SELECT _xmt_t_1.G AS y,
-                                            eq_(_xmt_t_1.G, "A") AS G
-                                       FROM _xmt_t AS _xmt_t_1
-                                     ) AS _xmt__5_15
-                               JOIN _xmt_t)
-                       WHERE G <> "true")
-                GROUP BY x, y
-               ) AS agg_union_6 ON  agg_union_6.x = _xmt_p_2_9.x AND  agg_union_6.y = _xmt_p_2_9.y)
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_p_2_9.x AS x,
+                     _xmt_p_2_9.y AS y,
+                     bool_eq_("true", _xmt_p_2_9.G, agg_union_6.G) AS G
+                FROM (-- Join(22)
+                      SELECT _xmt_t.G AS x,
+                             _xmt_t_1.G AS y,
+                             apply("p", _xmt_t.G, _xmt_t_1.G) AS G
+                        FROM _xmt_t
+                        JOIN _xmt_t AS _xmt_t_1
+                      ) AS _xmt_p_2_9
+                FULL JOIN (-- Agg (22)
+                      SELECT x, y,
+                             and_aggregate(G) as G
+                       FROM (-- exclude(29)
+                             SELECT *
+                              FROM (-- Join(36)
+                                    SELECT _xmt__4_12.x AS x,
+                                           _xmt_t_1.G AS y,
+                                           _xmt__4_12.G AS G
+                                      FROM (-- Join(44)
+                                            SELECT _xmt_t.G AS x,
+                                                   eq_(_xmt_t.G, "A") AS G
+                                              FROM _xmt_t
+                                            ) AS _xmt__4_12
+                                      JOIN _xmt_t AS _xmt_t_1
+                                    UNION ALL
+                                    -- Join(36)
+                                    SELECT _xmt_t.G AS x,
+                                           _xmt__5_15.y AS y,
+                                           _xmt__5_15.G AS G
+                                      FROM (-- Join(44)
+                                            SELECT _xmt_t_1.G AS y,
+                                                   eq_(_xmt_t_1.G, "A") AS G
+                                              FROM _xmt_t AS _xmt_t_1
+                                            ) AS _xmt__5_15
+                                      JOIN _xmt_t)
+                              WHERE G <> "true")
+                       GROUP BY x, y
+                      ) AS agg_union_6 ON  agg_union_6.x = _xmt_p_2_9.x AND  agg_union_6.y = _xmt_p_2_9.y)
+        WHERE G <> "true")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
@@ -351,45 +354,48 @@ SELECT G as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_p_2_9.x AS x,
-              _xmt_p_2_9.y AS y,
-              bool_eq_("true", _xmt_p_2_9.G, agg_union_6.G) AS G
-         FROM (-- Join(15)
-               SELECT _xmt_t.G AS x,
-                      _xmt_t_1.G AS y,
-                      apply("p", _xmt_t.G, _xmt_t_1.G) AS G
-                 FROM _xmt_t
-                 JOIN _xmt_t AS _xmt_t_1
-               ) AS _xmt_p_2_9
-         FULL JOIN (-- Agg (15)
-               SELECT x, y,
-                      and_aggregate(G) as G
-                FROM (-- exclude(22)
-                      SELECT *
-                       FROM (-- Join(29)
-                             SELECT _xmt__4_12.x AS x,
-                                    _xmt_t_1.G AS y,
-                                    _xmt__4_12.G AS G
-                               FROM (-- Join(37)
-                                     SELECT _xmt_t.G AS x,
-                                            eq_(_xmt_t.G, "A") AS G
-                                       FROM _xmt_t
-                                     ) AS _xmt__4_12
-                               JOIN _xmt_t AS _xmt_t_1
-                             UNION ALL
-                             -- Join(29)
-                             SELECT _xmt_t.G AS x,
-                                    _xmt__5_15.y AS y,
-                                    _xmt__5_15.G AS G
-                               FROM (-- Join(37)
-                                     SELECT _xmt_t_1.G AS y,
-                                            eq_(_xmt_t_1.G, "A") AS G
-                                       FROM _xmt_t AS _xmt_t_1
-                                     ) AS _xmt__5_15
-                               JOIN _xmt_t)
-                       WHERE G <> "true")
-                GROUP BY x, y
-               ) AS agg_union_6 ON  agg_union_6.x = _xmt_p_2_9.x AND  agg_union_6.y = _xmt_p_2_9.y)
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_p_2_9.x AS x,
+                     _xmt_p_2_9.y AS y,
+                     bool_eq_("true", _xmt_p_2_9.G, agg_union_6.G) AS G
+                FROM (-- Join(22)
+                      SELECT _xmt_t.G AS x,
+                             _xmt_t_1.G AS y,
+                             apply("p", _xmt_t.G, _xmt_t_1.G) AS G
+                        FROM _xmt_t
+                        JOIN _xmt_t AS _xmt_t_1
+                      ) AS _xmt_p_2_9
+                FULL JOIN (-- Agg (22)
+                      SELECT x, y,
+                             and_aggregate(G) as G
+                       FROM (-- exclude(29)
+                             SELECT *
+                              FROM (-- Join(36)
+                                    SELECT _xmt__4_12.x AS x,
+                                           _xmt_t_1.G AS y,
+                                           _xmt__4_12.G AS G
+                                      FROM (-- Join(44)
+                                            SELECT _xmt_t.G AS x,
+                                                   eq_(_xmt_t.G, "A") AS G
+                                              FROM _xmt_t
+                                            ) AS _xmt__4_12
+                                      JOIN _xmt_t AS _xmt_t_1
+                                    UNION ALL
+                                    -- Join(36)
+                                    SELECT _xmt_t.G AS x,
+                                           _xmt__5_15.y AS y,
+                                           _xmt__5_15.G AS G
+                                      FROM (-- Join(44)
+                                            SELECT _xmt_t_1.G AS y,
+                                                   eq_(_xmt_t_1.G, "A") AS G
+                                              FROM _xmt_t AS _xmt_t_1
+                                            ) AS _xmt__5_15
+                                      JOIN _xmt_t)
+                              WHERE G <> "true")
+                       GROUP BY x, y
+                      ) AS agg_union_6 ON  agg_union_6.x = _xmt_p_2_9.x AND  agg_union_6.y = _xmt_p_2_9.y)
+        WHERE G <> "true")
 
 ===========================================

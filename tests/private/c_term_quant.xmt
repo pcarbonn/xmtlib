@@ -40,18 +40,12 @@ SELECT "true" AS G WHERE FALSE
 SELECT "true" AS G
 
 === (top) (forall ((x Int)) true) ======================================
------ TU -----------------------------------------------------------
--- Agg (0)
-SELECT and_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT "true" AS G)
+----- T ------------------------------------------------------------
+SELECT "true" AS G WHERE FALSE
 ----- F ------------------------------------------------------------
 SELECT "true" AS G WHERE FALSE
 ----- G ------------------------------------------------------------
--- Agg (0)
-SELECT and_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT "true" AS G)
+SELECT "true" AS G WHERE FALSE
 
 === (top) (exists ((x Int)) true) ======================================
 ----- TU -----------------------------------------------------------
@@ -62,27 +56,21 @@ SELECT or_aggregate(G) as G
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
+ FROM (SELECT "false" AS G UNION ALL -- Join(7)
        SELECT "true" AS G)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
+ FROM (SELECT "false" AS G UNION ALL -- Join(7)
        SELECT "true" AS G)
 
 === (top) (forall ((x Color)) true) ======================================
------ TU -----------------------------------------------------------
--- Agg (0)
-SELECT and_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT "true" AS G)
+----- T ------------------------------------------------------------
+SELECT "true" AS G WHERE FALSE
 ----- F ------------------------------------------------------------
 SELECT "true" AS G WHERE FALSE
 ----- G ------------------------------------------------------------
--- Agg (0)
-SELECT and_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT "true" AS G)
+SELECT "true" AS G WHERE FALSE
 
 === (top) (exists ((x Color)) true) ======================================
 ----- TU -----------------------------------------------------------
@@ -93,12 +81,12 @@ SELECT or_aggregate(G) as G
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
+ FROM (SELECT "false" AS G UNION ALL -- Join(7)
        SELECT "true" AS G)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
+ FROM (SELECT "false" AS G UNION ALL -- Join(7)
        SELECT "true" AS G)
 
 ===  x ======================================
@@ -127,10 +115,13 @@ SELECT _xmt_color_5.G AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_color_5.G AS x,
-              apply("p", _xmt_color_5.G) AS G
-         FROM _xmt_color AS _xmt_color_5)
+ FROM (SELECT NULL AS x, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_color_5.G AS x,
+                     apply("p", _xmt_color_5.G) AS G
+                FROM _xmt_color AS _xmt_color_5)
+        WHERE G <> "true")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
@@ -144,10 +135,13 @@ SELECT G as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_color_5.G AS x,
-              apply("p", _xmt_color_5.G) AS G
-         FROM _xmt_color AS _xmt_color_5)
+ FROM (SELECT NULL AS x, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_color_5.G AS x,
+                     apply("p", _xmt_color_5.G) AS G
+                FROM _xmt_color AS _xmt_color_5)
+        WHERE G <> "true")
 
 === (top) (exists ((x Color)) (p x)) ======================================
 ----- TU -----------------------------------------------------------
@@ -163,17 +157,23 @@ SELECT or_aggregate(G) as G
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_color_5.G AS x,
-              apply("p", _xmt_color_5.G) AS G
-         FROM _xmt_color AS _xmt_color_5)
+ FROM (SELECT NULL AS x, "false" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_color_5.G AS x,
+                     apply("p", _xmt_color_5.G) AS G
+                FROM _xmt_color AS _xmt_color_5)
+        WHERE G <> "false")
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_color_5.G AS x,
-              apply("p", _xmt_color_5.G) AS G
-         FROM _xmt_color AS _xmt_color_5)
+ FROM (SELECT NULL AS x, "false" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_color_5.G AS x,
+                     apply("p", _xmt_color_5.G) AS G
+                FROM _xmt_color AS _xmt_color_5)
+        WHERE G <> "false")
 
 ===  x ======================================
  -- Join(0)
@@ -197,7 +197,7 @@ SELECT "x" AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
+ FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(7)
        SELECT "x" AS x,
               apply("q", "x") AS G)
 ----- UF -----------------------------------------------------------
@@ -209,7 +209,7 @@ SELECT "(forall ((x Int)) " || G || ")" as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT "(forall ((x Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
+ FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(7)
        SELECT "x" AS x,
               apply("q", "x") AS G)
 
@@ -249,26 +249,35 @@ SELECT or_aggregate(G) as G
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT Bool_12.G AS x,
-              apply("r", Bool_12.G) AS G
-         FROM Bool AS Bool_12)
+ FROM (SELECT NULL AS x, "false" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT Bool_12.G AS x,
+                     apply("r", Bool_12.G) AS G
+                FROM Bool AS Bool_12)
+        WHERE G <> "false")
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT Bool_12.G AS x,
-              apply("r", Bool_12.G) AS G
-         FROM Bool AS Bool_12)
+ FROM (SELECT NULL AS x, "false" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT Bool_12.G AS x,
+                     apply("r", Bool_12.G) AS G
+                FROM Bool AS Bool_12)
+        WHERE G <> "false")
 
 === (top) (not (exists ((x Bool)) (r x))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT Bool_12.G AS x,
-              apply("not", apply("r", Bool_12.G)) AS G
-         FROM Bool AS Bool_12)
+ FROM (SELECT NULL AS x, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT Bool_12.G AS x,
+                     apply("not", apply("r", Bool_12.G)) AS G
+                FROM Bool AS Bool_12)
+        WHERE G <> "true")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
@@ -282,10 +291,13 @@ SELECT and_aggregate(G) as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT Bool_12.G AS x,
-              apply("not", apply("r", Bool_12.G)) AS G
-         FROM Bool AS Bool_12)
+ FROM (SELECT NULL AS x, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT Bool_12.G AS x,
+                     apply("not", apply("r", Bool_12.G)) AS G
+                FROM Bool AS Bool_12)
+        WHERE G <> "true")
 
 ===  (not (r x)) ======================================
 ----- TU -----------------------------------------------------------
@@ -335,10 +347,13 @@ SELECT Bool_12.G AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT Bool_12.G AS x,
-              apply("not", apply("r", Bool_12.G)) AS G
-         FROM Bool AS Bool_12)
+ FROM (SELECT NULL AS x, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT Bool_12.G AS x,
+                     apply("not", apply("r", Bool_12.G)) AS G
+                FROM Bool AS Bool_12)
+        WHERE G <> "true")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
@@ -352,10 +367,13 @@ SELECT G as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT Bool_12.G AS x,
-              apply("not", apply("r", Bool_12.G)) AS G
-         FROM Bool AS Bool_12)
+ FROM (SELECT NULL AS x, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT Bool_12.G AS x,
+                     apply("not", apply("r", Bool_12.G)) AS G
+                FROM Bool AS Bool_12)
+        WHERE G <> "true")
 
 ===========================================
 Tables and Views:

@@ -189,12 +189,15 @@ SELECT "x" AS x,
 === (top) (forall ((x Int) (y Int) (z Int)) (or (not (Edge x y)) (not (Edge y z)) (Edge x z))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((x Int) (y Int) (z Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              "y" AS y,
-              "z" AS z,
-              apply("or", apply("not", apply("Edge", "x", "y")), apply("not", apply("Edge", "y", "z")), apply("Edge", "x", "z")) AS G)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, NULL AS y, NULL AS z, "true" AS G UNION ALL -- Join(7)
+       SELECT _xmt_edge_TU_2.a_1 AS x,
+              _xmt_edge_TU_2.a_2 AS y,
+              _xmt_edge_TU_5.a_2 AS z,
+              apply("Edge", _xmt_edge_TU_2.a_1, _xmt_edge_TU_5.a_2) AS G
+         FROM _xmt_edge_TU AS _xmt_edge_TU_2
+         JOIN _xmt_edge_TU AS _xmt_edge_TU_5
+               ON _xmt_edge_TU_2.a_2 = _xmt_edge_TU_5.a_1)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
@@ -208,11 +211,14 @@ SELECT G as G
                ON _xmt_edge_TU_2.a_2 = _xmt_edge_TU_5.a_1)
 ----- G ------------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((x Int) (y Int) (z Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "x" AS x,
-              "y" AS y,
-              "z" AS z,
-              apply("or", apply("not", apply("Edge", "x", "y")), apply("not", apply("Edge", "y", "z")), apply("Edge", "x", "z")) AS G)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, NULL AS y, NULL AS z, "true" AS G UNION ALL -- Join(7)
+       SELECT _xmt_edge_TU_2.a_1 AS x,
+              _xmt_edge_TU_2.a_2 AS y,
+              _xmt_edge_TU_5.a_2 AS z,
+              apply("Edge", _xmt_edge_TU_2.a_1, _xmt_edge_TU_5.a_2) AS G
+         FROM _xmt_edge_TU AS _xmt_edge_TU_2
+         JOIN _xmt_edge_TU AS _xmt_edge_TU_5
+               ON _xmt_edge_TU_2.a_2 = _xmt_edge_TU_5.a_1)
 
 ===========================================

@@ -257,31 +257,21 @@ pub(crate) fn ground_term_(
             match ground_term(term, false, solver)? {
                 (Grounding::NonBoolean(_), _) =>
                     Err(InternalError(42578548)),
-                (Grounding::Boolean { tu: _, uf: sub_uf, g: sub_g }, canonical) => {
+                (Grounding::Boolean { tu: _, uf: sub_uf, g: _ }, canonical) => {
 
                     let index = solver.groundings.len();
                     let table_name = TableName(format!("Agg_{index}"));
 
-                    let (free_variables, infinite_variables) = sub_g.get_free_variables(variables).clone();
+                    let (free_variables, infinite_variables) = sub_uf.get_free_variables(variables).clone();
 
                     let tu = view_for_aggregate(
-                        &sub_g,
+                        &sub_uf,
                         &free_variables,
                         &infinite_variables,
                         "and",
+                        Some(true),
                         Some(false),
                         TableAlias{base_table: TableName(format!("{table_name}_TU")), index: 0})?;
-
-                    let g = view_for_aggregate(
-                        &sub_g,
-                        &free_variables,
-                        &infinite_variables,
-                        "and",
-                        None,
-                        TableAlias{base_table: TableName(format!("{table_name}_G")), index: 0})?;
-
-                    // the infinite variables may be different for sub_uf
-                    let (free_variables, infinite_variables) = sub_uf.get_free_variables(variables).clone();
 
                     let uf = view_for_aggregate(
                         &sub_uf,
@@ -289,7 +279,17 @@ pub(crate) fn ground_term_(
                         &infinite_variables,
                         if top_level { "" } else { "and" },
                         None,
+                        None,
                         TableAlias{base_table: TableName(format!("{table_name}_UF")), index: 0})?;
+
+                    let g = view_for_aggregate(
+                        &sub_uf,
+                        &free_variables,
+                        &infinite_variables,
+                        "and",
+                        Some(true),
+                        None,
+                        TableAlias{base_table: TableName(format!("{table_name}_G")), index: 0})?;
 
                     Ok((Grounding::Boolean{tu, uf, g}, canonical))
                 },
@@ -299,7 +299,7 @@ pub(crate) fn ground_term_(
             match ground_term(term, false, solver)? {
                 (Grounding::NonBoolean(_), _) =>
                     Err(InternalError(42578548)),
-                (Grounding::Boolean { tu: sub_tu, uf: _, g: sub_g }, canonical) => {
+                (Grounding::Boolean { tu: sub_tu, uf: _, g: _ }, canonical) => {
 
                     let index = solver.groundings.len();
                     let table_name = TableName(format!("Agg_{index}"));
@@ -312,24 +312,24 @@ pub(crate) fn ground_term_(
                         &infinite_variables,
                         "or",
                         None,
+                        None,
                         TableAlias{base_table: TableName(format!("{table_name}_TU")), index: 0})?;
 
-                    // the infinite variables may be different from sub tu
-                    let (free_variables, infinite_variables) = sub_g.get_free_variables(variables).clone();
-
                     let uf = view_for_aggregate(
-                        &sub_g,
+                        &sub_tu,
                         &free_variables,
                         &infinite_variables,
                         "or",
+                        Some(false),
                         Some(true),
                         TableAlias{base_table: TableName(format!("{table_name}_UF")), index: 0})?;
 
                     let g = view_for_aggregate(
-                        &sub_g,
+                        &sub_tu,
                         &free_variables,
                         &infinite_variables,
                         "or",
+                        Some(false),
                         None,
                         TableAlias{base_table: TableName(format!("{table_name}_G")), index: 0})?;
                     Ok((Grounding::Boolean{tu, uf, g}, canonical))

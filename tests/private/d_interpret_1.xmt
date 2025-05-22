@@ -174,17 +174,17 @@ SELECT or_aggregate(G) as G
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_bright_G_2.a_1 AS x,
-              _xmt_bright_G_2.G AS G
-         FROM _xmt_bright_G AS _xmt_bright_G_2)
+ FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(7)
+       SELECT _xmt_bright_TU_2.a_1 AS x,
+              "true" AS G
+         FROM _xmt_bright_TU AS _xmt_bright_TU_2)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_bright_G_2.a_1 AS x,
-              _xmt_bright_G_2.G AS G
-         FROM _xmt_bright_G AS _xmt_bright_G_2)
+ FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(7)
+       SELECT _xmt_bright_TU_2.a_1 AS x,
+              "true" AS G
+         FROM _xmt_bright_TU AS _xmt_bright_TU_2)
 
 ===  (same x x) ======================================
 ----- T ------------------------------------------------------------
@@ -218,19 +218,19 @@ SELECT or_aggregate(G) as G
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_same_G_4.a_1 AS x,
-              _xmt_same_G_4.G AS G
-         FROM _xmt_same_G AS _xmt_same_G_4
-        WHERE _xmt_same_G_4.a_1 = _xmt_same_G_4.a_2)
+ FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(7)
+       SELECT _xmt_same_TU_4.a_1 AS x,
+              "true" AS G
+         FROM _xmt_same_TU AS _xmt_same_TU_4
+        WHERE _xmt_same_TU_4.a_1 = _xmt_same_TU_4.a_2)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_same_G_4.a_1 AS x,
-              _xmt_same_G_4.G AS G
-         FROM _xmt_same_G AS _xmt_same_G_4
-        WHERE _xmt_same_G_4.a_1 = _xmt_same_G_4.a_2)
+ FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(7)
+       SELECT _xmt_same_TU_4.a_1 AS x,
+              "true" AS G
+         FROM _xmt_same_TU AS _xmt_same_TU_4
+        WHERE _xmt_same_TU_4.a_1 = _xmt_same_TU_4.a_2)
 
 ===  y ======================================
  -- Join(0)
@@ -272,21 +272,21 @@ SELECT x,
 -- Agg (0)
 SELECT x,
        or_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_same_G_7.a_1 AS x,
-              _xmt_same_G_7.a_2 AS y,
-              _xmt_same_G_7.G AS G
-         FROM _xmt_same_G AS _xmt_same_G_7)
+ FROM (SELECT _xmt_color_1.G AS x, NULL AS y, "false" AS G FROM _xmt_color AS _xmt_color_1 UNION ALL -- Join(7)
+       SELECT _xmt_same_TU_7.a_1 AS x,
+              _xmt_same_TU_7.a_2 AS y,
+              "true" AS G
+         FROM _xmt_same_TU AS _xmt_same_TU_7)
  GROUP BY x
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT x,
        or_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_same_G_7.a_1 AS x,
-              _xmt_same_G_7.a_2 AS y,
-              _xmt_same_G_7.G AS G
-         FROM _xmt_same_G AS _xmt_same_G_7)
+ FROM (SELECT _xmt_color_1.G AS x, NULL AS y, "false" AS G FROM _xmt_color AS _xmt_color_1 UNION ALL -- Join(7)
+       SELECT _xmt_same_TU_7.a_1 AS x,
+              _xmt_same_TU_7.a_2 AS y,
+              "true" AS G
+         FROM _xmt_same_TU AS _xmt_same_TU_7)
  GROUP BY x
 
 === (top) (exists ((x Color)) (exists ((y Color)) (same x y))) ======================================
@@ -301,19 +301,19 @@ SELECT or_aggregate(G) as G
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_same_G_7.a_1 AS x,
-              _xmt_same_G_7.a_2 AS y,
-              _xmt_same_G_7.G AS G
-         FROM _xmt_same_G AS _xmt_same_G_7)
+ FROM (SELECT NULL AS x, NULL AS y, "false" AS G UNION ALL -- Join(7)
+       SELECT _xmt_same_TU_7.a_1 AS x,
+              _xmt_same_TU_7.a_2 AS y,
+              "true" AS G
+         FROM _xmt_same_TU AS _xmt_same_TU_7)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_same_G_7.a_1 AS x,
-              _xmt_same_G_7.a_2 AS y,
-              _xmt_same_G_7.G AS G
-         FROM _xmt_same_G AS _xmt_same_G_7)
+ FROM (SELECT NULL AS x, NULL AS y, "false" AS G UNION ALL -- Join(7)
+       SELECT _xmt_same_TU_7.a_1 AS x,
+              _xmt_same_TU_7.a_2 AS y,
+              "true" AS G
+         FROM _xmt_same_TU AS _xmt_same_TU_7)
 
 ===  x ======================================
  -- Join(0)
@@ -348,17 +348,17 @@ SELECT or_aggregate(G) as G
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_dim_G_11.a_1 AS x,
-              _xmt_dim_G_11.G AS G
-         FROM _xmt_dim_G AS _xmt_dim_G_11)
+ FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(7)
+       SELECT _xmt_dim_TU_11.a_1 AS x,
+              "true" AS G
+         FROM _xmt_dim_TU AS _xmt_dim_TU_11)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (-- Join(7)
-       SELECT _xmt_dim_G_11.a_1 AS x,
-              _xmt_dim_G_11.G AS G
-         FROM _xmt_dim_G AS _xmt_dim_G_11)
+ FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(7)
+       SELECT _xmt_dim_TU_11.a_1 AS x,
+              "true" AS G
+         FROM _xmt_dim_TU AS _xmt_dim_TU_11)
 
 ===  red ======================================
  -- Join(0)

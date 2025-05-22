@@ -441,6 +441,7 @@ pub(crate) fn view_for_aggregate(
     free_variables: &OptionMap<Symbol, TableAlias>,
     infinite_variables: &Vec<SortedVar>,
     agg: &str,
+    default: Option<bool>,
     exclude: Option<bool>,
     table_alias: TableAlias
 ) -> Result<GroundingView, SolverError> {
@@ -466,6 +467,7 @@ pub(crate) fn view_for_aggregate(
                         agg: agg.to_string(),
                         free_variables: free_variables.clone(),
                         infinite_variables: infinite_variables.clone(),
+                        default,
                         sub_view: Box::new(*sub_sub_view.clone()),
                     };
                     return GroundingView::new(table_alias, free_variables.clone(), query, exclude, *all_ids)
@@ -476,6 +478,7 @@ pub(crate) fn view_for_aggregate(
                 agg: agg.to_string(),
                 free_variables: free_variables.clone(),
                 infinite_variables: infinite_variables.clone(),
+                default,
                 sub_view: Box::new(sub_query.clone()),
             };
 
@@ -623,6 +626,7 @@ pub(crate) fn view_for_union(
         agg: agg.to_string(),
         free_variables: free_variables.clone(),
         infinite_variables: vec![],
+        default: None,
         sub_view: Box::new(sub_view),
     };
 

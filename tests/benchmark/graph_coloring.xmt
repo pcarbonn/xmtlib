@@ -950,11 +950,15 @@ SELECT "n1" AS n1,
 === (top) (forall ((n1 Int) (n2 Int)) (or (not (link n1 n2)) (not (= (colourOf n1) (colourOf n2))))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((n1 Int) (n2 Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "n1" AS n1,
-              "n2" AS n2,
-              apply("or", apply("not", apply("link", "n1", "n2")), apply("not", apply("=", apply("colourOf", "n1"), apply("colourOf", "n2")))) AS G)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS n1, NULL AS n2, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_link_TU_2.a_1 AS n1,
+                     _xmt_link_TU_2.a_2 AS n2,
+                     apply("not", apply("=", apply("colourOf", _xmt_link_TU_2.a_1), apply("colourOf", _xmt_link_TU_2.a_2))) AS G
+                FROM _xmt_link_TU AS _xmt_link_TU_2)
+        WHERE G <> "true")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
@@ -968,22 +972,30 @@ SELECT G as G
         WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Agg (0)
-SELECT "(forall ((n1 Int) (n2 Int)) " || and_aggregate(G) || ")" as G
- FROM (-- Join(7)
-       SELECT "n1" AS n1,
-              "n2" AS n2,
-              apply("or", apply("not", apply("link", "n1", "n2")), apply("not", apply("=", apply("colourOf", "n1"), apply("colourOf", "n2")))) AS G)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS n1, NULL AS n2, "true" AS G UNION ALL -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_link_TU_2.a_1 AS n1,
+                     _xmt_link_TU_2.a_2 AS n2,
+                     apply("not", apply("=", apply("colourOf", _xmt_link_TU_2.a_1), apply("colourOf", _xmt_link_TU_2.a_2))) AS G
+                FROM _xmt_link_TU AS _xmt_link_TU_2)
+        WHERE G <> "true")
 
 === (top) (and (forall ((n1 Int) (n2 Int)) (or (not (link n1 n2)) (not (= (colourOf n1) (colourOf n2)))))) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
 SELECT Agg_9_TU.G AS G
   FROM (-- Agg (8)
-        SELECT "(forall ((n1 Int) (n2 Int)) " || and_aggregate(G) || ")" as G
-         FROM (-- Join(15)
-               SELECT "n1" AS n1,
-                      "n2" AS n2,
-                      apply("or", apply("not", apply("link", "n1", "n2")), apply("not", apply("=", apply("colourOf", "n1"), apply("colourOf", "n2")))) AS G)
+        SELECT and_aggregate(G) as G
+         FROM (SELECT NULL AS n1, NULL AS n2, "true" AS G UNION ALL -- exclude(15)
+               SELECT *
+                FROM (-- Join(22)
+                      SELECT _xmt_link_TU_2.a_1 AS n1,
+                             _xmt_link_TU_2.a_2 AS n2,
+                             apply("not", apply("=", apply("colourOf", _xmt_link_TU_2.a_1), apply("colourOf", _xmt_link_TU_2.a_2))) AS G
+                        FROM _xmt_link_TU AS _xmt_link_TU_2)
+                WHERE G <> "true")
         ) AS Agg_9_TU
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -1000,11 +1012,15 @@ SELECT G as G
 -- Join(0)
 SELECT Agg_9_G.G AS G
   FROM (-- Agg (8)
-        SELECT "(forall ((n1 Int) (n2 Int)) " || and_aggregate(G) || ")" as G
-         FROM (-- Join(15)
-               SELECT "n1" AS n1,
-                      "n2" AS n2,
-                      apply("or", apply("not", apply("link", "n1", "n2")), apply("not", apply("=", apply("colourOf", "n1"), apply("colourOf", "n2")))) AS G)
+        SELECT and_aggregate(G) as G
+         FROM (SELECT NULL AS n1, NULL AS n2, "true" AS G UNION ALL -- exclude(15)
+               SELECT *
+                FROM (-- Join(22)
+                      SELECT _xmt_link_TU_2.a_1 AS n1,
+                             _xmt_link_TU_2.a_2 AS n2,
+                             apply("not", apply("=", apply("colourOf", _xmt_link_TU_2.a_1), apply("colourOf", _xmt_link_TU_2.a_2))) AS G
+                        FROM _xmt_link_TU AS _xmt_link_TU_2)
+                WHERE G <> "true")
         ) AS Agg_9_G
 
 ===========================================
