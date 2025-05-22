@@ -387,6 +387,7 @@ peg::parser!{
                       / define_fun_rec()
                       / define_funs_rec()
                       / define_sort()
+                      / echo()
                       / set_option()
                       / xinterpret_const()
                       / xinterpret_pred()
@@ -472,6 +473,10 @@ peg::parser!{
               sort:sort()
             { DefineSort(symbol, variables, sort)}
 
+        rule echo() -> Command
+            = "echo" _
+              string: string()
+            { Echo(string) }
 
         // //////////////////////////// X-Commands     ////////////////////////////
 
@@ -532,7 +537,6 @@ peg::parser!{
 
         rule verbatim() -> Command
             = command: ( "check-sat-assuming"
-                         / "echo"
                          / "get-assertions"
                          / "get-assignment"
                          / "get-info"

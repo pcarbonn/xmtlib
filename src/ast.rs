@@ -515,6 +515,7 @@ pub enum Command {
     DefineFun(FunctionDef, bool),  // true for recursive
     DefineFunsRec(Vec<FunctionDec>, Vec<L<Term>>),
     DefineSort(Symbol, Vec<Symbol>, Sort),
+    Echo(String_),
     SetOption(Option_),
     XDebug(L<Identifier>, L<Identifier>),
     XGround{no: bool, debug: bool},
@@ -561,7 +562,7 @@ impl Display for Command {
                 let variables = m1.iter().format(" ");
                 write!(f, "(define-sort {m0} ({variables}) {m2})\n")
             }
-            // Self::Echo(m0) => write!(f, "(echo {})\n", m0),
+            Self::Echo(m0) => write!(f, "(echo {})\n", m0),
             // Self::Exit => write!(f, "(exit)\n"),
             // Self::GetAssertions => write!(f, "(get-assertions)\n"),
             // Self::GetAssignment => write!(f, "(get-assignment)\n"),

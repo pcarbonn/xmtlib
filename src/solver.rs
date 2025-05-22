@@ -325,6 +325,7 @@ impl Solver {
                 Command::DefineSort(symb, variables, sort) =>
                     yield_!(define_sort(symb, variables, sort, command, self)),
 
+                Command::Echo(string) => yield_!(self.exec(&command)),
                 Command::XInterpretPred(identifier, tuples) =>
                     yield_!(interpret_pred(identifier, tuples, self)),
 
@@ -430,9 +431,7 @@ impl Solver {
                     }
                 }
 
-                Command::Verbatim(_) => {
-                    yield_!(self.exec(&command))
-                },
+                Command::Verbatim(_) => yield_!(self.exec(&command)),
             }
         })
     }

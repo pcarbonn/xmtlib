@@ -4,9 +4,10 @@
 (declare-fun r (Int) Bool)
 (x-interpret-pred p (x-set (1) (5) (7)) )
 (x-interpret-pred q (x-set (1) (3) (8)) )
+(echo "for p+q:")
 (assert (exists ((x Int)) (and (p x) (q x))))
 
-(echo t)
+(echo "for p+r:")
 (x-interpret-pred r (x-set (3)) )
 (assert (exists ((x Int)) (and (p x) (r x))))
 (x-ground)
@@ -16,7 +17,8 @@
 (declare-fun p (Int) Bool)
 (declare-fun q (Int) Bool)
 (declare-fun r (Int) Bool)
-(t)
+(echo "for p+q:")
+(echo "for p+r:")
 (assert false)
 Functions2:
  - true ()->Bool : Constructor
