@@ -668,7 +668,7 @@ fn create_missing_views(
     solver.conn.execute(&sql, ())?;
 
     // create the final view
-    let sql = format!("CREATE VIEW {all} AS SELECT * FROM {from} UNION SELECT * FROM {missing}");
+    let sql = format!("CREATE VIEW {all} AS SELECT * FROM {from} UNION ALL SELECT * FROM {missing}");
     solver.conn.execute(&sql, ())?;
     Ok(())
 }
@@ -691,7 +691,7 @@ fn add_missing_rows(
     let sql = format!("ALTER TABLE {table} RENAME TO {table_k}");
     solver.conn.execute(&sql, ())?;
 
-    let sql = format!("CREATE VIEW {table} AS SELECT * FROM {table_k} UNION SELECT * FROM {missing}");
+    let sql = format!("CREATE VIEW {table} AS SELECT * FROM {table_k} UNION ALL SELECT * FROM {missing}");
     solver.conn.execute(&sql, ())?;
 
     Ok(())

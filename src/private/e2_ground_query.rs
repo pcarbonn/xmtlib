@@ -394,7 +394,7 @@ impl GroundingQuery {
                         let (sql, ids_) = query.to_sql(var_joins, indent);
                         ids = max(ids.clone(), ids_);
                         sql
-                    }).collect::<Vec<_>>().join(format!("\n{indent}UNION\n{indent}").as_str());
+                    }).collect::<Vec<_>>().join(format!("\n{indent}UNION ALL\n{indent}").as_str());
                 (view, ids)
             }
         }

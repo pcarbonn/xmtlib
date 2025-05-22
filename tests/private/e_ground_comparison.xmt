@@ -168,7 +168,7 @@ SELECT G as G
        SELECT *
         FROM (-- Join(14)
               SELECT compare_("<=", 2, 2) AS G
-              UNION
+              UNION ALL
               -- Join(14)
               SELECT not_(compare_("<=", 3, 3)) AS G)
         WHERE G <> "true")
@@ -237,7 +237,7 @@ SELECT G as G
        SELECT *
         FROM (-- Join(14)
               SELECT compare_("<=", 2.0, 2.0) AS G
-              UNION
+              UNION ALL
               -- Join(14)
               SELECT not_(compare_("<=", 3.0, 3.0)) AS G)
         WHERE G <> "true")

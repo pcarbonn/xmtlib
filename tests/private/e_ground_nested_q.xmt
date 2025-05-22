@@ -118,7 +118,7 @@ SELECT x,
         FROM (-- Join(14)
               SELECT "x" AS x,
                      apply("not", apply("domain", "x")) AS G
-              UNION
+              UNION ALL
               -- Agg (14)
               SELECT x,
                      "(exists ((y Int)) " || or_aggregate(G) || ")" as G
@@ -256,7 +256,7 @@ SELECT x, y,
               SELECT "x" AS x,
                      "y" AS y,
                      apply("not", apply("domain2", "x", "y")) AS G
-              UNION
+              UNION ALL
               -- Agg (14)
               SELECT x,
                      "(exists ((y Int)) " || or_aggregate(G) || ")" as G

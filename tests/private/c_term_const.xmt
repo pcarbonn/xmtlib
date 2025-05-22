@@ -88,7 +88,7 @@ SELECT apply("q", "green") AS G
 SELECT or_aggregate(G) as G
  FROM (-- Join(7)
        SELECT apply("q", "red") AS G
-       UNION
+       UNION ALL
        -- Join(7)
        SELECT apply("q", "green") AS G)
 ----- UF -----------------------------------------------------------
@@ -104,7 +104,7 @@ SELECT apply("or", apply("q", "red"), apply("q", "green")) AS G
 SELECT or_aggregate(G) as G
  FROM (-- Join(7)
        SELECT apply("q", "red") AS G
-       UNION
+       UNION ALL
        -- Join(7)
        SELECT apply("q", "red") AS G)
 ----- UF -----------------------------------------------------------

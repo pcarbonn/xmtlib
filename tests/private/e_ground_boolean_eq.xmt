@@ -161,7 +161,7 @@ SELECT x,
         FROM (-- Join(14)
               SELECT "x" AS x,
                      apply("not", apply("domain", "x")) AS G
-              UNION
+              UNION ALL
               -- Join(14)
               SELECT Outer_0.x AS x,
                      bool_eq_("true", Outer_0.G, Outer_1.G) AS G

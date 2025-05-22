@@ -660,7 +660,7 @@ fn create_table(
         let columns = column_names.iter()
             .map( |(name, _)| name.to_string())
             .collect::<Vec<_>>().join(", ");
-        let insert = format!("INSERT INTO {table} (constructor, {columns}, G) {}", selects.join( " UNION "));
+        let insert = format!("INSERT INTO {table} (constructor, {columns}, G) {}", selects.join( " UNION ALL "));
         solver.conn.execute(&insert, ())?;
     }
 

@@ -97,7 +97,7 @@ SELECT x,
               apply("=",apply("f", "a"), _xmt_p_UF_3.a_2) AS if_, 
               _xmt_p_UF_3.G AS G
          FROM _xmt_p_UF AS _xmt_p_UF_3
-       UNION
+       UNION ALL
        -- Join(7)
        SELECT _xmt_p_UF_6.a_1 AS x,
               apply("=",apply("f", "b"), _xmt_p_UF_6.a_2) AS if_, 
@@ -135,7 +135,7 @@ SELECT G as G
                      apply("=",apply("f", "a"), _xmt_p_UF_3.a_2) AS if_, 
                      _xmt_p_UF_3.G AS G
                 FROM _xmt_p_UF AS _xmt_p_UF_3
-              UNION
+              UNION ALL
               -- Join(14)
               SELECT _xmt_p_UF_6.a_1 AS x,
                      apply("=",apply("f", "b"), _xmt_p_UF_6.a_2) AS if_, 

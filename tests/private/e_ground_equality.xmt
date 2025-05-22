@@ -134,7 +134,7 @@ SELECT G as G
        SELECT *
         FROM (-- Join(14)
               SELECT "true" AS G
-              UNION
+              UNION ALL
               -- Join(14)
               SELECT not_("true") AS G)
         WHERE G <> "true")
