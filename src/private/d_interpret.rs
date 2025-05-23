@@ -668,7 +668,7 @@ fn create_missing_views(
     solver.conn.execute(&sql, ())?;
 
     // create the final view
-    let sql = format!("CREATE VIEW {all} AS SELECT * FROM {from} UNION ALL SELECT * FROM {missing}");
+    let sql = format!("CREATE VIEW {all} AS SELECT {columns}, IFNULL({from}.G, {value}) as G from {joins} LEFT JOIN {from} ON {thetas}");
     solver.conn.execute(&sql, ())?;
     Ok(())
 }
