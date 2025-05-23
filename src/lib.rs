@@ -133,7 +133,7 @@
 //! and to simplify the resulting expression using the known interpretation of `Edge`.
 //! This also does not scale well, unless sophisticated grounding algorithms are used.
 //!
-//! Another benefit is that it is possible for xmt-lib to directly read data in a sqlite database, using `(x-sq`.
+//! Another benefit is that it is possible for xmt-lib to directly read data in a sqlite database, using `(x-sql`.
 //!
 //!
 //!

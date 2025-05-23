@@ -222,25 +222,25 @@ SELECT _xmt_p_G_2.G AS G
   FROM _xmt_p_G AS _xmt_p_G_2
  WHERE construct2("Right", "red") = _xmt_p_G_2.a_1
 
-===  (as nil (Either Color)) ======================================
+===   (as nil (Either Color)) ======================================
  -- Join(0)
-SELECT "(as nil (Either Color))" AS G
-=== (top) (p (as nil (Either Color))) ======================================
+SELECT " (as nil (Either Color))" AS G
+=== (top) (p  (as nil (Either Color))) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
 SELECT "true" AS G
   FROM _xmt_p_TU AS _xmt_p_TU_4
- WHERE "(as nil (Either Color))" = _xmt_p_TU_4.a_1
+ WHERE " (as nil (Either Color))" = _xmt_p_TU_4.a_1
 ----- F ------------------------------------------------------------
 -- Join(0)
 SELECT "false" AS G
   FROM _xmt_p_UF AS _xmt_p_UF_4
- WHERE "(as nil (Either Color))" = _xmt_p_UF_4.a_1
+ WHERE " (as nil (Either Color))" = _xmt_p_UF_4.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_p_G_4.G AS G
   FROM _xmt_p_G AS _xmt_p_G_4
- WHERE "(as nil (Either Color))" = _xmt_p_G_4.a_1
+ WHERE " (as nil (Either Color))" = _xmt_p_G_4.a_1
 
 ===  (Left red) ======================================
  -- Join(0)
@@ -279,25 +279,25 @@ SELECT not_(_xmt_p_G_6.G) AS G
   FROM _xmt_p_G AS _xmt_p_G_6
  WHERE construct2("Left", "red") = _xmt_p_G_6.a_1
 
-===  (as nil (Either Material)) ======================================
+===   (as nil (Either Material)) ======================================
  -- Join(0)
-SELECT "(as nil (Either Material))" AS G
-=== (top) ((_ is nil) (as nil (Either Material))) ======================================
+SELECT " (as nil (Either Material))" AS G
+=== (top) ((_ is nil)  (as nil (Either Material))) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
 SELECT "true" AS G
   FROM _xmt_sort_9_nil_tester_t AS _xmt_sort_9_nil_tester_t_9
- WHERE "(as nil (Either Material))" = _xmt_sort_9_nil_tester_t_9.a_1
+ WHERE " (as nil (Either Material))" = _xmt_sort_9_nil_tester_t_9.a_1
 ----- F ------------------------------------------------------------
 -- Join(0)
 SELECT "false" AS G
   FROM _xmt_sort_9_nil_tester_f AS _xmt_sort_9_nil_tester_f_9
- WHERE "(as nil (Either Material))" = _xmt_sort_9_nil_tester_f_9.a_1
+ WHERE " (as nil (Either Material))" = _xmt_sort_9_nil_tester_f_9.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_sort_9_nil_tester_g_9.G AS G
   FROM _xmt_sort_9_nil_tester_g AS _xmt_sort_9_nil_tester_g_9
- WHERE "(as nil (Either Material))" = _xmt_sort_9_nil_tester_g_9.a_1
+ WHERE " (as nil (Either Material))" = _xmt_sort_9_nil_tester_g_9.a_1
 
 ===  blue ======================================
  -- Join(0)

@@ -273,7 +273,7 @@ impl Display for QualIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::Identifier(m0) => write!(f, "{}", m0),
-            Self::Sorted(m0, m1) => write!(f, "(as {} {})", m0, m1),
+            Self::Sorted(m0, m1) => write!(f, " (as {} {})", m0, m1),  // must be a constructor  TODO SMT 2.7
         }
     }
 }

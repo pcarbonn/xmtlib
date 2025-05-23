@@ -379,7 +379,7 @@ pub(crate) fn view_for_compound(
             }
         }).collect();
 
-    let grounding =
+    let grounding =  // also updates all_ids, theta_joins
         match variant {
             QueryVariant::Interpretation(table_name, ids_) => {
                 theta_joins.insert(table_name.clone(), thetas.clone());

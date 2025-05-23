@@ -162,8 +162,10 @@ impl GroundingQuery {
                 let theta_joins = &theta_joins;
 
                 // add DISTINCT if a mapping is partial
-                let distinct = theta_joins.iter().any( |(_, mappings)|
-                    mappings.iter().any(|mapping| mapping.is_none())
+                let distinct = theta_joins.iter()
+                    .any( |(_, mappings)|
+                        mappings.iter()
+                        .any(|mapping| mapping.is_none())
                 );
                 let distinct = if distinct { " DISTINCT " } else { "" };
 

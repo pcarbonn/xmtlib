@@ -1,5 +1,5 @@
-
 xmt-lib denotes:
+
 * an extension of the [SMT-Lib 2.6](https://smt-lib.org/language.shtml) language
   to communicate with [SMT](https://fr.wikipedia.org/wiki/Satisfiability_modulo_theories) solvers;
 * a program that executes commands in that language.
@@ -19,20 +19,19 @@ xmt-lib extends the [SMT-Lib 2.6](https://smt-lib.org/language.shtml) language w
 * `x-interpret-pred`, to specify the interpretation of a boolean function symbol;
 * `x-interpret-fun`, to specify the interpretation of a function symbol;
 * `x-ground`, to ground assertions, i.e., to expand the quantifications in the submitted assertions,
-taking into account the known interpretations.
+  taking into account the known interpretations.
 
 xmt-lib supports the Core, Int and Real [theories of SMT-Lib](https://smt-lib.org/theories.shtml).
 Future extensions of the language are expected to provide more expressivity and reasoning capabilities:
+
 - [ ] partial functions
 - [ ] aggregates
 - [ ] inductive definitions
 - [ ] intensional logic
 - [ ] more reasoning tasks
 
-
 xmt-lib is inspired by the [FO(.)](https://fo-dot.readthedocs.io/en/latest/FO-dot.html) language
 and [IDP-Z3](https://www.idp-z3.be/) reasoning engine developed by KU Leuven.
-
 
 # Usage
 
@@ -92,7 +91,6 @@ Executing the code will yield the output below:
 (assert (Triangle 1 2 3))
 ```
 
-
 To check satisfiability of the formula, replace the first line of the xmt-lib code by:
 
 ```text
@@ -104,8 +102,6 @@ Running the program will now yield `sat`, meaning that the formula is satisfiabl
 You can obtain an interpretation of `Triangle` satisfying the formula
 using the `get-model` and `get_value` commands of [SMT-Lib 2.6](https://smt-lib.org/papers/smt-lib-reference-v2.6-r2024-09-20.pdf).
 Every command of SMT-Lib 2.6 are supported.
-
-
 
 # Benefits
 
@@ -129,9 +125,7 @@ to expand the quantification over that domain using a procedural programming lan
 and to simplify the resulting expression using the known interpretation of `Edge`.
 This also does not scale well, unless sophisticated grounding algorithms are used.
 
-Another benefit is that it is possible for xmt-lib to directly read data in a sqlite database, using `(x-sq`.
-
-
+Another benefit is that it is possible for xmt-lib to directly read data in a sqlite database, using `(x-sql`.
 
 # Rust API interface
 
@@ -153,7 +147,6 @@ The new commands introduced by xmt-lib are listed below.
 Note that, unlike SMT-Lib 2.6, but like the Z3 solver,
 xmt-lib accepts negative numbers in terms (e.g., `-1` is accepted for `(- 1)`).
 
-
 ## (set-option :backend ...)
 
 This command has the following variants:
@@ -163,7 +156,6 @@ This command has the following variants:
 
 By default, the backend is Z3.
 It can only be changed at the start of a session.
-
 
 ## (x-interpret-const ...)
 
@@ -184,7 +176,6 @@ the interpretation of a constant is used to simplify the grounding.
 Note that interpreted constants may take any value in a model obtained by `(get-model)`.
 So, in our example, `c` and `p` may have any value in a model.
 
-
 ## (x-interpret-pred ...)
 
 An `x-interpret-pred` command specifies the total interpretation of a boolean function symbol (aka a predicate),
@@ -194,19 +185,17 @@ Such an intepretation can be given only once.
 This list of tuples can be supplied using:
 
 * `(x-set`, e.g., `(x-interpret-pred Edge (x-set (a b) (b c) (c a)) )`.
-The only pairs of nodes that satisfy the `Edge` predicate are `(a b)`, `(b c)`, and `(c a)`.
-
+  The only pairs of nodes that satisfy the `Edge` predicate are `(a b)`, `(b c)`, and `(c a)`.
 * `(x-sql "SELECT .. FROM ..")`.
-The SELECT is run using the sqlite connection of the solver.
-The SELECT must return `n` columns named `a_0, .. a_n`
-where `n` is the arity of the symbol being interpreted.
-These columns must be of type INTEGER for integers, REAL for reals, and TEXT otherwise,
-and contain nullary constructors.
-
+  The SELECT is run using the sqlite connection of the solver.
+  The SELECT must return `n` columns named `a_0, .. a_n`
+  where `n` is the arity of the symbol being interpreted.
+  These columns must be of type INTEGER for integers, REAL for reals, and TEXT otherwise,
+  and contain nullary constructors.
 * `(x-range`, e.g., `(x-interpret-pred Row (x-range 1 8) )`.
-The values making Row true are 1, 2, 3, 4, 5, 6, 7, 8.
-The set is the (union of) interval with inclusive boundaries.
-This can only be used for unary predicates over Int.
+  The values making Row true are 1, 2, 3, 4, 5, 6, 7, 8.
+  The set is the (union of) interval with inclusive boundaries.
+  This can only be used for unary predicates over Int.
 
 The list of tuples may not have duplicate tuples,
 and the values in the tuples must be of the appropriate type for the predicate.
@@ -216,7 +205,6 @@ Note that the data integrity rules are not enforced for the `(x-sql` variant.
 Note that interpreted predicates may take any value in a model obtained by `(get-model)`.
 So, in our first example, `(Edge 1 1)` may have any value in a model.
 
-
 ## (x-interpret-fun ...)
 
 An `x-interpret-fun` command specifies the interpretation of a function symbol, possibly partially,
@@ -224,27 +212,27 @@ by mapping a value to tuples of arguments, and by giving a default value.
 (The interpretation of a function with an infinite domain cannot be given)
 
 The grammar for this command is:
+
 ```text
     '(' 'x-interpret-fun' <symbol> <mappings> <default>? ')'
 ```
 
 The mappings can be supplied using:
 
-* ``` `(` `x-mapping` ['(' <tuple> <value> ')']* `)` ```
-where a tuple is a list of identifiers between parenthesis (e.g., `(a b)`),
-and a value is an identifier or  `?` (for unknown value).
-The list of identifiers must match the arity of the function symbol.
-For example, `(x-mapping ((a b) 2) ((b c) ?) ((c a) 4) )`
-maps `(a b)` to 2, `(b c)` to unknown, and `(c a)` to 4
-
+* ``` `(` `x-mapping` ['(' <tuple> <value> ')']* `)` ``
+  where a tuple is a list of identifiers between parenthesis (e.g., `(a b)`),
+  and a value is an identifier or  `?` (for unknown value).
+  The list of identifiers must match the arity of the function symbol.
+  For example, `(x-mapping ((a b) 2) ((b c) ?) ((c a) 4) )`
+  maps `(a b)` to 2, `(b c)` to unknown, and `(c a)` to 4
 * `(x-sql "SELECT .. FROM ..")`
-The SELECT is run using the sqlite connection of the solver.
-The SELECT must return `n+1` columns named `a_0, .. a_n, G`
-where `n` is the arity of the symbol being interpreted,
-`a_0, .. a_n` contain the tuples of arguments, and `G` the corresponding known values.
-These columns must be of type INTEGER for integers, REAL for reals, and TEXT otherwise.
-The values in the mappings must be nullary constructors (thus excluding "?")
-(note: this rule is not enforced by the xmtlib crate)
+  The SELECT is run using the sqlite connection of the solver.
+  The SELECT must return `n+1` columns named `a_0, .. a_n, G`
+  where `n` is the arity of the symbol being interpreted,
+  `a_0, .. a_n` contain the tuples of arguments, and `G` the corresponding known values.
+  These columns must be of type INTEGER for integers, REAL for reals, and TEXT otherwise.
+  The values in the mappings must be nullary constructors (thus excluding "?")
+  (note: this rule is not enforced by the xmtlib crate)
 
 The mappings may not have duplicate tuples,
 and the values in the mapping must be of the appropriate type.
@@ -257,8 +245,6 @@ Note that pre-interpreted terms may take any value in a model obtained by `(get-
 (In our triangle example above,
 `(Length a b)` can have any interpretation in a model,
 but `(Length b c)` will have an interpretation that satisfies the assertions)
-
-
 
 ## (x-ground)
 
@@ -275,8 +261,6 @@ and then to ground the assertions using those interpretations.
 Note that `(check-sat)` grounds any pending assertions,
 making a prior call to `x-ground` unnecessary.
 
-
-
 # Command-line interface
 
 Usage: xmt-lib <FILE_PATH>
@@ -287,4 +271,3 @@ Arguments:
 Options:
 -h, --help     Print help
 -V, --version  Print version
-
