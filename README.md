@@ -4,7 +4,8 @@ xmt-lib denotes:
   to communicate with [SMT](https://fr.wikipedia.org/wiki/Satisfiability_modulo_theories) solvers;
 * a program that executes commands in that language.
 
-The program can be used to find (optimal) solutions of combinatorial/configuration problems.
+The program can be used to find (optimal) solutions of combinatorial problems
+ (e.g., the [stable matching problem](https://en.wikipedia.org/wiki/Stable_matching_problem)) and configuration problems (e.g., for custom manufacturing).
 It is faster than standard SMT solvers for the model expansion task,
 i.e., the task of finding a model of a logic formula
 when the interpretation of some symbols of the vocabulary is already known.
@@ -219,7 +220,7 @@ The grammar for this command is:
 
 The mappings can be supplied using:
 
-* ``` `(` `x-mapping` ['(' <tuple> <value> ')']* `)` ``
+* ``` `(` `x-mapping` ['(' `<tuple>` `<value>` ')']* `)` ``
   where a tuple is a list of identifiers between parenthesis (e.g., `(a b)`),
   and a value is an identifier or  `?` (for unknown value).
   The list of identifiers must match the arity of the function symbol.

@@ -1,22 +1,24 @@
 (set-option :backend none)
-(declare-fun p (Int) Bool)
-(declare-fun q (Int) Bool)
-(declare-fun r (Int) Bool)
-(x-interpret-pred p (x-set (1) (5) (7)) )
-(x-interpret-pred q (x-set (1) (3) (8)) )
+(declare-datatype element ( (e1) (e2) (e3) (e4) (e5) (e6) (e7) (e8) ))
+(declare-fun p (element) Bool)
+(declare-fun q (element) Bool)
+(declare-fun r (element) Bool)
+(x-interpret-pred p (x-set (e1) (e5) (e7)) )
+(x-interpret-pred q (x-set (e1) (e3) (e8)) )
 (echo "for p+q:")
-(assert (exists ((x Int)) (and (p x) (q x))))
+(assert (exists ((x element)) (and (p x) (q x))))
 
 (echo "for p+r:")
-(x-interpret-pred r (x-set (3)) )
-(assert (exists ((x Int)) (and (p x) (r x))))
+(x-interpret-pred r (x-set (e3)) )
+(assert (exists ((x element)) (and (p x) (r x))))
 (x-ground)
 (x-debug solver functions)
 (x-debug solver groundings)
 -------------------------
-(declare-fun p (Int) Bool)
-(declare-fun q (Int) Bool)
-(declare-fun r (Int) Bool)
+(declare-datatype element ((e1 ) (e2 ) (e3 ) (e4 ) (e5 ) (e6 ) (e7 ) (e8 )))
+(declare-fun p (element) Bool)
+(declare-fun q (element) Bool)
+(declare-fun r (element) Bool)
 (echo "for p+q:")
 (echo "for p+r:")
 (assert false)
@@ -42,28 +44,47 @@ Functions2:
  - div ()->Real : Predefined (false)
  - mod ()->Real : Predefined (false)
  - abs ()->Real : Predefined (false)
- - p (Int)->Bool : Boolean (_xmt_p_TU Complete, (infinite), (infinite))
- - q (Int)->Bool : Boolean (_xmt_q_TU Complete, (infinite), (infinite))
- - r (Int)->Bool : Boolean (_xmt_r_TU Complete, (infinite), (infinite))
+ - e1 ()->element : Constructor
+ - e2 ()->element : Constructor
+ - e3 ()->element : Constructor
+ - e4 ()->element : Constructor
+ - e5 ()->element : Constructor
+ - e6 ()->element : Constructor
+ - e7 ()->element : Constructor
+ - e8 ()->element : Constructor
+ - (_ is e1) (element)->Bool : Boolean (_xmt_element_e1_tester_t Complete, _xmt_element_e1_tester_f Complete, _xmt_element_e1_tester_g Complete)
+ - (_ is e2) (element)->Bool : Boolean (_xmt_element_e2_tester_t Complete, _xmt_element_e2_tester_f Complete, _xmt_element_e2_tester_g Complete)
+ - (_ is e3) (element)->Bool : Boolean (_xmt_element_e3_tester_t Complete, _xmt_element_e3_tester_f Complete, _xmt_element_e3_tester_g Complete)
+ - (_ is e4) (element)->Bool : Boolean (_xmt_element_e4_tester_t Complete, _xmt_element_e4_tester_f Complete, _xmt_element_e4_tester_g Complete)
+ - (_ is e5) (element)->Bool : Boolean (_xmt_element_e5_tester_t Complete, _xmt_element_e5_tester_f Complete, _xmt_element_e5_tester_g Complete)
+ - (_ is e6) (element)->Bool : Boolean (_xmt_element_e6_tester_t Complete, _xmt_element_e6_tester_f Complete, _xmt_element_e6_tester_g Complete)
+ - (_ is e7) (element)->Bool : Boolean (_xmt_element_e7_tester_t Complete, _xmt_element_e7_tester_f Complete, _xmt_element_e7_tester_g Complete)
+ - (_ is e8) (element)->Bool : Boolean (_xmt_element_e8_tester_t Complete, _xmt_element_e8_tester_f Complete, _xmt_element_e8_tester_g Complete)
+ - p (element)->Bool : Boolean (_xmt_p_TU Complete, _xmt_p_UF Complete, _xmt_p_G Complete)
+ - q (element)->Bool : Boolean (_xmt_q_TU Complete, _xmt_q_UF Complete, _xmt_q_G Complete)
+ - r (element)->Bool : Boolean (_xmt_r_TU Complete, _xmt_r_UF Complete, _xmt_r_G Complete)
 Groundings:
 ===  x ======================================
  -- Join(0)
-SELECT "x" AS x,
-       "x" AS G
+SELECT _xmt_element.G AS x,
+       _xmt_element.G AS G
+  FROM _xmt_element
 ===  (p x) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_p_TU_1.a_1 AS x,
        "true" AS G
   FROM _xmt_p_TU AS _xmt_p_TU_1
------ UF -----------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
-SELECT "x" AS x,
-       apply("p", "x") AS G
+SELECT _xmt_p_UF_1.a_1 AS x,
+       "false" AS G
+  FROM _xmt_p_UF AS _xmt_p_UF_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT "x" AS x,
-       apply("p", "x") AS G
+SELECT _xmt_p_G_1.a_1 AS x,
+       _xmt_p_G_1.G AS G
+  FROM _xmt_p_G AS _xmt_p_G_1
 
 ===  (q x) ======================================
 ----- T ------------------------------------------------------------
@@ -71,14 +92,16 @@ SELECT "x" AS x,
 SELECT _xmt_q_TU_2.a_1 AS x,
        "true" AS G
   FROM _xmt_q_TU AS _xmt_q_TU_2
------ UF -----------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
-SELECT "x" AS x,
-       apply("q", "x") AS G
+SELECT _xmt_q_UF_2.a_1 AS x,
+       "false" AS G
+  FROM _xmt_q_UF AS _xmt_q_UF_2
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT "x" AS x,
-       apply("q", "x") AS G
+SELECT _xmt_q_G_2.a_1 AS x,
+       _xmt_q_G_2.G AS G
+  FROM _xmt_q_G AS _xmt_q_G_2
 
 ===  (and (p x) (q x)) ======================================
 ----- T ------------------------------------------------------------
@@ -93,19 +116,24 @@ SELECT _xmt_p_TU_1.a_1 AS x,
 SELECT x,
        and_aggregate(G) as G
  FROM (-- Join(7)
-       SELECT "x" AS x,
-              apply("p", "x") AS G
+       SELECT _xmt_p_UF_1.a_1 AS x,
+              "false" AS G
+         FROM _xmt_p_UF AS _xmt_p_UF_1
        UNION ALL
        -- Join(7)
-       SELECT "x" AS x,
-              apply("q", "x") AS G)
+       SELECT _xmt_q_UF_2.a_1 AS x,
+              "false" AS G
+         FROM _xmt_q_UF AS _xmt_q_UF_2)
  GROUP BY x
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT "x" AS x,
-       apply("and", apply("p", "x"), apply("q", "x")) AS G
+SELECT _xmt_p_G_1.a_1 AS x,
+       and_(_xmt_p_G_1.G, _xmt_q_G_2.G) AS G
+  FROM _xmt_p_G AS _xmt_p_G_1
+  JOIN _xmt_q_G AS _xmt_q_G_2
+        ON _xmt_p_G_1.a_1 = _xmt_q_G_2.a_1
 
-=== (top) (exists ((x Int)) (and (p x) (q x))) ======================================
+=== (top) (exists ((x element)) (and (p x) (q x))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
@@ -144,14 +172,16 @@ SELECT or_aggregate(G) as G
 SELECT _xmt_r_TU_5.a_1 AS x,
        "true" AS G
   FROM _xmt_r_TU AS _xmt_r_TU_5
------ UF -----------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Join(0)
-SELECT "x" AS x,
-       apply("r", "x") AS G
+SELECT _xmt_r_UF_5.a_1 AS x,
+       "false" AS G
+  FROM _xmt_r_UF AS _xmt_r_UF_5
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT "x" AS x,
-       apply("r", "x") AS G
+SELECT _xmt_r_G_5.a_1 AS x,
+       _xmt_r_G_5.G AS G
+  FROM _xmt_r_G AS _xmt_r_G_5
 
 ===  (and (p x) (r x)) ======================================
 ----- T ------------------------------------------------------------
@@ -166,19 +196,24 @@ SELECT _xmt_p_TU_1.a_1 AS x,
 SELECT x,
        and_aggregate(G) as G
  FROM (-- Join(7)
-       SELECT "x" AS x,
-              apply("p", "x") AS G
+       SELECT _xmt_p_UF_1.a_1 AS x,
+              "false" AS G
+         FROM _xmt_p_UF AS _xmt_p_UF_1
        UNION ALL
        -- Join(7)
-       SELECT "x" AS x,
-              apply("r", "x") AS G)
+       SELECT _xmt_r_UF_5.a_1 AS x,
+              "false" AS G
+         FROM _xmt_r_UF AS _xmt_r_UF_5)
  GROUP BY x
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT "x" AS x,
-       apply("and", apply("p", "x"), apply("r", "x")) AS G
+SELECT _xmt_p_G_1.a_1 AS x,
+       and_(_xmt_p_G_1.G, _xmt_r_G_5.G) AS G
+  FROM _xmt_p_G AS _xmt_p_G_1
+  JOIN _xmt_r_G AS _xmt_r_G_5
+        ON _xmt_p_G_1.a_1 = _xmt_r_G_5.a_1
 
-=== (top) (exists ((x Int)) (and (p x) (r x))) ======================================
+=== (top) (exists ((x element)) (and (p x) (r x))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
@@ -211,7 +246,7 @@ SELECT or_aggregate(G) as G
          JOIN _xmt_r_TU AS _xmt_r_TU_5
                ON _xmt_p_TU_1.a_1 = _xmt_r_TU_5.a_1)
 
-=== (top) (and (exists ((x Int)) (and (p x) (q x))) (exists ((x Int)) (and (p x) (r x)))) ======================================
+=== (top) (and (exists ((x element)) (and (p x) (q x))) (exists ((x element)) (and (p x) (r x)))) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
 SELECT and_(Agg_4_TU.G, Agg_7_TU.G) AS G
