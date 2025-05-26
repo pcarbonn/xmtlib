@@ -216,7 +216,9 @@ SELECT _xmt__5_24.x AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, "true" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_domain_TU_1.a_1 AS x,
               _xmt__5_23.G AS G
          FROM (-- Join(15)
@@ -260,7 +262,9 @@ SELECT G as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, "true" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_domain_TU_1.a_1 AS x,
               _xmt__5_23.G AS G
          FROM (-- Join(15)
@@ -367,7 +371,9 @@ SELECT _xmt_p_9_28.x AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, "true" AS G UNION ALL -- exclude(7)
+ FROM (SELECT NULL AS x, "true" AS G 
+       UNION ALL
+       -- exclude(7)
        SELECT *
         FROM (-- Join(14)
               SELECT _xmt_p_9_28.x AS x,
@@ -405,7 +411,9 @@ SELECT G as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, "true" AS G UNION ALL -- exclude(7)
+ FROM (SELECT NULL AS x, "true" AS G 
+       UNION ALL
+       -- exclude(7)
        SELECT *
         FROM (-- Join(14)
               SELECT _xmt_p_9_28.x AS x,

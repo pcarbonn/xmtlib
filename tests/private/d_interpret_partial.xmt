@@ -124,7 +124,9 @@ SELECT or_aggregate(G) as G
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT NULL AS x, "false" AS G UNION ALL -- exclude(7)
+ FROM (SELECT NULL AS x, "false" AS G 
+       UNION ALL
+       -- exclude(7)
        SELECT *
         FROM (-- Join(14)
               SELECT _xmt_mix_G_5.a_1 AS x,
@@ -135,7 +137,9 @@ SELECT or_aggregate(G) as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT NULL AS x, "false" AS G UNION ALL -- exclude(7)
+ FROM (SELECT NULL AS x, "false" AS G 
+       UNION ALL
+       -- exclude(7)
        SELECT *
         FROM (-- Join(14)
               SELECT _xmt_mix_G_5.a_1 AS x,

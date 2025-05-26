@@ -237,7 +237,9 @@ SELECT "x" AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, NULL AS y, NULL AS z, "true" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, NULL AS y, NULL AS z, "true" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_edge_TU_2.a_1 AS x,
               _xmt_edge_TU_2.a_2 AS y,
               _xmt_edge_TU_5.a_2 AS z,
@@ -263,7 +265,9 @@ SELECT G as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, NULL AS y, NULL AS z, "true" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, NULL AS y, NULL AS z, "true" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_edge_TU_2.a_1 AS x,
               _xmt_edge_TU_2.a_2 AS y,
               _xmt_edge_TU_5.a_2 AS z,
@@ -280,7 +284,9 @@ SELECT and_aggregate(G) as G
 SELECT Agg_11_TU.G AS G
   FROM (-- Agg (8)
         SELECT and_aggregate(G) as G
-         FROM (SELECT NULL AS x, NULL AS y, NULL AS z, "true" AS G UNION ALL -- Join(15)
+         FROM (SELECT NULL AS x, NULL AS y, NULL AS z, "true" AS G 
+               UNION ALL
+               -- Join(15)
                SELECT _xmt_edge_TU_2.a_1 AS x,
                       _xmt_edge_TU_2.a_2 AS y,
                       _xmt_edge_TU_5.a_2 AS z,
@@ -309,7 +315,9 @@ SELECT G as G
 SELECT Agg_11_G.G AS G
   FROM (-- Agg (8)
         SELECT and_aggregate(G) as G
-         FROM (SELECT NULL AS x, NULL AS y, NULL AS z, "true" AS G UNION ALL -- Join(15)
+         FROM (SELECT NULL AS x, NULL AS y, NULL AS z, "true" AS G 
+               UNION ALL
+               -- Join(15)
                SELECT _xmt_edge_TU_2.a_1 AS x,
                       _xmt_edge_TU_2.a_2 AS y,
                       _xmt_edge_TU_5.a_2 AS z,

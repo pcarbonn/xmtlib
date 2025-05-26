@@ -174,14 +174,18 @@ SELECT or_aggregate(G) as G
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, "false" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_bright_TU_2.a_1 AS x,
               "true" AS G
          FROM _xmt_bright_TU AS _xmt_bright_TU_2)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, "false" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_bright_TU_2.a_1 AS x,
               "true" AS G
          FROM _xmt_bright_TU AS _xmt_bright_TU_2)
@@ -218,7 +222,9 @@ SELECT or_aggregate(G) as G
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, "false" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_same_TU_4.a_1 AS x,
               "true" AS G
          FROM _xmt_same_TU AS _xmt_same_TU_4
@@ -226,7 +232,9 @@ SELECT or_aggregate(G) as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, "false" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_same_TU_4.a_1 AS x,
               "true" AS G
          FROM _xmt_same_TU AS _xmt_same_TU_4
@@ -272,7 +280,9 @@ SELECT x,
 -- Agg (0)
 SELECT x,
        or_aggregate(G) as G
- FROM (SELECT _xmt_color_1.G AS x, NULL AS y, "false" AS G FROM _xmt_color AS _xmt_color_1 UNION ALL -- Join(7)
+ FROM (SELECT _xmt_color_1.G AS x, NULL AS y, "false" AS G FROM _xmt_color AS _xmt_color_1 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_same_TU_7.a_1 AS x,
               _xmt_same_TU_7.a_2 AS y,
               "true" AS G
@@ -282,7 +292,9 @@ SELECT x,
 -- Agg (0)
 SELECT x,
        or_aggregate(G) as G
- FROM (SELECT _xmt_color_1.G AS x, NULL AS y, "false" AS G FROM _xmt_color AS _xmt_color_1 UNION ALL -- Join(7)
+ FROM (SELECT _xmt_color_1.G AS x, NULL AS y, "false" AS G FROM _xmt_color AS _xmt_color_1 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_same_TU_7.a_1 AS x,
               _xmt_same_TU_7.a_2 AS y,
               "true" AS G
@@ -301,7 +313,9 @@ SELECT or_aggregate(G) as G
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT NULL AS x, NULL AS y, "false" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, NULL AS y, "false" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_same_TU_7.a_1 AS x,
               _xmt_same_TU_7.a_2 AS y,
               "true" AS G
@@ -309,7 +323,9 @@ SELECT or_aggregate(G) as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT NULL AS x, NULL AS y, "false" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, NULL AS y, "false" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_same_TU_7.a_1 AS x,
               _xmt_same_TU_7.a_2 AS y,
               "true" AS G
@@ -348,14 +364,18 @@ SELECT or_aggregate(G) as G
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, "false" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_dim_TU_11.a_1 AS x,
               "true" AS G
          FROM _xmt_dim_TU AS _xmt_dim_TU_11)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, "false" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_dim_TU_11.a_1 AS x,
               "true" AS G
          FROM _xmt_dim_TU AS _xmt_dim_TU_11)

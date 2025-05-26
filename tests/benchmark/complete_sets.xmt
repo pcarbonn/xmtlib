@@ -141,7 +141,9 @@ SELECT "x" AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, "true" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_domain_TU_1.a_1 AS x,
               apply("or", apply("p", _xmt_domain_TU_1.a_1), apply("q", _xmt_domain_TU_1.a_1)) AS G
          FROM _xmt_domain_TU AS _xmt_domain_TU_1)
@@ -155,7 +157,9 @@ SELECT G as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, "true" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_domain_TU_1.a_1 AS x,
               apply("or", apply("p", _xmt_domain_TU_1.a_1), apply("q", _xmt_domain_TU_1.a_1)) AS G
          FROM _xmt_domain_TU AS _xmt_domain_TU_1)
@@ -166,7 +170,9 @@ SELECT and_aggregate(G) as G
 SELECT Agg_6_TU.G AS G
   FROM (-- Agg (8)
         SELECT and_aggregate(G) as G
-         FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(15)
+         FROM (SELECT NULL AS x, "true" AS G 
+               UNION ALL
+               -- Join(15)
                SELECT _xmt_domain_TU_1.a_1 AS x,
                       apply("or", apply("p", _xmt_domain_TU_1.a_1), apply("q", _xmt_domain_TU_1.a_1)) AS G
                  FROM _xmt_domain_TU AS _xmt_domain_TU_1)
@@ -183,7 +189,9 @@ SELECT G as G
 SELECT Agg_6_G.G AS G
   FROM (-- Agg (8)
         SELECT and_aggregate(G) as G
-         FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(15)
+         FROM (SELECT NULL AS x, "true" AS G 
+               UNION ALL
+               -- Join(15)
                SELECT _xmt_domain_TU_1.a_1 AS x,
                       apply("or", apply("p", _xmt_domain_TU_1.a_1), apply("q", _xmt_domain_TU_1.a_1)) AS G
                  FROM _xmt_domain_TU AS _xmt_domain_TU_1)

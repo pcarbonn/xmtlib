@@ -951,7 +951,9 @@ SELECT "n1" AS n1,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS n1, NULL AS n2, "true" AS G UNION ALL -- exclude(7)
+ FROM (SELECT NULL AS n1, NULL AS n2, "true" AS G 
+       UNION ALL
+       -- exclude(7)
        SELECT *
         FROM (-- Join(14)
               SELECT _xmt_link_TU_2.a_1 AS n1,
@@ -973,7 +975,9 @@ SELECT G as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS n1, NULL AS n2, "true" AS G UNION ALL -- exclude(7)
+ FROM (SELECT NULL AS n1, NULL AS n2, "true" AS G 
+       UNION ALL
+       -- exclude(7)
        SELECT *
         FROM (-- Join(14)
               SELECT _xmt_link_TU_2.a_1 AS n1,
@@ -988,7 +992,9 @@ SELECT and_aggregate(G) as G
 SELECT Agg_9_TU.G AS G
   FROM (-- Agg (8)
         SELECT and_aggregate(G) as G
-         FROM (SELECT NULL AS n1, NULL AS n2, "true" AS G UNION ALL -- exclude(15)
+         FROM (SELECT NULL AS n1, NULL AS n2, "true" AS G 
+               UNION ALL
+               -- exclude(15)
                SELECT *
                 FROM (-- Join(22)
                       SELECT _xmt_link_TU_2.a_1 AS n1,
@@ -1013,7 +1019,9 @@ SELECT G as G
 SELECT Agg_9_G.G AS G
   FROM (-- Agg (8)
         SELECT and_aggregate(G) as G
-         FROM (SELECT NULL AS n1, NULL AS n2, "true" AS G UNION ALL -- exclude(15)
+         FROM (SELECT NULL AS n1, NULL AS n2, "true" AS G 
+               UNION ALL
+               -- exclude(15)
                SELECT *
                 FROM (-- Join(22)
                       SELECT _xmt_link_TU_2.a_1 AS n1,

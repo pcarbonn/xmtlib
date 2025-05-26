@@ -515,7 +515,9 @@ SELECT "x" AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_node_TU_1.a_1 AS x,
               _xmt_node_TU_4.a_1 AS y,
               apply("val", apply("edge_value", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1)) AS G
@@ -533,7 +535,9 @@ SELECT G as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_node_TU_1.a_1 AS x,
               _xmt_node_TU_4.a_1 AS y,
               apply("val", apply("edge_value", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1)) AS G
@@ -589,7 +593,9 @@ SELECT "x" AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, "true" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_node_TU_1.a_1 AS x,
               apply("val", apply("value", _xmt_node_TU_1.a_1)) AS G
          FROM _xmt_node_TU AS _xmt_node_TU_1)
@@ -603,7 +609,9 @@ SELECT G as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, "true" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_node_TU_1.a_1 AS x,
               apply("val", apply("value", _xmt_node_TU_1.a_1)) AS G
          FROM _xmt_node_TU AS _xmt_node_TU_1)
@@ -814,7 +822,9 @@ SELECT "N1" AS N1,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS N1, NULL AS N2, "true" AS G UNION ALL -- exclude(7)
+ FROM (SELECT NULL AS N1, NULL AS N2, "true" AS G 
+       UNION ALL
+       -- exclude(7)
        SELECT *
         FROM (-- Join(14)
               SELECT _xmt_node_TU_15.a_1 AS N1,
@@ -838,7 +848,9 @@ SELECT G as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS N1, NULL AS N2, "true" AS G UNION ALL -- exclude(7)
+ FROM (SELECT NULL AS N1, NULL AS N2, "true" AS G 
+       UNION ALL
+       -- exclude(7)
        SELECT *
         FROM (-- Join(14)
               SELECT _xmt_node_TU_15.a_1 AS N1,
@@ -968,7 +980,9 @@ SELECT "x" AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(7)
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+       UNION ALL
+       -- exclude(7)
        SELECT *
         FROM (-- Join(14)
               SELECT _xmt_node_TU_1.a_1 AS x,
@@ -992,7 +1006,9 @@ SELECT G as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(7)
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+       UNION ALL
+       -- exclude(7)
        SELECT *
         FROM (-- Join(14)
               SELECT _xmt_node_TU_1.a_1 AS x,
@@ -1101,7 +1117,9 @@ SELECT "x" AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(7)
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+       UNION ALL
+       -- exclude(7)
        SELECT *
         FROM (-- Join(14)
               SELECT _xmt_edge_TU_29.a_1 AS x,
@@ -1123,7 +1141,9 @@ SELECT G as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(7)
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+       UNION ALL
+       -- exclude(7)
        SELECT *
         FROM (-- Join(14)
               SELECT _xmt_edge_TU_29.a_1 AS x,
@@ -1227,7 +1247,9 @@ SELECT "x" AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(7)
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+       UNION ALL
+       -- exclude(7)
        SELECT *
         FROM (-- Join(14)
               SELECT _xmt_edge_TU_29.a_1 AS x,
@@ -1249,7 +1271,9 @@ SELECT G as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(7)
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+       UNION ALL
+       -- exclude(7)
        SELECT *
         FROM (-- Join(14)
               SELECT _xmt_edge_TU_29.a_1 AS x,
@@ -1264,7 +1288,9 @@ SELECT and_aggregate(G) as G
 SELECT apply("and", Agg_9_TU.G, Agg_13_TU.G, Agg_28_TU.G, Agg_35_TU.G, Agg_42_TU.G, Agg_48_TU.G) AS G
   FROM (-- Agg (8)
         SELECT and_aggregate(G) as G
-         FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- Join(15)
+         FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+               UNION ALL
+               -- Join(15)
                SELECT _xmt_node_TU_1.a_1 AS x,
                       _xmt_node_TU_4.a_1 AS y,
                       apply("val", apply("edge_value", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1)) AS G
@@ -1273,14 +1299,18 @@ SELECT apply("and", Agg_9_TU.G, Agg_13_TU.G, Agg_28_TU.G, Agg_35_TU.G, Agg_42_TU
         ) AS Agg_9_TU
   JOIN (-- Agg (8)
         SELECT and_aggregate(G) as G
-         FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(15)
+         FROM (SELECT NULL AS x, "true" AS G 
+               UNION ALL
+               -- Join(15)
                SELECT _xmt_node_TU_1.a_1 AS x,
                       apply("val", apply("value", _xmt_node_TU_1.a_1)) AS G
                  FROM _xmt_node_TU AS _xmt_node_TU_1)
         ) AS Agg_13_TU
   JOIN (-- Agg (8)
         SELECT and_aggregate(G) as G
-         FROM (SELECT NULL AS N1, NULL AS N2, "true" AS G UNION ALL -- exclude(15)
+         FROM (SELECT NULL AS N1, NULL AS N2, "true" AS G 
+               UNION ALL
+               -- exclude(15)
                SELECT *
                 FROM (-- Join(22)
                       SELECT _xmt_node_TU_15.a_1 AS N1,
@@ -1292,7 +1322,9 @@ SELECT apply("and", Agg_9_TU.G, Agg_13_TU.G, Agg_28_TU.G, Agg_35_TU.G, Agg_42_TU
         ) AS Agg_28_TU
   JOIN (-- Agg (8)
         SELECT and_aggregate(G) as G
-         FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(15)
+         FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+               UNION ALL
+               -- exclude(15)
                SELECT *
                 FROM (-- Join(22)
                       SELECT _xmt_node_TU_1.a_1 AS x,
@@ -1304,7 +1336,9 @@ SELECT apply("and", Agg_9_TU.G, Agg_13_TU.G, Agg_28_TU.G, Agg_35_TU.G, Agg_42_TU
         ) AS Agg_35_TU
   JOIN (-- Agg (8)
         SELECT and_aggregate(G) as G
-         FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(15)
+         FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+               UNION ALL
+               -- exclude(15)
                SELECT *
                 FROM (-- Join(22)
                       SELECT _xmt_edge_TU_29.a_1 AS x,
@@ -1315,7 +1349,9 @@ SELECT apply("and", Agg_9_TU.G, Agg_13_TU.G, Agg_28_TU.G, Agg_35_TU.G, Agg_42_TU
         ) AS Agg_42_TU
   JOIN (-- Agg (8)
         SELECT and_aggregate(G) as G
-         FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(15)
+         FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+               UNION ALL
+               -- exclude(15)
                SELECT *
                 FROM (-- Join(22)
                       SELECT _xmt_edge_TU_29.a_1 AS x,
@@ -1396,7 +1432,9 @@ SELECT G as G
 SELECT apply("and", Agg_9_G.G, Agg_13_G.G, Agg_28_G.G, Agg_35_G.G, Agg_42_G.G, Agg_48_G.G) AS G
   FROM (-- Agg (8)
         SELECT and_aggregate(G) as G
-         FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- Join(15)
+         FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+               UNION ALL
+               -- Join(15)
                SELECT _xmt_node_TU_1.a_1 AS x,
                       _xmt_node_TU_4.a_1 AS y,
                       apply("val", apply("edge_value", _xmt_node_TU_1.a_1, _xmt_node_TU_4.a_1)) AS G
@@ -1405,14 +1443,18 @@ SELECT apply("and", Agg_9_G.G, Agg_13_G.G, Agg_28_G.G, Agg_35_G.G, Agg_42_G.G, A
         ) AS Agg_9_G
   JOIN (-- Agg (8)
         SELECT and_aggregate(G) as G
-         FROM (SELECT NULL AS x, "true" AS G UNION ALL -- Join(15)
+         FROM (SELECT NULL AS x, "true" AS G 
+               UNION ALL
+               -- Join(15)
                SELECT _xmt_node_TU_1.a_1 AS x,
                       apply("val", apply("value", _xmt_node_TU_1.a_1)) AS G
                  FROM _xmt_node_TU AS _xmt_node_TU_1)
         ) AS Agg_13_G
   JOIN (-- Agg (8)
         SELECT and_aggregate(G) as G
-         FROM (SELECT NULL AS N1, NULL AS N2, "true" AS G UNION ALL -- exclude(15)
+         FROM (SELECT NULL AS N1, NULL AS N2, "true" AS G 
+               UNION ALL
+               -- exclude(15)
                SELECT *
                 FROM (-- Join(22)
                       SELECT _xmt_node_TU_15.a_1 AS N1,
@@ -1424,7 +1466,9 @@ SELECT apply("and", Agg_9_G.G, Agg_13_G.G, Agg_28_G.G, Agg_35_G.G, Agg_42_G.G, A
         ) AS Agg_28_G
   JOIN (-- Agg (8)
         SELECT and_aggregate(G) as G
-         FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(15)
+         FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+               UNION ALL
+               -- exclude(15)
                SELECT *
                 FROM (-- Join(22)
                       SELECT _xmt_node_TU_1.a_1 AS x,
@@ -1436,7 +1480,9 @@ SELECT apply("and", Agg_9_G.G, Agg_13_G.G, Agg_28_G.G, Agg_35_G.G, Agg_42_G.G, A
         ) AS Agg_35_G
   JOIN (-- Agg (8)
         SELECT and_aggregate(G) as G
-         FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(15)
+         FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+               UNION ALL
+               -- exclude(15)
                SELECT *
                 FROM (-- Join(22)
                       SELECT _xmt_edge_TU_29.a_1 AS x,
@@ -1447,7 +1493,9 @@ SELECT apply("and", Agg_9_G.G, Agg_13_G.G, Agg_28_G.G, Agg_35_G.G, Agg_42_G.G, A
         ) AS Agg_42_G
   JOIN (-- Agg (8)
         SELECT and_aggregate(G) as G
-         FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(15)
+         FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+               UNION ALL
+               -- exclude(15)
                SELECT *
                 FROM (-- Join(22)
                       SELECT _xmt_edge_TU_29.a_1 AS x,

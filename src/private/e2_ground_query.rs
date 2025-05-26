@@ -409,7 +409,7 @@ impl GroundingQuery {
                                 let if_ = if condition { "\true\" AS if_, "}
                                     else { "" }.to_string();
 
-                                format!("SELECT {subs}{if_}\"{default}\" AS G {joins}UNION ALL ")
+                                format!("SELECT {subs}{if_}\"{default}\" AS G {joins}\n{indent}{INDENT}UNION ALL\n{indent}{INDENT}")
                             }
                         }
                     };

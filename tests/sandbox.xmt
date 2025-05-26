@@ -106,14 +106,18 @@ SELECT or_aggregate(G) as G
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, "false" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_dim_TU_1.a_1 AS x,
               "true" AS G
          FROM _xmt_dim_TU AS _xmt_dim_TU_1)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
- FROM (SELECT NULL AS x, "false" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, "false" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_dim_TU_1.a_1 AS x,
               "true" AS G
          FROM _xmt_dim_TU AS _xmt_dim_TU_1)

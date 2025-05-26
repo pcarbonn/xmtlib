@@ -262,7 +262,9 @@ SELECT _xmt_p_2_9.x AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(7)
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+       UNION ALL
+       -- exclude(7)
        SELECT *
         FROM (-- Join(14)
               SELECT _xmt_p_2_9.x AS x,
@@ -354,7 +356,9 @@ SELECT G as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
- FROM (SELECT NULL AS x, NULL AS y, "true" AS G UNION ALL -- exclude(7)
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+       UNION ALL
+       -- exclude(7)
        SELECT *
         FROM (-- Join(14)
               SELECT _xmt_p_2_9.x AS x,

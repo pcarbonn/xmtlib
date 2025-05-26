@@ -105,7 +105,9 @@ SELECT _xmt_p_G_5.a_1 AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(implies_(if_, G)) as G
- FROM (SELECT NULL AS x, 	rue" AS if_, "true" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, 	rue" AS if_, "true" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_p_UF_5.a_1 AS x,
               if_(_xmt_f_G_4.G, _xmt_p_UF_5.a_2) AS if_, 
               _xmt_p_UF_5.G AS G
@@ -127,7 +129,9 @@ SELECT implies_(if_, G) as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(implies_(if_, G)) as G
- FROM (SELECT NULL AS x, 	rue" AS if_, "true" AS G UNION ALL -- Join(7)
+ FROM (SELECT NULL AS x, 	rue" AS if_, "true" AS G 
+       UNION ALL
+       -- Join(7)
        SELECT _xmt_p_UF_5.a_1 AS x,
               if_(_xmt_f_G_4.G, _xmt_p_UF_5.a_2) AS if_, 
               _xmt_p_UF_5.G AS G
