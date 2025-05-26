@@ -1285,7 +1285,7 @@ SELECT and_aggregate(G) as G
 === (top) (and (forall ((x Int) (y Int)) (or (not (node x)) (not (node y)) (val (edge_value x y)))) (forall ((x Int)) (or (not (node x)) (val (value x)))) (forall ((N1 Int) (N2 Int)) (or (not (node N1)) (not (node N2)) (not (not (= N1 N2))) (not (= (value N1) (value N2))))) (forall ((x Int) (y Int)) (or (not (node x)) (not (node y)) (not (not (edge x y))) (= (edge_value x y) 0))) (forall ((x Int) (y Int)) (or (not (edge x y)) (not (>= (value x) (value y))) (= (edge_value x y) (- (value x) (value y))))) (forall ((x Int) (y Int)) (or (not (edge x y)) (not (> (value y) (value x))) (= (edge_value x y) (- (value y) (value x)))))) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT apply("and", Agg_9_TU.G, Agg_13_TU.G, Agg_28_TU.G, Agg_35_TU.G, Agg_42_TU.G, Agg_48_TU.G) AS G
+SELECT and_(Agg_9_TU.G, Agg_13_TU.G, Agg_28_TU.G, Agg_35_TU.G, Agg_42_TU.G, Agg_48_TU.G) AS G
   FROM (-- Agg (8)
         SELECT and_aggregate(G) as G
          FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
@@ -1429,7 +1429,7 @@ SELECT G as G
         WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT apply("and", Agg_9_G.G, Agg_13_G.G, Agg_28_G.G, Agg_35_G.G, Agg_42_G.G, Agg_48_G.G) AS G
+SELECT and_(Agg_9_G.G, Agg_13_G.G, Agg_28_G.G, Agg_35_G.G, Agg_42_G.G, Agg_48_G.G) AS G
   FROM (-- Agg (8)
         SELECT and_aggregate(G) as G
          FROM (SELECT NULL AS x, NULL AS y, "true" AS G 

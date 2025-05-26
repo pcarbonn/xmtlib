@@ -297,7 +297,7 @@ pub(crate) fn view_for_compound(
 
                 if ! done {  // not a Join --> use the ViewType
 
-                    let table_name =
+                    let sub_table =
                         match grounding {
                             Either::Left(constant) => {
                                 if ! matches!(variant, QueryVariant::Equality(..)) {  // no need to create a Join
@@ -317,21 +317,40 @@ pub(crate) fn view_for_compound(
                                 Some(table_name.clone())
                         };
 
-                    if let Some(table_name) = table_name {
+                    if let Some(sub_table) = sub_table {
                         // merge the variables
                         for (symbol, _) in sub_free_variables.clone().iter() {
-                            let column = Column::new(&table_name, &symbol);
+                            let column = Column::new(&sub_table, &symbol);
                             variables.insert(symbol.clone(), Some(column));
                         }
 
                         if *sub_condition {
-                            conditions.push(Right(Some(table_name.clone())));
+                            conditions.push(Right(Some(sub_table.clone())));
                         }
-                        groundings.push(SQLExpr::G(table_name.clone()));
+                        groundings.push(SQLExpr::G(sub_table.clone(), Ids::Some));
 
                         let map_variables = sub_free_variables.0.keys().cloned().collect();
-                        let sub_natural_join = NaturalJoin::ViewJoin(query.clone(), table_name.clone(), map_variables);
+                        let sub_natural_join = NaturalJoin::ViewJoin(query.clone(), sub_table.clone(), map_variables);
                         natural_joins.insert(sub_natural_join.clone());
+
+                        // create theta for later use
+                        match variant {
+                            QueryVariant::Interpretation(table_name, ids) => {
+                                let column = Column::new(table_name, &format!("a_{}", i+1));
+
+                                // push `sub_grounding = column` to conditions and thetas
+                                let if_ = Mapping(SQLExpr::G(sub_table.clone(), ids.clone()), column);
+                                if ! *sub_all_ids {
+                                    conditions.push(Left(if_.clone()));
+                                }
+                                // adds nothing if sub_ids == None
+                                thetas.push(Some(if_));
+                            },
+                            QueryVariant::Apply
+                            | QueryVariant::Construct
+                            | QueryVariant::Predefined(_)
+                            | QueryVariant::Equality(..) => {}
+                        }
                     }
                 }
             }
@@ -586,7 +605,7 @@ pub(crate) fn view_for_union(
                             Some(GroundingQuery::Join {
                                 variables: q_variables,
                                 conditions,
-                                grounding: SQLExpr::G(table_name.clone()),
+                                grounding: SQLExpr::G(table_name.clone(), Ids::Some),
                                 outer: None,
                                 natural_joins,
                                 theta_joins: IndexMap::new(),

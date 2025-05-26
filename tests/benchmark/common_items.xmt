@@ -214,7 +214,7 @@ SELECT or_aggregate(G) as G
 === (top) (and (exists ((x Int)) (and (p x) (q x))) (exists ((x Int)) (and (p x) (r x)))) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT apply("and", Agg_4_TU.G, Agg_7_TU.G) AS G
+SELECT and_(Agg_4_TU.G, Agg_7_TU.G) AS G
   FROM (-- Agg (8)
         SELECT or_aggregate(G) as G
          FROM (-- Join(15)
@@ -262,7 +262,7 @@ SELECT G as G
         WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT apply("and", Agg_4_G.G, Agg_7_G.G) AS G
+SELECT and_(Agg_4_G.G, Agg_7_G.G) AS G
   FROM (-- Agg (8)
         SELECT or_aggregate(G) as G
          FROM (SELECT NULL AS x, "false" AS G 

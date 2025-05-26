@@ -406,7 +406,7 @@ SELECT or_aggregate(G) as G
 === (top) (and (forall ((x Node) (y Node) (z Node)) (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z))) (forall ((x Node)) (Edge x x)) (exists ((x Node) (y Node)) (Edge x y))) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT apply("and", Agg_11_TU.G, Agg_13_TU.G, Agg_14_TU.G) AS G
+SELECT and_(Agg_11_TU.G, Agg_13_TU.G, Agg_14_TU.G) AS G
   FROM (-- Agg (8)
         SELECT and_aggregate(G) as G
          FROM (SELECT NULL AS x, NULL AS y, NULL AS z, "true" AS G 
@@ -484,7 +484,7 @@ SELECT G as G
         WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT apply("and", Agg_11_G.G, Agg_13_G.G, Agg_14_G.G) AS G
+SELECT and_(Agg_11_G.G, Agg_13_G.G, Agg_14_G.G) AS G
   FROM (-- Agg (8)
         SELECT and_aggregate(G) as G
          FROM (SELECT NULL AS x, NULL AS y, NULL AS z, "true" AS G 

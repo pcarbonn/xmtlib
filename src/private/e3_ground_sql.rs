@@ -21,7 +21,7 @@ pub(crate) enum SQLExpr {
     Constant(SpecConstant),
     Variable(Symbol),
     Value(Column, Ids),
-    G(TableAlias),
+    G(TableAlias, Ids),
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
     Construct(QualIdentifier, Box<Vec<SQLExpr>>),  // constructor
     Predefined(Predefined, Box<Vec<SQLExpr>>),
@@ -175,7 +175,7 @@ impl SQLExpr {
             SQLExpr::Value(column, ids) => (column.to_string(), ids.clone()),
             SQLExpr::Apply(qual_identifier, exprs) =>
                 sql_for("apply", qual_identifier.to_string(), exprs, variables),
-            SQLExpr::G(table_alias) => (format!("{table_alias}.G"), Ids::None),
+            SQLExpr::G(table_alias, ids) => (format!("{table_alias}.G"), ids.clone()),
             SQLExpr::Construct(qual_identifier, exprs) => {
                 // LINK src/doc.md#_Constructor
                 sql_for("construct2", qual_identifier.to_string(), exprs, variables)
