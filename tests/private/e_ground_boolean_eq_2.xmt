@@ -20,36 +20,36 @@
 Groundings:
 ===  x ======================================
  -- Join(0)
-SELECT _xmt_t.G AS x,
-       _xmt_t.G AS G
-  FROM _xmt_t
+SELECT _xmt_sort_t.G AS x,
+       _xmt_sort_t.G AS G
+  FROM _xmt_sort_t
 ===  y ======================================
  -- Join(0)
-SELECT _xmt_t_1.G AS y,
-       _xmt_t_1.G AS G
-  FROM _xmt_t AS _xmt_t_1
+SELECT _xmt_sort_t_1.G AS y,
+       _xmt_sort_t_1.G AS G
+  FROM _xmt_sort_t AS _xmt_sort_t_1
 ===  (p x y) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_t.G AS x,
-       _xmt_t_1.G AS y,
-       apply("p", _xmt_t.G, _xmt_t_1.G) AS G
-  FROM _xmt_t
-  JOIN _xmt_t AS _xmt_t_1
+SELECT _xmt_sort_t.G AS x,
+       _xmt_sort_t_1.G AS y,
+       apply("p", _xmt_sort_t.G, _xmt_sort_t_1.G) AS G
+  FROM _xmt_sort_t
+  JOIN _xmt_sort_t AS _xmt_sort_t_1
 ----- UF -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_t.G AS x,
-       _xmt_t_1.G AS y,
-       apply("p", _xmt_t.G, _xmt_t_1.G) AS G
-  FROM _xmt_t
-  JOIN _xmt_t AS _xmt_t_1
+SELECT _xmt_sort_t.G AS x,
+       _xmt_sort_t_1.G AS y,
+       apply("p", _xmt_sort_t.G, _xmt_sort_t_1.G) AS G
+  FROM _xmt_sort_t
+  JOIN _xmt_sort_t AS _xmt_sort_t_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_t.G AS x,
-       _xmt_t_1.G AS y,
-       apply("p", _xmt_t.G, _xmt_t_1.G) AS G
-  FROM _xmt_t
-  JOIN _xmt_t AS _xmt_t_1
+SELECT _xmt_sort_t.G AS x,
+       _xmt_sort_t_1.G AS y,
+       apply("p", _xmt_sort_t.G, _xmt_sort_t_1.G) AS G
+  FROM _xmt_sort_t
+  JOIN _xmt_sort_t AS _xmt_sort_t_1
 
 ===  A ======================================
  -- Join(0)
@@ -57,45 +57,45 @@ SELECT "A" AS G
 ===  (= x A) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_t.G AS x,
-       eq_(_xmt_t.G, "A") AS G
-  FROM _xmt_t
+SELECT _xmt_sort_t.G AS x,
+       eq_(_xmt_sort_t.G, "A") AS G
+  FROM _xmt_sort_t
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_t.G AS x,
-       eq_(_xmt_t.G, "A") AS G
-  FROM _xmt_t
+SELECT _xmt_sort_t.G AS x,
+       eq_(_xmt_sort_t.G, "A") AS G
+  FROM _xmt_sort_t
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_t.G AS x,
-       eq_(_xmt_t.G, "A") AS G
-  FROM _xmt_t
+SELECT _xmt_sort_t.G AS x,
+       eq_(_xmt_sort_t.G, "A") AS G
+  FROM _xmt_sort_t
 
 ===  (= y A) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_t_1.G AS y,
-       eq_(_xmt_t_1.G, "A") AS G
-  FROM _xmt_t AS _xmt_t_1
+SELECT _xmt_sort_t_1.G AS y,
+       eq_(_xmt_sort_t_1.G, "A") AS G
+  FROM _xmt_sort_t AS _xmt_sort_t_1
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_t_1.G AS y,
-       eq_(_xmt_t_1.G, "A") AS G
-  FROM _xmt_t AS _xmt_t_1
+SELECT _xmt_sort_t_1.G AS y,
+       eq_(_xmt_sort_t_1.G, "A") AS G
+  FROM _xmt_sort_t AS _xmt_sort_t_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_t_1.G AS y,
-       eq_(_xmt_t_1.G, "A") AS G
-  FROM _xmt_t AS _xmt_t_1
+SELECT _xmt_sort_t_1.G AS y,
+       eq_(_xmt_sort_t_1.G, "A") AS G
+  FROM _xmt_sort_t AS _xmt_sort_t_1
 
 ===  (and (= x A) (= y A)) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_t.G AS x,
-       _xmt_t_1.G AS y,
-       and_(eq_(_xmt_t.G, "A"), eq_(_xmt_t_1.G, "A")) AS G
-  FROM _xmt_t
-  JOIN _xmt_t AS _xmt_t_1
+SELECT _xmt_sort_t.G AS x,
+       _xmt_sort_t_1.G AS y,
+       and_(eq_(_xmt_sort_t.G, "A"), eq_(_xmt_sort_t_1.G, "A")) AS G
+  FROM _xmt_sort_t
+  JOIN _xmt_sort_t AS _xmt_sort_t_1
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT x, y,
@@ -103,160 +103,160 @@ SELECT x, y,
  FROM (-- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt__4_12.x AS x,
-                     _xmt_t_1.G AS y,
-                     _xmt__4_12.G AS G
+              SELECT _xmt_view__4_12.x AS x,
+                     _xmt_sort_t_1.G AS y,
+                     _xmt_view__4_12.G AS G
                 FROM (-- Join(22)
-                      SELECT _xmt_t.G AS x,
-                             eq_(_xmt_t.G, "A") AS G
-                        FROM _xmt_t
-                      ) AS _xmt__4_12
-                JOIN _xmt_t AS _xmt_t_1
+                      SELECT _xmt_sort_t.G AS x,
+                             eq_(_xmt_sort_t.G, "A") AS G
+                        FROM _xmt_sort_t
+                      ) AS _xmt_view__4_12
+                JOIN _xmt_sort_t AS _xmt_sort_t_1
               UNION ALL
               -- Join(14)
-              SELECT _xmt_t.G AS x,
-                     _xmt__5_15.y AS y,
-                     _xmt__5_15.G AS G
+              SELECT _xmt_sort_t.G AS x,
+                     _xmt_view__5_15.y AS y,
+                     _xmt_view__5_15.G AS G
                 FROM (-- Join(22)
-                      SELECT _xmt_t_1.G AS y,
-                             eq_(_xmt_t_1.G, "A") AS G
-                        FROM _xmt_t AS _xmt_t_1
-                      ) AS _xmt__5_15
-                JOIN _xmt_t)
+                      SELECT _xmt_sort_t_1.G AS y,
+                             eq_(_xmt_sort_t_1.G, "A") AS G
+                        FROM _xmt_sort_t AS _xmt_sort_t_1
+                      ) AS _xmt_view__5_15
+                JOIN _xmt_sort_t)
         WHERE G <> "true")
  GROUP BY x, y
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_t.G AS x,
-       _xmt_t_1.G AS y,
-       and_(eq_(_xmt_t.G, "A"), eq_(_xmt_t_1.G, "A")) AS G
-  FROM _xmt_t
-  JOIN _xmt_t AS _xmt_t_1
+SELECT _xmt_sort_t.G AS x,
+       _xmt_sort_t_1.G AS y,
+       and_(eq_(_xmt_sort_t.G, "A"), eq_(_xmt_sort_t_1.G, "A")) AS G
+  FROM _xmt_sort_t
+  JOIN _xmt_sort_t AS _xmt_sort_t_1
 
 ===  (= (p x y) (and (= x A) (= y A))) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_2_9.x AS x,
-       _xmt_p_2_9.y AS y,
-       bool_eq_("true", _xmt_p_2_9.G, agg_union_6.G) AS G
+SELECT _xmt_view_p_2_9.x AS x,
+       _xmt_view_p_2_9.y AS y,
+       bool_eq_("true", _xmt_view_p_2_9.G, agg_union_6.G) AS G
   FROM (-- Join(8)
-        SELECT _xmt_t.G AS x,
-               _xmt_t_1.G AS y,
-               apply("p", _xmt_t.G, _xmt_t_1.G) AS G
-          FROM _xmt_t
-          JOIN _xmt_t AS _xmt_t_1
-        ) AS _xmt_p_2_9
+        SELECT _xmt_sort_t.G AS x,
+               _xmt_sort_t_1.G AS y,
+               apply("p", _xmt_sort_t.G, _xmt_sort_t_1.G) AS G
+          FROM _xmt_sort_t
+          JOIN _xmt_sort_t AS _xmt_sort_t_1
+        ) AS _xmt_view_p_2_9
   FULL JOIN (-- Agg (8)
         SELECT x, y,
                and_aggregate(G) as G
          FROM (-- exclude(15)
                SELECT *
                 FROM (-- Join(22)
-                      SELECT _xmt__4_12.x AS x,
-                             _xmt_t_1.G AS y,
-                             _xmt__4_12.G AS G
+                      SELECT _xmt_view__4_12.x AS x,
+                             _xmt_sort_t_1.G AS y,
+                             _xmt_view__4_12.G AS G
                         FROM (-- Join(30)
-                              SELECT _xmt_t.G AS x,
-                                     eq_(_xmt_t.G, "A") AS G
-                                FROM _xmt_t
-                              ) AS _xmt__4_12
-                        JOIN _xmt_t AS _xmt_t_1
+                              SELECT _xmt_sort_t.G AS x,
+                                     eq_(_xmt_sort_t.G, "A") AS G
+                                FROM _xmt_sort_t
+                              ) AS _xmt_view__4_12
+                        JOIN _xmt_sort_t AS _xmt_sort_t_1
                       UNION ALL
                       -- Join(22)
-                      SELECT _xmt_t.G AS x,
-                             _xmt__5_15.y AS y,
-                             _xmt__5_15.G AS G
+                      SELECT _xmt_sort_t.G AS x,
+                             _xmt_view__5_15.y AS y,
+                             _xmt_view__5_15.G AS G
                         FROM (-- Join(30)
-                              SELECT _xmt_t_1.G AS y,
-                                     eq_(_xmt_t_1.G, "A") AS G
-                                FROM _xmt_t AS _xmt_t_1
-                              ) AS _xmt__5_15
-                        JOIN _xmt_t)
+                              SELECT _xmt_sort_t_1.G AS y,
+                                     eq_(_xmt_sort_t_1.G, "A") AS G
+                                FROM _xmt_sort_t AS _xmt_sort_t_1
+                              ) AS _xmt_view__5_15
+                        JOIN _xmt_sort_t)
                 WHERE G <> "true")
          GROUP BY x, y
-        ) AS agg_union_6 ON  agg_union_6.x = _xmt_p_2_9.x AND  agg_union_6.y = _xmt_p_2_9.y
+        ) AS agg_union_6 ON  agg_union_6.x = _xmt_view_p_2_9.x AND  agg_union_6.y = _xmt_view_p_2_9.y
 ----- UF -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_2_9.x AS x,
-       _xmt_p_2_9.y AS y,
-       bool_eq_("true", _xmt_p_2_9.G, agg_union_6.G) AS G
+SELECT _xmt_view_p_2_9.x AS x,
+       _xmt_view_p_2_9.y AS y,
+       bool_eq_("true", _xmt_view_p_2_9.G, agg_union_6.G) AS G
   FROM (-- Join(8)
-        SELECT _xmt_t.G AS x,
-               _xmt_t_1.G AS y,
-               apply("p", _xmt_t.G, _xmt_t_1.G) AS G
-          FROM _xmt_t
-          JOIN _xmt_t AS _xmt_t_1
-        ) AS _xmt_p_2_9
+        SELECT _xmt_sort_t.G AS x,
+               _xmt_sort_t_1.G AS y,
+               apply("p", _xmt_sort_t.G, _xmt_sort_t_1.G) AS G
+          FROM _xmt_sort_t
+          JOIN _xmt_sort_t AS _xmt_sort_t_1
+        ) AS _xmt_view_p_2_9
   FULL JOIN (-- Agg (8)
         SELECT x, y,
                and_aggregate(G) as G
          FROM (-- exclude(15)
                SELECT *
                 FROM (-- Join(22)
-                      SELECT _xmt__4_12.x AS x,
-                             _xmt_t_1.G AS y,
-                             _xmt__4_12.G AS G
+                      SELECT _xmt_view__4_12.x AS x,
+                             _xmt_sort_t_1.G AS y,
+                             _xmt_view__4_12.G AS G
                         FROM (-- Join(30)
-                              SELECT _xmt_t.G AS x,
-                                     eq_(_xmt_t.G, "A") AS G
-                                FROM _xmt_t
-                              ) AS _xmt__4_12
-                        JOIN _xmt_t AS _xmt_t_1
+                              SELECT _xmt_sort_t.G AS x,
+                                     eq_(_xmt_sort_t.G, "A") AS G
+                                FROM _xmt_sort_t
+                              ) AS _xmt_view__4_12
+                        JOIN _xmt_sort_t AS _xmt_sort_t_1
                       UNION ALL
                       -- Join(22)
-                      SELECT _xmt_t.G AS x,
-                             _xmt__5_15.y AS y,
-                             _xmt__5_15.G AS G
+                      SELECT _xmt_sort_t.G AS x,
+                             _xmt_view__5_15.y AS y,
+                             _xmt_view__5_15.G AS G
                         FROM (-- Join(30)
-                              SELECT _xmt_t_1.G AS y,
-                                     eq_(_xmt_t_1.G, "A") AS G
-                                FROM _xmt_t AS _xmt_t_1
-                              ) AS _xmt__5_15
-                        JOIN _xmt_t)
+                              SELECT _xmt_sort_t_1.G AS y,
+                                     eq_(_xmt_sort_t_1.G, "A") AS G
+                                FROM _xmt_sort_t AS _xmt_sort_t_1
+                              ) AS _xmt_view__5_15
+                        JOIN _xmt_sort_t)
                 WHERE G <> "true")
          GROUP BY x, y
-        ) AS agg_union_6 ON  agg_union_6.x = _xmt_p_2_9.x AND  agg_union_6.y = _xmt_p_2_9.y
+        ) AS agg_union_6 ON  agg_union_6.x = _xmt_view_p_2_9.x AND  agg_union_6.y = _xmt_view_p_2_9.y
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_2_9.x AS x,
-       _xmt_p_2_9.y AS y,
-       bool_eq_("true", _xmt_p_2_9.G, agg_union_6.G) AS G
+SELECT _xmt_view_p_2_9.x AS x,
+       _xmt_view_p_2_9.y AS y,
+       bool_eq_("true", _xmt_view_p_2_9.G, agg_union_6.G) AS G
   FROM (-- Join(8)
-        SELECT _xmt_t.G AS x,
-               _xmt_t_1.G AS y,
-               apply("p", _xmt_t.G, _xmt_t_1.G) AS G
-          FROM _xmt_t
-          JOIN _xmt_t AS _xmt_t_1
-        ) AS _xmt_p_2_9
+        SELECT _xmt_sort_t.G AS x,
+               _xmt_sort_t_1.G AS y,
+               apply("p", _xmt_sort_t.G, _xmt_sort_t_1.G) AS G
+          FROM _xmt_sort_t
+          JOIN _xmt_sort_t AS _xmt_sort_t_1
+        ) AS _xmt_view_p_2_9
   FULL JOIN (-- Agg (8)
         SELECT x, y,
                and_aggregate(G) as G
          FROM (-- exclude(15)
                SELECT *
                 FROM (-- Join(22)
-                      SELECT _xmt__4_12.x AS x,
-                             _xmt_t_1.G AS y,
-                             _xmt__4_12.G AS G
+                      SELECT _xmt_view__4_12.x AS x,
+                             _xmt_sort_t_1.G AS y,
+                             _xmt_view__4_12.G AS G
                         FROM (-- Join(30)
-                              SELECT _xmt_t.G AS x,
-                                     eq_(_xmt_t.G, "A") AS G
-                                FROM _xmt_t
-                              ) AS _xmt__4_12
-                        JOIN _xmt_t AS _xmt_t_1
+                              SELECT _xmt_sort_t.G AS x,
+                                     eq_(_xmt_sort_t.G, "A") AS G
+                                FROM _xmt_sort_t
+                              ) AS _xmt_view__4_12
+                        JOIN _xmt_sort_t AS _xmt_sort_t_1
                       UNION ALL
                       -- Join(22)
-                      SELECT _xmt_t.G AS x,
-                             _xmt__5_15.y AS y,
-                             _xmt__5_15.G AS G
+                      SELECT _xmt_sort_t.G AS x,
+                             _xmt_view__5_15.y AS y,
+                             _xmt_view__5_15.G AS G
                         FROM (-- Join(30)
-                              SELECT _xmt_t_1.G AS y,
-                                     eq_(_xmt_t_1.G, "A") AS G
-                                FROM _xmt_t AS _xmt_t_1
-                              ) AS _xmt__5_15
-                        JOIN _xmt_t)
+                              SELECT _xmt_sort_t_1.G AS y,
+                                     eq_(_xmt_sort_t_1.G, "A") AS G
+                                FROM _xmt_sort_t AS _xmt_sort_t_1
+                              ) AS _xmt_view__5_15
+                        JOIN _xmt_sort_t)
                 WHERE G <> "true")
          GROUP BY x, y
-        ) AS agg_union_6 ON  agg_union_6.x = _xmt_p_2_9.x AND  agg_union_6.y = _xmt_p_2_9.y
+        ) AS agg_union_6 ON  agg_union_6.x = _xmt_view_p_2_9.x AND  agg_union_6.y = _xmt_view_p_2_9.y
 
 === (top) (forall ((x T) (y T)) (= (p x y) (and (= x A) (= y A)))) ======================================
 ----- TU -----------------------------------------------------------
@@ -267,45 +267,45 @@ SELECT and_aggregate(G) as G
        -- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_p_2_9.x AS x,
-                     _xmt_p_2_9.y AS y,
-                     bool_eq_("true", _xmt_p_2_9.G, agg_union_6.G) AS G
+              SELECT _xmt_view_p_2_9.x AS x,
+                     _xmt_view_p_2_9.y AS y,
+                     bool_eq_("true", _xmt_view_p_2_9.G, agg_union_6.G) AS G
                 FROM (-- Join(22)
-                      SELECT _xmt_t.G AS x,
-                             _xmt_t_1.G AS y,
-                             apply("p", _xmt_t.G, _xmt_t_1.G) AS G
-                        FROM _xmt_t
-                        JOIN _xmt_t AS _xmt_t_1
-                      ) AS _xmt_p_2_9
+                      SELECT _xmt_sort_t.G AS x,
+                             _xmt_sort_t_1.G AS y,
+                             apply("p", _xmt_sort_t.G, _xmt_sort_t_1.G) AS G
+                        FROM _xmt_sort_t
+                        JOIN _xmt_sort_t AS _xmt_sort_t_1
+                      ) AS _xmt_view_p_2_9
                 FULL JOIN (-- Agg (22)
                       SELECT x, y,
                              and_aggregate(G) as G
                        FROM (-- exclude(29)
                              SELECT *
                               FROM (-- Join(36)
-                                    SELECT _xmt__4_12.x AS x,
-                                           _xmt_t_1.G AS y,
-                                           _xmt__4_12.G AS G
+                                    SELECT _xmt_view__4_12.x AS x,
+                                           _xmt_sort_t_1.G AS y,
+                                           _xmt_view__4_12.G AS G
                                       FROM (-- Join(44)
-                                            SELECT _xmt_t.G AS x,
-                                                   eq_(_xmt_t.G, "A") AS G
-                                              FROM _xmt_t
-                                            ) AS _xmt__4_12
-                                      JOIN _xmt_t AS _xmt_t_1
+                                            SELECT _xmt_sort_t.G AS x,
+                                                   eq_(_xmt_sort_t.G, "A") AS G
+                                              FROM _xmt_sort_t
+                                            ) AS _xmt_view__4_12
+                                      JOIN _xmt_sort_t AS _xmt_sort_t_1
                                     UNION ALL
                                     -- Join(36)
-                                    SELECT _xmt_t.G AS x,
-                                           _xmt__5_15.y AS y,
-                                           _xmt__5_15.G AS G
+                                    SELECT _xmt_sort_t.G AS x,
+                                           _xmt_view__5_15.y AS y,
+                                           _xmt_view__5_15.G AS G
                                       FROM (-- Join(44)
-                                            SELECT _xmt_t_1.G AS y,
-                                                   eq_(_xmt_t_1.G, "A") AS G
-                                              FROM _xmt_t AS _xmt_t_1
-                                            ) AS _xmt__5_15
-                                      JOIN _xmt_t)
+                                            SELECT _xmt_sort_t_1.G AS y,
+                                                   eq_(_xmt_sort_t_1.G, "A") AS G
+                                              FROM _xmt_sort_t AS _xmt_sort_t_1
+                                            ) AS _xmt_view__5_15
+                                      JOIN _xmt_sort_t)
                               WHERE G <> "true")
                        GROUP BY x, y
-                      ) AS agg_union_6 ON  agg_union_6.x = _xmt_p_2_9.x AND  agg_union_6.y = _xmt_p_2_9.y)
+                      ) AS agg_union_6 ON  agg_union_6.x = _xmt_view_p_2_9.x AND  agg_union_6.y = _xmt_view_p_2_9.y)
         WHERE G <> "true")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -313,45 +313,45 @@ SELECT G as G
  FROM (-- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_p_2_9.x AS x,
-                     _xmt_p_2_9.y AS y,
-                     bool_eq_("true", _xmt_p_2_9.G, agg_union_6.G) AS G
+              SELECT _xmt_view_p_2_9.x AS x,
+                     _xmt_view_p_2_9.y AS y,
+                     bool_eq_("true", _xmt_view_p_2_9.G, agg_union_6.G) AS G
                 FROM (-- Join(22)
-                      SELECT _xmt_t.G AS x,
-                             _xmt_t_1.G AS y,
-                             apply("p", _xmt_t.G, _xmt_t_1.G) AS G
-                        FROM _xmt_t
-                        JOIN _xmt_t AS _xmt_t_1
-                      ) AS _xmt_p_2_9
+                      SELECT _xmt_sort_t.G AS x,
+                             _xmt_sort_t_1.G AS y,
+                             apply("p", _xmt_sort_t.G, _xmt_sort_t_1.G) AS G
+                        FROM _xmt_sort_t
+                        JOIN _xmt_sort_t AS _xmt_sort_t_1
+                      ) AS _xmt_view_p_2_9
                 FULL JOIN (-- Agg (22)
                       SELECT x, y,
                              and_aggregate(G) as G
                        FROM (-- exclude(29)
                              SELECT *
                               FROM (-- Join(36)
-                                    SELECT _xmt__4_12.x AS x,
-                                           _xmt_t_1.G AS y,
-                                           _xmt__4_12.G AS G
+                                    SELECT _xmt_view__4_12.x AS x,
+                                           _xmt_sort_t_1.G AS y,
+                                           _xmt_view__4_12.G AS G
                                       FROM (-- Join(44)
-                                            SELECT _xmt_t.G AS x,
-                                                   eq_(_xmt_t.G, "A") AS G
-                                              FROM _xmt_t
-                                            ) AS _xmt__4_12
-                                      JOIN _xmt_t AS _xmt_t_1
+                                            SELECT _xmt_sort_t.G AS x,
+                                                   eq_(_xmt_sort_t.G, "A") AS G
+                                              FROM _xmt_sort_t
+                                            ) AS _xmt_view__4_12
+                                      JOIN _xmt_sort_t AS _xmt_sort_t_1
                                     UNION ALL
                                     -- Join(36)
-                                    SELECT _xmt_t.G AS x,
-                                           _xmt__5_15.y AS y,
-                                           _xmt__5_15.G AS G
+                                    SELECT _xmt_sort_t.G AS x,
+                                           _xmt_view__5_15.y AS y,
+                                           _xmt_view__5_15.G AS G
                                       FROM (-- Join(44)
-                                            SELECT _xmt_t_1.G AS y,
-                                                   eq_(_xmt_t_1.G, "A") AS G
-                                              FROM _xmt_t AS _xmt_t_1
-                                            ) AS _xmt__5_15
-                                      JOIN _xmt_t)
+                                            SELECT _xmt_sort_t_1.G AS y,
+                                                   eq_(_xmt_sort_t_1.G, "A") AS G
+                                              FROM _xmt_sort_t AS _xmt_sort_t_1
+                                            ) AS _xmt_view__5_15
+                                      JOIN _xmt_sort_t)
                               WHERE G <> "true")
                        GROUP BY x, y
-                      ) AS agg_union_6 ON  agg_union_6.x = _xmt_p_2_9.x AND  agg_union_6.y = _xmt_p_2_9.y)
+                      ) AS agg_union_6 ON  agg_union_6.x = _xmt_view_p_2_9.x AND  agg_union_6.y = _xmt_view_p_2_9.y)
         WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Agg (0)
@@ -361,45 +361,45 @@ SELECT and_aggregate(G) as G
        -- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_p_2_9.x AS x,
-                     _xmt_p_2_9.y AS y,
-                     bool_eq_("true", _xmt_p_2_9.G, agg_union_6.G) AS G
+              SELECT _xmt_view_p_2_9.x AS x,
+                     _xmt_view_p_2_9.y AS y,
+                     bool_eq_("true", _xmt_view_p_2_9.G, agg_union_6.G) AS G
                 FROM (-- Join(22)
-                      SELECT _xmt_t.G AS x,
-                             _xmt_t_1.G AS y,
-                             apply("p", _xmt_t.G, _xmt_t_1.G) AS G
-                        FROM _xmt_t
-                        JOIN _xmt_t AS _xmt_t_1
-                      ) AS _xmt_p_2_9
+                      SELECT _xmt_sort_t.G AS x,
+                             _xmt_sort_t_1.G AS y,
+                             apply("p", _xmt_sort_t.G, _xmt_sort_t_1.G) AS G
+                        FROM _xmt_sort_t
+                        JOIN _xmt_sort_t AS _xmt_sort_t_1
+                      ) AS _xmt_view_p_2_9
                 FULL JOIN (-- Agg (22)
                       SELECT x, y,
                              and_aggregate(G) as G
                        FROM (-- exclude(29)
                              SELECT *
                               FROM (-- Join(36)
-                                    SELECT _xmt__4_12.x AS x,
-                                           _xmt_t_1.G AS y,
-                                           _xmt__4_12.G AS G
+                                    SELECT _xmt_view__4_12.x AS x,
+                                           _xmt_sort_t_1.G AS y,
+                                           _xmt_view__4_12.G AS G
                                       FROM (-- Join(44)
-                                            SELECT _xmt_t.G AS x,
-                                                   eq_(_xmt_t.G, "A") AS G
-                                              FROM _xmt_t
-                                            ) AS _xmt__4_12
-                                      JOIN _xmt_t AS _xmt_t_1
+                                            SELECT _xmt_sort_t.G AS x,
+                                                   eq_(_xmt_sort_t.G, "A") AS G
+                                              FROM _xmt_sort_t
+                                            ) AS _xmt_view__4_12
+                                      JOIN _xmt_sort_t AS _xmt_sort_t_1
                                     UNION ALL
                                     -- Join(36)
-                                    SELECT _xmt_t.G AS x,
-                                           _xmt__5_15.y AS y,
-                                           _xmt__5_15.G AS G
+                                    SELECT _xmt_sort_t.G AS x,
+                                           _xmt_view__5_15.y AS y,
+                                           _xmt_view__5_15.G AS G
                                       FROM (-- Join(44)
-                                            SELECT _xmt_t_1.G AS y,
-                                                   eq_(_xmt_t_1.G, "A") AS G
-                                              FROM _xmt_t AS _xmt_t_1
-                                            ) AS _xmt__5_15
-                                      JOIN _xmt_t)
+                                            SELECT _xmt_sort_t_1.G AS y,
+                                                   eq_(_xmt_sort_t_1.G, "A") AS G
+                                              FROM _xmt_sort_t AS _xmt_sort_t_1
+                                            ) AS _xmt_view__5_15
+                                      JOIN _xmt_sort_t)
                               WHERE G <> "true")
                        GROUP BY x, y
-                      ) AS agg_union_6 ON  agg_union_6.x = _xmt_p_2_9.x AND  agg_union_6.y = _xmt_p_2_9.y)
+                      ) AS agg_union_6 ON  agg_union_6.x = _xmt_view_p_2_9.x AND  agg_union_6.y = _xmt_view_p_2_9.y)
         WHERE G <> "true")
 
 ===========================================

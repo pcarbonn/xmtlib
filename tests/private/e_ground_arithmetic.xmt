@@ -22,7 +22,7 @@
 (x-ground debug:)
 (x-debug solver groundings)
 (x-debug db tables)
-(x-debug db _xmt_row_T)
+(x-debug db _xmt_interp_row_T)
 -------------------------
 (declare-const c Int)
 (declare-const d Real)
@@ -283,11 +283,11 @@ SELECT eq_(1.0, left_("mod", 3, 2)) AS G
 ===========================================
 Tables and Views:
  - Bool (table)
- - _xmt_row_T (table)
- - _xmt_row_TU (view)
+ - _xmt_interp_row_T (table)
+ - _xmt_interp_row_TU (view)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
- TABLE: _xmt_row_t
+ TABLE: _xmt_interp_row_t
 ┌─────┐
 │ a_1 │
 ├─────┤

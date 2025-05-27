@@ -17,7 +17,7 @@
 (x-debug solver functions)
 (x-debug solver groundings)
 (x-debug db tables)
-(x-debug db _xmt_mix_g)
+(x-debug db _xmt_interp_mix_g)
 -------------------------
 (declare-datatype Color ((red ) (green )))
 (declare-fun mix (Color Color) Color)
@@ -46,9 +46,9 @@ Functions2:
  - abs ()->Real : Predefined (false)
  - red ()->Color : Constructor
  - green ()->Color : Constructor
- - (_ is red) (Color)->Bool : Boolean (_xmt_color_red_tester_t Complete, _xmt_color_red_tester_f Complete, _xmt_color_red_tester_g Complete)
- - (_ is green) (Color)->Bool : Boolean (_xmt_color_green_tester_t Complete, _xmt_color_green_tester_f Complete, _xmt_color_green_tester_g Complete)
- - mix (Color, Color)->Color : Non Boolean (_xmt_mix_G Partial)
+ - (_ is red) (Color)->Bool : Boolean (_xmt_tester_color_red_t Complete, _xmt_tester_color_red_f Complete, _xmt_tester_color_red_g Complete)
+ - (_ is green) (Color)->Bool : Boolean (_xmt_tester_color_green_t Complete, _xmt_tester_color_green_f Complete, _xmt_tester_color_green_g Complete)
+ - mix (Color, Color)->Color : Non Boolean (_xmt_interp_mix_G Partial)
 Groundings:
 ===  green ======================================
  -- Join(0)
@@ -58,56 +58,56 @@ SELECT "green" AS G
 SELECT "red" AS G
 ===  (mix red green) ======================================
  -- Join(0)
-SELECT _xmt_mix_G_2.G AS G
-  FROM _xmt_mix_G AS _xmt_mix_G_2
- WHERE "red" = _xmt_mix_G_2.a_1 AND "green" = _xmt_mix_G_2.a_2
+SELECT _xmt_interp_mix_G_2.G AS G
+  FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_2
+ WHERE "red" = _xmt_interp_mix_G_2.a_1 AND "green" = _xmt_interp_mix_G_2.a_2
 === (top) (= green (mix red green)) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT eq_("green", _xmt_mix_G_2.G) AS G
-  FROM _xmt_mix_G AS _xmt_mix_G_2
- WHERE "red" = _xmt_mix_G_2.a_1 AND "green" = _xmt_mix_G_2.a_2
+SELECT eq_("green", _xmt_interp_mix_G_2.G) AS G
+  FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_2
+ WHERE "red" = _xmt_interp_mix_G_2.a_1 AND "green" = _xmt_interp_mix_G_2.a_2
 ----- UF -----------------------------------------------------------
 -- Join(0)
-SELECT eq_("green", _xmt_mix_G_2.G) AS G
-  FROM _xmt_mix_G AS _xmt_mix_G_2
- WHERE "red" = _xmt_mix_G_2.a_1 AND "green" = _xmt_mix_G_2.a_2
+SELECT eq_("green", _xmt_interp_mix_G_2.G) AS G
+  FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_2
+ WHERE "red" = _xmt_interp_mix_G_2.a_1 AND "green" = _xmt_interp_mix_G_2.a_2
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT eq_("green", _xmt_mix_G_2.G) AS G
-  FROM _xmt_mix_G AS _xmt_mix_G_2
- WHERE "red" = _xmt_mix_G_2.a_1 AND "green" = _xmt_mix_G_2.a_2
+SELECT eq_("green", _xmt_interp_mix_G_2.G) AS G
+  FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_2
+ WHERE "red" = _xmt_interp_mix_G_2.a_1 AND "green" = _xmt_interp_mix_G_2.a_2
 
 ===  x ======================================
  -- Join(0)
-SELECT _xmt_color_4.G AS x,
-       _xmt_color_4.G AS G
-  FROM _xmt_color AS _xmt_color_4
+SELECT _xmt_sort_color_4.G AS x,
+       _xmt_sort_color_4.G AS G
+  FROM _xmt_sort_color AS _xmt_sort_color_4
 ===  (mix x x) ======================================
  -- Join(0)
-SELECT _xmt_mix_G_5.a_1 AS x,
-       _xmt_mix_G_5.G AS G
-  FROM _xmt_mix_G AS _xmt_mix_G_5
- WHERE _xmt_mix_G_5.a_1 = _xmt_mix_G_5.a_2
+SELECT _xmt_interp_mix_G_5.a_1 AS x,
+       _xmt_interp_mix_G_5.G AS G
+  FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_5
+ WHERE _xmt_interp_mix_G_5.a_1 = _xmt_interp_mix_G_5.a_2
 ===  (= (mix x x) x) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_mix_G_5.a_1 AS x,
-       eq_(_xmt_mix_G_5.G, _xmt_mix_G_5.a_1) AS G
-  FROM _xmt_mix_G AS _xmt_mix_G_5
- WHERE _xmt_mix_G_5.a_1 = _xmt_mix_G_5.a_2
+SELECT _xmt_interp_mix_G_5.a_1 AS x,
+       eq_(_xmt_interp_mix_G_5.G, _xmt_interp_mix_G_5.a_1) AS G
+  FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_5
+ WHERE _xmt_interp_mix_G_5.a_1 = _xmt_interp_mix_G_5.a_2
 ----- UF -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_mix_G_5.a_1 AS x,
-       eq_(_xmt_mix_G_5.G, _xmt_mix_G_5.a_1) AS G
-  FROM _xmt_mix_G AS _xmt_mix_G_5
- WHERE _xmt_mix_G_5.a_1 = _xmt_mix_G_5.a_2
+SELECT _xmt_interp_mix_G_5.a_1 AS x,
+       eq_(_xmt_interp_mix_G_5.G, _xmt_interp_mix_G_5.a_1) AS G
+  FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_5
+ WHERE _xmt_interp_mix_G_5.a_1 = _xmt_interp_mix_G_5.a_2
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_mix_G_5.a_1 AS x,
-       eq_(_xmt_mix_G_5.G, _xmt_mix_G_5.a_1) AS G
-  FROM _xmt_mix_G AS _xmt_mix_G_5
- WHERE _xmt_mix_G_5.a_1 = _xmt_mix_G_5.a_2
+SELECT _xmt_interp_mix_G_5.a_1 AS x,
+       eq_(_xmt_interp_mix_G_5.G, _xmt_interp_mix_G_5.a_1) AS G
+  FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_5
+ WHERE _xmt_interp_mix_G_5.a_1 = _xmt_interp_mix_G_5.a_2
 
 === (top) (exists ((x Color)) (= (mix x x) x)) ======================================
 ----- TU -----------------------------------------------------------
@@ -116,10 +116,10 @@ SELECT or_aggregate(G) as G
  FROM (-- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_mix_G_5.a_1 AS x,
-                     eq_(_xmt_mix_G_5.G, _xmt_mix_G_5.a_1) AS G
-                FROM _xmt_mix_G AS _xmt_mix_G_5
-               WHERE _xmt_mix_G_5.a_1 = _xmt_mix_G_5.a_2)
+              SELECT _xmt_interp_mix_G_5.a_1 AS x,
+                     eq_(_xmt_interp_mix_G_5.G, _xmt_interp_mix_G_5.a_1) AS G
+                FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_5
+               WHERE _xmt_interp_mix_G_5.a_1 = _xmt_interp_mix_G_5.a_2)
         WHERE G <> "false")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -129,10 +129,10 @@ SELECT or_aggregate(G) as G
        -- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_mix_G_5.a_1 AS x,
-                     eq_(_xmt_mix_G_5.G, _xmt_mix_G_5.a_1) AS G
-                FROM _xmt_mix_G AS _xmt_mix_G_5
-               WHERE _xmt_mix_G_5.a_1 = _xmt_mix_G_5.a_2)
+              SELECT _xmt_interp_mix_G_5.a_1 AS x,
+                     eq_(_xmt_interp_mix_G_5.G, _xmt_interp_mix_G_5.a_1) AS G
+                FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_5
+               WHERE _xmt_interp_mix_G_5.a_1 = _xmt_interp_mix_G_5.a_2)
         WHERE G <> "false")
 ----- G ------------------------------------------------------------
 -- Agg (0)
@@ -142,28 +142,28 @@ SELECT or_aggregate(G) as G
        -- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_mix_G_5.a_1 AS x,
-                     eq_(_xmt_mix_G_5.G, _xmt_mix_G_5.a_1) AS G
-                FROM _xmt_mix_G AS _xmt_mix_G_5
-               WHERE _xmt_mix_G_5.a_1 = _xmt_mix_G_5.a_2)
+              SELECT _xmt_interp_mix_G_5.a_1 AS x,
+                     eq_(_xmt_interp_mix_G_5.G, _xmt_interp_mix_G_5.a_1) AS G
+                FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_5
+               WHERE _xmt_interp_mix_G_5.a_1 = _xmt_interp_mix_G_5.a_2)
         WHERE G <> "false")
 
 ===========================================
 Tables and Views:
  - Bool (table)
- - _xmt_color (table)
- - _xmt_color_red_tester_g (view)
- - _xmt_color_red_tester_t (view)
- - _xmt_color_red_tester_f (view)
- - _xmt_color_green_tester_g (view)
- - _xmt_color_green_tester_t (view)
- - _xmt_color_green_tester_f (view)
- - _xmt_mix_K (table)
- - _xmt_mix_U (view)
- - _xmt_mix_G (view)
+ - _xmt_sort_color (table)
+ - _xmt_tester_color_red_g (view)
+ - _xmt_tester_color_red_t (view)
+ - _xmt_tester_color_red_f (view)
+ - _xmt_tester_color_green_g (view)
+ - _xmt_tester_color_green_t (view)
+ - _xmt_tester_color_green_f (view)
+ - _xmt_interp_mix_K (table)
+ - _xmt_interp_mix_U (view)
+ - _xmt_interp_mix_G (view)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
- TABLE: _xmt_mix_g
+ TABLE: _xmt_interp_mix_g
 ┌─────────┬─────────┬─────────────────┐
 │ a_1     │ a_2     │ G               │
 ├─────────┼─────────┼─────────────────┤

@@ -19,8 +19,8 @@
 (x-debug solver polymorphic_sorts)
 (x-debug solver sorts)
 (x-debug solver functions)
-(x-debug db _xmt_p_G)
-(x-debug db _xmt_sort_8_left_tester_g)
+(x-debug db _xmt_interp_p_G)
+(x-debug db _xmt_tester_sort_8_left_g)
 (x-debug solver groundings)
 (check-sat)
 -------------------------
@@ -31,53 +31,53 @@
 (declare-fun q ((Either Material)) Color)
 Tables and Views:
  - Bool (table)
- - _xmt_color (table)
- - _xmt_color_red_tester_g (view)
- - _xmt_color_red_tester_t (view)
- - _xmt_color_red_tester_f (view)
- - _xmt_color_blue_tester_g (view)
- - _xmt_color_blue_tester_t (view)
- - _xmt_color_blue_tester_f (view)
- - _xmt_color_green_tester_g (view)
- - _xmt_color_green_tester_t (view)
- - _xmt_color_green_tester_f (view)
- - _xmt_material (table)
- - _xmt_material_soft_tester_g (view)
- - _xmt_material_soft_tester_t (view)
- - _xmt_material_soft_tester_f (view)
- - _xmt_material_hard_tester_g (view)
- - _xmt_material_hard_tester_t (view)
- - _xmt_material_hard_tester_f (view)
+ - _xmt_sort_color (table)
+ - _xmt_tester_color_red_g (view)
+ - _xmt_tester_color_red_t (view)
+ - _xmt_tester_color_red_f (view)
+ - _xmt_tester_color_blue_g (view)
+ - _xmt_tester_color_blue_t (view)
+ - _xmt_tester_color_blue_f (view)
+ - _xmt_tester_color_green_g (view)
+ - _xmt_tester_color_green_t (view)
+ - _xmt_tester_color_green_f (view)
+ - _xmt_sort_material (table)
+ - _xmt_tester_material_soft_g (view)
+ - _xmt_tester_material_soft_t (view)
+ - _xmt_tester_material_soft_f (view)
+ - _xmt_tester_material_hard_g (view)
+ - _xmt_tester_material_hard_t (view)
+ - _xmt_tester_material_hard_f (view)
  - Sort_8_core (table)
  - Sort_8 (table)
- - _xmt_sort_8_nil_tester_g (view)
- - _xmt_sort_8_nil_tester_t (view)
- - _xmt_sort_8_nil_tester_f (view)
- - _xmt_sort_8_left_tester_g (view)
- - _xmt_sort_8_left_tester_t (view)
- - _xmt_sort_8_left_tester_f (view)
- - _xmt_sort_8_b_selector_g (view)
- - _xmt_sort_8_right_tester_g (view)
- - _xmt_sort_8_right_tester_t (view)
- - _xmt_sort_8_right_tester_f (view)
- - _xmt_sort_8_right_selector_g (view)
- - _xmt_p_T (table)
- - _xmt_p_TU (view)
- - _xmt_p_UF (view)
- - _xmt_p_G (view)
+ - _xmt_tester_sort_8_nil_g (view)
+ - _xmt_tester_sort_8_nil_t (view)
+ - _xmt_tester_sort_8_nil_f (view)
+ - _xmt_tester_sort_8_left_g (view)
+ - _xmt_tester_sort_8_left_t (view)
+ - _xmt_tester_sort_8_left_f (view)
+ - _xmt_selector_sort_8_b_g (view)
+ - _xmt_tester_sort_8_right_g (view)
+ - _xmt_tester_sort_8_right_t (view)
+ - _xmt_tester_sort_8_right_f (view)
+ - _xmt_selector_sort_8_right_g (view)
+ - _xmt_interp_p_T (table)
+ - _xmt_interp_p_TU (view)
+ - _xmt_interp_p_UF (view)
+ - _xmt_interp_p_G (view)
  - Sort_9_core (table)
  - Sort_9 (table)
- - _xmt_sort_9_nil_tester_g (view)
- - _xmt_sort_9_nil_tester_t (view)
- - _xmt_sort_9_nil_tester_f (view)
- - _xmt_sort_9_left_tester_g (view)
- - _xmt_sort_9_left_tester_t (view)
- - _xmt_sort_9_left_tester_f (view)
- - _xmt_sort_9_b_selector_g (view)
- - _xmt_sort_9_right_tester_g (view)
- - _xmt_sort_9_right_tester_t (view)
- - _xmt_sort_9_right_tester_f (view)
- - _xmt_sort_9_right_selector_g (view)
+ - _xmt_tester_sort_9_nil_g (view)
+ - _xmt_tester_sort_9_nil_t (view)
+ - _xmt_tester_sort_9_nil_f (view)
+ - _xmt_tester_sort_9_left_g (view)
+ - _xmt_tester_sort_9_left_t (view)
+ - _xmt_tester_sort_9_left_f (view)
+ - _xmt_selector_sort_9_b_g (view)
+ - _xmt_tester_sort_9_right_g (view)
+ - _xmt_tester_sort_9_right_t (view)
+ - _xmt_tester_sort_9_right_f (view)
+ - _xmt_selector_sort_9_right_g (view)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
  TABLE: sort_8
@@ -108,8 +108,8 @@ Sorts:
  - (infinite) RoundingMode
  - (infinite) String
  - (infinite) RegLan
- - (_xmt_color: 3) Color: ((red ) (blue ) (green ))
- - (_xmt_material: 2) Material: ((soft ) (hard ))
+ - (_xmt_sort_color: 3) Color: ((red ) (blue ) (green ))
+ - (_xmt_sort_material: 2) Material: ((soft ) (hard ))
  - (Sort_8: 7) (Either Color): ((nil ) (Left (b Color)) (Right (right Color)))
  - (Sort_9: 5) (Either Material): ((nil ) (Left (b Material)) (Right (right Material)))
 Functions2:
@@ -137,32 +137,32 @@ Functions2:
  - red ()->Color : Constructor
  - blue ()->Color : Constructor
  - green ()->Color : Constructor
- - (_ is red) (Color)->Bool : Boolean (_xmt_color_red_tester_t Complete, _xmt_color_red_tester_f Complete, _xmt_color_red_tester_g Complete)
- - (_ is blue) (Color)->Bool : Boolean (_xmt_color_blue_tester_t Complete, _xmt_color_blue_tester_f Complete, _xmt_color_blue_tester_g Complete)
- - (_ is green) (Color)->Bool : Boolean (_xmt_color_green_tester_t Complete, _xmt_color_green_tester_f Complete, _xmt_color_green_tester_g Complete)
+ - (_ is red) (Color)->Bool : Boolean (_xmt_tester_color_red_t Complete, _xmt_tester_color_red_f Complete, _xmt_tester_color_red_g Complete)
+ - (_ is blue) (Color)->Bool : Boolean (_xmt_tester_color_blue_t Complete, _xmt_tester_color_blue_f Complete, _xmt_tester_color_blue_g Complete)
+ - (_ is green) (Color)->Bool : Boolean (_xmt_tester_color_green_t Complete, _xmt_tester_color_green_f Complete, _xmt_tester_color_green_g Complete)
  - soft ()->Material : Constructor
  - hard ()->Material : Constructor
- - (_ is soft) (Material)->Bool : Boolean (_xmt_material_soft_tester_t Complete, _xmt_material_soft_tester_f Complete, _xmt_material_soft_tester_g Complete)
- - (_ is hard) (Material)->Bool : Boolean (_xmt_material_hard_tester_t Complete, _xmt_material_hard_tester_f Complete, _xmt_material_hard_tester_g Complete)
+ - (_ is soft) (Material)->Bool : Boolean (_xmt_tester_material_soft_t Complete, _xmt_tester_material_soft_f Complete, _xmt_tester_material_soft_g Complete)
+ - (_ is hard) (Material)->Bool : Boolean (_xmt_tester_material_hard_t Complete, _xmt_tester_material_hard_f Complete, _xmt_tester_material_hard_g Complete)
  - nil ()->(Either Color) : Constructor
  - nil ()->(Either Material) : Constructor
  - Left (Color)->(Either Color) : Constructor
  - Right (Color)->(Either Color) : Constructor
- - (_ is nil) ((Either Color))->Bool : Boolean (_xmt_sort_8_nil_tester_t Complete, _xmt_sort_8_nil_tester_f Complete, _xmt_sort_8_nil_tester_g Complete)
- - (_ is Left) ((Either Color))->Bool : Boolean (_xmt_sort_8_left_tester_t Complete, _xmt_sort_8_left_tester_f Complete, _xmt_sort_8_left_tester_g Complete)
- - b ((Either Color))->Color : Non Boolean (_xmt_sort_8_b_selector_g Complete)
- - (_ is Right) ((Either Color))->Bool : Boolean (_xmt_sort_8_right_tester_t Complete, _xmt_sort_8_right_tester_f Complete, _xmt_sort_8_right_tester_g Complete)
- - right ((Either Color))->Color : Non Boolean (_xmt_sort_8_right_selector_g Complete)
- - p ((Either Color))->Bool : Boolean (_xmt_p_TU Complete, _xmt_p_UF Complete, _xmt_p_G Complete)
+ - (_ is nil) ((Either Color))->Bool : Boolean (_xmt_tester_sort_8_nil_t Complete, _xmt_tester_sort_8_nil_f Complete, _xmt_tester_sort_8_nil_g Complete)
+ - (_ is Left) ((Either Color))->Bool : Boolean (_xmt_tester_sort_8_left_t Complete, _xmt_tester_sort_8_left_f Complete, _xmt_tester_sort_8_left_g Complete)
+ - b ((Either Color))->Color : Non Boolean (_xmt_selector_sort_8_b_g Complete)
+ - (_ is Right) ((Either Color))->Bool : Boolean (_xmt_tester_sort_8_right_t Complete, _xmt_tester_sort_8_right_f Complete, _xmt_tester_sort_8_right_g Complete)
+ - right ((Either Color))->Color : Non Boolean (_xmt_selector_sort_8_right_g Complete)
+ - p ((Either Color))->Bool : Boolean (_xmt_interp_p_TU Complete, _xmt_interp_p_UF Complete, _xmt_interp_p_G Complete)
  - Left (Material)->(Either Material) : Constructor
  - Right (Material)->(Either Material) : Constructor
- - (_ is nil) ((Either Material))->Bool : Boolean (_xmt_sort_9_nil_tester_t Complete, _xmt_sort_9_nil_tester_f Complete, _xmt_sort_9_nil_tester_g Complete)
- - (_ is Left) ((Either Material))->Bool : Boolean (_xmt_sort_9_left_tester_t Complete, _xmt_sort_9_left_tester_f Complete, _xmt_sort_9_left_tester_g Complete)
- - b ((Either Material))->Material : Non Boolean (_xmt_sort_9_b_selector_g Complete)
- - (_ is Right) ((Either Material))->Bool : Boolean (_xmt_sort_9_right_tester_t Complete, _xmt_sort_9_right_tester_f Complete, _xmt_sort_9_right_tester_g Complete)
- - right ((Either Material))->Material : Non Boolean (_xmt_sort_9_right_selector_g Complete)
+ - (_ is nil) ((Either Material))->Bool : Boolean (_xmt_tester_sort_9_nil_t Complete, _xmt_tester_sort_9_nil_f Complete, _xmt_tester_sort_9_nil_g Complete)
+ - (_ is Left) ((Either Material))->Bool : Boolean (_xmt_tester_sort_9_left_t Complete, _xmt_tester_sort_9_left_f Complete, _xmt_tester_sort_9_left_g Complete)
+ - b ((Either Material))->Material : Non Boolean (_xmt_selector_sort_9_b_g Complete)
+ - (_ is Right) ((Either Material))->Bool : Boolean (_xmt_tester_sort_9_right_t Complete, _xmt_tester_sort_9_right_f Complete, _xmt_tester_sort_9_right_g Complete)
+ - right ((Either Material))->Material : Non Boolean (_xmt_selector_sort_9_right_g Complete)
  - q ((Either Material))->Color : Not interpreted
- TABLE: _xmt_p_g
+ TABLE: _xmt_interp_p_g
 ┌────────────────────────────┬─────────┐
 │ a_1                        │ G       │
 ├────────────────────────────┼─────────┤
@@ -180,7 +180,7 @@ Functions2:
 ├────────────────────────────┼─────────┤
 │ " (as nil (Either Color))" │ "true"  │
 └────────────────────────────┴─────────┘
- TABLE: _xmt_sort_8_left_tester_g
+ TABLE: _xmt_tester_sort_8_left_g
 ┌────────────────────────────┬─────────┐
 │ a_1                        │ G       │
 ├────────────────────────────┼─────────┤
@@ -209,18 +209,18 @@ SELECT construct2("Right", "red") AS G
 ----- T ------------------------------------------------------------
 -- Join(0)
 SELECT "true" AS G
-  FROM _xmt_p_TU AS _xmt_p_TU_2
- WHERE construct2("Right", "red") = _xmt_p_TU_2.a_1
+  FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_2
+ WHERE construct2("Right", "red") = _xmt_interp_p_TU_2.a_1
 ----- F ------------------------------------------------------------
 -- Join(0)
 SELECT "false" AS G
-  FROM _xmt_p_UF AS _xmt_p_UF_2
- WHERE construct2("Right", "red") = _xmt_p_UF_2.a_1
+  FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_2
+ WHERE construct2("Right", "red") = _xmt_interp_p_UF_2.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_G_2.G AS G
-  FROM _xmt_p_G AS _xmt_p_G_2
- WHERE construct2("Right", "red") = _xmt_p_G_2.a_1
+SELECT _xmt_interp_p_G_2.G AS G
+  FROM _xmt_interp_p_G AS _xmt_interp_p_G_2
+ WHERE construct2("Right", "red") = _xmt_interp_p_G_2.a_1
 
 ===   (as nil (Either Color)) ======================================
  -- Join(0)
@@ -229,18 +229,18 @@ SELECT " (as nil (Either Color))" AS G
 ----- T ------------------------------------------------------------
 -- Join(0)
 SELECT "true" AS G
-  FROM _xmt_p_TU AS _xmt_p_TU_4
- WHERE " (as nil (Either Color))" = _xmt_p_TU_4.a_1
+  FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_4
+ WHERE " (as nil (Either Color))" = _xmt_interp_p_TU_4.a_1
 ----- F ------------------------------------------------------------
 -- Join(0)
 SELECT "false" AS G
-  FROM _xmt_p_UF AS _xmt_p_UF_4
- WHERE " (as nil (Either Color))" = _xmt_p_UF_4.a_1
+  FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_4
+ WHERE " (as nil (Either Color))" = _xmt_interp_p_UF_4.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_G_4.G AS G
-  FROM _xmt_p_G AS _xmt_p_G_4
- WHERE " (as nil (Either Color))" = _xmt_p_G_4.a_1
+SELECT _xmt_interp_p_G_4.G AS G
+  FROM _xmt_interp_p_G AS _xmt_interp_p_G_4
+ WHERE " (as nil (Either Color))" = _xmt_interp_p_G_4.a_1
 
 ===  (Left red) ======================================
  -- Join(0)
@@ -249,35 +249,35 @@ SELECT construct2("Left", "red") AS G
 ----- T ------------------------------------------------------------
 -- Join(0)
 SELECT "true" AS G
-  FROM _xmt_p_TU AS _xmt_p_TU_6
- WHERE construct2("Left", "red") = _xmt_p_TU_6.a_1
+  FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_6
+ WHERE construct2("Left", "red") = _xmt_interp_p_TU_6.a_1
 ----- F ------------------------------------------------------------
 -- Join(0)
 SELECT "false" AS G
-  FROM _xmt_p_UF AS _xmt_p_UF_6
- WHERE construct2("Left", "red") = _xmt_p_UF_6.a_1
+  FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_6
+ WHERE construct2("Left", "red") = _xmt_interp_p_UF_6.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_G_6.G AS G
-  FROM _xmt_p_G AS _xmt_p_G_6
- WHERE construct2("Left", "red") = _xmt_p_G_6.a_1
+SELECT _xmt_interp_p_G_6.G AS G
+  FROM _xmt_interp_p_G AS _xmt_interp_p_G_6
+ WHERE construct2("Left", "red") = _xmt_interp_p_G_6.a_1
 
 === (top) (not (p (Left red))) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
 SELECT "true" AS G
-  FROM _xmt_p_UF AS _xmt_p_UF_6
- WHERE construct2("Left", "red") = _xmt_p_UF_6.a_1
+  FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_6
+ WHERE construct2("Left", "red") = _xmt_interp_p_UF_6.a_1
 ----- F ------------------------------------------------------------
 -- Join(0)
 SELECT "false" AS G
-  FROM _xmt_p_TU AS _xmt_p_TU_6
- WHERE construct2("Left", "red") = _xmt_p_TU_6.a_1
+  FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_6
+ WHERE construct2("Left", "red") = _xmt_interp_p_TU_6.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT not_(_xmt_p_G_6.G) AS G
-  FROM _xmt_p_G AS _xmt_p_G_6
- WHERE construct2("Left", "red") = _xmt_p_G_6.a_1
+SELECT not_(_xmt_interp_p_G_6.G) AS G
+  FROM _xmt_interp_p_G AS _xmt_interp_p_G_6
+ WHERE construct2("Left", "red") = _xmt_interp_p_G_6.a_1
 
 ===   (as nil (Either Material)) ======================================
  -- Join(0)
@@ -286,18 +286,18 @@ SELECT " (as nil (Either Material))" AS G
 ----- T ------------------------------------------------------------
 -- Join(0)
 SELECT "true" AS G
-  FROM _xmt_sort_9_nil_tester_t AS _xmt_sort_9_nil_tester_t_9
- WHERE " (as nil (Either Material))" = _xmt_sort_9_nil_tester_t_9.a_1
+  FROM _xmt_tester_sort_9_nil_t AS _xmt_tester_sort_9_nil_t_9
+ WHERE " (as nil (Either Material))" = _xmt_tester_sort_9_nil_t_9.a_1
 ----- F ------------------------------------------------------------
 -- Join(0)
 SELECT "false" AS G
-  FROM _xmt_sort_9_nil_tester_f AS _xmt_sort_9_nil_tester_f_9
- WHERE " (as nil (Either Material))" = _xmt_sort_9_nil_tester_f_9.a_1
+  FROM _xmt_tester_sort_9_nil_f AS _xmt_tester_sort_9_nil_f_9
+ WHERE " (as nil (Either Material))" = _xmt_tester_sort_9_nil_f_9.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_sort_9_nil_tester_g_9.G AS G
-  FROM _xmt_sort_9_nil_tester_g AS _xmt_sort_9_nil_tester_g_9
- WHERE " (as nil (Either Material))" = _xmt_sort_9_nil_tester_g_9.a_1
+SELECT _xmt_tester_sort_9_nil_g_9.G AS G
+  FROM _xmt_tester_sort_9_nil_g AS _xmt_tester_sort_9_nil_g_9
+ WHERE " (as nil (Either Material))" = _xmt_tester_sort_9_nil_g_9.a_1
 
 ===  blue ======================================
  -- Join(0)
@@ -309,40 +309,40 @@ SELECT construct2("Left", "blue") AS G
 ----- T ------------------------------------------------------------
 -- Join(0)
 SELECT "true" AS G
-  FROM _xmt_sort_8_left_tester_t AS _xmt_sort_8_left_tester_t_12
- WHERE construct2("Left", "blue") = _xmt_sort_8_left_tester_t_12.a_1
+  FROM _xmt_tester_sort_8_left_t AS _xmt_tester_sort_8_left_t_12
+ WHERE construct2("Left", "blue") = _xmt_tester_sort_8_left_t_12.a_1
 ----- F ------------------------------------------------------------
 -- Join(0)
 SELECT "false" AS G
-  FROM _xmt_sort_8_left_tester_f AS _xmt_sort_8_left_tester_f_12
- WHERE construct2("Left", "blue") = _xmt_sort_8_left_tester_f_12.a_1
+  FROM _xmt_tester_sort_8_left_f AS _xmt_tester_sort_8_left_f_12
+ WHERE construct2("Left", "blue") = _xmt_tester_sort_8_left_f_12.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_sort_8_left_tester_g_12.G AS G
-  FROM _xmt_sort_8_left_tester_g AS _xmt_sort_8_left_tester_g_12
- WHERE construct2("Left", "blue") = _xmt_sort_8_left_tester_g_12.a_1
+SELECT _xmt_tester_sort_8_left_g_12.G AS G
+  FROM _xmt_tester_sort_8_left_g AS _xmt_tester_sort_8_left_g_12
+ WHERE construct2("Left", "blue") = _xmt_tester_sort_8_left_g_12.a_1
 
 ===  (b (Left red)) ======================================
  -- Join(0)
-SELECT _xmt_sort_8_b_selector_g_13.G AS G
-  FROM _xmt_sort_8_b_selector_g AS _xmt_sort_8_b_selector_g_13
- WHERE construct2("Left", "red") = _xmt_sort_8_b_selector_g_13.a_1
+SELECT _xmt_selector_sort_8_b_g_13.G AS G
+  FROM _xmt_selector_sort_8_b_g AS _xmt_selector_sort_8_b_g_13
+ WHERE construct2("Left", "red") = _xmt_selector_sort_8_b_g_13.a_1
 === (top) (= red (b (Left red))) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT eq_("red", _xmt_sort_8_b_selector_g_13.G) AS G
-  FROM _xmt_sort_8_b_selector_g AS _xmt_sort_8_b_selector_g_13
- WHERE construct2("Left", "red") = _xmt_sort_8_b_selector_g_13.a_1
+SELECT eq_("red", _xmt_selector_sort_8_b_g_13.G) AS G
+  FROM _xmt_selector_sort_8_b_g AS _xmt_selector_sort_8_b_g_13
+ WHERE construct2("Left", "red") = _xmt_selector_sort_8_b_g_13.a_1
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT eq_("red", _xmt_sort_8_b_selector_g_13.G) AS G
-  FROM _xmt_sort_8_b_selector_g AS _xmt_sort_8_b_selector_g_13
- WHERE construct2("Left", "red") = _xmt_sort_8_b_selector_g_13.a_1
+SELECT eq_("red", _xmt_selector_sort_8_b_g_13.G) AS G
+  FROM _xmt_selector_sort_8_b_g AS _xmt_selector_sort_8_b_g_13
+ WHERE construct2("Left", "red") = _xmt_selector_sort_8_b_g_13.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT eq_("red", _xmt_sort_8_b_selector_g_13.G) AS G
-  FROM _xmt_sort_8_b_selector_g AS _xmt_sort_8_b_selector_g_13
- WHERE construct2("Left", "red") = _xmt_sort_8_b_selector_g_13.a_1
+SELECT eq_("red", _xmt_selector_sort_8_b_g_13.G) AS G
+  FROM _xmt_selector_sort_8_b_g AS _xmt_selector_sort_8_b_g_13
+ WHERE construct2("Left", "red") = _xmt_selector_sort_8_b_g_13.a_1
 
 ===========================================
 (check-sat)

@@ -7,7 +7,7 @@ use itertools::Either::{self, Left, Right};
 
 use crate::ast::{QualIdentifier, SortedVar, SpecConstant, Symbol, L};
 use crate::error::SolverError;
-use crate::solver::{Solver, TermId};
+use crate::solver::{Solver, TableType, TermId};
 
 use crate::private::e2_ground_query::{GroundingQuery, NaturalJoin, TableName, TableAlias, Column, INDENT};
 use crate::private::e3_ground_sql::{Mapping, SQLExpr, Predefined};
@@ -432,7 +432,7 @@ pub(crate) fn view_for_compound(
             QueryVariant::Equality(default) => Some(*default),
             _ => None
         };
-    let base_table = solver.create_table_name(format!("{qual_identifier}_{index}"));
+    let base_table = solver.create_table_name(format!("{qual_identifier}_{index}"), TableType::Dynamic);
     let table_alias = TableAlias::new(base_table, 0);
     let query = GroundingQuery::Join {
         variables,

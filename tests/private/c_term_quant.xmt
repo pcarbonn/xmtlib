@@ -99,25 +99,25 @@ SELECT or_aggregate(G) as G
 
 ===  x ======================================
  -- Join(0)
-SELECT _xmt_color_5.G AS x,
-       _xmt_color_5.G AS G
-  FROM _xmt_color AS _xmt_color_5
+SELECT _xmt_sort_color_5.G AS x,
+       _xmt_sort_color_5.G AS G
+  FROM _xmt_sort_color AS _xmt_sort_color_5
 ===  (p x) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_color_5.G AS x,
-       apply("p", _xmt_color_5.G) AS G
-  FROM _xmt_color AS _xmt_color_5
+SELECT _xmt_sort_color_5.G AS x,
+       apply("p", _xmt_sort_color_5.G) AS G
+  FROM _xmt_sort_color AS _xmt_sort_color_5
 ----- UF -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_color_5.G AS x,
-       apply("p", _xmt_color_5.G) AS G
-  FROM _xmt_color AS _xmt_color_5
+SELECT _xmt_sort_color_5.G AS x,
+       apply("p", _xmt_sort_color_5.G) AS G
+  FROM _xmt_sort_color AS _xmt_sort_color_5
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_color_5.G AS x,
-       apply("p", _xmt_color_5.G) AS G
-  FROM _xmt_color AS _xmt_color_5
+SELECT _xmt_sort_color_5.G AS x,
+       apply("p", _xmt_sort_color_5.G) AS G
+  FROM _xmt_sort_color AS _xmt_sort_color_5
 
 === (top) (forall ((x Color)) (p x)) ======================================
 ----- TU -----------------------------------------------------------
@@ -128,9 +128,9 @@ SELECT and_aggregate(G) as G
        -- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_color_5.G AS x,
-                     apply("p", _xmt_color_5.G) AS G
-                FROM _xmt_color AS _xmt_color_5)
+              SELECT _xmt_sort_color_5.G AS x,
+                     apply("p", _xmt_sort_color_5.G) AS G
+                FROM _xmt_sort_color AS _xmt_sort_color_5)
         WHERE G <> "true")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -138,9 +138,9 @@ SELECT G as G
  FROM (-- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_color_5.G AS x,
-                     apply("p", _xmt_color_5.G) AS G
-                FROM _xmt_color AS _xmt_color_5)
+              SELECT _xmt_sort_color_5.G AS x,
+                     apply("p", _xmt_sort_color_5.G) AS G
+                FROM _xmt_sort_color AS _xmt_sort_color_5)
         WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Agg (0)
@@ -150,9 +150,9 @@ SELECT and_aggregate(G) as G
        -- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_color_5.G AS x,
-                     apply("p", _xmt_color_5.G) AS G
-                FROM _xmt_color AS _xmt_color_5)
+              SELECT _xmt_sort_color_5.G AS x,
+                     apply("p", _xmt_sort_color_5.G) AS G
+                FROM _xmt_sort_color AS _xmt_sort_color_5)
         WHERE G <> "true")
 
 === (top) (exists ((x Color)) (p x)) ======================================
@@ -162,9 +162,9 @@ SELECT or_aggregate(G) as G
  FROM (-- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_color_5.G AS x,
-                     apply("p", _xmt_color_5.G) AS G
-                FROM _xmt_color AS _xmt_color_5)
+              SELECT _xmt_sort_color_5.G AS x,
+                     apply("p", _xmt_sort_color_5.G) AS G
+                FROM _xmt_sort_color AS _xmt_sort_color_5)
         WHERE G <> "false")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -174,9 +174,9 @@ SELECT or_aggregate(G) as G
        -- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_color_5.G AS x,
-                     apply("p", _xmt_color_5.G) AS G
-                FROM _xmt_color AS _xmt_color_5)
+              SELECT _xmt_sort_color_5.G AS x,
+                     apply("p", _xmt_sort_color_5.G) AS G
+                FROM _xmt_sort_color AS _xmt_sort_color_5)
         WHERE G <> "false")
 ----- G ------------------------------------------------------------
 -- Agg (0)
@@ -186,9 +186,9 @@ SELECT or_aggregate(G) as G
        -- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_color_5.G AS x,
-                     apply("p", _xmt_color_5.G) AS G
-                FROM _xmt_color AS _xmt_color_5)
+              SELECT _xmt_sort_color_5.G AS x,
+                     apply("p", _xmt_sort_color_5.G) AS G
+                FROM _xmt_sort_color AS _xmt_sort_color_5)
         WHERE G <> "false")
 
 ===  x ======================================
@@ -410,12 +410,12 @@ SELECT and_aggregate(G) as G
 ===========================================
 Tables and Views:
  - Bool (table)
- - _xmt_color (table)
- - _xmt_color_red_tester_g (view)
- - _xmt_color_red_tester_t (view)
- - _xmt_color_red_tester_f (view)
- - _xmt_color_green_tester_g (view)
- - _xmt_color_green_tester_t (view)
- - _xmt_color_green_tester_f (view)
+ - _xmt_sort_color (table)
+ - _xmt_tester_color_red_g (view)
+ - _xmt_tester_color_red_t (view)
+ - _xmt_tester_color_red_f (view)
+ - _xmt_tester_color_green_g (view)
+ - _xmt_tester_color_green_t (view)
+ - _xmt_tester_color_green_f (view)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)

@@ -45,7 +45,7 @@ Sorts:
  - (recursive) (Tree Int)
  - (recursive) (TreeList Int)
  - (recursive) TreeInt
- - (_xmt_color: 2) Color: ((red ) (green ))
+ - (_xmt_sort_color: 2) Color: ((red ) (green ))
  - (recursive) (TreeList Color)
  - (recursive) (Tree Color)
  - (recursive) TreeListColor (= (TreeList Color))
@@ -77,15 +77,15 @@ Functions2:
  - abs ()->Real : Predefined (false)
  - red ()->Color : Constructor
  - green ()->Color : Constructor
- - (_ is red) (Color)->Bool : Boolean (_xmt_color_red_tester_t Complete, _xmt_color_red_tester_f Complete, _xmt_color_red_tester_g Complete)
- - (_ is green) (Color)->Bool : Boolean (_xmt_color_green_tester_t Complete, _xmt_color_green_tester_f Complete, _xmt_color_green_tester_g Complete)
+ - (_ is red) (Color)->Bool : Boolean (_xmt_tester_color_red_t Complete, _xmt_tester_color_red_f Complete, _xmt_tester_color_red_g Complete)
+ - (_ is green) (Color)->Bool : Boolean (_xmt_tester_color_green_t Complete, _xmt_tester_color_green_f Complete, _xmt_tester_color_green_g Complete)
 Tables and Views:
  - Bool (table)
- - _xmt_color (table)
- - _xmt_color_red_tester_g (view)
- - _xmt_color_red_tester_t (view)
- - _xmt_color_red_tester_f (view)
- - _xmt_color_green_tester_g (view)
- - _xmt_color_green_tester_t (view)
- - _xmt_color_green_tester_f (view)
+ - _xmt_sort_color (table)
+ - _xmt_tester_color_red_g (view)
+ - _xmt_tester_color_red_t (view)
+ - _xmt_tester_color_red_f (view)
+ - _xmt_tester_color_green_g (view)
+ - _xmt_tester_color_green_t (view)
+ - _xmt_tester_color_green_f (view)
 (check-sat)

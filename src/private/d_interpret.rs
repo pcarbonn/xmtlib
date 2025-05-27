@@ -8,7 +8,7 @@ unzip_n!(pub 4);
 
 use crate::ast::{Identifier, Sort, XTuple, XSet, Term, SpecConstant, String_};
 use crate::error::SolverError::{self, InternalError};
-use crate::solver::{Solver, CanonicalSort};
+use crate::solver::{CanonicalSort, Solver, TableType};
 
 use crate::private::a_sort::{SortObject, get_sort_object};
 use crate::private::b_fun::{FunctionObject, get_function_object, Interpretation};
@@ -24,7 +24,7 @@ pub(crate) fn interpret_pred(
 ) -> Result<String, SolverError> {
 
     // get the symbol declaration
-    let table_name = solver.create_table_name(identifier.to_string());
+    let table_name = solver.create_table_name(identifier.to_string(), TableType::Interpretation);
 
     let (domain, co_domain) = get_signature(&identifier, solver)?;
 
@@ -126,7 +126,7 @@ fn interpret_pred_0(
     solver: &mut Solver,
 ) -> Result<String, SolverError> {
 
-    let table_name = solver.create_table_name(identifier.to_string());
+    let table_name = solver.create_table_name(identifier.to_string(), TableType::Interpretation);
 
     let table_tu = Interpretation::Table{name: TableName(format!("{table_name}_TU")), ids: Ids::All};
     let table_uf = Interpretation::Table{name: TableName(format!("{table_name}_UF")), ids: Ids::All};
@@ -175,7 +175,7 @@ pub(crate) fn interpret_fun(
     solver: &mut Solver,
 )-> Result<String, SolverError> {
 
-    let table_name = solver.create_table_name(identifier.to_string());
+    let table_name = solver.create_table_name(identifier.to_string(), TableType::Interpretation);
 
     let (domain, co_domain) = get_signature(&identifier, solver)?;
 

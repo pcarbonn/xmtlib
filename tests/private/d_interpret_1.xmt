@@ -28,11 +28,11 @@
 (declare-fun dark (Color) Bool)
 (assert (dark red))
 (x-ground debug:)
-(x-debug db _xmt_bright_TU)
-(x-debug db _xmt_bright_G)
-(x-debug db _xmt_Color)
-(x-debug db _xmt_Hue)
-(x-debug db _xmt_Dim_T)
+(x-debug db _xmt_interp_bright_TU)
+(x-debug db _xmt_interp_bright_G)
+(x-debug db _xmt_sort_Color)
+(x-debug db _xmt_sort_Hue)
+(x-debug db _xmt_interp_Dim_T)
 (x-debug solver functions)
 (x-debug solver groundings)
 (x-debug db tables)
@@ -50,13 +50,13 @@
 (declare-fun dark (Color) Bool)
 (assert false)
 (assert (dark red))
- TABLE: _xmt_bright_tu
+ TABLE: _xmt_interp_bright_tu
 ┌───────┬────────┐
 │ a_1   │ G      │
 ├───────┼────────┤
 │ "red" │ "true" │
 └───────┴────────┘
- TABLE: _xmt_bright_g
+ TABLE: _xmt_interp_bright_g
 ┌─────────┬─────────┐
 │ a_1     │ G       │
 ├─────────┼─────────┤
@@ -64,7 +64,7 @@
 ├─────────┼─────────┤
 │ "green" │ "false" │
 └─────────┴─────────┘
- TABLE: _xmt_color
+ TABLE: _xmt_sort_color
 ┌─────────────┬─────────┐
 │ constructor │ G       │
 ├─────────────┼─────────┤
@@ -72,7 +72,7 @@
 ├─────────────┼─────────┤
 │ "green"     │ "green" │
 └─────────────┴─────────┘
- TABLE: _xmt_hue
+ TABLE: _xmt_sort_hue
 ┌─────────────┬─────────┬─────────┬──────────────────────┐
 │ constructor │ first   │ second  │ G                    │
 ├─────────────┼─────────┼─────────┼──────────────────────┤
@@ -84,7 +84,7 @@
 ├─────────────┼─────────┼─────────┼──────────────────────┤
 │ "hue"       │ "red"   │ "red"   │ " (hue red red)"     │
 └─────────────┴─────────┴─────────┴──────────────────────┘
- TABLE: _xmt_dim_t
+ TABLE: _xmt_interp_dim_t
 ┌──────────────────┐
 │ a_1              │
 ├──────────────────┤
@@ -112,158 +112,158 @@ Functions2:
  - div ()->Real : Predefined (false)
  - mod ()->Real : Predefined (false)
  - abs ()->Real : Predefined (false)
- - p ()->Bool : Boolean (_xmt_p_1_TU Complete, _xmt_p_1_UF Complete, _xmt_p_1_G Complete)
- - P ()->Bool : Boolean (_xmt_p_3_TU Complete, _xmt_p_3_UF Complete, _xmt_p_3_G Complete)
+ - p ()->Bool : Boolean (_xmt_interp_p_1_TU Complete, _xmt_interp_p_1_UF Complete, _xmt_interp_p_1_G Complete)
+ - P ()->Bool : Boolean (_xmt_interp_p_3_TU Complete, _xmt_interp_p_3_UF Complete, _xmt_interp_p_3_G Complete)
  - red ()->Color : Constructor
  - green ()->Color : Constructor
- - (_ is red) (Color)->Bool : Boolean (_xmt_color_red_tester_t Complete, _xmt_color_red_tester_f Complete, _xmt_color_red_tester_g Complete)
- - (_ is green) (Color)->Bool : Boolean (_xmt_color_green_tester_t Complete, _xmt_color_green_tester_f Complete, _xmt_color_green_tester_g Complete)
- - bright (Color)->Bool : Boolean (_xmt_bright_TU Complete, _xmt_bright_UF Complete, _xmt_bright_G Complete)
- - same (Color, Color)->Bool : Boolean (_xmt_same_TU Complete, _xmt_same_UF Complete, _xmt_same_G Complete)
+ - (_ is red) (Color)->Bool : Boolean (_xmt_tester_color_red_t Complete, _xmt_tester_color_red_f Complete, _xmt_tester_color_red_g Complete)
+ - (_ is green) (Color)->Bool : Boolean (_xmt_tester_color_green_t Complete, _xmt_tester_color_green_f Complete, _xmt_tester_color_green_g Complete)
+ - bright (Color)->Bool : Boolean (_xmt_interp_bright_TU Complete, _xmt_interp_bright_UF Complete, _xmt_interp_bright_G Complete)
+ - same (Color, Color)->Bool : Boolean (_xmt_interp_same_TU Complete, _xmt_interp_same_UF Complete, _xmt_interp_same_G Complete)
  - hue (Color, Color)->Hue : Constructor
- - (_ is hue) (Hue)->Bool : Boolean (_xmt_hue_hue_tester_t Complete, _xmt_hue_hue_tester_f Complete, _xmt_hue_hue_tester_g Complete)
- - first (Hue)->Color : Non Boolean (_xmt_hue_first_selector_g Complete)
- - second (Hue)->Color : Non Boolean (_xmt_hue_second_selector_g Complete)
- - dim (Hue)->Bool : Boolean (_xmt_dim_TU Complete, _xmt_dim_UF Complete, _xmt_dim_G Complete)
+ - (_ is hue) (Hue)->Bool : Boolean (_xmt_tester_hue_hue_t Complete, _xmt_tester_hue_hue_f Complete, _xmt_tester_hue_hue_g Complete)
+ - first (Hue)->Color : Non Boolean (_xmt_selector_hue_first_g Complete)
+ - second (Hue)->Color : Non Boolean (_xmt_selector_hue_second_g Complete)
+ - dim (Hue)->Bool : Boolean (_xmt_interp_dim_TU Complete, _xmt_interp_dim_UF Complete, _xmt_interp_dim_G Complete)
  - dark (Color)->Bool : Not interpreted
 Groundings:
 === (top) p ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
 SELECT "true" AS G
-  FROM _xmt_p_1_TU AS _xmt_p_1_TU
+  FROM _xmt_interp_p_1_TU AS _xmt_interp_p_1_TU
 ----- F ------------------------------------------------------------
 -- Join(0)
 SELECT "false" AS G
-  FROM _xmt_p_1_UF AS _xmt_p_1_UF
+  FROM _xmt_interp_p_1_UF AS _xmt_interp_p_1_UF
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_1_G.G AS G
-  FROM _xmt_p_1_G AS _xmt_p_1_G
+SELECT _xmt_interp_p_1_G.G AS G
+  FROM _xmt_interp_p_1_G AS _xmt_interp_p_1_G
 
 ===  x ======================================
  -- Join(0)
-SELECT _xmt_color_1.G AS x,
-       _xmt_color_1.G AS G
-  FROM _xmt_color AS _xmt_color_1
+SELECT _xmt_sort_color_1.G AS x,
+       _xmt_sort_color_1.G AS G
+  FROM _xmt_sort_color AS _xmt_sort_color_1
 ===  (bright x) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_bright_TU_2.a_1 AS x,
+SELECT _xmt_interp_bright_TU_2.a_1 AS x,
        "true" AS G
-  FROM _xmt_bright_TU AS _xmt_bright_TU_2
+  FROM _xmt_interp_bright_TU AS _xmt_interp_bright_TU_2
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_bright_UF_2.a_1 AS x,
+SELECT _xmt_interp_bright_UF_2.a_1 AS x,
        "false" AS G
-  FROM _xmt_bright_UF AS _xmt_bright_UF_2
+  FROM _xmt_interp_bright_UF AS _xmt_interp_bright_UF_2
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_bright_G_2.a_1 AS x,
-       _xmt_bright_G_2.G AS G
-  FROM _xmt_bright_G AS _xmt_bright_G_2
+SELECT _xmt_interp_bright_G_2.a_1 AS x,
+       _xmt_interp_bright_G_2.G AS G
+  FROM _xmt_interp_bright_G AS _xmt_interp_bright_G_2
 
 === (top) (exists ((x Color)) (bright x)) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (-- Join(7)
-       SELECT _xmt_bright_TU_2.a_1 AS x,
+       SELECT _xmt_interp_bright_TU_2.a_1 AS x,
               "true" AS G
-         FROM _xmt_bright_TU AS _xmt_bright_TU_2)
+         FROM _xmt_interp_bright_TU AS _xmt_interp_bright_TU_2)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (SELECT NULL AS x, "false" AS G 
        UNION ALL
        -- Join(7)
-       SELECT _xmt_bright_TU_2.a_1 AS x,
+       SELECT _xmt_interp_bright_TU_2.a_1 AS x,
               "true" AS G
-         FROM _xmt_bright_TU AS _xmt_bright_TU_2)
+         FROM _xmt_interp_bright_TU AS _xmt_interp_bright_TU_2)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (SELECT NULL AS x, "false" AS G 
        UNION ALL
        -- Join(7)
-       SELECT _xmt_bright_TU_2.a_1 AS x,
+       SELECT _xmt_interp_bright_TU_2.a_1 AS x,
               "true" AS G
-         FROM _xmt_bright_TU AS _xmt_bright_TU_2)
+         FROM _xmt_interp_bright_TU AS _xmt_interp_bright_TU_2)
 
 ===  (same x x) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_same_TU_4.a_1 AS x,
+SELECT _xmt_interp_same_TU_4.a_1 AS x,
        "true" AS G
-  FROM _xmt_same_TU AS _xmt_same_TU_4
- WHERE _xmt_same_TU_4.a_1 = _xmt_same_TU_4.a_2
+  FROM _xmt_interp_same_TU AS _xmt_interp_same_TU_4
+ WHERE _xmt_interp_same_TU_4.a_1 = _xmt_interp_same_TU_4.a_2
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_same_UF_4.a_1 AS x,
+SELECT _xmt_interp_same_UF_4.a_1 AS x,
        "false" AS G
-  FROM _xmt_same_UF AS _xmt_same_UF_4
- WHERE _xmt_same_UF_4.a_1 = _xmt_same_UF_4.a_2
+  FROM _xmt_interp_same_UF AS _xmt_interp_same_UF_4
+ WHERE _xmt_interp_same_UF_4.a_1 = _xmt_interp_same_UF_4.a_2
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_same_G_4.a_1 AS x,
-       _xmt_same_G_4.G AS G
-  FROM _xmt_same_G AS _xmt_same_G_4
- WHERE _xmt_same_G_4.a_1 = _xmt_same_G_4.a_2
+SELECT _xmt_interp_same_G_4.a_1 AS x,
+       _xmt_interp_same_G_4.G AS G
+  FROM _xmt_interp_same_G AS _xmt_interp_same_G_4
+ WHERE _xmt_interp_same_G_4.a_1 = _xmt_interp_same_G_4.a_2
 
 === (top) (exists ((x Color)) (same x x)) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (-- Join(7)
-       SELECT _xmt_same_TU_4.a_1 AS x,
+       SELECT _xmt_interp_same_TU_4.a_1 AS x,
               "true" AS G
-         FROM _xmt_same_TU AS _xmt_same_TU_4
-        WHERE _xmt_same_TU_4.a_1 = _xmt_same_TU_4.a_2)
+         FROM _xmt_interp_same_TU AS _xmt_interp_same_TU_4
+        WHERE _xmt_interp_same_TU_4.a_1 = _xmt_interp_same_TU_4.a_2)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (SELECT NULL AS x, "false" AS G 
        UNION ALL
        -- Join(7)
-       SELECT _xmt_same_TU_4.a_1 AS x,
+       SELECT _xmt_interp_same_TU_4.a_1 AS x,
               "true" AS G
-         FROM _xmt_same_TU AS _xmt_same_TU_4
-        WHERE _xmt_same_TU_4.a_1 = _xmt_same_TU_4.a_2)
+         FROM _xmt_interp_same_TU AS _xmt_interp_same_TU_4
+        WHERE _xmt_interp_same_TU_4.a_1 = _xmt_interp_same_TU_4.a_2)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (SELECT NULL AS x, "false" AS G 
        UNION ALL
        -- Join(7)
-       SELECT _xmt_same_TU_4.a_1 AS x,
+       SELECT _xmt_interp_same_TU_4.a_1 AS x,
               "true" AS G
-         FROM _xmt_same_TU AS _xmt_same_TU_4
-        WHERE _xmt_same_TU_4.a_1 = _xmt_same_TU_4.a_2)
+         FROM _xmt_interp_same_TU AS _xmt_interp_same_TU_4
+        WHERE _xmt_interp_same_TU_4.a_1 = _xmt_interp_same_TU_4.a_2)
 
 ===  y ======================================
  -- Join(0)
-SELECT _xmt_color_6.G AS y,
-       _xmt_color_6.G AS G
-  FROM _xmt_color AS _xmt_color_6
+SELECT _xmt_sort_color_6.G AS y,
+       _xmt_sort_color_6.G AS G
+  FROM _xmt_sort_color AS _xmt_sort_color_6
 ===  (same x y) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_same_TU_7.a_1 AS x,
-       _xmt_same_TU_7.a_2 AS y,
+SELECT _xmt_interp_same_TU_7.a_1 AS x,
+       _xmt_interp_same_TU_7.a_2 AS y,
        "true" AS G
-  FROM _xmt_same_TU AS _xmt_same_TU_7
+  FROM _xmt_interp_same_TU AS _xmt_interp_same_TU_7
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_same_UF_7.a_1 AS x,
-       _xmt_same_UF_7.a_2 AS y,
+SELECT _xmt_interp_same_UF_7.a_1 AS x,
+       _xmt_interp_same_UF_7.a_2 AS y,
        "false" AS G
-  FROM _xmt_same_UF AS _xmt_same_UF_7
+  FROM _xmt_interp_same_UF AS _xmt_interp_same_UF_7
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_same_G_7.a_1 AS x,
-       _xmt_same_G_7.a_2 AS y,
-       _xmt_same_G_7.G AS G
-  FROM _xmt_same_G AS _xmt_same_G_7
+SELECT _xmt_interp_same_G_7.a_1 AS x,
+       _xmt_interp_same_G_7.a_2 AS y,
+       _xmt_interp_same_G_7.G AS G
+  FROM _xmt_interp_same_G AS _xmt_interp_same_G_7
 
 ===  (exists ((y Color)) (same x y)) ======================================
 ----- TU -----------------------------------------------------------
@@ -271,34 +271,34 @@ SELECT _xmt_same_G_7.a_1 AS x,
 SELECT x,
        or_aggregate(G) as G
  FROM (-- Join(7)
-       SELECT _xmt_same_TU_7.a_1 AS x,
-              _xmt_same_TU_7.a_2 AS y,
+       SELECT _xmt_interp_same_TU_7.a_1 AS x,
+              _xmt_interp_same_TU_7.a_2 AS y,
               "true" AS G
-         FROM _xmt_same_TU AS _xmt_same_TU_7)
+         FROM _xmt_interp_same_TU AS _xmt_interp_same_TU_7)
  GROUP BY x
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT x,
        or_aggregate(G) as G
- FROM (SELECT _xmt_color_1.G AS x, NULL AS y, "false" AS G FROM _xmt_color AS _xmt_color_1 
+ FROM (SELECT _xmt_sort_color_1.G AS x, NULL AS y, "false" AS G FROM _xmt_sort_color AS _xmt_sort_color_1 
        UNION ALL
        -- Join(7)
-       SELECT _xmt_same_TU_7.a_1 AS x,
-              _xmt_same_TU_7.a_2 AS y,
+       SELECT _xmt_interp_same_TU_7.a_1 AS x,
+              _xmt_interp_same_TU_7.a_2 AS y,
               "true" AS G
-         FROM _xmt_same_TU AS _xmt_same_TU_7)
+         FROM _xmt_interp_same_TU AS _xmt_interp_same_TU_7)
  GROUP BY x
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT x,
        or_aggregate(G) as G
- FROM (SELECT _xmt_color_1.G AS x, NULL AS y, "false" AS G FROM _xmt_color AS _xmt_color_1 
+ FROM (SELECT _xmt_sort_color_1.G AS x, NULL AS y, "false" AS G FROM _xmt_sort_color AS _xmt_sort_color_1 
        UNION ALL
        -- Join(7)
-       SELECT _xmt_same_TU_7.a_1 AS x,
-              _xmt_same_TU_7.a_2 AS y,
+       SELECT _xmt_interp_same_TU_7.a_1 AS x,
+              _xmt_interp_same_TU_7.a_2 AS y,
               "true" AS G
-         FROM _xmt_same_TU AS _xmt_same_TU_7)
+         FROM _xmt_interp_same_TU AS _xmt_interp_same_TU_7)
  GROUP BY x
 
 === (top) (exists ((x Color)) (exists ((y Color)) (same x y))) ======================================
@@ -306,79 +306,79 @@ SELECT x,
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (-- Join(7)
-       SELECT _xmt_same_TU_7.a_1 AS x,
-              _xmt_same_TU_7.a_2 AS y,
+       SELECT _xmt_interp_same_TU_7.a_1 AS x,
+              _xmt_interp_same_TU_7.a_2 AS y,
               "true" AS G
-         FROM _xmt_same_TU AS _xmt_same_TU_7)
+         FROM _xmt_interp_same_TU AS _xmt_interp_same_TU_7)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (SELECT NULL AS x, NULL AS y, "false" AS G 
        UNION ALL
        -- Join(7)
-       SELECT _xmt_same_TU_7.a_1 AS x,
-              _xmt_same_TU_7.a_2 AS y,
+       SELECT _xmt_interp_same_TU_7.a_1 AS x,
+              _xmt_interp_same_TU_7.a_2 AS y,
               "true" AS G
-         FROM _xmt_same_TU AS _xmt_same_TU_7)
+         FROM _xmt_interp_same_TU AS _xmt_interp_same_TU_7)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (SELECT NULL AS x, NULL AS y, "false" AS G 
        UNION ALL
        -- Join(7)
-       SELECT _xmt_same_TU_7.a_1 AS x,
-              _xmt_same_TU_7.a_2 AS y,
+       SELECT _xmt_interp_same_TU_7.a_1 AS x,
+              _xmt_interp_same_TU_7.a_2 AS y,
               "true" AS G
-         FROM _xmt_same_TU AS _xmt_same_TU_7)
+         FROM _xmt_interp_same_TU AS _xmt_interp_same_TU_7)
 
 ===  x ======================================
  -- Join(0)
-SELECT _xmt_hue_10.G AS x,
-       _xmt_hue_10.G AS G
-  FROM _xmt_hue AS _xmt_hue_10
+SELECT _xmt_sort_hue_10.G AS x,
+       _xmt_sort_hue_10.G AS G
+  FROM _xmt_sort_hue AS _xmt_sort_hue_10
 ===  (dim x) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_dim_TU_11.a_1 AS x,
+SELECT _xmt_interp_dim_TU_11.a_1 AS x,
        "true" AS G
-  FROM _xmt_dim_TU AS _xmt_dim_TU_11
+  FROM _xmt_interp_dim_TU AS _xmt_interp_dim_TU_11
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_dim_UF_11.a_1 AS x,
+SELECT _xmt_interp_dim_UF_11.a_1 AS x,
        "false" AS G
-  FROM _xmt_dim_UF AS _xmt_dim_UF_11
+  FROM _xmt_interp_dim_UF AS _xmt_interp_dim_UF_11
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_dim_G_11.a_1 AS x,
-       _xmt_dim_G_11.G AS G
-  FROM _xmt_dim_G AS _xmt_dim_G_11
+SELECT _xmt_interp_dim_G_11.a_1 AS x,
+       _xmt_interp_dim_G_11.G AS G
+  FROM _xmt_interp_dim_G AS _xmt_interp_dim_G_11
 
 === (top) (exists ((x Hue)) (dim x)) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (-- Join(7)
-       SELECT _xmt_dim_TU_11.a_1 AS x,
+       SELECT _xmt_interp_dim_TU_11.a_1 AS x,
               "true" AS G
-         FROM _xmt_dim_TU AS _xmt_dim_TU_11)
+         FROM _xmt_interp_dim_TU AS _xmt_interp_dim_TU_11)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (SELECT NULL AS x, "false" AS G 
        UNION ALL
        -- Join(7)
-       SELECT _xmt_dim_TU_11.a_1 AS x,
+       SELECT _xmt_interp_dim_TU_11.a_1 AS x,
               "true" AS G
-         FROM _xmt_dim_TU AS _xmt_dim_TU_11)
+         FROM _xmt_interp_dim_TU AS _xmt_interp_dim_TU_11)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (SELECT NULL AS x, "false" AS G 
        UNION ALL
        -- Join(7)
-       SELECT _xmt_dim_TU_11.a_1 AS x,
+       SELECT _xmt_interp_dim_TU_11.a_1 AS x,
               "true" AS G
-         FROM _xmt_dim_TU AS _xmt_dim_TU_11)
+         FROM _xmt_interp_dim_TU AS _xmt_interp_dim_TU_11)
 
 ===  red ======================================
  -- Join(0)
@@ -397,37 +397,37 @@ SELECT apply("dark", "red") AS G
 ===========================================
 Tables and Views:
  - Bool (table)
- - _xmt_p_1_TU (view)
- - _xmt_p_1_UF (view)
- - _xmt_p_1_G (view)
- - _xmt_p_3_TU (view)
- - _xmt_p_3_UF (view)
- - _xmt_p_3_G (view)
- - _xmt_color (table)
- - _xmt_color_red_tester_g (view)
- - _xmt_color_red_tester_t (view)
- - _xmt_color_red_tester_f (view)
- - _xmt_color_green_tester_g (view)
- - _xmt_color_green_tester_t (view)
- - _xmt_color_green_tester_f (view)
- - _xmt_bright_T (table)
- - _xmt_bright_TU (view)
- - _xmt_bright_UF (view)
- - _xmt_bright_G (view)
- - _xmt_same_T (table)
- - _xmt_same_TU (view)
- - _xmt_same_UF (view)
- - _xmt_same_G (view)
- - _xmt_hue (table)
- - _xmt_hue_hue_tester_g (view)
- - _xmt_hue_hue_tester_t (view)
- - _xmt_hue_hue_tester_f (view)
- - _xmt_hue_first_selector_g (view)
- - _xmt_hue_second_selector_g (view)
- - _xmt_dim_T (table)
- - _xmt_dim_TU (view)
- - _xmt_dim_UF (view)
- - _xmt_dim_G (view)
+ - _xmt_interp_p_1_TU (view)
+ - _xmt_interp_p_1_UF (view)
+ - _xmt_interp_p_1_G (view)
+ - _xmt_interp_p_3_TU (view)
+ - _xmt_interp_p_3_UF (view)
+ - _xmt_interp_p_3_G (view)
+ - _xmt_sort_color (table)
+ - _xmt_tester_color_red_g (view)
+ - _xmt_tester_color_red_t (view)
+ - _xmt_tester_color_red_f (view)
+ - _xmt_tester_color_green_g (view)
+ - _xmt_tester_color_green_t (view)
+ - _xmt_tester_color_green_f (view)
+ - _xmt_interp_bright_T (table)
+ - _xmt_interp_bright_TU (view)
+ - _xmt_interp_bright_UF (view)
+ - _xmt_interp_bright_G (view)
+ - _xmt_interp_same_T (table)
+ - _xmt_interp_same_TU (view)
+ - _xmt_interp_same_UF (view)
+ - _xmt_interp_same_G (view)
+ - _xmt_sort_hue (table)
+ - _xmt_tester_hue_hue_g (view)
+ - _xmt_tester_hue_hue_t (view)
+ - _xmt_tester_hue_hue_f (view)
+ - _xmt_selector_hue_first_g (view)
+ - _xmt_selector_hue_second_g (view)
+ - _xmt_interp_dim_T (table)
+ - _xmt_interp_dim_TU (view)
+ - _xmt_interp_dim_UF (view)
+ - _xmt_interp_dim_G (view)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
 error: at position (41, 19): Can't interpret a symbol after grounding its use

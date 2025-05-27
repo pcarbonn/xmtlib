@@ -15,7 +15,7 @@
 (assert (p b B))
 (assert (forall ((x T)) (p x (f x)) ))
 (x-ground debug:)
-(x-debug db _xmt_p_g)
+(x-debug db _xmt_interp_p_g)
 (x-debug solver groundings)
 (x-debug db tables)
 -------------------------
@@ -26,7 +26,7 @@
 (assert (p b B))
 (assert (not (= (f b) A)))
 (assert (=> (= (f b) B) (p b B)))
- TABLE: _xmt_p_g
+ TABLE: _xmt_interp_p_g
 ┌─────┬─────┬───────────┐
 │ a_1 │ a_2 │ G         │
 ├─────┼─────┼───────────┤
@@ -48,58 +48,58 @@ SELECT "B" AS G
 === (top) (p b B) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_TU_2.G AS G
-  FROM _xmt_p_TU AS _xmt_p_TU_2
- WHERE "b" = _xmt_p_TU_2.a_1 AND "B" = _xmt_p_TU_2.a_2
+SELECT _xmt_interp_p_TU_2.G AS G
+  FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_2
+ WHERE "b" = _xmt_interp_p_TU_2.a_1 AND "B" = _xmt_interp_p_TU_2.a_2
 ----- UF -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_UF_2.G AS G
-  FROM _xmt_p_UF AS _xmt_p_UF_2
- WHERE "b" = _xmt_p_UF_2.a_1 AND "B" = _xmt_p_UF_2.a_2
+SELECT _xmt_interp_p_UF_2.G AS G
+  FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_2
+ WHERE "b" = _xmt_interp_p_UF_2.a_1 AND "B" = _xmt_interp_p_UF_2.a_2
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_G_2.G AS G
-  FROM _xmt_p_G AS _xmt_p_G_2
- WHERE "b" = _xmt_p_G_2.a_1 AND "B" = _xmt_p_G_2.a_2
+SELECT _xmt_interp_p_G_2.G AS G
+  FROM _xmt_interp_p_G AS _xmt_interp_p_G_2
+ WHERE "b" = _xmt_interp_p_G_2.a_1 AND "B" = _xmt_interp_p_G_2.a_2
 
 ===  x ======================================
  -- Join(0)
-SELECT _xmt_t_3.G AS x,
-       _xmt_t_3.G AS G
-  FROM _xmt_t AS _xmt_t_3
+SELECT _xmt_sort_t_3.G AS x,
+       _xmt_sort_t_3.G AS G
+  FROM _xmt_sort_t AS _xmt_sort_t_3
 ===  (f x) ======================================
  -- Join(0)
-SELECT _xmt_f_G_4.a_1 AS x,
-       _xmt_f_G_4.G AS G
-  FROM _xmt_f_G AS _xmt_f_G_4
+SELECT _xmt_interp_f_G_4.a_1 AS x,
+       _xmt_interp_f_G_4.G AS G
+  FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
 ===  (p x (f x)) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_TU_5.a_1 AS x,
-       if_(_xmt_f_G_4.G, _xmt_p_TU_5.a_2) AS if_, 
-       _xmt_p_TU_5.G AS G
-  FROM _xmt_f_G AS _xmt_f_G_4
-  JOIN _xmt_p_TU AS _xmt_p_TU_5
-        ON join_(_xmt_f_G_4.G, _xmt_p_TU_5.a_2)
- WHERE _xmt_p_TU_5.a_1 = _xmt_f_G_4.a_1
+SELECT _xmt_interp_p_TU_5.a_1 AS x,
+       if_(_xmt_interp_f_G_4.G, _xmt_interp_p_TU_5.a_2) AS if_, 
+       _xmt_interp_p_TU_5.G AS G
+  FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
+  JOIN _xmt_interp_p_TU AS _xmt_interp_p_TU_5
+        ON join_(_xmt_interp_f_G_4.G, _xmt_interp_p_TU_5.a_2)
+ WHERE _xmt_interp_p_TU_5.a_1 = _xmt_interp_f_G_4.a_1
 ----- UF -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_UF_5.a_1 AS x,
-       if_(_xmt_f_G_4.G, _xmt_p_UF_5.a_2) AS if_, 
-       _xmt_p_UF_5.G AS G
-  FROM _xmt_f_G AS _xmt_f_G_4
-  JOIN _xmt_p_UF AS _xmt_p_UF_5
-        ON join_(_xmt_f_G_4.G, _xmt_p_UF_5.a_2)
- WHERE _xmt_p_UF_5.a_1 = _xmt_f_G_4.a_1
+SELECT _xmt_interp_p_UF_5.a_1 AS x,
+       if_(_xmt_interp_f_G_4.G, _xmt_interp_p_UF_5.a_2) AS if_, 
+       _xmt_interp_p_UF_5.G AS G
+  FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
+  JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_5
+        ON join_(_xmt_interp_f_G_4.G, _xmt_interp_p_UF_5.a_2)
+ WHERE _xmt_interp_p_UF_5.a_1 = _xmt_interp_f_G_4.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_G_5.a_1 AS x,
-       if_(_xmt_f_G_4.G, _xmt_p_G_5.a_2) AS if_, 
-       _xmt_p_G_5.G AS G
-  FROM _xmt_f_G AS _xmt_f_G_4
-  JOIN _xmt_p_G AS _xmt_p_G_5
-        ON join_(_xmt_f_G_4.G, _xmt_p_G_5.a_2)
- WHERE _xmt_p_G_5.a_1 = _xmt_f_G_4.a_1
+SELECT _xmt_interp_p_G_5.a_1 AS x,
+       if_(_xmt_interp_f_G_4.G, _xmt_interp_p_G_5.a_2) AS if_, 
+       _xmt_interp_p_G_5.G AS G
+  FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
+  JOIN _xmt_interp_p_G AS _xmt_interp_p_G_5
+        ON join_(_xmt_interp_f_G_4.G, _xmt_interp_p_G_5.a_2)
+ WHERE _xmt_interp_p_G_5.a_1 = _xmt_interp_f_G_4.a_1
 
 === (top) (forall ((x T)) (p x (f x))) ======================================
 ----- TU -----------------------------------------------------------
@@ -108,64 +108,64 @@ SELECT and_aggregate(implies_(if_, G)) as G
  FROM (SELECT NULL AS x, 	rue" AS if_, "true" AS G 
        UNION ALL
        -- Join(7)
-       SELECT _xmt_p_UF_5.a_1 AS x,
-              if_(_xmt_f_G_4.G, _xmt_p_UF_5.a_2) AS if_, 
-              _xmt_p_UF_5.G AS G
-         FROM _xmt_f_G AS _xmt_f_G_4
-         JOIN _xmt_p_UF AS _xmt_p_UF_5
-               ON join_(_xmt_f_G_4.G, _xmt_p_UF_5.a_2)
-        WHERE _xmt_p_UF_5.a_1 = _xmt_f_G_4.a_1)
+       SELECT _xmt_interp_p_UF_5.a_1 AS x,
+              if_(_xmt_interp_f_G_4.G, _xmt_interp_p_UF_5.a_2) AS if_, 
+              _xmt_interp_p_UF_5.G AS G
+         FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
+         JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_5
+               ON join_(_xmt_interp_f_G_4.G, _xmt_interp_p_UF_5.a_2)
+        WHERE _xmt_interp_p_UF_5.a_1 = _xmt_interp_f_G_4.a_1)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT implies_(if_, G) as G
  FROM (-- Join(7)
-       SELECT _xmt_p_UF_5.a_1 AS x,
-              if_(_xmt_f_G_4.G, _xmt_p_UF_5.a_2) AS if_, 
-              _xmt_p_UF_5.G AS G
-         FROM _xmt_f_G AS _xmt_f_G_4
-         JOIN _xmt_p_UF AS _xmt_p_UF_5
-               ON join_(_xmt_f_G_4.G, _xmt_p_UF_5.a_2)
-        WHERE _xmt_p_UF_5.a_1 = _xmt_f_G_4.a_1)
+       SELECT _xmt_interp_p_UF_5.a_1 AS x,
+              if_(_xmt_interp_f_G_4.G, _xmt_interp_p_UF_5.a_2) AS if_, 
+              _xmt_interp_p_UF_5.G AS G
+         FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
+         JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_5
+               ON join_(_xmt_interp_f_G_4.G, _xmt_interp_p_UF_5.a_2)
+        WHERE _xmt_interp_p_UF_5.a_1 = _xmt_interp_f_G_4.a_1)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(implies_(if_, G)) as G
  FROM (SELECT NULL AS x, 	rue" AS if_, "true" AS G 
        UNION ALL
        -- Join(7)
-       SELECT _xmt_p_UF_5.a_1 AS x,
-              if_(_xmt_f_G_4.G, _xmt_p_UF_5.a_2) AS if_, 
-              _xmt_p_UF_5.G AS G
-         FROM _xmt_f_G AS _xmt_f_G_4
-         JOIN _xmt_p_UF AS _xmt_p_UF_5
-               ON join_(_xmt_f_G_4.G, _xmt_p_UF_5.a_2)
-        WHERE _xmt_p_UF_5.a_1 = _xmt_f_G_4.a_1)
+       SELECT _xmt_interp_p_UF_5.a_1 AS x,
+              if_(_xmt_interp_f_G_4.G, _xmt_interp_p_UF_5.a_2) AS if_, 
+              _xmt_interp_p_UF_5.G AS G
+         FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
+         JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_5
+               ON join_(_xmt_interp_f_G_4.G, _xmt_interp_p_UF_5.a_2)
+        WHERE _xmt_interp_p_UF_5.a_1 = _xmt_interp_f_G_4.a_1)
 
 ===========================================
 Tables and Views:
  - Bool (table)
- - _xmt_t (table)
- - _xmt_t_a_tester_g (view)
- - _xmt_t_a_tester_t (view)
- - _xmt_t_a_tester_f (view)
- - _xmt_t_b_tester_g (view)
- - _xmt_t_b_tester_t (view)
- - _xmt_t_b_tester_f (view)
- - _xmt_tf (table)
- - _xmt_tf_a_tester_g (view)
- - _xmt_tf_a_tester_t (view)
- - _xmt_tf_a_tester_f (view)
- - _xmt_tf_b_tester_g (view)
- - _xmt_tf_b_tester_t (view)
- - _xmt_tf_b_tester_f (view)
- - _xmt_p_TU_K (table)
- - _xmt_p_UF_K (table)
- - _xmt_p_K (table)
- - _xmt_p_U (view)
- - _xmt_p_G (view)
- - _xmt_p_TU (view)
- - _xmt_p_UF (view)
- - _xmt_f_K (table)
- - _xmt_f_U (view)
- - _xmt_f_G (view)
+ - _xmt_sort_t (table)
+ - _xmt_tester_t_a_g (view)
+ - _xmt_tester_t_a_t (view)
+ - _xmt_tester_t_a_f (view)
+ - _xmt_tester_t_b_g (view)
+ - _xmt_tester_t_b_t (view)
+ - _xmt_tester_t_b_f (view)
+ - _xmt_sort_tf (table)
+ - _xmt_tester_tf_a_g (view)
+ - _xmt_tester_tf_a_t (view)
+ - _xmt_tester_tf_a_f (view)
+ - _xmt_tester_tf_b_g (view)
+ - _xmt_tester_tf_b_t (view)
+ - _xmt_tester_tf_b_f (view)
+ - _xmt_interp_p_TU_K (table)
+ - _xmt_interp_p_UF_K (table)
+ - _xmt_interp_p_K (table)
+ - _xmt_interp_p_U (view)
+ - _xmt_interp_p_G (view)
+ - _xmt_interp_p_TU (view)
+ - _xmt_interp_p_UF (view)
+ - _xmt_interp_f_K (table)
+ - _xmt_interp_f_U (view)
+ - _xmt_interp_f_G (view)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)

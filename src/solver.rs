@@ -74,6 +74,17 @@ pub struct Solver {
 }
 
 
+#[derive(Debug, strum_macros::Display, Clone, PartialEq, Eq, Hash)]
+pub(crate) enum TableType {
+    #[strum(to_string = "sort")] Sort,
+    #[strum(to_string = "selector")] Selector,
+    #[strum(to_string = "tester")] Tester,
+    #[strum(to_string = "interp" )] Interpretation,
+    #[strum(to_string = "view" )] Dynamic,
+}
+
+///////////////////////////////////////////////////////
+
 impl Solver {
     /// Creates a solver.
     /// Optionally gives access to a sqlite database with pre-loaded data
@@ -495,17 +506,18 @@ impl Solver {
 
 
     /// Sanitize a name.  Removes non-alphanumeric characters, and adds a number if empty or ambiguous.
-    pub(crate) fn create_table_name(self: &mut Solver, name: String) -> TableName {
+    pub(crate) fn create_table_name(self: &mut Solver, name: String, type_: TableType) -> TableName {
         let re = Regex::new(r"[\+\-/\*=\%\?\!\.\$\&\^<>@\|]").unwrap();
         let db_name = re.replace_all(&name, "").to_string().to_lowercase();
         let index = self.db_names.len();
         let db_name =
             if db_name.len() == 0 {
-                format!("_xmt_{index}")
+                format!("_xmt_{type_}_{index}")
             } else {
                 let temp =
-                    if db_name.starts_with("_xmt_") { db_name.clone() }
-                    else { format!("_xmt_{db_name}") };
+                    if db_name.starts_with("_xmt_") { strip_prefix(&db_name) }
+                    else { db_name };
+                let temp = format!("_xmt_{type_}_{temp}");
                 if self.db_names.contains(&temp) {
                     format!("{temp}_{index}")
                 } else {
@@ -515,4 +527,10 @@ impl Solver {
         self.db_names.insert(db_name.clone());
         TableName(db_name)
     }
+}
+
+fn strip_prefix(s: &str) -> String {
+    // Match and remove a prefix like "_xmt_abc_"
+    let re = Regex::new(r"^_xmt_[^_]+_").unwrap();
+    re.replace(&s, "").to_string()
 }

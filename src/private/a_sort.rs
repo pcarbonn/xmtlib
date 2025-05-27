@@ -13,7 +13,7 @@ use rusqlite::{params, Connection};
 
 use crate::ast::{ConstructorDec, DatatypeDec, Identifier, Index, Numeral, QualIdentifier, SelectorDec, Sort, SortDec, Symbol, L};
 use crate::error::{SolverError::{self, InternalError}, Offset};
-use crate::solver::{Solver, CanonicalSort};
+use crate::solver::{CanonicalSort, Solver, TableType};
 use crate::private::b_fun::{Interpretation, FunctionObject};
 use crate::private::e1_ground_view::Ids;
 use crate::private::e2_ground_query::TableName;
@@ -471,7 +471,7 @@ fn insert_sort(
                             let (table, canonical) =
                                 match sort {
                                     Sort::Sort(L(Identifier::Simple(Symbol(ref name)), _)) =>
-                                        (solver.create_table_name(name.to_string()),
+                                        (solver.create_table_name(name.to_string(), TableType::Sort),
                                         CanonicalSort(sort.clone())),
                                     Sort::Sort(_) =>
                                         (TableName(format!("Sort_{}", i)),
@@ -671,7 +671,7 @@ fn create_table(
         { // tester: (_ is pair)
         let identifier = L(Identifier::Indexed(Symbol("is".to_string()), vec![Index::Symbol(constructor.clone())]), Offset(0));
 
-        let view_g = solver.create_table_name(format!("{table}_{constructor}_tester_G"));
+        let view_g = solver.create_table_name(format!("{table}_{constructor}_G"), TableType::Tester);
         let sql = format!(r#"
             CREATE VIEW {view_g} AS
             SELECT G AS a_1,
@@ -681,12 +681,12 @@ fn create_table(
 
         let table_g = Interpretation::Table { name: view_g.clone(), ids: Ids::All };
 
-        let view_t = solver.create_table_name(format!("{table}_{constructor}_tester_T"));
+        let view_t = solver.create_table_name(format!("{table}_{constructor}_T"), TableType::Tester);
         let sql = format!("CREATE VIEW {view_t} AS SELECT * FROM {view_g} WHERE G = \"true\"");
         solver.conn.execute(&sql, ())?;
         let table_tu = Interpretation::Table { name: view_t, ids: Ids::All };
 
-        let view_f = solver.create_table_name(format!("{table}_{constructor}_tester_F"));
+        let view_f = solver.create_table_name(format!("{table}_{constructor}_F"), TableType::Tester);
         let sql = format!("CREATE VIEW {view_f} AS SELECT * FROM {view_g} WHERE G = \"false\"");
         solver.conn.execute(&sql, ())?;
         let table_uf = Interpretation::Table { name: view_f, ids: Ids::All };
@@ -704,7 +704,7 @@ fn create_table(
             .into_iter().cloned().collect::<Vec<_>>();
         for (SelectorDec(selector, _), canonical) in selectors.iter().zip(canonicals.iter()) {
             let identifier = Identifier::new(selector);
-            let view_g = solver.create_table_name(format!("{table}_{selector}_selector_G"));
+            let view_g = solver.create_table_name(format!("{table}_{selector}_G"), TableType::Selector);
             let sql = format!(r#"
                 CREATE VIEW {view_g} AS
                 SELECT G AS a_1,

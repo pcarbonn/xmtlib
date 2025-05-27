@@ -52,199 +52,199 @@ Functions2:
  - e6 ()->element : Constructor
  - e7 ()->element : Constructor
  - e8 ()->element : Constructor
- - (_ is e1) (element)->Bool : Boolean (_xmt_element_e1_tester_t Complete, _xmt_element_e1_tester_f Complete, _xmt_element_e1_tester_g Complete)
- - (_ is e2) (element)->Bool : Boolean (_xmt_element_e2_tester_t Complete, _xmt_element_e2_tester_f Complete, _xmt_element_e2_tester_g Complete)
- - (_ is e3) (element)->Bool : Boolean (_xmt_element_e3_tester_t Complete, _xmt_element_e3_tester_f Complete, _xmt_element_e3_tester_g Complete)
- - (_ is e4) (element)->Bool : Boolean (_xmt_element_e4_tester_t Complete, _xmt_element_e4_tester_f Complete, _xmt_element_e4_tester_g Complete)
- - (_ is e5) (element)->Bool : Boolean (_xmt_element_e5_tester_t Complete, _xmt_element_e5_tester_f Complete, _xmt_element_e5_tester_g Complete)
- - (_ is e6) (element)->Bool : Boolean (_xmt_element_e6_tester_t Complete, _xmt_element_e6_tester_f Complete, _xmt_element_e6_tester_g Complete)
- - (_ is e7) (element)->Bool : Boolean (_xmt_element_e7_tester_t Complete, _xmt_element_e7_tester_f Complete, _xmt_element_e7_tester_g Complete)
- - (_ is e8) (element)->Bool : Boolean (_xmt_element_e8_tester_t Complete, _xmt_element_e8_tester_f Complete, _xmt_element_e8_tester_g Complete)
- - p (element)->Bool : Boolean (_xmt_p_TU Complete, _xmt_p_UF Complete, _xmt_p_G Complete)
- - q (element)->Bool : Boolean (_xmt_q_TU Complete, _xmt_q_UF Complete, _xmt_q_G Complete)
- - r (element)->Bool : Boolean (_xmt_r_TU Complete, _xmt_r_UF Complete, _xmt_r_G Complete)
+ - (_ is e1) (element)->Bool : Boolean (_xmt_tester_element_e1_t Complete, _xmt_tester_element_e1_f Complete, _xmt_tester_element_e1_g Complete)
+ - (_ is e2) (element)->Bool : Boolean (_xmt_tester_element_e2_t Complete, _xmt_tester_element_e2_f Complete, _xmt_tester_element_e2_g Complete)
+ - (_ is e3) (element)->Bool : Boolean (_xmt_tester_element_e3_t Complete, _xmt_tester_element_e3_f Complete, _xmt_tester_element_e3_g Complete)
+ - (_ is e4) (element)->Bool : Boolean (_xmt_tester_element_e4_t Complete, _xmt_tester_element_e4_f Complete, _xmt_tester_element_e4_g Complete)
+ - (_ is e5) (element)->Bool : Boolean (_xmt_tester_element_e5_t Complete, _xmt_tester_element_e5_f Complete, _xmt_tester_element_e5_g Complete)
+ - (_ is e6) (element)->Bool : Boolean (_xmt_tester_element_e6_t Complete, _xmt_tester_element_e6_f Complete, _xmt_tester_element_e6_g Complete)
+ - (_ is e7) (element)->Bool : Boolean (_xmt_tester_element_e7_t Complete, _xmt_tester_element_e7_f Complete, _xmt_tester_element_e7_g Complete)
+ - (_ is e8) (element)->Bool : Boolean (_xmt_tester_element_e8_t Complete, _xmt_tester_element_e8_f Complete, _xmt_tester_element_e8_g Complete)
+ - p (element)->Bool : Boolean (_xmt_interp_p_TU Complete, _xmt_interp_p_UF Complete, _xmt_interp_p_G Complete)
+ - q (element)->Bool : Boolean (_xmt_interp_q_TU Complete, _xmt_interp_q_UF Complete, _xmt_interp_q_G Complete)
+ - r (element)->Bool : Boolean (_xmt_interp_r_TU Complete, _xmt_interp_r_UF Complete, _xmt_interp_r_G Complete)
 Groundings:
 ===  x ======================================
  -- Join(0)
-SELECT _xmt_element.G AS x,
-       _xmt_element.G AS G
-  FROM _xmt_element
+SELECT _xmt_sort_element.G AS x,
+       _xmt_sort_element.G AS G
+  FROM _xmt_sort_element
 ===  (p x) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_TU_1.a_1 AS x,
+SELECT _xmt_interp_p_TU_1.a_1 AS x,
        "true" AS G
-  FROM _xmt_p_TU AS _xmt_p_TU_1
+  FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_UF_1.a_1 AS x,
+SELECT _xmt_interp_p_UF_1.a_1 AS x,
        "false" AS G
-  FROM _xmt_p_UF AS _xmt_p_UF_1
+  FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_G_1.a_1 AS x,
-       _xmt_p_G_1.G AS G
-  FROM _xmt_p_G AS _xmt_p_G_1
+SELECT _xmt_interp_p_G_1.a_1 AS x,
+       _xmt_interp_p_G_1.G AS G
+  FROM _xmt_interp_p_G AS _xmt_interp_p_G_1
 
 ===  (q x) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_q_TU_2.a_1 AS x,
+SELECT _xmt_interp_q_TU_2.a_1 AS x,
        "true" AS G
-  FROM _xmt_q_TU AS _xmt_q_TU_2
+  FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_2
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_q_UF_2.a_1 AS x,
+SELECT _xmt_interp_q_UF_2.a_1 AS x,
        "false" AS G
-  FROM _xmt_q_UF AS _xmt_q_UF_2
+  FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_2
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_q_G_2.a_1 AS x,
-       _xmt_q_G_2.G AS G
-  FROM _xmt_q_G AS _xmt_q_G_2
+SELECT _xmt_interp_q_G_2.a_1 AS x,
+       _xmt_interp_q_G_2.G AS G
+  FROM _xmt_interp_q_G AS _xmt_interp_q_G_2
 
 ===  (and (p x) (q x)) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_TU_1.a_1 AS x,
+SELECT _xmt_interp_p_TU_1.a_1 AS x,
        "true" AS G
-  FROM _xmt_p_TU AS _xmt_p_TU_1
-  JOIN _xmt_q_TU AS _xmt_q_TU_2
-        ON _xmt_p_TU_1.a_1 = _xmt_q_TU_2.a_1
+  FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+  JOIN _xmt_interp_q_TU AS _xmt_interp_q_TU_2
+        ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_q_TU_2.a_1
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT x,
        and_aggregate(G) as G
  FROM (-- Join(7)
-       SELECT _xmt_p_UF_1.a_1 AS x,
+       SELECT _xmt_interp_p_UF_1.a_1 AS x,
               "false" AS G
-         FROM _xmt_p_UF AS _xmt_p_UF_1
+         FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_1
        UNION ALL
        -- Join(7)
-       SELECT _xmt_q_UF_2.a_1 AS x,
+       SELECT _xmt_interp_q_UF_2.a_1 AS x,
               "false" AS G
-         FROM _xmt_q_UF AS _xmt_q_UF_2)
+         FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_2)
  GROUP BY x
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_G_1.a_1 AS x,
-       and_(_xmt_p_G_1.G, _xmt_q_G_2.G) AS G
-  FROM _xmt_p_G AS _xmt_p_G_1
-  JOIN _xmt_q_G AS _xmt_q_G_2
-        ON _xmt_p_G_1.a_1 = _xmt_q_G_2.a_1
+SELECT _xmt_interp_p_G_1.a_1 AS x,
+       and_(_xmt_interp_p_G_1.G, _xmt_interp_q_G_2.G) AS G
+  FROM _xmt_interp_p_G AS _xmt_interp_p_G_1
+  JOIN _xmt_interp_q_G AS _xmt_interp_q_G_2
+        ON _xmt_interp_p_G_1.a_1 = _xmt_interp_q_G_2.a_1
 
 === (top) (exists ((x element)) (and (p x) (q x))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (-- Join(7)
-       SELECT _xmt_p_TU_1.a_1 AS x,
+       SELECT _xmt_interp_p_TU_1.a_1 AS x,
               "true" AS G
-         FROM _xmt_p_TU AS _xmt_p_TU_1
-         JOIN _xmt_q_TU AS _xmt_q_TU_2
-               ON _xmt_p_TU_1.a_1 = _xmt_q_TU_2.a_1)
+         FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+         JOIN _xmt_interp_q_TU AS _xmt_interp_q_TU_2
+               ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_q_TU_2.a_1)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (SELECT NULL AS x, "false" AS G 
        UNION ALL
        -- Join(7)
-       SELECT _xmt_p_TU_1.a_1 AS x,
+       SELECT _xmt_interp_p_TU_1.a_1 AS x,
               "true" AS G
-         FROM _xmt_p_TU AS _xmt_p_TU_1
-         JOIN _xmt_q_TU AS _xmt_q_TU_2
-               ON _xmt_p_TU_1.a_1 = _xmt_q_TU_2.a_1)
+         FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+         JOIN _xmt_interp_q_TU AS _xmt_interp_q_TU_2
+               ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_q_TU_2.a_1)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (SELECT NULL AS x, "false" AS G 
        UNION ALL
        -- Join(7)
-       SELECT _xmt_p_TU_1.a_1 AS x,
+       SELECT _xmt_interp_p_TU_1.a_1 AS x,
               "true" AS G
-         FROM _xmt_p_TU AS _xmt_p_TU_1
-         JOIN _xmt_q_TU AS _xmt_q_TU_2
-               ON _xmt_p_TU_1.a_1 = _xmt_q_TU_2.a_1)
+         FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+         JOIN _xmt_interp_q_TU AS _xmt_interp_q_TU_2
+               ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_q_TU_2.a_1)
 
 ===  (r x) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_r_TU_5.a_1 AS x,
+SELECT _xmt_interp_r_TU_5.a_1 AS x,
        "true" AS G
-  FROM _xmt_r_TU AS _xmt_r_TU_5
+  FROM _xmt_interp_r_TU AS _xmt_interp_r_TU_5
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_r_UF_5.a_1 AS x,
+SELECT _xmt_interp_r_UF_5.a_1 AS x,
        "false" AS G
-  FROM _xmt_r_UF AS _xmt_r_UF_5
+  FROM _xmt_interp_r_UF AS _xmt_interp_r_UF_5
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_r_G_5.a_1 AS x,
-       _xmt_r_G_5.G AS G
-  FROM _xmt_r_G AS _xmt_r_G_5
+SELECT _xmt_interp_r_G_5.a_1 AS x,
+       _xmt_interp_r_G_5.G AS G
+  FROM _xmt_interp_r_G AS _xmt_interp_r_G_5
 
 ===  (and (p x) (r x)) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_TU_1.a_1 AS x,
+SELECT _xmt_interp_p_TU_1.a_1 AS x,
        "true" AS G
-  FROM _xmt_p_TU AS _xmt_p_TU_1
-  JOIN _xmt_r_TU AS _xmt_r_TU_5
-        ON _xmt_p_TU_1.a_1 = _xmt_r_TU_5.a_1
+  FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+  JOIN _xmt_interp_r_TU AS _xmt_interp_r_TU_5
+        ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_r_TU_5.a_1
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT x,
        and_aggregate(G) as G
  FROM (-- Join(7)
-       SELECT _xmt_p_UF_1.a_1 AS x,
+       SELECT _xmt_interp_p_UF_1.a_1 AS x,
               "false" AS G
-         FROM _xmt_p_UF AS _xmt_p_UF_1
+         FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_1
        UNION ALL
        -- Join(7)
-       SELECT _xmt_r_UF_5.a_1 AS x,
+       SELECT _xmt_interp_r_UF_5.a_1 AS x,
               "false" AS G
-         FROM _xmt_r_UF AS _xmt_r_UF_5)
+         FROM _xmt_interp_r_UF AS _xmt_interp_r_UF_5)
  GROUP BY x
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_p_G_1.a_1 AS x,
-       and_(_xmt_p_G_1.G, _xmt_r_G_5.G) AS G
-  FROM _xmt_p_G AS _xmt_p_G_1
-  JOIN _xmt_r_G AS _xmt_r_G_5
-        ON _xmt_p_G_1.a_1 = _xmt_r_G_5.a_1
+SELECT _xmt_interp_p_G_1.a_1 AS x,
+       and_(_xmt_interp_p_G_1.G, _xmt_interp_r_G_5.G) AS G
+  FROM _xmt_interp_p_G AS _xmt_interp_p_G_1
+  JOIN _xmt_interp_r_G AS _xmt_interp_r_G_5
+        ON _xmt_interp_p_G_1.a_1 = _xmt_interp_r_G_5.a_1
 
 === (top) (exists ((x element)) (and (p x) (r x))) ======================================
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (-- Join(7)
-       SELECT _xmt_p_TU_1.a_1 AS x,
+       SELECT _xmt_interp_p_TU_1.a_1 AS x,
               "true" AS G
-         FROM _xmt_p_TU AS _xmt_p_TU_1
-         JOIN _xmt_r_TU AS _xmt_r_TU_5
-               ON _xmt_p_TU_1.a_1 = _xmt_r_TU_5.a_1)
+         FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+         JOIN _xmt_interp_r_TU AS _xmt_interp_r_TU_5
+               ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_r_TU_5.a_1)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (SELECT NULL AS x, "false" AS G 
        UNION ALL
        -- Join(7)
-       SELECT _xmt_p_TU_1.a_1 AS x,
+       SELECT _xmt_interp_p_TU_1.a_1 AS x,
               "true" AS G
-         FROM _xmt_p_TU AS _xmt_p_TU_1
-         JOIN _xmt_r_TU AS _xmt_r_TU_5
-               ON _xmt_p_TU_1.a_1 = _xmt_r_TU_5.a_1)
+         FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+         JOIN _xmt_interp_r_TU AS _xmt_interp_r_TU_5
+               ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_r_TU_5.a_1)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (SELECT NULL AS x, "false" AS G 
        UNION ALL
        -- Join(7)
-       SELECT _xmt_p_TU_1.a_1 AS x,
+       SELECT _xmt_interp_p_TU_1.a_1 AS x,
               "true" AS G
-         FROM _xmt_p_TU AS _xmt_p_TU_1
-         JOIN _xmt_r_TU AS _xmt_r_TU_5
-               ON _xmt_p_TU_1.a_1 = _xmt_r_TU_5.a_1)
+         FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+         JOIN _xmt_interp_r_TU AS _xmt_interp_r_TU_5
+               ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_r_TU_5.a_1)
 
 === (top) (and (exists ((x element)) (and (p x) (q x))) (exists ((x element)) (and (p x) (r x)))) ======================================
 ----- TU -----------------------------------------------------------
@@ -253,20 +253,20 @@ SELECT and_(Agg_4_TU.G, Agg_7_TU.G) AS G
   FROM (-- Agg (8)
         SELECT or_aggregate(G) as G
          FROM (-- Join(15)
-               SELECT _xmt_p_TU_1.a_1 AS x,
+               SELECT _xmt_interp_p_TU_1.a_1 AS x,
                       "true" AS G
-                 FROM _xmt_p_TU AS _xmt_p_TU_1
-                 JOIN _xmt_q_TU AS _xmt_q_TU_2
-                       ON _xmt_p_TU_1.a_1 = _xmt_q_TU_2.a_1)
+                 FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+                 JOIN _xmt_interp_q_TU AS _xmt_interp_q_TU_2
+                       ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_q_TU_2.a_1)
         ) AS Agg_4_TU
   JOIN (-- Agg (8)
         SELECT or_aggregate(G) as G
          FROM (-- Join(15)
-               SELECT _xmt_p_TU_1.a_1 AS x,
+               SELECT _xmt_interp_p_TU_1.a_1 AS x,
                       "true" AS G
-                 FROM _xmt_p_TU AS _xmt_p_TU_1
-                 JOIN _xmt_r_TU AS _xmt_r_TU_5
-                       ON _xmt_p_TU_1.a_1 = _xmt_r_TU_5.a_1)
+                 FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+                 JOIN _xmt_interp_r_TU AS _xmt_interp_r_TU_5
+                       ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_r_TU_5.a_1)
         ) AS Agg_7_TU
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -278,22 +278,22 @@ SELECT G as G
                FROM (SELECT NULL AS x, "false" AS G 
                      UNION ALL
                      -- Join(21)
-                     SELECT _xmt_p_TU_1.a_1 AS x,
+                     SELECT _xmt_interp_p_TU_1.a_1 AS x,
                             "true" AS G
-                       FROM _xmt_p_TU AS _xmt_p_TU_1
-                       JOIN _xmt_q_TU AS _xmt_q_TU_2
-                             ON _xmt_p_TU_1.a_1 = _xmt_q_TU_2.a_1)
+                       FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+                       JOIN _xmt_interp_q_TU AS _xmt_interp_q_TU_2
+                             ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_q_TU_2.a_1)
               UNION ALL
               -- Agg (14)
               SELECT or_aggregate(G) as G
                FROM (SELECT NULL AS x, "false" AS G 
                      UNION ALL
                      -- Join(21)
-                     SELECT _xmt_p_TU_1.a_1 AS x,
+                     SELECT _xmt_interp_p_TU_1.a_1 AS x,
                             "true" AS G
-                       FROM _xmt_p_TU AS _xmt_p_TU_1
-                       JOIN _xmt_r_TU AS _xmt_r_TU_5
-                             ON _xmt_p_TU_1.a_1 = _xmt_r_TU_5.a_1))
+                       FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+                       JOIN _xmt_interp_r_TU AS _xmt_interp_r_TU_5
+                             ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_r_TU_5.a_1))
         WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Join(0)
@@ -303,22 +303,22 @@ SELECT and_(Agg_4_G.G, Agg_7_G.G) AS G
          FROM (SELECT NULL AS x, "false" AS G 
                UNION ALL
                -- Join(15)
-               SELECT _xmt_p_TU_1.a_1 AS x,
+               SELECT _xmt_interp_p_TU_1.a_1 AS x,
                       "true" AS G
-                 FROM _xmt_p_TU AS _xmt_p_TU_1
-                 JOIN _xmt_q_TU AS _xmt_q_TU_2
-                       ON _xmt_p_TU_1.a_1 = _xmt_q_TU_2.a_1)
+                 FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+                 JOIN _xmt_interp_q_TU AS _xmt_interp_q_TU_2
+                       ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_q_TU_2.a_1)
         ) AS Agg_4_G
   JOIN (-- Agg (8)
         SELECT or_aggregate(G) as G
          FROM (SELECT NULL AS x, "false" AS G 
                UNION ALL
                -- Join(15)
-               SELECT _xmt_p_TU_1.a_1 AS x,
+               SELECT _xmt_interp_p_TU_1.a_1 AS x,
                       "true" AS G
-                 FROM _xmt_p_TU AS _xmt_p_TU_1
-                 JOIN _xmt_r_TU AS _xmt_r_TU_5
-                       ON _xmt_p_TU_1.a_1 = _xmt_r_TU_5.a_1)
+                 FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+                 JOIN _xmt_interp_r_TU AS _xmt_interp_r_TU_5
+                       ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_r_TU_5.a_1)
         ) AS Agg_7_G
 
 ===========================================

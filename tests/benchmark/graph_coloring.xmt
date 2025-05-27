@@ -955,249 +955,249 @@ Functions2:
  - n123 ()->Node : Constructor
  - n124 ()->Node : Constructor
  - n125 ()->Node : Constructor
- - (_ is n1) (Node)->Bool : Boolean (_xmt_node_n1_tester_t Complete, _xmt_node_n1_tester_f Complete, _xmt_node_n1_tester_g Complete)
- - (_ is n2) (Node)->Bool : Boolean (_xmt_node_n2_tester_t Complete, _xmt_node_n2_tester_f Complete, _xmt_node_n2_tester_g Complete)
- - (_ is n3) (Node)->Bool : Boolean (_xmt_node_n3_tester_t Complete, _xmt_node_n3_tester_f Complete, _xmt_node_n3_tester_g Complete)
- - (_ is n4) (Node)->Bool : Boolean (_xmt_node_n4_tester_t Complete, _xmt_node_n4_tester_f Complete, _xmt_node_n4_tester_g Complete)
- - (_ is n5) (Node)->Bool : Boolean (_xmt_node_n5_tester_t Complete, _xmt_node_n5_tester_f Complete, _xmt_node_n5_tester_g Complete)
- - (_ is n6) (Node)->Bool : Boolean (_xmt_node_n6_tester_t Complete, _xmt_node_n6_tester_f Complete, _xmt_node_n6_tester_g Complete)
- - (_ is n7) (Node)->Bool : Boolean (_xmt_node_n7_tester_t Complete, _xmt_node_n7_tester_f Complete, _xmt_node_n7_tester_g Complete)
- - (_ is n8) (Node)->Bool : Boolean (_xmt_node_n8_tester_t Complete, _xmt_node_n8_tester_f Complete, _xmt_node_n8_tester_g Complete)
- - (_ is n9) (Node)->Bool : Boolean (_xmt_node_n9_tester_t Complete, _xmt_node_n9_tester_f Complete, _xmt_node_n9_tester_g Complete)
- - (_ is n10) (Node)->Bool : Boolean (_xmt_node_n10_tester_t Complete, _xmt_node_n10_tester_f Complete, _xmt_node_n10_tester_g Complete)
- - (_ is n11) (Node)->Bool : Boolean (_xmt_node_n11_tester_t Complete, _xmt_node_n11_tester_f Complete, _xmt_node_n11_tester_g Complete)
- - (_ is n12) (Node)->Bool : Boolean (_xmt_node_n12_tester_t Complete, _xmt_node_n12_tester_f Complete, _xmt_node_n12_tester_g Complete)
- - (_ is n13) (Node)->Bool : Boolean (_xmt_node_n13_tester_t Complete, _xmt_node_n13_tester_f Complete, _xmt_node_n13_tester_g Complete)
- - (_ is n14) (Node)->Bool : Boolean (_xmt_node_n14_tester_t Complete, _xmt_node_n14_tester_f Complete, _xmt_node_n14_tester_g Complete)
- - (_ is n15) (Node)->Bool : Boolean (_xmt_node_n15_tester_t Complete, _xmt_node_n15_tester_f Complete, _xmt_node_n15_tester_g Complete)
- - (_ is n16) (Node)->Bool : Boolean (_xmt_node_n16_tester_t Complete, _xmt_node_n16_tester_f Complete, _xmt_node_n16_tester_g Complete)
- - (_ is n17) (Node)->Bool : Boolean (_xmt_node_n17_tester_t Complete, _xmt_node_n17_tester_f Complete, _xmt_node_n17_tester_g Complete)
- - (_ is n18) (Node)->Bool : Boolean (_xmt_node_n18_tester_t Complete, _xmt_node_n18_tester_f Complete, _xmt_node_n18_tester_g Complete)
- - (_ is n19) (Node)->Bool : Boolean (_xmt_node_n19_tester_t Complete, _xmt_node_n19_tester_f Complete, _xmt_node_n19_tester_g Complete)
- - (_ is n20) (Node)->Bool : Boolean (_xmt_node_n20_tester_t Complete, _xmt_node_n20_tester_f Complete, _xmt_node_n20_tester_g Complete)
- - (_ is n21) (Node)->Bool : Boolean (_xmt_node_n21_tester_t Complete, _xmt_node_n21_tester_f Complete, _xmt_node_n21_tester_g Complete)
- - (_ is n22) (Node)->Bool : Boolean (_xmt_node_n22_tester_t Complete, _xmt_node_n22_tester_f Complete, _xmt_node_n22_tester_g Complete)
- - (_ is n23) (Node)->Bool : Boolean (_xmt_node_n23_tester_t Complete, _xmt_node_n23_tester_f Complete, _xmt_node_n23_tester_g Complete)
- - (_ is n24) (Node)->Bool : Boolean (_xmt_node_n24_tester_t Complete, _xmt_node_n24_tester_f Complete, _xmt_node_n24_tester_g Complete)
- - (_ is n25) (Node)->Bool : Boolean (_xmt_node_n25_tester_t Complete, _xmt_node_n25_tester_f Complete, _xmt_node_n25_tester_g Complete)
- - (_ is n26) (Node)->Bool : Boolean (_xmt_node_n26_tester_t Complete, _xmt_node_n26_tester_f Complete, _xmt_node_n26_tester_g Complete)
- - (_ is n27) (Node)->Bool : Boolean (_xmt_node_n27_tester_t Complete, _xmt_node_n27_tester_f Complete, _xmt_node_n27_tester_g Complete)
- - (_ is n28) (Node)->Bool : Boolean (_xmt_node_n28_tester_t Complete, _xmt_node_n28_tester_f Complete, _xmt_node_n28_tester_g Complete)
- - (_ is n29) (Node)->Bool : Boolean (_xmt_node_n29_tester_t Complete, _xmt_node_n29_tester_f Complete, _xmt_node_n29_tester_g Complete)
- - (_ is n30) (Node)->Bool : Boolean (_xmt_node_n30_tester_t Complete, _xmt_node_n30_tester_f Complete, _xmt_node_n30_tester_g Complete)
- - (_ is n31) (Node)->Bool : Boolean (_xmt_node_n31_tester_t Complete, _xmt_node_n31_tester_f Complete, _xmt_node_n31_tester_g Complete)
- - (_ is n32) (Node)->Bool : Boolean (_xmt_node_n32_tester_t Complete, _xmt_node_n32_tester_f Complete, _xmt_node_n32_tester_g Complete)
- - (_ is n33) (Node)->Bool : Boolean (_xmt_node_n33_tester_t Complete, _xmt_node_n33_tester_f Complete, _xmt_node_n33_tester_g Complete)
- - (_ is n34) (Node)->Bool : Boolean (_xmt_node_n34_tester_t Complete, _xmt_node_n34_tester_f Complete, _xmt_node_n34_tester_g Complete)
- - (_ is n35) (Node)->Bool : Boolean (_xmt_node_n35_tester_t Complete, _xmt_node_n35_tester_f Complete, _xmt_node_n35_tester_g Complete)
- - (_ is n36) (Node)->Bool : Boolean (_xmt_node_n36_tester_t Complete, _xmt_node_n36_tester_f Complete, _xmt_node_n36_tester_g Complete)
- - (_ is n37) (Node)->Bool : Boolean (_xmt_node_n37_tester_t Complete, _xmt_node_n37_tester_f Complete, _xmt_node_n37_tester_g Complete)
- - (_ is n38) (Node)->Bool : Boolean (_xmt_node_n38_tester_t Complete, _xmt_node_n38_tester_f Complete, _xmt_node_n38_tester_g Complete)
- - (_ is n39) (Node)->Bool : Boolean (_xmt_node_n39_tester_t Complete, _xmt_node_n39_tester_f Complete, _xmt_node_n39_tester_g Complete)
- - (_ is n40) (Node)->Bool : Boolean (_xmt_node_n40_tester_t Complete, _xmt_node_n40_tester_f Complete, _xmt_node_n40_tester_g Complete)
- - (_ is n41) (Node)->Bool : Boolean (_xmt_node_n41_tester_t Complete, _xmt_node_n41_tester_f Complete, _xmt_node_n41_tester_g Complete)
- - (_ is n42) (Node)->Bool : Boolean (_xmt_node_n42_tester_t Complete, _xmt_node_n42_tester_f Complete, _xmt_node_n42_tester_g Complete)
- - (_ is n43) (Node)->Bool : Boolean (_xmt_node_n43_tester_t Complete, _xmt_node_n43_tester_f Complete, _xmt_node_n43_tester_g Complete)
- - (_ is n44) (Node)->Bool : Boolean (_xmt_node_n44_tester_t Complete, _xmt_node_n44_tester_f Complete, _xmt_node_n44_tester_g Complete)
- - (_ is n45) (Node)->Bool : Boolean (_xmt_node_n45_tester_t Complete, _xmt_node_n45_tester_f Complete, _xmt_node_n45_tester_g Complete)
- - (_ is n46) (Node)->Bool : Boolean (_xmt_node_n46_tester_t Complete, _xmt_node_n46_tester_f Complete, _xmt_node_n46_tester_g Complete)
- - (_ is n47) (Node)->Bool : Boolean (_xmt_node_n47_tester_t Complete, _xmt_node_n47_tester_f Complete, _xmt_node_n47_tester_g Complete)
- - (_ is n48) (Node)->Bool : Boolean (_xmt_node_n48_tester_t Complete, _xmt_node_n48_tester_f Complete, _xmt_node_n48_tester_g Complete)
- - (_ is n49) (Node)->Bool : Boolean (_xmt_node_n49_tester_t Complete, _xmt_node_n49_tester_f Complete, _xmt_node_n49_tester_g Complete)
- - (_ is n50) (Node)->Bool : Boolean (_xmt_node_n50_tester_t Complete, _xmt_node_n50_tester_f Complete, _xmt_node_n50_tester_g Complete)
- - (_ is n51) (Node)->Bool : Boolean (_xmt_node_n51_tester_t Complete, _xmt_node_n51_tester_f Complete, _xmt_node_n51_tester_g Complete)
- - (_ is n52) (Node)->Bool : Boolean (_xmt_node_n52_tester_t Complete, _xmt_node_n52_tester_f Complete, _xmt_node_n52_tester_g Complete)
- - (_ is n53) (Node)->Bool : Boolean (_xmt_node_n53_tester_t Complete, _xmt_node_n53_tester_f Complete, _xmt_node_n53_tester_g Complete)
- - (_ is n54) (Node)->Bool : Boolean (_xmt_node_n54_tester_t Complete, _xmt_node_n54_tester_f Complete, _xmt_node_n54_tester_g Complete)
- - (_ is n55) (Node)->Bool : Boolean (_xmt_node_n55_tester_t Complete, _xmt_node_n55_tester_f Complete, _xmt_node_n55_tester_g Complete)
- - (_ is n56) (Node)->Bool : Boolean (_xmt_node_n56_tester_t Complete, _xmt_node_n56_tester_f Complete, _xmt_node_n56_tester_g Complete)
- - (_ is n57) (Node)->Bool : Boolean (_xmt_node_n57_tester_t Complete, _xmt_node_n57_tester_f Complete, _xmt_node_n57_tester_g Complete)
- - (_ is n58) (Node)->Bool : Boolean (_xmt_node_n58_tester_t Complete, _xmt_node_n58_tester_f Complete, _xmt_node_n58_tester_g Complete)
- - (_ is n59) (Node)->Bool : Boolean (_xmt_node_n59_tester_t Complete, _xmt_node_n59_tester_f Complete, _xmt_node_n59_tester_g Complete)
- - (_ is n60) (Node)->Bool : Boolean (_xmt_node_n60_tester_t Complete, _xmt_node_n60_tester_f Complete, _xmt_node_n60_tester_g Complete)
- - (_ is n61) (Node)->Bool : Boolean (_xmt_node_n61_tester_t Complete, _xmt_node_n61_tester_f Complete, _xmt_node_n61_tester_g Complete)
- - (_ is n62) (Node)->Bool : Boolean (_xmt_node_n62_tester_t Complete, _xmt_node_n62_tester_f Complete, _xmt_node_n62_tester_g Complete)
- - (_ is n63) (Node)->Bool : Boolean (_xmt_node_n63_tester_t Complete, _xmt_node_n63_tester_f Complete, _xmt_node_n63_tester_g Complete)
- - (_ is n64) (Node)->Bool : Boolean (_xmt_node_n64_tester_t Complete, _xmt_node_n64_tester_f Complete, _xmt_node_n64_tester_g Complete)
- - (_ is n65) (Node)->Bool : Boolean (_xmt_node_n65_tester_t Complete, _xmt_node_n65_tester_f Complete, _xmt_node_n65_tester_g Complete)
- - (_ is n66) (Node)->Bool : Boolean (_xmt_node_n66_tester_t Complete, _xmt_node_n66_tester_f Complete, _xmt_node_n66_tester_g Complete)
- - (_ is n67) (Node)->Bool : Boolean (_xmt_node_n67_tester_t Complete, _xmt_node_n67_tester_f Complete, _xmt_node_n67_tester_g Complete)
- - (_ is n68) (Node)->Bool : Boolean (_xmt_node_n68_tester_t Complete, _xmt_node_n68_tester_f Complete, _xmt_node_n68_tester_g Complete)
- - (_ is n69) (Node)->Bool : Boolean (_xmt_node_n69_tester_t Complete, _xmt_node_n69_tester_f Complete, _xmt_node_n69_tester_g Complete)
- - (_ is n70) (Node)->Bool : Boolean (_xmt_node_n70_tester_t Complete, _xmt_node_n70_tester_f Complete, _xmt_node_n70_tester_g Complete)
- - (_ is n71) (Node)->Bool : Boolean (_xmt_node_n71_tester_t Complete, _xmt_node_n71_tester_f Complete, _xmt_node_n71_tester_g Complete)
- - (_ is n72) (Node)->Bool : Boolean (_xmt_node_n72_tester_t Complete, _xmt_node_n72_tester_f Complete, _xmt_node_n72_tester_g Complete)
- - (_ is n73) (Node)->Bool : Boolean (_xmt_node_n73_tester_t Complete, _xmt_node_n73_tester_f Complete, _xmt_node_n73_tester_g Complete)
- - (_ is n74) (Node)->Bool : Boolean (_xmt_node_n74_tester_t Complete, _xmt_node_n74_tester_f Complete, _xmt_node_n74_tester_g Complete)
- - (_ is n75) (Node)->Bool : Boolean (_xmt_node_n75_tester_t Complete, _xmt_node_n75_tester_f Complete, _xmt_node_n75_tester_g Complete)
- - (_ is n76) (Node)->Bool : Boolean (_xmt_node_n76_tester_t Complete, _xmt_node_n76_tester_f Complete, _xmt_node_n76_tester_g Complete)
- - (_ is n77) (Node)->Bool : Boolean (_xmt_node_n77_tester_t Complete, _xmt_node_n77_tester_f Complete, _xmt_node_n77_tester_g Complete)
- - (_ is n78) (Node)->Bool : Boolean (_xmt_node_n78_tester_t Complete, _xmt_node_n78_tester_f Complete, _xmt_node_n78_tester_g Complete)
- - (_ is n79) (Node)->Bool : Boolean (_xmt_node_n79_tester_t Complete, _xmt_node_n79_tester_f Complete, _xmt_node_n79_tester_g Complete)
- - (_ is n80) (Node)->Bool : Boolean (_xmt_node_n80_tester_t Complete, _xmt_node_n80_tester_f Complete, _xmt_node_n80_tester_g Complete)
- - (_ is n81) (Node)->Bool : Boolean (_xmt_node_n81_tester_t Complete, _xmt_node_n81_tester_f Complete, _xmt_node_n81_tester_g Complete)
- - (_ is n82) (Node)->Bool : Boolean (_xmt_node_n82_tester_t Complete, _xmt_node_n82_tester_f Complete, _xmt_node_n82_tester_g Complete)
- - (_ is n83) (Node)->Bool : Boolean (_xmt_node_n83_tester_t Complete, _xmt_node_n83_tester_f Complete, _xmt_node_n83_tester_g Complete)
- - (_ is n84) (Node)->Bool : Boolean (_xmt_node_n84_tester_t Complete, _xmt_node_n84_tester_f Complete, _xmt_node_n84_tester_g Complete)
- - (_ is n85) (Node)->Bool : Boolean (_xmt_node_n85_tester_t Complete, _xmt_node_n85_tester_f Complete, _xmt_node_n85_tester_g Complete)
- - (_ is n86) (Node)->Bool : Boolean (_xmt_node_n86_tester_t Complete, _xmt_node_n86_tester_f Complete, _xmt_node_n86_tester_g Complete)
- - (_ is n87) (Node)->Bool : Boolean (_xmt_node_n87_tester_t Complete, _xmt_node_n87_tester_f Complete, _xmt_node_n87_tester_g Complete)
- - (_ is n88) (Node)->Bool : Boolean (_xmt_node_n88_tester_t Complete, _xmt_node_n88_tester_f Complete, _xmt_node_n88_tester_g Complete)
- - (_ is n89) (Node)->Bool : Boolean (_xmt_node_n89_tester_t Complete, _xmt_node_n89_tester_f Complete, _xmt_node_n89_tester_g Complete)
- - (_ is n90) (Node)->Bool : Boolean (_xmt_node_n90_tester_t Complete, _xmt_node_n90_tester_f Complete, _xmt_node_n90_tester_g Complete)
- - (_ is n91) (Node)->Bool : Boolean (_xmt_node_n91_tester_t Complete, _xmt_node_n91_tester_f Complete, _xmt_node_n91_tester_g Complete)
- - (_ is n92) (Node)->Bool : Boolean (_xmt_node_n92_tester_t Complete, _xmt_node_n92_tester_f Complete, _xmt_node_n92_tester_g Complete)
- - (_ is n93) (Node)->Bool : Boolean (_xmt_node_n93_tester_t Complete, _xmt_node_n93_tester_f Complete, _xmt_node_n93_tester_g Complete)
- - (_ is n94) (Node)->Bool : Boolean (_xmt_node_n94_tester_t Complete, _xmt_node_n94_tester_f Complete, _xmt_node_n94_tester_g Complete)
- - (_ is n95) (Node)->Bool : Boolean (_xmt_node_n95_tester_t Complete, _xmt_node_n95_tester_f Complete, _xmt_node_n95_tester_g Complete)
- - (_ is n96) (Node)->Bool : Boolean (_xmt_node_n96_tester_t Complete, _xmt_node_n96_tester_f Complete, _xmt_node_n96_tester_g Complete)
- - (_ is n97) (Node)->Bool : Boolean (_xmt_node_n97_tester_t Complete, _xmt_node_n97_tester_f Complete, _xmt_node_n97_tester_g Complete)
- - (_ is n98) (Node)->Bool : Boolean (_xmt_node_n98_tester_t Complete, _xmt_node_n98_tester_f Complete, _xmt_node_n98_tester_g Complete)
- - (_ is n99) (Node)->Bool : Boolean (_xmt_node_n99_tester_t Complete, _xmt_node_n99_tester_f Complete, _xmt_node_n99_tester_g Complete)
- - (_ is n100) (Node)->Bool : Boolean (_xmt_node_n100_tester_t Complete, _xmt_node_n100_tester_f Complete, _xmt_node_n100_tester_g Complete)
- - (_ is n101) (Node)->Bool : Boolean (_xmt_node_n101_tester_t Complete, _xmt_node_n101_tester_f Complete, _xmt_node_n101_tester_g Complete)
- - (_ is n102) (Node)->Bool : Boolean (_xmt_node_n102_tester_t Complete, _xmt_node_n102_tester_f Complete, _xmt_node_n102_tester_g Complete)
- - (_ is n103) (Node)->Bool : Boolean (_xmt_node_n103_tester_t Complete, _xmt_node_n103_tester_f Complete, _xmt_node_n103_tester_g Complete)
- - (_ is n104) (Node)->Bool : Boolean (_xmt_node_n104_tester_t Complete, _xmt_node_n104_tester_f Complete, _xmt_node_n104_tester_g Complete)
- - (_ is n105) (Node)->Bool : Boolean (_xmt_node_n105_tester_t Complete, _xmt_node_n105_tester_f Complete, _xmt_node_n105_tester_g Complete)
- - (_ is n106) (Node)->Bool : Boolean (_xmt_node_n106_tester_t Complete, _xmt_node_n106_tester_f Complete, _xmt_node_n106_tester_g Complete)
- - (_ is n107) (Node)->Bool : Boolean (_xmt_node_n107_tester_t Complete, _xmt_node_n107_tester_f Complete, _xmt_node_n107_tester_g Complete)
- - (_ is n108) (Node)->Bool : Boolean (_xmt_node_n108_tester_t Complete, _xmt_node_n108_tester_f Complete, _xmt_node_n108_tester_g Complete)
- - (_ is n109) (Node)->Bool : Boolean (_xmt_node_n109_tester_t Complete, _xmt_node_n109_tester_f Complete, _xmt_node_n109_tester_g Complete)
- - (_ is n110) (Node)->Bool : Boolean (_xmt_node_n110_tester_t Complete, _xmt_node_n110_tester_f Complete, _xmt_node_n110_tester_g Complete)
- - (_ is n111) (Node)->Bool : Boolean (_xmt_node_n111_tester_t Complete, _xmt_node_n111_tester_f Complete, _xmt_node_n111_tester_g Complete)
- - (_ is n112) (Node)->Bool : Boolean (_xmt_node_n112_tester_t Complete, _xmt_node_n112_tester_f Complete, _xmt_node_n112_tester_g Complete)
- - (_ is n113) (Node)->Bool : Boolean (_xmt_node_n113_tester_t Complete, _xmt_node_n113_tester_f Complete, _xmt_node_n113_tester_g Complete)
- - (_ is n114) (Node)->Bool : Boolean (_xmt_node_n114_tester_t Complete, _xmt_node_n114_tester_f Complete, _xmt_node_n114_tester_g Complete)
- - (_ is n115) (Node)->Bool : Boolean (_xmt_node_n115_tester_t Complete, _xmt_node_n115_tester_f Complete, _xmt_node_n115_tester_g Complete)
- - (_ is n116) (Node)->Bool : Boolean (_xmt_node_n116_tester_t Complete, _xmt_node_n116_tester_f Complete, _xmt_node_n116_tester_g Complete)
- - (_ is n117) (Node)->Bool : Boolean (_xmt_node_n117_tester_t Complete, _xmt_node_n117_tester_f Complete, _xmt_node_n117_tester_g Complete)
- - (_ is n118) (Node)->Bool : Boolean (_xmt_node_n118_tester_t Complete, _xmt_node_n118_tester_f Complete, _xmt_node_n118_tester_g Complete)
- - (_ is n119) (Node)->Bool : Boolean (_xmt_node_n119_tester_t Complete, _xmt_node_n119_tester_f Complete, _xmt_node_n119_tester_g Complete)
- - (_ is n120) (Node)->Bool : Boolean (_xmt_node_n120_tester_t Complete, _xmt_node_n120_tester_f Complete, _xmt_node_n120_tester_g Complete)
- - (_ is n121) (Node)->Bool : Boolean (_xmt_node_n121_tester_t Complete, _xmt_node_n121_tester_f Complete, _xmt_node_n121_tester_g Complete)
- - (_ is n122) (Node)->Bool : Boolean (_xmt_node_n122_tester_t Complete, _xmt_node_n122_tester_f Complete, _xmt_node_n122_tester_g Complete)
- - (_ is n123) (Node)->Bool : Boolean (_xmt_node_n123_tester_t Complete, _xmt_node_n123_tester_f Complete, _xmt_node_n123_tester_g Complete)
- - (_ is n124) (Node)->Bool : Boolean (_xmt_node_n124_tester_t Complete, _xmt_node_n124_tester_f Complete, _xmt_node_n124_tester_g Complete)
- - (_ is n125) (Node)->Bool : Boolean (_xmt_node_n125_tester_t Complete, _xmt_node_n125_tester_f Complete, _xmt_node_n125_tester_g Complete)
+ - (_ is n1) (Node)->Bool : Boolean (_xmt_tester_node_n1_t Complete, _xmt_tester_node_n1_f Complete, _xmt_tester_node_n1_g Complete)
+ - (_ is n2) (Node)->Bool : Boolean (_xmt_tester_node_n2_t Complete, _xmt_tester_node_n2_f Complete, _xmt_tester_node_n2_g Complete)
+ - (_ is n3) (Node)->Bool : Boolean (_xmt_tester_node_n3_t Complete, _xmt_tester_node_n3_f Complete, _xmt_tester_node_n3_g Complete)
+ - (_ is n4) (Node)->Bool : Boolean (_xmt_tester_node_n4_t Complete, _xmt_tester_node_n4_f Complete, _xmt_tester_node_n4_g Complete)
+ - (_ is n5) (Node)->Bool : Boolean (_xmt_tester_node_n5_t Complete, _xmt_tester_node_n5_f Complete, _xmt_tester_node_n5_g Complete)
+ - (_ is n6) (Node)->Bool : Boolean (_xmt_tester_node_n6_t Complete, _xmt_tester_node_n6_f Complete, _xmt_tester_node_n6_g Complete)
+ - (_ is n7) (Node)->Bool : Boolean (_xmt_tester_node_n7_t Complete, _xmt_tester_node_n7_f Complete, _xmt_tester_node_n7_g Complete)
+ - (_ is n8) (Node)->Bool : Boolean (_xmt_tester_node_n8_t Complete, _xmt_tester_node_n8_f Complete, _xmt_tester_node_n8_g Complete)
+ - (_ is n9) (Node)->Bool : Boolean (_xmt_tester_node_n9_t Complete, _xmt_tester_node_n9_f Complete, _xmt_tester_node_n9_g Complete)
+ - (_ is n10) (Node)->Bool : Boolean (_xmt_tester_node_n10_t Complete, _xmt_tester_node_n10_f Complete, _xmt_tester_node_n10_g Complete)
+ - (_ is n11) (Node)->Bool : Boolean (_xmt_tester_node_n11_t Complete, _xmt_tester_node_n11_f Complete, _xmt_tester_node_n11_g Complete)
+ - (_ is n12) (Node)->Bool : Boolean (_xmt_tester_node_n12_t Complete, _xmt_tester_node_n12_f Complete, _xmt_tester_node_n12_g Complete)
+ - (_ is n13) (Node)->Bool : Boolean (_xmt_tester_node_n13_t Complete, _xmt_tester_node_n13_f Complete, _xmt_tester_node_n13_g Complete)
+ - (_ is n14) (Node)->Bool : Boolean (_xmt_tester_node_n14_t Complete, _xmt_tester_node_n14_f Complete, _xmt_tester_node_n14_g Complete)
+ - (_ is n15) (Node)->Bool : Boolean (_xmt_tester_node_n15_t Complete, _xmt_tester_node_n15_f Complete, _xmt_tester_node_n15_g Complete)
+ - (_ is n16) (Node)->Bool : Boolean (_xmt_tester_node_n16_t Complete, _xmt_tester_node_n16_f Complete, _xmt_tester_node_n16_g Complete)
+ - (_ is n17) (Node)->Bool : Boolean (_xmt_tester_node_n17_t Complete, _xmt_tester_node_n17_f Complete, _xmt_tester_node_n17_g Complete)
+ - (_ is n18) (Node)->Bool : Boolean (_xmt_tester_node_n18_t Complete, _xmt_tester_node_n18_f Complete, _xmt_tester_node_n18_g Complete)
+ - (_ is n19) (Node)->Bool : Boolean (_xmt_tester_node_n19_t Complete, _xmt_tester_node_n19_f Complete, _xmt_tester_node_n19_g Complete)
+ - (_ is n20) (Node)->Bool : Boolean (_xmt_tester_node_n20_t Complete, _xmt_tester_node_n20_f Complete, _xmt_tester_node_n20_g Complete)
+ - (_ is n21) (Node)->Bool : Boolean (_xmt_tester_node_n21_t Complete, _xmt_tester_node_n21_f Complete, _xmt_tester_node_n21_g Complete)
+ - (_ is n22) (Node)->Bool : Boolean (_xmt_tester_node_n22_t Complete, _xmt_tester_node_n22_f Complete, _xmt_tester_node_n22_g Complete)
+ - (_ is n23) (Node)->Bool : Boolean (_xmt_tester_node_n23_t Complete, _xmt_tester_node_n23_f Complete, _xmt_tester_node_n23_g Complete)
+ - (_ is n24) (Node)->Bool : Boolean (_xmt_tester_node_n24_t Complete, _xmt_tester_node_n24_f Complete, _xmt_tester_node_n24_g Complete)
+ - (_ is n25) (Node)->Bool : Boolean (_xmt_tester_node_n25_t Complete, _xmt_tester_node_n25_f Complete, _xmt_tester_node_n25_g Complete)
+ - (_ is n26) (Node)->Bool : Boolean (_xmt_tester_node_n26_t Complete, _xmt_tester_node_n26_f Complete, _xmt_tester_node_n26_g Complete)
+ - (_ is n27) (Node)->Bool : Boolean (_xmt_tester_node_n27_t Complete, _xmt_tester_node_n27_f Complete, _xmt_tester_node_n27_g Complete)
+ - (_ is n28) (Node)->Bool : Boolean (_xmt_tester_node_n28_t Complete, _xmt_tester_node_n28_f Complete, _xmt_tester_node_n28_g Complete)
+ - (_ is n29) (Node)->Bool : Boolean (_xmt_tester_node_n29_t Complete, _xmt_tester_node_n29_f Complete, _xmt_tester_node_n29_g Complete)
+ - (_ is n30) (Node)->Bool : Boolean (_xmt_tester_node_n30_t Complete, _xmt_tester_node_n30_f Complete, _xmt_tester_node_n30_g Complete)
+ - (_ is n31) (Node)->Bool : Boolean (_xmt_tester_node_n31_t Complete, _xmt_tester_node_n31_f Complete, _xmt_tester_node_n31_g Complete)
+ - (_ is n32) (Node)->Bool : Boolean (_xmt_tester_node_n32_t Complete, _xmt_tester_node_n32_f Complete, _xmt_tester_node_n32_g Complete)
+ - (_ is n33) (Node)->Bool : Boolean (_xmt_tester_node_n33_t Complete, _xmt_tester_node_n33_f Complete, _xmt_tester_node_n33_g Complete)
+ - (_ is n34) (Node)->Bool : Boolean (_xmt_tester_node_n34_t Complete, _xmt_tester_node_n34_f Complete, _xmt_tester_node_n34_g Complete)
+ - (_ is n35) (Node)->Bool : Boolean (_xmt_tester_node_n35_t Complete, _xmt_tester_node_n35_f Complete, _xmt_tester_node_n35_g Complete)
+ - (_ is n36) (Node)->Bool : Boolean (_xmt_tester_node_n36_t Complete, _xmt_tester_node_n36_f Complete, _xmt_tester_node_n36_g Complete)
+ - (_ is n37) (Node)->Bool : Boolean (_xmt_tester_node_n37_t Complete, _xmt_tester_node_n37_f Complete, _xmt_tester_node_n37_g Complete)
+ - (_ is n38) (Node)->Bool : Boolean (_xmt_tester_node_n38_t Complete, _xmt_tester_node_n38_f Complete, _xmt_tester_node_n38_g Complete)
+ - (_ is n39) (Node)->Bool : Boolean (_xmt_tester_node_n39_t Complete, _xmt_tester_node_n39_f Complete, _xmt_tester_node_n39_g Complete)
+ - (_ is n40) (Node)->Bool : Boolean (_xmt_tester_node_n40_t Complete, _xmt_tester_node_n40_f Complete, _xmt_tester_node_n40_g Complete)
+ - (_ is n41) (Node)->Bool : Boolean (_xmt_tester_node_n41_t Complete, _xmt_tester_node_n41_f Complete, _xmt_tester_node_n41_g Complete)
+ - (_ is n42) (Node)->Bool : Boolean (_xmt_tester_node_n42_t Complete, _xmt_tester_node_n42_f Complete, _xmt_tester_node_n42_g Complete)
+ - (_ is n43) (Node)->Bool : Boolean (_xmt_tester_node_n43_t Complete, _xmt_tester_node_n43_f Complete, _xmt_tester_node_n43_g Complete)
+ - (_ is n44) (Node)->Bool : Boolean (_xmt_tester_node_n44_t Complete, _xmt_tester_node_n44_f Complete, _xmt_tester_node_n44_g Complete)
+ - (_ is n45) (Node)->Bool : Boolean (_xmt_tester_node_n45_t Complete, _xmt_tester_node_n45_f Complete, _xmt_tester_node_n45_g Complete)
+ - (_ is n46) (Node)->Bool : Boolean (_xmt_tester_node_n46_t Complete, _xmt_tester_node_n46_f Complete, _xmt_tester_node_n46_g Complete)
+ - (_ is n47) (Node)->Bool : Boolean (_xmt_tester_node_n47_t Complete, _xmt_tester_node_n47_f Complete, _xmt_tester_node_n47_g Complete)
+ - (_ is n48) (Node)->Bool : Boolean (_xmt_tester_node_n48_t Complete, _xmt_tester_node_n48_f Complete, _xmt_tester_node_n48_g Complete)
+ - (_ is n49) (Node)->Bool : Boolean (_xmt_tester_node_n49_t Complete, _xmt_tester_node_n49_f Complete, _xmt_tester_node_n49_g Complete)
+ - (_ is n50) (Node)->Bool : Boolean (_xmt_tester_node_n50_t Complete, _xmt_tester_node_n50_f Complete, _xmt_tester_node_n50_g Complete)
+ - (_ is n51) (Node)->Bool : Boolean (_xmt_tester_node_n51_t Complete, _xmt_tester_node_n51_f Complete, _xmt_tester_node_n51_g Complete)
+ - (_ is n52) (Node)->Bool : Boolean (_xmt_tester_node_n52_t Complete, _xmt_tester_node_n52_f Complete, _xmt_tester_node_n52_g Complete)
+ - (_ is n53) (Node)->Bool : Boolean (_xmt_tester_node_n53_t Complete, _xmt_tester_node_n53_f Complete, _xmt_tester_node_n53_g Complete)
+ - (_ is n54) (Node)->Bool : Boolean (_xmt_tester_node_n54_t Complete, _xmt_tester_node_n54_f Complete, _xmt_tester_node_n54_g Complete)
+ - (_ is n55) (Node)->Bool : Boolean (_xmt_tester_node_n55_t Complete, _xmt_tester_node_n55_f Complete, _xmt_tester_node_n55_g Complete)
+ - (_ is n56) (Node)->Bool : Boolean (_xmt_tester_node_n56_t Complete, _xmt_tester_node_n56_f Complete, _xmt_tester_node_n56_g Complete)
+ - (_ is n57) (Node)->Bool : Boolean (_xmt_tester_node_n57_t Complete, _xmt_tester_node_n57_f Complete, _xmt_tester_node_n57_g Complete)
+ - (_ is n58) (Node)->Bool : Boolean (_xmt_tester_node_n58_t Complete, _xmt_tester_node_n58_f Complete, _xmt_tester_node_n58_g Complete)
+ - (_ is n59) (Node)->Bool : Boolean (_xmt_tester_node_n59_t Complete, _xmt_tester_node_n59_f Complete, _xmt_tester_node_n59_g Complete)
+ - (_ is n60) (Node)->Bool : Boolean (_xmt_tester_node_n60_t Complete, _xmt_tester_node_n60_f Complete, _xmt_tester_node_n60_g Complete)
+ - (_ is n61) (Node)->Bool : Boolean (_xmt_tester_node_n61_t Complete, _xmt_tester_node_n61_f Complete, _xmt_tester_node_n61_g Complete)
+ - (_ is n62) (Node)->Bool : Boolean (_xmt_tester_node_n62_t Complete, _xmt_tester_node_n62_f Complete, _xmt_tester_node_n62_g Complete)
+ - (_ is n63) (Node)->Bool : Boolean (_xmt_tester_node_n63_t Complete, _xmt_tester_node_n63_f Complete, _xmt_tester_node_n63_g Complete)
+ - (_ is n64) (Node)->Bool : Boolean (_xmt_tester_node_n64_t Complete, _xmt_tester_node_n64_f Complete, _xmt_tester_node_n64_g Complete)
+ - (_ is n65) (Node)->Bool : Boolean (_xmt_tester_node_n65_t Complete, _xmt_tester_node_n65_f Complete, _xmt_tester_node_n65_g Complete)
+ - (_ is n66) (Node)->Bool : Boolean (_xmt_tester_node_n66_t Complete, _xmt_tester_node_n66_f Complete, _xmt_tester_node_n66_g Complete)
+ - (_ is n67) (Node)->Bool : Boolean (_xmt_tester_node_n67_t Complete, _xmt_tester_node_n67_f Complete, _xmt_tester_node_n67_g Complete)
+ - (_ is n68) (Node)->Bool : Boolean (_xmt_tester_node_n68_t Complete, _xmt_tester_node_n68_f Complete, _xmt_tester_node_n68_g Complete)
+ - (_ is n69) (Node)->Bool : Boolean (_xmt_tester_node_n69_t Complete, _xmt_tester_node_n69_f Complete, _xmt_tester_node_n69_g Complete)
+ - (_ is n70) (Node)->Bool : Boolean (_xmt_tester_node_n70_t Complete, _xmt_tester_node_n70_f Complete, _xmt_tester_node_n70_g Complete)
+ - (_ is n71) (Node)->Bool : Boolean (_xmt_tester_node_n71_t Complete, _xmt_tester_node_n71_f Complete, _xmt_tester_node_n71_g Complete)
+ - (_ is n72) (Node)->Bool : Boolean (_xmt_tester_node_n72_t Complete, _xmt_tester_node_n72_f Complete, _xmt_tester_node_n72_g Complete)
+ - (_ is n73) (Node)->Bool : Boolean (_xmt_tester_node_n73_t Complete, _xmt_tester_node_n73_f Complete, _xmt_tester_node_n73_g Complete)
+ - (_ is n74) (Node)->Bool : Boolean (_xmt_tester_node_n74_t Complete, _xmt_tester_node_n74_f Complete, _xmt_tester_node_n74_g Complete)
+ - (_ is n75) (Node)->Bool : Boolean (_xmt_tester_node_n75_t Complete, _xmt_tester_node_n75_f Complete, _xmt_tester_node_n75_g Complete)
+ - (_ is n76) (Node)->Bool : Boolean (_xmt_tester_node_n76_t Complete, _xmt_tester_node_n76_f Complete, _xmt_tester_node_n76_g Complete)
+ - (_ is n77) (Node)->Bool : Boolean (_xmt_tester_node_n77_t Complete, _xmt_tester_node_n77_f Complete, _xmt_tester_node_n77_g Complete)
+ - (_ is n78) (Node)->Bool : Boolean (_xmt_tester_node_n78_t Complete, _xmt_tester_node_n78_f Complete, _xmt_tester_node_n78_g Complete)
+ - (_ is n79) (Node)->Bool : Boolean (_xmt_tester_node_n79_t Complete, _xmt_tester_node_n79_f Complete, _xmt_tester_node_n79_g Complete)
+ - (_ is n80) (Node)->Bool : Boolean (_xmt_tester_node_n80_t Complete, _xmt_tester_node_n80_f Complete, _xmt_tester_node_n80_g Complete)
+ - (_ is n81) (Node)->Bool : Boolean (_xmt_tester_node_n81_t Complete, _xmt_tester_node_n81_f Complete, _xmt_tester_node_n81_g Complete)
+ - (_ is n82) (Node)->Bool : Boolean (_xmt_tester_node_n82_t Complete, _xmt_tester_node_n82_f Complete, _xmt_tester_node_n82_g Complete)
+ - (_ is n83) (Node)->Bool : Boolean (_xmt_tester_node_n83_t Complete, _xmt_tester_node_n83_f Complete, _xmt_tester_node_n83_g Complete)
+ - (_ is n84) (Node)->Bool : Boolean (_xmt_tester_node_n84_t Complete, _xmt_tester_node_n84_f Complete, _xmt_tester_node_n84_g Complete)
+ - (_ is n85) (Node)->Bool : Boolean (_xmt_tester_node_n85_t Complete, _xmt_tester_node_n85_f Complete, _xmt_tester_node_n85_g Complete)
+ - (_ is n86) (Node)->Bool : Boolean (_xmt_tester_node_n86_t Complete, _xmt_tester_node_n86_f Complete, _xmt_tester_node_n86_g Complete)
+ - (_ is n87) (Node)->Bool : Boolean (_xmt_tester_node_n87_t Complete, _xmt_tester_node_n87_f Complete, _xmt_tester_node_n87_g Complete)
+ - (_ is n88) (Node)->Bool : Boolean (_xmt_tester_node_n88_t Complete, _xmt_tester_node_n88_f Complete, _xmt_tester_node_n88_g Complete)
+ - (_ is n89) (Node)->Bool : Boolean (_xmt_tester_node_n89_t Complete, _xmt_tester_node_n89_f Complete, _xmt_tester_node_n89_g Complete)
+ - (_ is n90) (Node)->Bool : Boolean (_xmt_tester_node_n90_t Complete, _xmt_tester_node_n90_f Complete, _xmt_tester_node_n90_g Complete)
+ - (_ is n91) (Node)->Bool : Boolean (_xmt_tester_node_n91_t Complete, _xmt_tester_node_n91_f Complete, _xmt_tester_node_n91_g Complete)
+ - (_ is n92) (Node)->Bool : Boolean (_xmt_tester_node_n92_t Complete, _xmt_tester_node_n92_f Complete, _xmt_tester_node_n92_g Complete)
+ - (_ is n93) (Node)->Bool : Boolean (_xmt_tester_node_n93_t Complete, _xmt_tester_node_n93_f Complete, _xmt_tester_node_n93_g Complete)
+ - (_ is n94) (Node)->Bool : Boolean (_xmt_tester_node_n94_t Complete, _xmt_tester_node_n94_f Complete, _xmt_tester_node_n94_g Complete)
+ - (_ is n95) (Node)->Bool : Boolean (_xmt_tester_node_n95_t Complete, _xmt_tester_node_n95_f Complete, _xmt_tester_node_n95_g Complete)
+ - (_ is n96) (Node)->Bool : Boolean (_xmt_tester_node_n96_t Complete, _xmt_tester_node_n96_f Complete, _xmt_tester_node_n96_g Complete)
+ - (_ is n97) (Node)->Bool : Boolean (_xmt_tester_node_n97_t Complete, _xmt_tester_node_n97_f Complete, _xmt_tester_node_n97_g Complete)
+ - (_ is n98) (Node)->Bool : Boolean (_xmt_tester_node_n98_t Complete, _xmt_tester_node_n98_f Complete, _xmt_tester_node_n98_g Complete)
+ - (_ is n99) (Node)->Bool : Boolean (_xmt_tester_node_n99_t Complete, _xmt_tester_node_n99_f Complete, _xmt_tester_node_n99_g Complete)
+ - (_ is n100) (Node)->Bool : Boolean (_xmt_tester_node_n100_t Complete, _xmt_tester_node_n100_f Complete, _xmt_tester_node_n100_g Complete)
+ - (_ is n101) (Node)->Bool : Boolean (_xmt_tester_node_n101_t Complete, _xmt_tester_node_n101_f Complete, _xmt_tester_node_n101_g Complete)
+ - (_ is n102) (Node)->Bool : Boolean (_xmt_tester_node_n102_t Complete, _xmt_tester_node_n102_f Complete, _xmt_tester_node_n102_g Complete)
+ - (_ is n103) (Node)->Bool : Boolean (_xmt_tester_node_n103_t Complete, _xmt_tester_node_n103_f Complete, _xmt_tester_node_n103_g Complete)
+ - (_ is n104) (Node)->Bool : Boolean (_xmt_tester_node_n104_t Complete, _xmt_tester_node_n104_f Complete, _xmt_tester_node_n104_g Complete)
+ - (_ is n105) (Node)->Bool : Boolean (_xmt_tester_node_n105_t Complete, _xmt_tester_node_n105_f Complete, _xmt_tester_node_n105_g Complete)
+ - (_ is n106) (Node)->Bool : Boolean (_xmt_tester_node_n106_t Complete, _xmt_tester_node_n106_f Complete, _xmt_tester_node_n106_g Complete)
+ - (_ is n107) (Node)->Bool : Boolean (_xmt_tester_node_n107_t Complete, _xmt_tester_node_n107_f Complete, _xmt_tester_node_n107_g Complete)
+ - (_ is n108) (Node)->Bool : Boolean (_xmt_tester_node_n108_t Complete, _xmt_tester_node_n108_f Complete, _xmt_tester_node_n108_g Complete)
+ - (_ is n109) (Node)->Bool : Boolean (_xmt_tester_node_n109_t Complete, _xmt_tester_node_n109_f Complete, _xmt_tester_node_n109_g Complete)
+ - (_ is n110) (Node)->Bool : Boolean (_xmt_tester_node_n110_t Complete, _xmt_tester_node_n110_f Complete, _xmt_tester_node_n110_g Complete)
+ - (_ is n111) (Node)->Bool : Boolean (_xmt_tester_node_n111_t Complete, _xmt_tester_node_n111_f Complete, _xmt_tester_node_n111_g Complete)
+ - (_ is n112) (Node)->Bool : Boolean (_xmt_tester_node_n112_t Complete, _xmt_tester_node_n112_f Complete, _xmt_tester_node_n112_g Complete)
+ - (_ is n113) (Node)->Bool : Boolean (_xmt_tester_node_n113_t Complete, _xmt_tester_node_n113_f Complete, _xmt_tester_node_n113_g Complete)
+ - (_ is n114) (Node)->Bool : Boolean (_xmt_tester_node_n114_t Complete, _xmt_tester_node_n114_f Complete, _xmt_tester_node_n114_g Complete)
+ - (_ is n115) (Node)->Bool : Boolean (_xmt_tester_node_n115_t Complete, _xmt_tester_node_n115_f Complete, _xmt_tester_node_n115_g Complete)
+ - (_ is n116) (Node)->Bool : Boolean (_xmt_tester_node_n116_t Complete, _xmt_tester_node_n116_f Complete, _xmt_tester_node_n116_g Complete)
+ - (_ is n117) (Node)->Bool : Boolean (_xmt_tester_node_n117_t Complete, _xmt_tester_node_n117_f Complete, _xmt_tester_node_n117_g Complete)
+ - (_ is n118) (Node)->Bool : Boolean (_xmt_tester_node_n118_t Complete, _xmt_tester_node_n118_f Complete, _xmt_tester_node_n118_g Complete)
+ - (_ is n119) (Node)->Bool : Boolean (_xmt_tester_node_n119_t Complete, _xmt_tester_node_n119_f Complete, _xmt_tester_node_n119_g Complete)
+ - (_ is n120) (Node)->Bool : Boolean (_xmt_tester_node_n120_t Complete, _xmt_tester_node_n120_f Complete, _xmt_tester_node_n120_g Complete)
+ - (_ is n121) (Node)->Bool : Boolean (_xmt_tester_node_n121_t Complete, _xmt_tester_node_n121_f Complete, _xmt_tester_node_n121_g Complete)
+ - (_ is n122) (Node)->Bool : Boolean (_xmt_tester_node_n122_t Complete, _xmt_tester_node_n122_f Complete, _xmt_tester_node_n122_g Complete)
+ - (_ is n123) (Node)->Bool : Boolean (_xmt_tester_node_n123_t Complete, _xmt_tester_node_n123_f Complete, _xmt_tester_node_n123_g Complete)
+ - (_ is n124) (Node)->Bool : Boolean (_xmt_tester_node_n124_t Complete, _xmt_tester_node_n124_f Complete, _xmt_tester_node_n124_g Complete)
+ - (_ is n125) (Node)->Bool : Boolean (_xmt_tester_node_n125_t Complete, _xmt_tester_node_n125_f Complete, _xmt_tester_node_n125_g Complete)
  - yellow ()->Colour : Constructor
  - cyan ()->Colour : Constructor
  - blue ()->Colour : Constructor
  - green ()->Colour : Constructor
  - red ()->Colour : Constructor
- - (_ is yellow) (Colour)->Bool : Boolean (_xmt_colour_yellow_tester_t Complete, _xmt_colour_yellow_tester_f Complete, _xmt_colour_yellow_tester_g Complete)
- - (_ is cyan) (Colour)->Bool : Boolean (_xmt_colour_cyan_tester_t Complete, _xmt_colour_cyan_tester_f Complete, _xmt_colour_cyan_tester_g Complete)
- - (_ is blue) (Colour)->Bool : Boolean (_xmt_colour_blue_tester_t Complete, _xmt_colour_blue_tester_f Complete, _xmt_colour_blue_tester_g Complete)
- - (_ is green) (Colour)->Bool : Boolean (_xmt_colour_green_tester_t Complete, _xmt_colour_green_tester_f Complete, _xmt_colour_green_tester_g Complete)
- - (_ is red) (Colour)->Bool : Boolean (_xmt_colour_red_tester_t Complete, _xmt_colour_red_tester_f Complete, _xmt_colour_red_tester_g Complete)
- - link (Node, Node)->Bool : Boolean (_xmt_link_TU Complete, _xmt_link_UF Complete, _xmt_link_G Complete)
+ - (_ is yellow) (Colour)->Bool : Boolean (_xmt_tester_colour_yellow_t Complete, _xmt_tester_colour_yellow_f Complete, _xmt_tester_colour_yellow_g Complete)
+ - (_ is cyan) (Colour)->Bool : Boolean (_xmt_tester_colour_cyan_t Complete, _xmt_tester_colour_cyan_f Complete, _xmt_tester_colour_cyan_g Complete)
+ - (_ is blue) (Colour)->Bool : Boolean (_xmt_tester_colour_blue_t Complete, _xmt_tester_colour_blue_f Complete, _xmt_tester_colour_blue_g Complete)
+ - (_ is green) (Colour)->Bool : Boolean (_xmt_tester_colour_green_t Complete, _xmt_tester_colour_green_f Complete, _xmt_tester_colour_green_g Complete)
+ - (_ is red) (Colour)->Bool : Boolean (_xmt_tester_colour_red_t Complete, _xmt_tester_colour_red_f Complete, _xmt_tester_colour_red_g Complete)
+ - link (Node, Node)->Bool : Boolean (_xmt_interp_link_TU Complete, _xmt_interp_link_UF Complete, _xmt_interp_link_G Complete)
  - colourOf (Node)->Colour : Not interpreted
 Groundings:
 ===  n1 ======================================
  -- Join(0)
-SELECT _xmt_node.G AS n1,
-       _xmt_node.G AS G
-  FROM _xmt_node
+SELECT _xmt_sort_node.G AS n1,
+       _xmt_sort_node.G AS G
+  FROM _xmt_sort_node
 ===  n2 ======================================
  -- Join(0)
-SELECT _xmt_node_1.G AS n2,
-       _xmt_node_1.G AS G
-  FROM _xmt_node AS _xmt_node_1
+SELECT _xmt_sort_node_1.G AS n2,
+       _xmt_sort_node_1.G AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_1
 ===  (link n1 n2) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_link_TU_2.a_1 AS n1,
-       _xmt_link_TU_2.a_2 AS n2,
+SELECT _xmt_interp_link_TU_2.a_1 AS n1,
+       _xmt_interp_link_TU_2.a_2 AS n2,
        "true" AS G
-  FROM _xmt_link_TU AS _xmt_link_TU_2
+  FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_link_UF_2.a_1 AS n1,
-       _xmt_link_UF_2.a_2 AS n2,
+SELECT _xmt_interp_link_UF_2.a_1 AS n1,
+       _xmt_interp_link_UF_2.a_2 AS n2,
        "false" AS G
-  FROM _xmt_link_UF AS _xmt_link_UF_2
+  FROM _xmt_interp_link_UF AS _xmt_interp_link_UF_2
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_link_G_2.a_1 AS n1,
-       _xmt_link_G_2.a_2 AS n2,
-       _xmt_link_G_2.G AS G
-  FROM _xmt_link_G AS _xmt_link_G_2
+SELECT _xmt_interp_link_G_2.a_1 AS n1,
+       _xmt_interp_link_G_2.a_2 AS n2,
+       _xmt_interp_link_G_2.G AS G
+  FROM _xmt_interp_link_G AS _xmt_interp_link_G_2
 
 ===  (not (link n1 n2)) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_link_UF_2.a_1 AS n1,
-       _xmt_link_UF_2.a_2 AS n2,
+SELECT _xmt_interp_link_UF_2.a_1 AS n1,
+       _xmt_interp_link_UF_2.a_2 AS n2,
        "true" AS G
-  FROM _xmt_link_UF AS _xmt_link_UF_2
+  FROM _xmt_interp_link_UF AS _xmt_interp_link_UF_2
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_link_TU_2.a_1 AS n1,
-       _xmt_link_TU_2.a_2 AS n2,
+SELECT _xmt_interp_link_TU_2.a_1 AS n1,
+       _xmt_interp_link_TU_2.a_2 AS n2,
        "false" AS G
-  FROM _xmt_link_TU AS _xmt_link_TU_2
+  FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_link_G_2.a_1 AS n1,
-       _xmt_link_G_2.a_2 AS n2,
-       not_(_xmt_link_G_2.G) AS G
-  FROM _xmt_link_G AS _xmt_link_G_2
+SELECT _xmt_interp_link_G_2.a_1 AS n1,
+       _xmt_interp_link_G_2.a_2 AS n2,
+       not_(_xmt_interp_link_G_2.G) AS G
+  FROM _xmt_interp_link_G AS _xmt_interp_link_G_2
 
 ===  (colourOf n1) ======================================
  -- Join(0)
-SELECT _xmt_node.G AS n1,
-       apply("colourOf", _xmt_node.G) AS G
-  FROM _xmt_node
+SELECT _xmt_sort_node.G AS n1,
+       apply("colourOf", _xmt_sort_node.G) AS G
+  FROM _xmt_sort_node
 ===  (colourOf n2) ======================================
  -- Join(0)
-SELECT _xmt_node_1.G AS n2,
-       apply("colourOf", _xmt_node_1.G) AS G
-  FROM _xmt_node AS _xmt_node_1
+SELECT _xmt_sort_node_1.G AS n2,
+       apply("colourOf", _xmt_sort_node_1.G) AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_1
 ===  (= (colourOf n1) (colourOf n2)) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_node.G AS n1,
-       _xmt_node_1.G AS n2,
-       apply("=", apply("colourOf", _xmt_node.G), apply("colourOf", _xmt_node_1.G)) AS G
-  FROM _xmt_node
-  JOIN _xmt_node AS _xmt_node_1
+SELECT _xmt_sort_node.G AS n1,
+       _xmt_sort_node_1.G AS n2,
+       apply("=", apply("colourOf", _xmt_sort_node.G), apply("colourOf", _xmt_sort_node_1.G)) AS G
+  FROM _xmt_sort_node
+  JOIN _xmt_sort_node AS _xmt_sort_node_1
 ----- UF -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_node.G AS n1,
-       _xmt_node_1.G AS n2,
-       apply("=", apply("colourOf", _xmt_node.G), apply("colourOf", _xmt_node_1.G)) AS G
-  FROM _xmt_node
-  JOIN _xmt_node AS _xmt_node_1
+SELECT _xmt_sort_node.G AS n1,
+       _xmt_sort_node_1.G AS n2,
+       apply("=", apply("colourOf", _xmt_sort_node.G), apply("colourOf", _xmt_sort_node_1.G)) AS G
+  FROM _xmt_sort_node
+  JOIN _xmt_sort_node AS _xmt_sort_node_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_node.G AS n1,
-       _xmt_node_1.G AS n2,
-       apply("=", apply("colourOf", _xmt_node.G), apply("colourOf", _xmt_node_1.G)) AS G
-  FROM _xmt_node
-  JOIN _xmt_node AS _xmt_node_1
+SELECT _xmt_sort_node.G AS n1,
+       _xmt_sort_node_1.G AS n2,
+       apply("=", apply("colourOf", _xmt_sort_node.G), apply("colourOf", _xmt_sort_node_1.G)) AS G
+  FROM _xmt_sort_node
+  JOIN _xmt_sort_node AS _xmt_sort_node_1
 
 ===  (not (= (colourOf n1) (colourOf n2))) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_node.G AS n1,
-       _xmt_node_1.G AS n2,
-       apply("not", apply("=", apply("colourOf", _xmt_node.G), apply("colourOf", _xmt_node_1.G))) AS G
-  FROM _xmt_node
-  JOIN _xmt_node AS _xmt_node_1
+SELECT _xmt_sort_node.G AS n1,
+       _xmt_sort_node_1.G AS n2,
+       apply("not", apply("=", apply("colourOf", _xmt_sort_node.G), apply("colourOf", _xmt_sort_node_1.G))) AS G
+  FROM _xmt_sort_node
+  JOIN _xmt_sort_node AS _xmt_sort_node_1
 ----- UF -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_node.G AS n1,
-       _xmt_node_1.G AS n2,
-       apply("not", apply("=", apply("colourOf", _xmt_node.G), apply("colourOf", _xmt_node_1.G))) AS G
-  FROM _xmt_node
-  JOIN _xmt_node AS _xmt_node_1
+SELECT _xmt_sort_node.G AS n1,
+       _xmt_sort_node_1.G AS n2,
+       apply("not", apply("=", apply("colourOf", _xmt_sort_node.G), apply("colourOf", _xmt_sort_node_1.G))) AS G
+  FROM _xmt_sort_node
+  JOIN _xmt_sort_node AS _xmt_sort_node_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_node.G AS n1,
-       _xmt_node_1.G AS n2,
-       apply("not", apply("=", apply("colourOf", _xmt_node.G), apply("colourOf", _xmt_node_1.G))) AS G
-  FROM _xmt_node
-  JOIN _xmt_node AS _xmt_node_1
+SELECT _xmt_sort_node.G AS n1,
+       _xmt_sort_node_1.G AS n2,
+       apply("not", apply("=", apply("colourOf", _xmt_sort_node.G), apply("colourOf", _xmt_sort_node_1.G))) AS G
+  FROM _xmt_sort_node
+  JOIN _xmt_sort_node AS _xmt_sort_node_1
 
 ===  (or (not (link n1 n2)) (not (= (colourOf n1) (colourOf n2)))) ======================================
 ----- TU -----------------------------------------------------------
@@ -1207,31 +1207,31 @@ SELECT n1, n2,
  FROM (-- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_link_UF_2.a_1 AS n1,
-                     _xmt_link_UF_2.a_2 AS n2,
+              SELECT _xmt_interp_link_UF_2.a_1 AS n1,
+                     _xmt_interp_link_UF_2.a_2 AS n2,
                      "true" AS G
-                FROM _xmt_link_UF AS _xmt_link_UF_2
+                FROM _xmt_interp_link_UF AS _xmt_interp_link_UF_2
               UNION ALL
               -- Join(14)
-              SELECT _xmt_node.G AS n1,
-                     _xmt_node_1.G AS n2,
-                     apply("not", apply("=", apply("colourOf", _xmt_node.G), apply("colourOf", _xmt_node_1.G))) AS G
-                FROM _xmt_node
-                JOIN _xmt_node AS _xmt_node_1)
+              SELECT _xmt_sort_node.G AS n1,
+                     _xmt_sort_node_1.G AS n2,
+                     apply("not", apply("=", apply("colourOf", _xmt_sort_node.G), apply("colourOf", _xmt_sort_node_1.G))) AS G
+                FROM _xmt_sort_node
+                JOIN _xmt_sort_node AS _xmt_sort_node_1)
         WHERE G <> "false")
  GROUP BY n1, n2
 ----- UF -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_link_TU_2.a_1 AS n1,
-       _xmt_link_TU_2.a_2 AS n2,
-       apply("not", apply("=", apply("colourOf", _xmt_link_TU_2.a_1), apply("colourOf", _xmt_link_TU_2.a_2))) AS G
-  FROM _xmt_link_TU AS _xmt_link_TU_2
+SELECT _xmt_interp_link_TU_2.a_1 AS n1,
+       _xmt_interp_link_TU_2.a_2 AS n2,
+       apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
+  FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_link_G_2.a_1 AS n1,
-       _xmt_link_G_2.a_2 AS n2,
-       apply("or", not_(_xmt_link_G_2.G), apply("not", apply("=", apply("colourOf", _xmt_link_G_2.a_1), apply("colourOf", _xmt_link_G_2.a_2)))) AS G
-  FROM _xmt_link_G AS _xmt_link_G_2
+SELECT _xmt_interp_link_G_2.a_1 AS n1,
+       _xmt_interp_link_G_2.a_2 AS n2,
+       apply("or", not_(_xmt_interp_link_G_2.G), apply("not", apply("=", apply("colourOf", _xmt_interp_link_G_2.a_1), apply("colourOf", _xmt_interp_link_G_2.a_2)))) AS G
+  FROM _xmt_interp_link_G AS _xmt_interp_link_G_2
 
 === (top) (forall ((n1 Node) (n2 Node)) (or (not (link n1 n2)) (not (= (colourOf n1) (colourOf n2))))) ======================================
 ----- TU -----------------------------------------------------------
@@ -1242,10 +1242,10 @@ SELECT and_aggregate(G) as G
        -- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_link_TU_2.a_1 AS n1,
-                     _xmt_link_TU_2.a_2 AS n2,
-                     apply("not", apply("=", apply("colourOf", _xmt_link_TU_2.a_1), apply("colourOf", _xmt_link_TU_2.a_2))) AS G
-                FROM _xmt_link_TU AS _xmt_link_TU_2)
+              SELECT _xmt_interp_link_TU_2.a_1 AS n1,
+                     _xmt_interp_link_TU_2.a_2 AS n2,
+                     apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
+                FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2)
         WHERE G <> "true")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -1253,10 +1253,10 @@ SELECT G as G
  FROM (-- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_link_TU_2.a_1 AS n1,
-                     _xmt_link_TU_2.a_2 AS n2,
-                     apply("not", apply("=", apply("colourOf", _xmt_link_TU_2.a_1), apply("colourOf", _xmt_link_TU_2.a_2))) AS G
-                FROM _xmt_link_TU AS _xmt_link_TU_2)
+              SELECT _xmt_interp_link_TU_2.a_1 AS n1,
+                     _xmt_interp_link_TU_2.a_2 AS n2,
+                     apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
+                FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2)
         WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Agg (0)
@@ -1266,10 +1266,10 @@ SELECT and_aggregate(G) as G
        -- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_link_TU_2.a_1 AS n1,
-                     _xmt_link_TU_2.a_2 AS n2,
-                     apply("not", apply("=", apply("colourOf", _xmt_link_TU_2.a_1), apply("colourOf", _xmt_link_TU_2.a_2))) AS G
-                FROM _xmt_link_TU AS _xmt_link_TU_2)
+              SELECT _xmt_interp_link_TU_2.a_1 AS n1,
+                     _xmt_interp_link_TU_2.a_2 AS n2,
+                     apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
+                FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2)
         WHERE G <> "true")
 
 === (top) (and (forall ((n1 Node) (n2 Node)) (or (not (link n1 n2)) (not (= (colourOf n1) (colourOf n2)))))) ======================================
@@ -1283,10 +1283,10 @@ SELECT Agg_9_TU.G AS G
                -- exclude(15)
                SELECT *
                 FROM (-- Join(22)
-                      SELECT _xmt_link_TU_2.a_1 AS n1,
-                             _xmt_link_TU_2.a_2 AS n2,
-                             apply("not", apply("=", apply("colourOf", _xmt_link_TU_2.a_1), apply("colourOf", _xmt_link_TU_2.a_2))) AS G
-                        FROM _xmt_link_TU AS _xmt_link_TU_2)
+                      SELECT _xmt_interp_link_TU_2.a_1 AS n1,
+                             _xmt_interp_link_TU_2.a_2 AS n2,
+                             apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
+                        FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2)
                 WHERE G <> "true")
         ) AS Agg_9_TU
 ----- UF -----------------------------------------------------------
@@ -1295,10 +1295,10 @@ SELECT G as G
  FROM (-- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_link_TU_2.a_1 AS n1,
-                     _xmt_link_TU_2.a_2 AS n2,
-                     apply("not", apply("=", apply("colourOf", _xmt_link_TU_2.a_1), apply("colourOf", _xmt_link_TU_2.a_2))) AS G
-                FROM _xmt_link_TU AS _xmt_link_TU_2)
+              SELECT _xmt_interp_link_TU_2.a_1 AS n1,
+                     _xmt_interp_link_TU_2.a_2 AS n2,
+                     apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
+                FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2)
         WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Join(0)
@@ -1310,10 +1310,10 @@ SELECT Agg_9_G.G AS G
                -- exclude(15)
                SELECT *
                 FROM (-- Join(22)
-                      SELECT _xmt_link_TU_2.a_1 AS n1,
-                             _xmt_link_TU_2.a_2 AS n2,
-                             apply("not", apply("=", apply("colourOf", _xmt_link_TU_2.a_1), apply("colourOf", _xmt_link_TU_2.a_2))) AS G
-                        FROM _xmt_link_TU AS _xmt_link_TU_2)
+                      SELECT _xmt_interp_link_TU_2.a_1 AS n1,
+                             _xmt_interp_link_TU_2.a_2 AS n2,
+                             apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
+                        FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2)
                 WHERE G <> "true")
         ) AS Agg_9_G
 
