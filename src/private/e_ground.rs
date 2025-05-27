@@ -5,7 +5,7 @@ use std::future::Future;
 use genawaiter::{sync::Gen, sync::gen, yield_};
 use rusqlite::Connection;
 
-use crate::ast::{L, QualIdentifier, Symbol, Term, Sort};
+use crate::ast::{Identifier, QualIdentifier, Sort, Symbol, Term, L};
 use crate::error::{Offset, SolverError::{self, *}};
 use crate::solver::{CanonicalSort, Solver};
 
@@ -47,6 +47,82 @@ impl std::fmt::Display for Grounding {
 }
 
 
+/// Determine if a term uses a function that is interpreted in the solver.
+///
+/// Arguments:
+///
+/// * grounded: returned list of uninterpreted symbols occurring in the term
+///
+fn has_interpreted_function(
+    term: &L<Term>,
+    not_interpreted: &mut Vec<Identifier>,
+    solver: &mut Solver
+) -> Result<(CanonicalSort, bool), SolverError> {
+
+    /// returns true if the function is interpreted.
+    /// Add it to not_interpreted if not interpreted.
+    fn analyze_function(
+        function: &QualIdentifier,
+        function_object: &FunctionObject,
+        not_interpreted: &mut Vec<Identifier>
+    ) -> Result<bool, SolverError> {
+        match function_object {
+            FunctionObject::Predefined { .. }
+            | FunctionObject::Constructor => Ok(false),
+
+            FunctionObject::NotInterpreted => {
+                if let QualIdentifier::Identifier(L(function, _)) = function {
+                    not_interpreted.push(function.clone());
+                    Ok(false)
+                } else {
+                    return Err(SolverError::InternalError(6875596))
+                }
+            },
+
+            FunctionObject::Interpreted(_)
+            | FunctionObject::BooleanInterpreted { .. } => {
+                Ok(true)
+            },
+        }
+    }
+
+    let L(term_, _) = term;
+    match term_ {
+        Term::SpecConstant(spec_constant) => Ok( (spec_constant.to_canonical_sort(), false) ),
+
+        Term::Identifier(function) => {
+            let (sort, function_object) =  get_function_object(term, function, &vec![], &solver)?;
+            let sort = sort.clone();
+            let interpreted = analyze_function(function, function_object, not_interpreted)?;
+            Ok( (sort, interpreted) )
+        },
+        Term::Application(function, ls) => {
+            let (sorts, interpreteds): (Vec<_>, Vec<_>) = ls.iter()
+                            .map( |term| has_interpreted_function(term, not_interpreted, solver))
+                            .collect::<Result<Vec<(_,_)>,_>>()?
+                            .into_iter().unzip();
+            let (sort, function_object) =  get_function_object(term, function, &sorts, &solver)?;
+            let sort = sort.clone();
+            let interpreted = interpreteds.iter().any(|b| *b)
+                || analyze_function(function, function_object, not_interpreted)?;
+            Ok( (sort, interpreted) )
+        },
+        Term::Let(_, l) => has_interpreted_function(l, not_interpreted, solver),
+        Term::Forall(_, l) => has_interpreted_function(l, not_interpreted, solver),
+        Term::Exists(_, l) => has_interpreted_function(l, not_interpreted, solver),
+        Term::Match(l, _) => has_interpreted_function(l, not_interpreted, solver), // TODO
+        Term::Annotation(l, _) => has_interpreted_function(l, not_interpreted, solver),
+        Term::XSortedVar(_, sort, _) => {
+            let canonical = solver.canonical_sorts.get(sort)
+                .ok_or(InternalError(1458856))?
+                .clone();
+            Ok( (canonical, false) )
+        },
+        Term::XLetVar(_, l) => has_interpreted_function(l, not_interpreted, solver),
+    }
+}
+
+
 /////////////////////  Command (x-ground //////////////////////////////////////
 
 /// ground the pending assertions
@@ -60,52 +136,76 @@ pub(crate) fn ground(
         // update statistics in DB
         solver.conn.execute("ANALYZE", []).unwrap();
 
-        if no {
-            for term in solver.assertions_to_ground.clone() {
+        let mut terms = vec![];  // for concatenation
+        let mut grounded = vec![];
+        for term in solver.assertions_to_ground.clone() {
+            if no {
                 let assert = format!("(assert {term})\n");
                 yield_!(solver.exec(&assert));
-            }
-        } else {
-
-            // concatenate the assertions to be grounded
-            let terms = solver.assertions_to_ground.clone();
-
-            let terms = if debug {
-                // slower, but avoid random ordering of grounded assertions
-                terms
             } else {
-                // faster, because it gives sqlite more scope for optimisation
-                let and_ = QualIdentifier::new(&Symbol("and".to_string()), None);
-                let term = L(Term::Application(and_, terms), Offset(0));
-                vec![term]
-            };
-
-            for term in terms {
-                match ground_term(&term, true, solver) {
-                    Ok((g, _)) => {
-                        match g {
-                            Grounding::NonBoolean(_) => yield_!(Err(SolverError::TermError("Expecting a boolean", term.clone()))),
-                            Grounding::Boolean{uf, ..} => {
-                                // execute the UF query
-                                let query = uf.to_string();
-                                match execute_query(query, &mut solver.conn) {
-                                    Ok(asserts) => {
-                                        for assert in asserts {
-                                            yield_!(solver.exec(&assert));
-                                        }
-                                    },
-                                    Err(e) => yield_!(Err(e))
-                                }
+                match has_interpreted_function(&term, &mut grounded, solver) {
+                    Ok( (_, has) ) => {
+                        if ! has && ! debug {  // no interpretation
+                            let assert = format!("(assert {})\n", &term);
+                            yield_!(solver.exec(&assert));
+                        } else if debug {  // execute immediately
+                            for result in execute_term(term, solver) {
+                                yield_!(result)
                             }
+                        } else {  // conjoin with other terms
+                            terms.push(term.clone())
                         }
-                    },
+                    }
                     Err(e) => yield_!(Err(e))
                 }
+            }
+        }
+        for identifier in grounded.into_iter() {
+            solver.grounded.insert(identifier);
+        }
+
+        // faster, because it gives sqlite more scope for optimisation
+        if 0 < terms.len() {
+            let and_ = QualIdentifier::new(&Symbol("and".to_string()), None);
+            let term = L(Term::Application(and_, terms), Offset(0));
+
+            for result in execute_term(term, solver) {
+                yield_!(result)
             }
         }
 
         // reset terms to ground
         solver.assertions_to_ground = vec![];
+    })
+}
+
+
+fn execute_term(
+    term: L<Term>,
+    solver: &mut Solver
+) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {
+
+    gen!({
+        match ground_term(&term, true, solver) {
+            Ok((g, _)) => {
+                match g {
+                    Grounding::NonBoolean(_) => yield_!(Err(SolverError::TermError("Expecting a boolean", term.clone()))),
+                    Grounding::Boolean{uf, ..} => {
+                        // execute the UF query
+                        let query = uf.to_string();
+                        match execute_query(query, &mut solver.conn) {
+                            Ok(asserts) => {
+                                for assert in asserts {
+                                    yield_!(solver.exec(&assert));
+                                }
+                            },
+                            Err(e) => yield_!(Err(e))
+                        }
+                    }
+                }
+            },
+            Err(e) => yield_!(Err(e))
+        }
     })
 }
 
