@@ -22,12 +22,14 @@ use xmt_lib::solver::Solver;
 #[test]
 fn test_all_xmt_files() {
     let test_dir = Path::new("tests");
-    all_xmt(test_dir)
+    let mut failures: Vec<String> = vec![];
+    all_xmt(test_dir, &mut failures);
+    let empty: Vec<String> = vec![];
+    assert_eq!(failures, empty);
 }
 
 // recursively test all .xmt files in the test directory and its subdirectories
-fn all_xmt(test_dir: &Path) {
-    let mut failures: Vec<String> = vec![];
+fn all_xmt(test_dir: &Path, failures: &mut Vec<String>) {
     for entry in fs::read_dir(test_dir).expect("read_dir call failed") {
         if let Ok(entry) = entry {
             let path = entry.path();
@@ -40,12 +42,10 @@ fn all_xmt(test_dir: &Path) {
                     }
                 }
             } else if path.is_dir() {
-                all_xmt(&path)
+                all_xmt(&path, failures)
             }
         }
     }
-    let empty: Vec<String> = vec![];
-    assert_eq!(failures, empty);
 }
 
 
