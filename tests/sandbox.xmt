@@ -217,76 +217,43 @@ SELECT _xmt_interp_manassignsscore_G_4.a_1 AS M,
 ===  (= (manPrefers M W W1) (> (manAssignsScore M W) (manAssignsScore M W1))) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_view_manprefers_3_24.M AS M,
-       _xmt_view_manprefers_3_24.W AS W,
-       _xmt_view_manprefers_3_24.W1 AS W1,
-       bool_eq_("true", _xmt_view_manprefers_3_24.G, _xmt_view__6_28.G) AS G
-  FROM (-- Join(8)
-        SELECT _xmt_sort_man.G AS M,
-               _xmt_sort_woman_1.G AS W,
-               _xmt_sort_woman_2.G AS W1,
-               apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_1.G, _xmt_sort_woman_2.G) AS G
-          FROM _xmt_sort_man
-          JOIN _xmt_sort_woman AS _xmt_sort_woman_1
-          JOIN _xmt_sort_woman AS _xmt_sort_woman_2
-        ) AS _xmt_view_manprefers_3_24
-  FULL JOIN (-- Join(8)
-        SELECT _xmt_interp_manassignsscore_G_4.a_1 AS M,
-               _xmt_interp_manassignsscore_G_4.a_2 AS W,
-               _xmt_interp_manassignsscore_G_5.a_2 AS W1,
-               compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G) AS G
-          FROM _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
-          JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
-                ON _xmt_interp_manassignsscore_G_4.a_1 = _xmt_interp_manassignsscore_G_5.a_1
-        ) AS _xmt_view__6_28 ON  _xmt_view__6_28.M = _xmt_view_manprefers_3_24.M AND  _xmt_view__6_28.W = _xmt_view_manprefers_3_24.W AND  _xmt_view__6_28.W1 = _xmt_view_manprefers_3_24.W1
+SELECT _xmt_sort_man.G AS M,
+       _xmt_sort_woman_1.G AS W,
+       _xmt_sort_woman_2.G AS W1,
+       apply("=", apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_1.G, _xmt_sort_woman_2.G), compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G)) AS G
+  FROM _xmt_sort_man
+  JOIN _xmt_sort_woman AS _xmt_sort_woman_1
+  JOIN _xmt_sort_woman AS _xmt_sort_woman_2
+  JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
+        ON _xmt_sort_man.G = _xmt_interp_manassignsscore_G_4.a_1 AND _xmt_sort_woman_1.G = _xmt_interp_manassignsscore_G_4.a_2
+  JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
+        ON _xmt_sort_man.G = _xmt_interp_manassignsscore_G_5.a_1 AND _xmt_sort_woman_2.G = _xmt_interp_manassignsscore_G_5.a_2
 ----- UF -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_view_manprefers_3_24.M AS M,
-       _xmt_view_manprefers_3_24.W AS W,
-       _xmt_view_manprefers_3_24.W1 AS W1,
-       bool_eq_("true", _xmt_view_manprefers_3_24.G, _xmt_view__6_28.G) AS G
-  FROM (-- Join(8)
-        SELECT _xmt_sort_man.G AS M,
-               _xmt_sort_woman_1.G AS W,
-               _xmt_sort_woman_2.G AS W1,
-               apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_1.G, _xmt_sort_woman_2.G) AS G
-          FROM _xmt_sort_man
-          JOIN _xmt_sort_woman AS _xmt_sort_woman_1
-          JOIN _xmt_sort_woman AS _xmt_sort_woman_2
-        ) AS _xmt_view_manprefers_3_24
-  FULL JOIN (-- Join(8)
-        SELECT _xmt_interp_manassignsscore_G_4.a_1 AS M,
-               _xmt_interp_manassignsscore_G_4.a_2 AS W,
-               _xmt_interp_manassignsscore_G_5.a_2 AS W1,
-               compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G) AS G
-          FROM _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
-          JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
-                ON _xmt_interp_manassignsscore_G_4.a_1 = _xmt_interp_manassignsscore_G_5.a_1
-        ) AS _xmt_view__6_28 ON  _xmt_view__6_28.M = _xmt_view_manprefers_3_24.M AND  _xmt_view__6_28.W = _xmt_view_manprefers_3_24.W AND  _xmt_view__6_28.W1 = _xmt_view_manprefers_3_24.W1
+SELECT _xmt_sort_man.G AS M,
+       _xmt_sort_woman_1.G AS W,
+       _xmt_sort_woman_2.G AS W1,
+       apply("=", apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_1.G, _xmt_sort_woman_2.G), compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G)) AS G
+  FROM _xmt_sort_man
+  JOIN _xmt_sort_woman AS _xmt_sort_woman_1
+  JOIN _xmt_sort_woman AS _xmt_sort_woman_2
+  JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
+        ON _xmt_sort_man.G = _xmt_interp_manassignsscore_G_4.a_1 AND _xmt_sort_woman_1.G = _xmt_interp_manassignsscore_G_4.a_2
+  JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
+        ON _xmt_sort_man.G = _xmt_interp_manassignsscore_G_5.a_1 AND _xmt_sort_woman_2.G = _xmt_interp_manassignsscore_G_5.a_2
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_view_manprefers_3_24.M AS M,
-       _xmt_view_manprefers_3_24.W AS W,
-       _xmt_view_manprefers_3_24.W1 AS W1,
-       bool_eq_("true", _xmt_view_manprefers_3_24.G, _xmt_view__6_28.G) AS G
-  FROM (-- Join(8)
-        SELECT _xmt_sort_man.G AS M,
-               _xmt_sort_woman_1.G AS W,
-               _xmt_sort_woman_2.G AS W1,
-               apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_1.G, _xmt_sort_woman_2.G) AS G
-          FROM _xmt_sort_man
-          JOIN _xmt_sort_woman AS _xmt_sort_woman_1
-          JOIN _xmt_sort_woman AS _xmt_sort_woman_2
-        ) AS _xmt_view_manprefers_3_24
-  FULL JOIN (-- Join(8)
-        SELECT _xmt_interp_manassignsscore_G_4.a_1 AS M,
-               _xmt_interp_manassignsscore_G_4.a_2 AS W,
-               _xmt_interp_manassignsscore_G_5.a_2 AS W1,
-               compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G) AS G
-          FROM _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
-          JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
-                ON _xmt_interp_manassignsscore_G_4.a_1 = _xmt_interp_manassignsscore_G_5.a_1
-        ) AS _xmt_view__6_28 ON  _xmt_view__6_28.M = _xmt_view_manprefers_3_24.M AND  _xmt_view__6_28.W = _xmt_view_manprefers_3_24.W AND  _xmt_view__6_28.W1 = _xmt_view_manprefers_3_24.W1
+SELECT _xmt_sort_man.G AS M,
+       _xmt_sort_woman_1.G AS W,
+       _xmt_sort_woman_2.G AS W1,
+       apply("=", apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_1.G, _xmt_sort_woman_2.G), compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G)) AS G
+  FROM _xmt_sort_man
+  JOIN _xmt_sort_woman AS _xmt_sort_woman_1
+  JOIN _xmt_sort_woman AS _xmt_sort_woman_2
+  JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
+        ON _xmt_sort_man.G = _xmt_interp_manassignsscore_G_4.a_1 AND _xmt_sort_woman_1.G = _xmt_interp_manassignsscore_G_4.a_2
+  JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
+        ON _xmt_sort_man.G = _xmt_interp_manassignsscore_G_5.a_1 AND _xmt_sort_woman_2.G = _xmt_interp_manassignsscore_G_5.a_2
 
 === (top) (forall ((M man) (W woman) (W1 woman)) (= (manPrefers M W W1) (> (manAssignsScore M W) (manAssignsScore M W1)))) ======================================
 ----- TU -----------------------------------------------------------
@@ -297,28 +264,17 @@ SELECT and_aggregate(G) as G
        -- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_view_manprefers_3_24.M AS M,
-                     _xmt_view_manprefers_3_24.W AS W,
-                     _xmt_view_manprefers_3_24.W1 AS W1,
-                     bool_eq_("true", _xmt_view_manprefers_3_24.G, _xmt_view__6_28.G) AS G
-                FROM (-- Join(22)
-                      SELECT _xmt_sort_man.G AS M,
-                             _xmt_sort_woman_1.G AS W,
-                             _xmt_sort_woman_2.G AS W1,
-                             apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_1.G, _xmt_sort_woman_2.G) AS G
-                        FROM _xmt_sort_man
-                        JOIN _xmt_sort_woman AS _xmt_sort_woman_1
-                        JOIN _xmt_sort_woman AS _xmt_sort_woman_2
-                      ) AS _xmt_view_manprefers_3_24
-                FULL JOIN (-- Join(22)
-                      SELECT _xmt_interp_manassignsscore_G_4.a_1 AS M,
-                             _xmt_interp_manassignsscore_G_4.a_2 AS W,
-                             _xmt_interp_manassignsscore_G_5.a_2 AS W1,
-                             compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G) AS G
-                        FROM _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
-                        JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
-                              ON _xmt_interp_manassignsscore_G_4.a_1 = _xmt_interp_manassignsscore_G_5.a_1
-                      ) AS _xmt_view__6_28 ON  _xmt_view__6_28.M = _xmt_view_manprefers_3_24.M AND  _xmt_view__6_28.W = _xmt_view_manprefers_3_24.W AND  _xmt_view__6_28.W1 = _xmt_view_manprefers_3_24.W1)
+              SELECT _xmt_sort_man.G AS M,
+                     _xmt_sort_woman_1.G AS W,
+                     _xmt_sort_woman_2.G AS W1,
+                     apply("=", apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_1.G, _xmt_sort_woman_2.G), compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G)) AS G
+                FROM _xmt_sort_man
+                JOIN _xmt_sort_woman AS _xmt_sort_woman_1
+                JOIN _xmt_sort_woman AS _xmt_sort_woman_2
+                JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
+                      ON _xmt_sort_man.G = _xmt_interp_manassignsscore_G_4.a_1 AND _xmt_sort_woman_1.G = _xmt_interp_manassignsscore_G_4.a_2
+                JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
+                      ON _xmt_sort_man.G = _xmt_interp_manassignsscore_G_5.a_1 AND _xmt_sort_woman_2.G = _xmt_interp_manassignsscore_G_5.a_2)
         WHERE G <> "true")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -326,28 +282,17 @@ SELECT G as G
  FROM (-- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_view_manprefers_3_24.M AS M,
-                     _xmt_view_manprefers_3_24.W AS W,
-                     _xmt_view_manprefers_3_24.W1 AS W1,
-                     bool_eq_("true", _xmt_view_manprefers_3_24.G, _xmt_view__6_28.G) AS G
-                FROM (-- Join(22)
-                      SELECT _xmt_sort_man.G AS M,
-                             _xmt_sort_woman_1.G AS W,
-                             _xmt_sort_woman_2.G AS W1,
-                             apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_1.G, _xmt_sort_woman_2.G) AS G
-                        FROM _xmt_sort_man
-                        JOIN _xmt_sort_woman AS _xmt_sort_woman_1
-                        JOIN _xmt_sort_woman AS _xmt_sort_woman_2
-                      ) AS _xmt_view_manprefers_3_24
-                FULL JOIN (-- Join(22)
-                      SELECT _xmt_interp_manassignsscore_G_4.a_1 AS M,
-                             _xmt_interp_manassignsscore_G_4.a_2 AS W,
-                             _xmt_interp_manassignsscore_G_5.a_2 AS W1,
-                             compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G) AS G
-                        FROM _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
-                        JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
-                              ON _xmt_interp_manassignsscore_G_4.a_1 = _xmt_interp_manassignsscore_G_5.a_1
-                      ) AS _xmt_view__6_28 ON  _xmt_view__6_28.M = _xmt_view_manprefers_3_24.M AND  _xmt_view__6_28.W = _xmt_view_manprefers_3_24.W AND  _xmt_view__6_28.W1 = _xmt_view_manprefers_3_24.W1)
+              SELECT _xmt_sort_man.G AS M,
+                     _xmt_sort_woman_1.G AS W,
+                     _xmt_sort_woman_2.G AS W1,
+                     apply("=", apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_1.G, _xmt_sort_woman_2.G), compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G)) AS G
+                FROM _xmt_sort_man
+                JOIN _xmt_sort_woman AS _xmt_sort_woman_1
+                JOIN _xmt_sort_woman AS _xmt_sort_woman_2
+                JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
+                      ON _xmt_sort_man.G = _xmt_interp_manassignsscore_G_4.a_1 AND _xmt_sort_woman_1.G = _xmt_interp_manassignsscore_G_4.a_2
+                JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
+                      ON _xmt_sort_man.G = _xmt_interp_manassignsscore_G_5.a_1 AND _xmt_sort_woman_2.G = _xmt_interp_manassignsscore_G_5.a_2)
         WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Agg (0)
@@ -357,28 +302,17 @@ SELECT and_aggregate(G) as G
        -- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_view_manprefers_3_24.M AS M,
-                     _xmt_view_manprefers_3_24.W AS W,
-                     _xmt_view_manprefers_3_24.W1 AS W1,
-                     bool_eq_("true", _xmt_view_manprefers_3_24.G, _xmt_view__6_28.G) AS G
-                FROM (-- Join(22)
-                      SELECT _xmt_sort_man.G AS M,
-                             _xmt_sort_woman_1.G AS W,
-                             _xmt_sort_woman_2.G AS W1,
-                             apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_1.G, _xmt_sort_woman_2.G) AS G
-                        FROM _xmt_sort_man
-                        JOIN _xmt_sort_woman AS _xmt_sort_woman_1
-                        JOIN _xmt_sort_woman AS _xmt_sort_woman_2
-                      ) AS _xmt_view_manprefers_3_24
-                FULL JOIN (-- Join(22)
-                      SELECT _xmt_interp_manassignsscore_G_4.a_1 AS M,
-                             _xmt_interp_manassignsscore_G_4.a_2 AS W,
-                             _xmt_interp_manassignsscore_G_5.a_2 AS W1,
-                             compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G) AS G
-                        FROM _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
-                        JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
-                              ON _xmt_interp_manassignsscore_G_4.a_1 = _xmt_interp_manassignsscore_G_5.a_1
-                      ) AS _xmt_view__6_28 ON  _xmt_view__6_28.M = _xmt_view_manprefers_3_24.M AND  _xmt_view__6_28.W = _xmt_view_manprefers_3_24.W AND  _xmt_view__6_28.W1 = _xmt_view_manprefers_3_24.W1)
+              SELECT _xmt_sort_man.G AS M,
+                     _xmt_sort_woman_1.G AS W,
+                     _xmt_sort_woman_2.G AS W1,
+                     apply("=", apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_1.G, _xmt_sort_woman_2.G), compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G)) AS G
+                FROM _xmt_sort_man
+                JOIN _xmt_sort_woman AS _xmt_sort_woman_1
+                JOIN _xmt_sort_woman AS _xmt_sort_woman_2
+                JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
+                      ON _xmt_sort_man.G = _xmt_interp_manassignsscore_G_4.a_1 AND _xmt_sort_woman_1.G = _xmt_interp_manassignsscore_G_4.a_2
+                JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
+                      ON _xmt_sort_man.G = _xmt_interp_manassignsscore_G_5.a_1 AND _xmt_sort_woman_2.G = _xmt_interp_manassignsscore_G_5.a_2)
         WHERE G <> "true")
 
 ===========================================

@@ -81,6 +81,13 @@ impl GroundingView {
                 }
         }
     }
+
+    pub(crate) fn has_g_complexity(&self) -> bool {
+        match self {
+            GroundingView::Empty => true,
+            GroundingView::View { exclude, .. } => exclude.is_some(),
+        }
+    }
 }
 
 
@@ -198,6 +205,9 @@ pub(crate) fn view_for_compound(
     let mut all_ids = true;
     let mut precise = true;
 
+    // LINK src/doc.md#_Equality
+    let use_outer_join = matches!(variant, QueryVariant::Equality(_));
+
     for (i, sub_q) in sub_queries.iter().enumerate() {
 
         match sub_q {
@@ -227,8 +237,7 @@ pub(crate) fn view_for_compound(
                             precise: sub_precise }
                         = query {
 
-                    if ! matches!(variant, QueryVariant::Equality(_))
-                    && sub_outer.is_none() {
+                    if ! use_outer_join && sub_outer.is_none() {
 
                         // handle the special case of a variable used as an argument to an interpreted function
                         // example: f(x, a, x)
@@ -300,7 +309,7 @@ pub(crate) fn view_for_compound(
                     let sub_table =
                         match grounding {
                             Either::Left(constant) => {
-                                if ! matches!(variant, QueryVariant::Equality(..)) {  // no need to create a Join
+                                if ! use_outer_join {  // no need to create a Join
                                     // merge the variables
                                     for (symbol, _) in sub_free_variables.clone().iter() {
                                         variables.insert(symbol.clone(), None);
@@ -429,7 +438,8 @@ pub(crate) fn view_for_compound(
             }
         };
     let outer = match variant {
-            QueryVariant::Equality(default) => Some(*default),
+            QueryVariant::Equality(default) if use_outer_join =>
+                 Some(*default),
             _ => None
         };
     let base_table = solver.create_table_name(format!("{qual_identifier}_{index}"), TableType::Dynamic);

@@ -475,11 +475,16 @@ fn ground_compound(
 
                         let (mut gqs, variant) = match groundings.get(0) {
                             Some(Grounding::Boolean { .. }) => {
-                                //TODO perf: choose TF or UF
                                 if 2 < gqs.len() {
                                     return Err(SolverError::TermError("Too many boolean arguments", term.clone()))  //TODO relax constraint
                                 }
-                                (ufs, QueryVariant::Equality(true))
+                                let use_g = ufs.iter()
+                                    .all(|g| g.has_g_complexity());
+                                if use_g {
+                                    (gqs, QueryVariant::Predefined(Predefined::Eq))
+                                } else {
+                                    (ufs, QueryVariant::Equality(true))
+                                }
                             },
                             Some(Grounding::NonBoolean { .. }) => {
                                 (gqs, QueryVariant::Predefined(Predefined::Eq))

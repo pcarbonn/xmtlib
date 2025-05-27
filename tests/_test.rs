@@ -15,7 +15,7 @@ use xmt_lib::solver::Solver;
 
 
 #[test] fn test_sandbox()      {
-    assert!(test_file(Path::new("tests/private/e_ground.xmt")));
+    assert!(test_file(Path::new("tests/sandbox.xmt")));
 }
 
 
