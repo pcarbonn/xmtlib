@@ -16,6 +16,7 @@ impl<K: Hash + Eq + Clone, V: Clone> OptionMap<K, V> {
         OptionMap(IndexMap::new())
     }
 
+    /// does not insert if key already has some value.
     pub(crate) fn insert(&mut self, key: K, value: Option<V>) -> () {
         match self.0.get(&key) {
             None          => { self.0.insert(key, value); },
@@ -68,6 +69,7 @@ where
     K: Hash + Eq + Clone,
     V: Clone,
 {
+    /// does not insert when key already has some value.
     fn extend<I: IntoIterator<Item = (K, Option<V>)>>(&mut self, iterable: I) {
         let iter = iterable.into_iter();
         let reserve = if self.0.is_empty() {

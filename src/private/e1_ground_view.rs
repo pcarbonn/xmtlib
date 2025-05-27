@@ -277,9 +277,23 @@ pub(crate) fn view_for_compound(
                         }
                         precise &= *sub_precise;
 
-                        // merge the variables
-                        for (symbol, column) in sub_variables.clone().iter() {
-                            variables.insert(symbol.clone(), column.clone());
+                        // merge the variables, preferring interpretations to sort
+                        for (k, v) in sub_variables.iter() {
+                            match variables.get(k) {
+                                None
+                                | Some(None) => {
+                                    variables.insert(k.clone(),v.clone());
+                                },
+                                Some(Some(table)) => {
+                                    // prefer interpretations to sort
+                                    if let Some(v_) = v {
+                                        if ! table.to_string().starts_with("_xmt_interp_")
+                                        && v_.to_string().starts_with ("_xmt_interp_") {
+                                            variables.0.insert(k.clone(), v.clone());
+                                        }
+                                    }
+                                }
+                            }
                         }
 
                         // compute the join conditions, for later use
