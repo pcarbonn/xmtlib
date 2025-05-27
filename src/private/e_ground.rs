@@ -375,14 +375,7 @@ fn ground_compound(
             })
         .collect::<Vec<_>>();
 
-    let (out_sort, function_is) = match get_function_object(term, qual_identifier, &sorts, solver) {
-        Ok(f) => f,
-        Err(_) => {  // some predefined functions have no sorts
-            let (out_sort, f) = get_function_object(term, qual_identifier, &vec![], solver)?;
-            if let FunctionObject::Predefined{..} = f { (out_sort, f) }
-            else { return Err(SolverError::TermError("Unknown function application", term.clone())) }
-        }
-    };
+    let (out_sort, function_is) = get_function_object(term, qual_identifier, &sorts, solver)?;
     let out_sort = out_sort.clone();
 
     match function_is {

@@ -203,7 +203,11 @@ pub(crate) fn get_function_object<'a>(
                         Err(SolverError::TermError("Ambiguous term application", term.clone()))  // ambiguous
                     }
                 }
-                None => Err(SolverError::TermError("Unknown symbol", term.clone()))
+                None => { // some predefined functions have no sorts
+                    let (out_sort, f) = get_function_object(term, function, &vec![], solver)?;
+                    if let FunctionObject::Predefined{..} = f { Ok( (out_sort, f) ) }
+                    else { Err(SolverError::TermError("Unknown function application", term.clone())) }
+                }
             }
         },
         QualIdentifier::Sorted(identifier, sort) =>
