@@ -181,7 +181,7 @@ pub(crate) enum ViewType {
 /// describes the type of query to create for a compound term.
 // this differs too much from FunctionObject to merge them.
 pub(crate) enum QueryVariant {
-    Equality(bool),
+    Equivalence(bool),
     Predefined(Predefined),
     Construct,
     Apply,
@@ -209,7 +209,7 @@ pub(crate) fn view_for_compound(
     let mut has_g_rows = false;
 
     // LINK src/doc.md#_Equality
-    let use_outer_join = matches!(variant, QueryVariant::Equality(_));
+    let use_outer_join = matches!(variant, QueryVariant::Equivalence(_));
 
     for (i, sub_q) in sub_queries.iter().enumerate() {
 
@@ -315,7 +315,7 @@ pub(crate) fn view_for_compound(
                             QueryVariant::Apply
                             | QueryVariant::Construct
                             | QueryVariant::Predefined(_)
-                            | QueryVariant::Equality(..) => {}
+                            | QueryVariant::Equivalence(..) => {}
                         }
                         true  // done
                     } else { false }
@@ -375,7 +375,7 @@ pub(crate) fn view_for_compound(
                             QueryVariant::Apply
                             | QueryVariant::Construct
                             | QueryVariant::Predefined(_)
-                            | QueryVariant::Equality(..) => {}
+                            | QueryVariant::Equivalence(..) => {}
                         }
                     }
                 }
@@ -447,19 +447,19 @@ pub(crate) fn view_for_compound(
                 if ! [  Predefined::And,
                         Predefined::Or,
                         Predefined::Not
-                     ].contains(&function) {
+                     ].contains(&function) {  // term equality, comparisons, arithmetic operations
                     has_g_rows = true
                 };
 
                 SQLExpr::Predefined(function.clone(), Box::new(groundings))
             },
-            QueryVariant::Equality(default) => {
+            QueryVariant::Equivalence(default) => {
                 has_g_rows = true;
                 SQLExpr::Predefined(Predefined::BoolEq(*default), Box::new(groundings))
             }
         };
     let outer = match variant {
-            QueryVariant::Equality(default) if use_outer_join =>
+            QueryVariant::Equivalence(default) if use_outer_join =>
                  Some(*default),
             _ => None
         };
@@ -538,6 +538,7 @@ pub(crate) fn view_for_aggregate(
 }
 
 
+/// for `and^UF`, `or^TU`
 pub(crate) fn view_for_union(
     sub_views: Vec<GroundingView>,
     exclude: Option<bool>,

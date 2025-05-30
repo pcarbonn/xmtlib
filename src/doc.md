@@ -116,8 +116,9 @@ The documented topics are listed below:
 
 # // LINK src/doc.md#_has_g_complexity
 
-A TU or UF query has G rows if it has as many rows as the corresponding G query.
+A query has G rows if it has as many rows as the cross-product of its free variables.
 A TU or UF view has an exclude iff its query has G rows.
-A G view has G complexity and does not have an exclude.
+A finite G view has G complexity.  An infinite does not.
+A G view never has an exclude.
 
 The exclude is not added to the sql if there are no Ids in the G column.

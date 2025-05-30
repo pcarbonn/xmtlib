@@ -578,7 +578,7 @@ fn ground_compound(
                                     let variant = QueryVariant::Predefined(Predefined::Eq);
                                     view_for_compound(qual_identifier, index, &mut gqs, &variant, Some(true), solver)?
                                 } else {
-                                    let variant = QueryVariant::Equality(true);
+                                    let variant = QueryVariant::Equivalence(true);
                                     view_for_compound(qual_identifier, index, &mut ufs, &variant, None, solver)?
                                 }
                             },
