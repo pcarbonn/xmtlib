@@ -1,6 +1,6 @@
 // Copyright Pierre Carbonnelle, 2025.
 
-use std::cmp::max;
+use std::cmp::{min, max};
 use std::hash::Hash;
 
 use indexmap::{IndexMap, IndexSet};
@@ -70,8 +70,10 @@ impl GroundingView {
 
         match self {
             GroundingView::Empty => (format!("SELECT \"true\" AS G\n{indent} WHERE FALSE"), Ids::All),
-            GroundingView::View { query, exclude, .. } =>
-                if let Some(exclude) = exclude {
+            GroundingView::View { query, exclude, ids, .. } =>
+                if *ids == Ids::None {
+                    query.to_sql(var_joins, indent)
+                } else if let Some(exclude) = exclude {
                     let indent1 = format!("{indent}{INDENT}").to_string();
                     let (query, ids) = query.to_sql(var_joins, &indent1);
                     let comment = format!("-- exclude({})\n{indent}", indent.len());
@@ -546,7 +548,7 @@ pub(crate) fn view_for_union(
     // determine variables and condition
     let mut free_variables = OptionMap::new();
     let mut condition = false;
-    let mut ids = Ids::All;
+    let mut ids = Ids::None;
     let mut has_g_rows = false;
     for sub_view in sub_views.clone() {
         if let GroundingView::View {
@@ -558,7 +560,7 @@ pub(crate) fn view_for_union(
 
             free_variables.append(&mut sub_free_variables.clone());
             condition |= sub_condition;
-            ids = max(ids, sub_ids);
+            ids = min(ids, sub_ids);
             has_g_rows |= query.has_g_rows();
         }
     }
@@ -729,8 +731,7 @@ impl GroundingView {
                         grounding: Either::Right(table_alias),
                         query,
                         exclude,
-                        ids: Ids::None
-                    })
+                        ids})
             },
             GroundingQuery::Union { ref sub_queries, .. } => {
 

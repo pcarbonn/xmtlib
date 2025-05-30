@@ -113,21 +113,18 @@ SELECT x,
 -- Agg (0)
 SELECT x,
        or_aggregate(G) as G
- FROM (-- exclude(7)
-       SELECT *
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              apply("not", apply("domain", "x")) AS G
+       UNION ALL
+       -- Agg (7)
+       SELECT x,
+              "(exists ((y Int)) " || or_aggregate(G) || ")" as G
         FROM (-- Join(14)
               SELECT "x" AS x,
-                     apply("not", apply("domain", "x")) AS G
-              UNION ALL
-              -- Agg (14)
-              SELECT x,
-                     "(exists ((y Int)) " || or_aggregate(G) || ")" as G
-               FROM (-- Join(21)
-                     SELECT "x" AS x,
-                            "y" AS y,
-                            apply("Q", "x", "y") AS G)
-               GROUP BY x)
-        WHERE G <> "false")
+                     "y" AS y,
+                     apply("Q", "x", "y") AS G)
+        GROUP BY x)
  GROUP BY x
 ----- UF -----------------------------------------------------------
 -- Join(0)
@@ -260,22 +257,19 @@ SELECT "x" AS x,
 -- Agg (0)
 SELECT x, y,
        or_aggregate(G) as G
- FROM (-- exclude(7)
-       SELECT *
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("not", apply("domain2", "x", "y")) AS G
+       UNION ALL
+       -- Agg (7)
+       SELECT x,
+              "(exists ((y Int)) " || or_aggregate(G) || ")" as G
         FROM (-- Join(14)
               SELECT "x" AS x,
                      "y" AS y,
-                     apply("not", apply("domain2", "x", "y")) AS G
-              UNION ALL
-              -- Agg (14)
-              SELECT x,
-                     "(exists ((y Int)) " || or_aggregate(G) || ")" as G
-               FROM (-- Join(21)
-                     SELECT "x" AS x,
-                            "y" AS y,
-                            apply("Q", "x", "y") AS G)
-               GROUP BY x)
-        WHERE G <> "false")
+                     apply("Q", "x", "y") AS G)
+        GROUP BY x)
  GROUP BY x, y
 ----- UF -----------------------------------------------------------
 -- Join(0)

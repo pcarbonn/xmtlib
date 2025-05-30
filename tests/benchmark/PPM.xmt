@@ -15812,7 +15812,7 @@ SELECT _xmt_sort_smallnumber.G AS SN1,
   JOIN _xmt_sort_smallnumber AS _xmt_sort_smallnumber_2
 
 ===  (or (not (< (pf SN1) (pf SN2))) (< (solution SN1) (solution SN2))) ======================================
------ TU -----------------------------------------------------------
+----- T ------------------------------------------------------------
 -- Agg (0)
 SELECT SN1, SN2,
        or_aggregate(G) as G
@@ -15854,41 +15854,32 @@ SELECT _xmt_interp_pf_G_1.a_1 AS SN1,
 SELECT and_aggregate(G) as G
  FROM (SELECT NULL AS SN1, NULL AS SN2, "true" AS G 
        UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_pf_G_1.a_1 AS SN1,
-                     _xmt_interp_pf_G_3.a_1 AS SN2,
-                     apply("or", not_(compare_("<", _xmt_interp_pf_G_1.G, _xmt_interp_pf_G_3.G)), apply("<", apply("solution", _xmt_interp_pf_G_1.a_1), apply("solution", _xmt_interp_pf_G_3.a_1))) AS G
-                FROM _xmt_interp_pf_G AS _xmt_interp_pf_G_1
-                JOIN _xmt_interp_pf_G AS _xmt_interp_pf_G_3)
-        WHERE G <> "true")
+       -- Join(7)
+       SELECT _xmt_interp_pf_G_1.a_1 AS SN1,
+              _xmt_interp_pf_G_3.a_1 AS SN2,
+              apply("or", not_(compare_("<", _xmt_interp_pf_G_1.G, _xmt_interp_pf_G_3.G)), apply("<", apply("solution", _xmt_interp_pf_G_1.a_1), apply("solution", _xmt_interp_pf_G_3.a_1))) AS G
+         FROM _xmt_interp_pf_G AS _xmt_interp_pf_G_1
+         JOIN _xmt_interp_pf_G AS _xmt_interp_pf_G_3)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_pf_G_1.a_1 AS SN1,
-                     _xmt_interp_pf_G_3.a_1 AS SN2,
-                     apply("or", not_(compare_("<", _xmt_interp_pf_G_1.G, _xmt_interp_pf_G_3.G)), apply("<", apply("solution", _xmt_interp_pf_G_1.a_1), apply("solution", _xmt_interp_pf_G_3.a_1))) AS G
-                FROM _xmt_interp_pf_G AS _xmt_interp_pf_G_1
-                JOIN _xmt_interp_pf_G AS _xmt_interp_pf_G_3)
-        WHERE G <> "true")
+ FROM (-- Join(7)
+       SELECT _xmt_interp_pf_G_1.a_1 AS SN1,
+              _xmt_interp_pf_G_3.a_1 AS SN2,
+              apply("or", not_(compare_("<", _xmt_interp_pf_G_1.G, _xmt_interp_pf_G_3.G)), apply("<", apply("solution", _xmt_interp_pf_G_1.a_1), apply("solution", _xmt_interp_pf_G_3.a_1))) AS G
+         FROM _xmt_interp_pf_G AS _xmt_interp_pf_G_1
+         JOIN _xmt_interp_pf_G AS _xmt_interp_pf_G_3)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
  FROM (SELECT NULL AS SN1, NULL AS SN2, "true" AS G 
        UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_pf_G_1.a_1 AS SN1,
-                     _xmt_interp_pf_G_3.a_1 AS SN2,
-                     apply("or", not_(compare_("<", _xmt_interp_pf_G_1.G, _xmt_interp_pf_G_3.G)), apply("<", apply("solution", _xmt_interp_pf_G_1.a_1), apply("solution", _xmt_interp_pf_G_3.a_1))) AS G
-                FROM _xmt_interp_pf_G AS _xmt_interp_pf_G_1
-                JOIN _xmt_interp_pf_G AS _xmt_interp_pf_G_3)
-        WHERE G <> "true")
+       -- Join(7)
+       SELECT _xmt_interp_pf_G_1.a_1 AS SN1,
+              _xmt_interp_pf_G_3.a_1 AS SN2,
+              apply("or", not_(compare_("<", _xmt_interp_pf_G_1.G, _xmt_interp_pf_G_3.G)), apply("<", apply("solution", _xmt_interp_pf_G_1.a_1), apply("solution", _xmt_interp_pf_G_3.a_1))) AS G
+         FROM _xmt_interp_pf_G AS _xmt_interp_pf_G_1
+         JOIN _xmt_interp_pf_G AS _xmt_interp_pf_G_3)
 
 ===  y ======================================
  -- Join(0)
@@ -15989,22 +15980,19 @@ SELECT _xmt_interp_tf_G_16.a_1 AS y,
 -- Agg (0)
 SELECT y, X,
        or_aggregate(G) as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_sort_number_11.G AS y,
-                     _xmt_sort_smallnumber_12.G AS X,
-                     apply("not", apply("=", _xmt_sort_number_11.G, apply("solutionindex", _xmt_sort_smallnumber_12.G))) AS G
-                FROM _xmt_sort_number AS _xmt_sort_number_11
-                JOIN _xmt_sort_smallnumber AS _xmt_sort_smallnumber_12
-              UNION ALL
-              -- Join(14)
-              SELECT _xmt_interp_tf_G_16.a_1 AS y,
-                     _xmt_sort_smallnumber_12.G AS X,
-                     apply("=", _xmt_interp_tf_G_16.G, apply("solution", _xmt_sort_smallnumber_12.G)) AS G
-                FROM _xmt_sort_smallnumber AS _xmt_sort_smallnumber_12
-                JOIN _xmt_interp_tf_G AS _xmt_interp_tf_G_16)
-        WHERE G <> "false")
+ FROM (-- Join(7)
+       SELECT _xmt_sort_number_11.G AS y,
+              _xmt_sort_smallnumber_12.G AS X,
+              apply("not", apply("=", _xmt_sort_number_11.G, apply("solutionindex", _xmt_sort_smallnumber_12.G))) AS G
+         FROM _xmt_sort_number AS _xmt_sort_number_11
+         JOIN _xmt_sort_smallnumber AS _xmt_sort_smallnumber_12
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_tf_G_16.a_1 AS y,
+              _xmt_sort_smallnumber_12.G AS X,
+              apply("=", _xmt_interp_tf_G_16.G, apply("solution", _xmt_sort_smallnumber_12.G)) AS G
+         FROM _xmt_sort_smallnumber AS _xmt_sort_smallnumber_12
+         JOIN _xmt_interp_tf_G AS _xmt_interp_tf_G_16)
  GROUP BY y, X
 ----- UF -----------------------------------------------------------
 -- Join(0)
@@ -16027,41 +16015,32 @@ SELECT _xmt_interp_tf_G_16.a_1 AS y,
 SELECT and_aggregate(G) as G
  FROM (SELECT NULL AS y, NULL AS X, "true" AS G 
        UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_tf_G_16.a_1 AS y,
-                     _xmt_sort_smallnumber_12.G AS X,
-                     apply("or", apply("not", apply("=", _xmt_interp_tf_G_16.a_1, apply("solutionindex", _xmt_sort_smallnumber_12.G))), apply("=", _xmt_interp_tf_G_16.G, apply("solution", _xmt_sort_smallnumber_12.G))) AS G
-                FROM _xmt_sort_smallnumber AS _xmt_sort_smallnumber_12
-                JOIN _xmt_interp_tf_G AS _xmt_interp_tf_G_16)
-        WHERE G <> "true")
+       -- Join(7)
+       SELECT _xmt_interp_tf_G_16.a_1 AS y,
+              _xmt_sort_smallnumber_12.G AS X,
+              apply("or", apply("not", apply("=", _xmt_interp_tf_G_16.a_1, apply("solutionindex", _xmt_sort_smallnumber_12.G))), apply("=", _xmt_interp_tf_G_16.G, apply("solution", _xmt_sort_smallnumber_12.G))) AS G
+         FROM _xmt_sort_smallnumber AS _xmt_sort_smallnumber_12
+         JOIN _xmt_interp_tf_G AS _xmt_interp_tf_G_16)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_tf_G_16.a_1 AS y,
-                     _xmt_sort_smallnumber_12.G AS X,
-                     apply("or", apply("not", apply("=", _xmt_interp_tf_G_16.a_1, apply("solutionindex", _xmt_sort_smallnumber_12.G))), apply("=", _xmt_interp_tf_G_16.G, apply("solution", _xmt_sort_smallnumber_12.G))) AS G
-                FROM _xmt_sort_smallnumber AS _xmt_sort_smallnumber_12
-                JOIN _xmt_interp_tf_G AS _xmt_interp_tf_G_16)
-        WHERE G <> "true")
+ FROM (-- Join(7)
+       SELECT _xmt_interp_tf_G_16.a_1 AS y,
+              _xmt_sort_smallnumber_12.G AS X,
+              apply("or", apply("not", apply("=", _xmt_interp_tf_G_16.a_1, apply("solutionindex", _xmt_sort_smallnumber_12.G))), apply("=", _xmt_interp_tf_G_16.G, apply("solution", _xmt_sort_smallnumber_12.G))) AS G
+         FROM _xmt_sort_smallnumber AS _xmt_sort_smallnumber_12
+         JOIN _xmt_interp_tf_G AS _xmt_interp_tf_G_16)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
  FROM (SELECT NULL AS y, NULL AS X, "true" AS G 
        UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_tf_G_16.a_1 AS y,
-                     _xmt_sort_smallnumber_12.G AS X,
-                     apply("or", apply("not", apply("=", _xmt_interp_tf_G_16.a_1, apply("solutionindex", _xmt_sort_smallnumber_12.G))), apply("=", _xmt_interp_tf_G_16.G, apply("solution", _xmt_sort_smallnumber_12.G))) AS G
-                FROM _xmt_sort_smallnumber AS _xmt_sort_smallnumber_12
-                JOIN _xmt_interp_tf_G AS _xmt_interp_tf_G_16)
-        WHERE G <> "true")
+       -- Join(7)
+       SELECT _xmt_interp_tf_G_16.a_1 AS y,
+              _xmt_sort_smallnumber_12.G AS X,
+              apply("or", apply("not", apply("=", _xmt_interp_tf_G_16.a_1, apply("solutionindex", _xmt_sort_smallnumber_12.G))), apply("=", _xmt_interp_tf_G_16.G, apply("solution", _xmt_sort_smallnumber_12.G))) AS G
+         FROM _xmt_sort_smallnumber AS _xmt_sort_smallnumber_12
+         JOIN _xmt_interp_tf_G AS _xmt_interp_tf_G_16)
 
 === (top) (and (forall ((SN1 smallnumber) (SN2 smallnumber)) (or (not (< (pf SN1) (pf SN2))) (< (solution SN1) (solution SN2)))) (forall ((X smallnumber) (y number)) (or (not (= y (solutionindex X))) (= (tf y) (solution X))))) ======================================
 ----- TU -----------------------------------------------------------
@@ -16071,59 +16050,44 @@ SELECT and_(Agg_10_TU.G, Agg_20_TU.G) AS G
         SELECT and_aggregate(G) as G
          FROM (SELECT NULL AS SN1, NULL AS SN2, "true" AS G 
                UNION ALL
-               -- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_pf_G_1.a_1 AS SN1,
-                             _xmt_interp_pf_G_3.a_1 AS SN2,
-                             apply("or", not_(compare_("<", _xmt_interp_pf_G_1.G, _xmt_interp_pf_G_3.G)), apply("<", apply("solution", _xmt_interp_pf_G_1.a_1), apply("solution", _xmt_interp_pf_G_3.a_1))) AS G
-                        FROM _xmt_interp_pf_G AS _xmt_interp_pf_G_1
-                        JOIN _xmt_interp_pf_G AS _xmt_interp_pf_G_3)
-                WHERE G <> "true")
+               -- Join(15)
+               SELECT _xmt_interp_pf_G_1.a_1 AS SN1,
+                      _xmt_interp_pf_G_3.a_1 AS SN2,
+                      apply("or", not_(compare_("<", _xmt_interp_pf_G_1.G, _xmt_interp_pf_G_3.G)), apply("<", apply("solution", _xmt_interp_pf_G_1.a_1), apply("solution", _xmt_interp_pf_G_3.a_1))) AS G
+                 FROM _xmt_interp_pf_G AS _xmt_interp_pf_G_1
+                 JOIN _xmt_interp_pf_G AS _xmt_interp_pf_G_3)
         ) AS Agg_10_TU
   JOIN (-- Agg (8)
         SELECT and_aggregate(G) as G
          FROM (SELECT NULL AS y, NULL AS X, "true" AS G 
                UNION ALL
-               -- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_tf_G_16.a_1 AS y,
-                             _xmt_sort_smallnumber_12.G AS X,
-                             apply("or", apply("not", apply("=", _xmt_interp_tf_G_16.a_1, apply("solutionindex", _xmt_sort_smallnumber_12.G))), apply("=", _xmt_interp_tf_G_16.G, apply("solution", _xmt_sort_smallnumber_12.G))) AS G
-                        FROM _xmt_sort_smallnumber AS _xmt_sort_smallnumber_12
-                        JOIN _xmt_interp_tf_G AS _xmt_interp_tf_G_16)
-                WHERE G <> "true")
+               -- Join(15)
+               SELECT _xmt_interp_tf_G_16.a_1 AS y,
+                      _xmt_sort_smallnumber_12.G AS X,
+                      apply("or", apply("not", apply("=", _xmt_interp_tf_G_16.a_1, apply("solutionindex", _xmt_sort_smallnumber_12.G))), apply("=", _xmt_interp_tf_G_16.G, apply("solution", _xmt_sort_smallnumber_12.G))) AS G
+                 FROM _xmt_sort_smallnumber AS _xmt_sort_smallnumber_12
+                 JOIN _xmt_interp_tf_G AS _xmt_interp_tf_G_16)
         ) AS Agg_20_TU
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Agg (14)
-              SELECT G as G
-               FROM (-- exclude(21)
-                     SELECT *
-                      FROM (-- Join(28)
-                            SELECT _xmt_interp_pf_G_1.a_1 AS SN1,
-                                   _xmt_interp_pf_G_3.a_1 AS SN2,
-                                   apply("or", not_(compare_("<", _xmt_interp_pf_G_1.G, _xmt_interp_pf_G_3.G)), apply("<", apply("solution", _xmt_interp_pf_G_1.a_1), apply("solution", _xmt_interp_pf_G_3.a_1))) AS G
-                              FROM _xmt_interp_pf_G AS _xmt_interp_pf_G_1
-                              JOIN _xmt_interp_pf_G AS _xmt_interp_pf_G_3)
-                      WHERE G <> "true")
-              UNION ALL
-              -- Agg (14)
-              SELECT G as G
-               FROM (-- exclude(21)
-                     SELECT *
-                      FROM (-- Join(28)
-                            SELECT _xmt_interp_tf_G_16.a_1 AS y,
-                                   _xmt_sort_smallnumber_12.G AS X,
-                                   apply("or", apply("not", apply("=", _xmt_interp_tf_G_16.a_1, apply("solutionindex", _xmt_sort_smallnumber_12.G))), apply("=", _xmt_interp_tf_G_16.G, apply("solution", _xmt_sort_smallnumber_12.G))) AS G
-                              FROM _xmt_sort_smallnumber AS _xmt_sort_smallnumber_12
-                              JOIN _xmt_interp_tf_G AS _xmt_interp_tf_G_16)
-                      WHERE G <> "true"))
-        WHERE G <> "true")
+ FROM (-- Agg (7)
+       SELECT G as G
+        FROM (-- Join(14)
+              SELECT _xmt_interp_pf_G_1.a_1 AS SN1,
+                     _xmt_interp_pf_G_3.a_1 AS SN2,
+                     apply("or", not_(compare_("<", _xmt_interp_pf_G_1.G, _xmt_interp_pf_G_3.G)), apply("<", apply("solution", _xmt_interp_pf_G_1.a_1), apply("solution", _xmt_interp_pf_G_3.a_1))) AS G
+                FROM _xmt_interp_pf_G AS _xmt_interp_pf_G_1
+                JOIN _xmt_interp_pf_G AS _xmt_interp_pf_G_3)
+       UNION ALL
+       -- Agg (7)
+       SELECT G as G
+        FROM (-- Join(14)
+              SELECT _xmt_interp_tf_G_16.a_1 AS y,
+                     _xmt_sort_smallnumber_12.G AS X,
+                     apply("or", apply("not", apply("=", _xmt_interp_tf_G_16.a_1, apply("solutionindex", _xmt_sort_smallnumber_12.G))), apply("=", _xmt_interp_tf_G_16.G, apply("solution", _xmt_sort_smallnumber_12.G))) AS G
+                FROM _xmt_sort_smallnumber AS _xmt_sort_smallnumber_12
+                JOIN _xmt_interp_tf_G AS _xmt_interp_tf_G_16))
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT and_(Agg_10_G.G, Agg_20_G.G) AS G
@@ -16131,29 +16095,23 @@ SELECT and_(Agg_10_G.G, Agg_20_G.G) AS G
         SELECT and_aggregate(G) as G
          FROM (SELECT NULL AS SN1, NULL AS SN2, "true" AS G 
                UNION ALL
-               -- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_pf_G_1.a_1 AS SN1,
-                             _xmt_interp_pf_G_3.a_1 AS SN2,
-                             apply("or", not_(compare_("<", _xmt_interp_pf_G_1.G, _xmt_interp_pf_G_3.G)), apply("<", apply("solution", _xmt_interp_pf_G_1.a_1), apply("solution", _xmt_interp_pf_G_3.a_1))) AS G
-                        FROM _xmt_interp_pf_G AS _xmt_interp_pf_G_1
-                        JOIN _xmt_interp_pf_G AS _xmt_interp_pf_G_3)
-                WHERE G <> "true")
+               -- Join(15)
+               SELECT _xmt_interp_pf_G_1.a_1 AS SN1,
+                      _xmt_interp_pf_G_3.a_1 AS SN2,
+                      apply("or", not_(compare_("<", _xmt_interp_pf_G_1.G, _xmt_interp_pf_G_3.G)), apply("<", apply("solution", _xmt_interp_pf_G_1.a_1), apply("solution", _xmt_interp_pf_G_3.a_1))) AS G
+                 FROM _xmt_interp_pf_G AS _xmt_interp_pf_G_1
+                 JOIN _xmt_interp_pf_G AS _xmt_interp_pf_G_3)
         ) AS Agg_10_G
   JOIN (-- Agg (8)
         SELECT and_aggregate(G) as G
          FROM (SELECT NULL AS y, NULL AS X, "true" AS G 
                UNION ALL
-               -- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_tf_G_16.a_1 AS y,
-                             _xmt_sort_smallnumber_12.G AS X,
-                             apply("or", apply("not", apply("=", _xmt_interp_tf_G_16.a_1, apply("solutionindex", _xmt_sort_smallnumber_12.G))), apply("=", _xmt_interp_tf_G_16.G, apply("solution", _xmt_sort_smallnumber_12.G))) AS G
-                        FROM _xmt_sort_smallnumber AS _xmt_sort_smallnumber_12
-                        JOIN _xmt_interp_tf_G AS _xmt_interp_tf_G_16)
-                WHERE G <> "true")
+               -- Join(15)
+               SELECT _xmt_interp_tf_G_16.a_1 AS y,
+                      _xmt_sort_smallnumber_12.G AS X,
+                      apply("or", apply("not", apply("=", _xmt_interp_tf_G_16.a_1, apply("solutionindex", _xmt_sort_smallnumber_12.G))), apply("=", _xmt_interp_tf_G_16.G, apply("solution", _xmt_sort_smallnumber_12.G))) AS G
+                 FROM _xmt_sort_smallnumber AS _xmt_sort_smallnumber_12
+                 JOIN _xmt_interp_tf_G AS _xmt_interp_tf_G_16)
         ) AS Agg_20_G
 
 ===========================================

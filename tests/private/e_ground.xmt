@@ -189,14 +189,14 @@ SELECT _xmt_interp_is_true_G_13.a_1 AS x,
   FROM _xmt_interp_is_true_G AS _xmt_interp_is_true_G_13
 
 ===  (exists ((x Bool)) (is_true x)) ======================================
------ TU -----------------------------------------------------------
+----- T ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (-- Join(7)
        SELECT _xmt_interp_is_true_TU_13.a_1 AS x,
               "true" AS G
          FROM _xmt_interp_is_true_TU AS _xmt_interp_is_true_TU_13)
------ UF -----------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (SELECT NULL AS x, "false" AS G 

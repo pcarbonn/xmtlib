@@ -111,7 +111,7 @@ SELECT _xmt_interp_p_TU_1.a_1 AS x,
   FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
   JOIN _xmt_interp_q_TU AS _xmt_interp_q_TU_2
         ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_q_TU_2.a_1
------ UF -----------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Agg (0)
 SELECT x,
        and_aggregate(G) as G
@@ -134,7 +134,7 @@ SELECT _xmt_interp_p_G_1.a_1 AS x,
         ON _xmt_interp_p_G_1.a_1 = _xmt_interp_q_G_2.a_1
 
 === (top) (exists ((x element)) (and (p x) (q x))) ======================================
------ TU -----------------------------------------------------------
+----- T ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (-- Join(7)
@@ -143,7 +143,7 @@ SELECT or_aggregate(G) as G
          FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
          JOIN _xmt_interp_q_TU AS _xmt_interp_q_TU_2
                ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_q_TU_2.a_1)
------ UF -----------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (SELECT NULL AS x, "false" AS G 
@@ -191,7 +191,7 @@ SELECT _xmt_interp_p_TU_1.a_1 AS x,
   FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
   JOIN _xmt_interp_r_TU AS _xmt_interp_r_TU_5
         ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_r_TU_5.a_1
------ UF -----------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Agg (0)
 SELECT x,
        and_aggregate(G) as G
@@ -214,7 +214,7 @@ SELECT _xmt_interp_p_G_1.a_1 AS x,
         ON _xmt_interp_p_G_1.a_1 = _xmt_interp_r_G_5.a_1
 
 === (top) (exists ((x element)) (and (p x) (r x))) ======================================
------ TU -----------------------------------------------------------
+----- T ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (-- Join(7)
@@ -223,7 +223,7 @@ SELECT or_aggregate(G) as G
          FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
          JOIN _xmt_interp_r_TU AS _xmt_interp_r_TU_5
                ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_r_TU_5.a_1)
------ UF -----------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Agg (0)
 SELECT or_aggregate(G) as G
  FROM (SELECT NULL AS x, "false" AS G 
@@ -247,7 +247,7 @@ SELECT or_aggregate(G) as G
                ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_r_TU_5.a_1)
 
 === (top) (and (exists ((x element)) (and (p x) (q x))) (exists ((x element)) (and (p x) (r x)))) ======================================
------ TU -----------------------------------------------------------
+----- T ------------------------------------------------------------
 -- Join(0)
 SELECT and_(Agg_4_TU.G, Agg_7_TU.G) AS G
   FROM (-- Agg (8)
@@ -268,7 +268,7 @@ SELECT and_(Agg_4_TU.G, Agg_7_TU.G) AS G
                  JOIN _xmt_interp_r_TU AS _xmt_interp_r_TU_5
                        ON _xmt_interp_p_TU_1.a_1 = _xmt_interp_r_TU_5.a_1)
         ) AS Agg_7_TU
------ UF -----------------------------------------------------------
+----- F ------------------------------------------------------------
 -- Agg (0)
 SELECT G as G
  FROM (-- exclude(7)

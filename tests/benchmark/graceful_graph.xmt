@@ -349,7 +349,7 @@ SELECT _xmt_sort_node.G AS x,
   JOIN _xmt_sort_node AS _xmt_sort_node_1
 
 ===  (or (not (not (edge x y))) (= (edge_value x y) 0)) ======================================
------ TU -----------------------------------------------------------
+----- T ------------------------------------------------------------
 -- Agg (0)
 SELECT x, y,
        or_aggregate(G) as G
@@ -388,38 +388,29 @@ SELECT _xmt_interp_edge_G_2.a_1 AS x,
 SELECT and_aggregate(G) as G
  FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
        UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_edge_UF_2.a_1 AS x,
-                     _xmt_interp_edge_UF_2.a_2 AS y,
-                     apply("=", apply("edge_value", _xmt_interp_edge_UF_2.a_1, _xmt_interp_edge_UF_2.a_2), 0) AS G
-                FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_2)
-        WHERE G <> "true")
+       -- Join(7)
+       SELECT _xmt_interp_edge_UF_2.a_1 AS x,
+              _xmt_interp_edge_UF_2.a_2 AS y,
+              apply("=", apply("edge_value", _xmt_interp_edge_UF_2.a_1, _xmt_interp_edge_UF_2.a_2), 0) AS G
+         FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_2)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_edge_UF_2.a_1 AS x,
-                     _xmt_interp_edge_UF_2.a_2 AS y,
-                     apply("=", apply("edge_value", _xmt_interp_edge_UF_2.a_1, _xmt_interp_edge_UF_2.a_2), 0) AS G
-                FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_2)
-        WHERE G <> "true")
+ FROM (-- Join(7)
+       SELECT _xmt_interp_edge_UF_2.a_1 AS x,
+              _xmt_interp_edge_UF_2.a_2 AS y,
+              apply("=", apply("edge_value", _xmt_interp_edge_UF_2.a_1, _xmt_interp_edge_UF_2.a_2), 0) AS G
+         FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_2)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
  FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
        UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_edge_UF_2.a_1 AS x,
-                     _xmt_interp_edge_UF_2.a_2 AS y,
-                     apply("=", apply("edge_value", _xmt_interp_edge_UF_2.a_1, _xmt_interp_edge_UF_2.a_2), 0) AS G
-                FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_2)
-        WHERE G <> "true")
+       -- Join(7)
+       SELECT _xmt_interp_edge_UF_2.a_1 AS x,
+              _xmt_interp_edge_UF_2.a_2 AS y,
+              apply("=", apply("edge_value", _xmt_interp_edge_UF_2.a_1, _xmt_interp_edge_UF_2.a_2), 0) AS G
+         FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_2)
 
 ===  (value x) ======================================
  -- Join(0)
@@ -508,7 +499,7 @@ SELECT _xmt_sort_node.G AS x,
   JOIN _xmt_sort_node AS _xmt_sort_node_1
 
 ===  (or (not (edge x y)) (not (>= (value x) (value y))) (= (edge_value x y) (- (value x) (value y)))) ======================================
------ TU -----------------------------------------------------------
+----- T ------------------------------------------------------------
 -- Agg (0)
 SELECT x, y,
        or_aggregate(G) as G
@@ -554,38 +545,29 @@ SELECT _xmt_interp_edge_G_2.a_1 AS x,
 SELECT and_aggregate(G) as G
  FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
        UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_edge_TU_2.a_1 AS x,
-                     _xmt_interp_edge_TU_2.a_2 AS y,
-                     apply("or", apply("not", apply(">=", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2)))) AS G
-                FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
-        WHERE G <> "true")
+       -- Join(7)
+       SELECT _xmt_interp_edge_TU_2.a_1 AS x,
+              _xmt_interp_edge_TU_2.a_2 AS y,
+              apply("or", apply("not", apply(">=", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2)))) AS G
+         FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_edge_TU_2.a_1 AS x,
-                     _xmt_interp_edge_TU_2.a_2 AS y,
-                     apply("or", apply("not", apply(">=", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2)))) AS G
-                FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
-        WHERE G <> "true")
+ FROM (-- Join(7)
+       SELECT _xmt_interp_edge_TU_2.a_1 AS x,
+              _xmt_interp_edge_TU_2.a_2 AS y,
+              apply("or", apply("not", apply(">=", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2)))) AS G
+         FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
  FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
        UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_edge_TU_2.a_1 AS x,
-                     _xmt_interp_edge_TU_2.a_2 AS y,
-                     apply("or", apply("not", apply(">=", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2)))) AS G
-                FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
-        WHERE G <> "true")
+       -- Join(7)
+       SELECT _xmt_interp_edge_TU_2.a_1 AS x,
+              _xmt_interp_edge_TU_2.a_2 AS y,
+              apply("or", apply("not", apply(">=", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2)))) AS G
+         FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
 
 ===  (> (value y) (value x)) ======================================
 ----- TU -----------------------------------------------------------
@@ -664,7 +646,7 @@ SELECT _xmt_sort_node.G AS x,
   JOIN _xmt_sort_node AS _xmt_sort_node_1
 
 ===  (or (not (edge x y)) (not (> (value y) (value x))) (= (edge_value x y) (- (value y) (value x)))) ======================================
------ TU -----------------------------------------------------------
+----- T ------------------------------------------------------------
 -- Agg (0)
 SELECT x, y,
        or_aggregate(G) as G
@@ -710,38 +692,29 @@ SELECT _xmt_interp_edge_G_2.a_1 AS x,
 SELECT and_aggregate(G) as G
  FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
        UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_edge_TU_2.a_1 AS x,
-                     _xmt_interp_edge_TU_2.a_2 AS y,
-                     apply("or", apply("not", apply(">", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1)))) AS G
-                FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
-        WHERE G <> "true")
+       -- Join(7)
+       SELECT _xmt_interp_edge_TU_2.a_1 AS x,
+              _xmt_interp_edge_TU_2.a_2 AS y,
+              apply("or", apply("not", apply(">", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1)))) AS G
+         FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_edge_TU_2.a_1 AS x,
-                     _xmt_interp_edge_TU_2.a_2 AS y,
-                     apply("or", apply("not", apply(">", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1)))) AS G
-                FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
-        WHERE G <> "true")
+ FROM (-- Join(7)
+       SELECT _xmt_interp_edge_TU_2.a_1 AS x,
+              _xmt_interp_edge_TU_2.a_2 AS y,
+              apply("or", apply("not", apply(">", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1)))) AS G
+         FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
  FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
        UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_edge_TU_2.a_1 AS x,
-                     _xmt_interp_edge_TU_2.a_2 AS y,
-                     apply("or", apply("not", apply(">", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1)))) AS G
-                FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
-        WHERE G <> "true")
+       -- Join(7)
+       SELECT _xmt_interp_edge_TU_2.a_1 AS x,
+              _xmt_interp_edge_TU_2.a_2 AS y,
+              apply("or", apply("not", apply(">", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1)))) AS G
+         FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
 
 === (top) (and (forall ((x node) (y node)) (or (not (not (edge x y))) (= (edge_value x y) 0))) (forall ((x node) (y node)) (or (not (edge x y)) (not (>= (value x) (value y))) (= (edge_value x y) (- (value x) (value y))))) (forall ((x node) (y node)) (or (not (edge x y)) (not (> (value y) (value x))) (= (edge_value x y) (- (value y) (value x)))))) ======================================
 ----- TU -----------------------------------------------------------
@@ -751,79 +724,58 @@ SELECT and_(Agg_9_TU.G, Agg_17_TU.G, Agg_23_TU.G) AS G
         SELECT and_aggregate(G) as G
          FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
                UNION ALL
-               -- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_edge_UF_2.a_1 AS x,
-                             _xmt_interp_edge_UF_2.a_2 AS y,
-                             apply("=", apply("edge_value", _xmt_interp_edge_UF_2.a_1, _xmt_interp_edge_UF_2.a_2), 0) AS G
-                        FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_2)
-                WHERE G <> "true")
+               -- Join(15)
+               SELECT _xmt_interp_edge_UF_2.a_1 AS x,
+                      _xmt_interp_edge_UF_2.a_2 AS y,
+                      apply("=", apply("edge_value", _xmt_interp_edge_UF_2.a_1, _xmt_interp_edge_UF_2.a_2), 0) AS G
+                 FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_2)
         ) AS Agg_9_TU
   JOIN (-- Agg (8)
         SELECT and_aggregate(G) as G
          FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
                UNION ALL
-               -- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_edge_TU_2.a_1 AS x,
-                             _xmt_interp_edge_TU_2.a_2 AS y,
-                             apply("or", apply("not", apply(">=", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2)))) AS G
-                        FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
-                WHERE G <> "true")
+               -- Join(15)
+               SELECT _xmt_interp_edge_TU_2.a_1 AS x,
+                      _xmt_interp_edge_TU_2.a_2 AS y,
+                      apply("or", apply("not", apply(">=", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2)))) AS G
+                 FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
         ) AS Agg_17_TU
   JOIN (-- Agg (8)
         SELECT and_aggregate(G) as G
          FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
                UNION ALL
-               -- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_edge_TU_2.a_1 AS x,
-                             _xmt_interp_edge_TU_2.a_2 AS y,
-                             apply("or", apply("not", apply(">", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1)))) AS G
-                        FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
-                WHERE G <> "true")
+               -- Join(15)
+               SELECT _xmt_interp_edge_TU_2.a_1 AS x,
+                      _xmt_interp_edge_TU_2.a_2 AS y,
+                      apply("or", apply("not", apply(">", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1)))) AS G
+                 FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
         ) AS Agg_23_TU
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Agg (14)
-              SELECT G as G
-               FROM (-- exclude(21)
-                     SELECT *
-                      FROM (-- Join(28)
-                            SELECT _xmt_interp_edge_UF_2.a_1 AS x,
-                                   _xmt_interp_edge_UF_2.a_2 AS y,
-                                   apply("=", apply("edge_value", _xmt_interp_edge_UF_2.a_1, _xmt_interp_edge_UF_2.a_2), 0) AS G
-                              FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_2)
-                      WHERE G <> "true")
-              UNION ALL
-              -- Agg (14)
-              SELECT G as G
-               FROM (-- exclude(21)
-                     SELECT *
-                      FROM (-- Join(28)
-                            SELECT _xmt_interp_edge_TU_2.a_1 AS x,
-                                   _xmt_interp_edge_TU_2.a_2 AS y,
-                                   apply("or", apply("not", apply(">=", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2)))) AS G
-                              FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
-                      WHERE G <> "true")
-              UNION ALL
-              -- Agg (14)
-              SELECT G as G
-               FROM (-- exclude(21)
-                     SELECT *
-                      FROM (-- Join(28)
-                            SELECT _xmt_interp_edge_TU_2.a_1 AS x,
-                                   _xmt_interp_edge_TU_2.a_2 AS y,
-                                   apply("or", apply("not", apply(">", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1)))) AS G
-                              FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
-                      WHERE G <> "true"))
-        WHERE G <> "true")
+ FROM (-- Agg (7)
+       SELECT G as G
+        FROM (-- Join(14)
+              SELECT _xmt_interp_edge_UF_2.a_1 AS x,
+                     _xmt_interp_edge_UF_2.a_2 AS y,
+                     apply("=", apply("edge_value", _xmt_interp_edge_UF_2.a_1, _xmt_interp_edge_UF_2.a_2), 0) AS G
+                FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_2)
+       UNION ALL
+       -- Agg (7)
+       SELECT G as G
+        FROM (-- Join(14)
+              SELECT _xmt_interp_edge_TU_2.a_1 AS x,
+                     _xmt_interp_edge_TU_2.a_2 AS y,
+                     apply("or", apply("not", apply(">=", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2)))) AS G
+                FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
+       UNION ALL
+       -- Agg (7)
+       SELECT G as G
+        FROM (-- Join(14)
+              SELECT _xmt_interp_edge_TU_2.a_1 AS x,
+                     _xmt_interp_edge_TU_2.a_2 AS y,
+                     apply("or", apply("not", apply(">", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1)))) AS G
+                FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2))
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT and_(Agg_9_G.G, Agg_17_G.G, Agg_23_G.G) AS G
@@ -831,40 +783,31 @@ SELECT and_(Agg_9_G.G, Agg_17_G.G, Agg_23_G.G) AS G
         SELECT and_aggregate(G) as G
          FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
                UNION ALL
-               -- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_edge_UF_2.a_1 AS x,
-                             _xmt_interp_edge_UF_2.a_2 AS y,
-                             apply("=", apply("edge_value", _xmt_interp_edge_UF_2.a_1, _xmt_interp_edge_UF_2.a_2), 0) AS G
-                        FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_2)
-                WHERE G <> "true")
+               -- Join(15)
+               SELECT _xmt_interp_edge_UF_2.a_1 AS x,
+                      _xmt_interp_edge_UF_2.a_2 AS y,
+                      apply("=", apply("edge_value", _xmt_interp_edge_UF_2.a_1, _xmt_interp_edge_UF_2.a_2), 0) AS G
+                 FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_2)
         ) AS Agg_9_G
   JOIN (-- Agg (8)
         SELECT and_aggregate(G) as G
          FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
                UNION ALL
-               -- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_edge_TU_2.a_1 AS x,
-                             _xmt_interp_edge_TU_2.a_2 AS y,
-                             apply("or", apply("not", apply(">=", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2)))) AS G
-                        FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
-                WHERE G <> "true")
+               -- Join(15)
+               SELECT _xmt_interp_edge_TU_2.a_1 AS x,
+                      _xmt_interp_edge_TU_2.a_2 AS y,
+                      apply("or", apply("not", apply(">=", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_1), apply("value", _xmt_interp_edge_TU_2.a_2)))) AS G
+                 FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
         ) AS Agg_17_G
   JOIN (-- Agg (8)
         SELECT and_aggregate(G) as G
          FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
                UNION ALL
-               -- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_edge_TU_2.a_1 AS x,
-                             _xmt_interp_edge_TU_2.a_2 AS y,
-                             apply("or", apply("not", apply(">", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1)))) AS G
-                        FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
-                WHERE G <> "true")
+               -- Join(15)
+               SELECT _xmt_interp_edge_TU_2.a_1 AS x,
+                      _xmt_interp_edge_TU_2.a_2 AS y,
+                      apply("or", apply("not", apply(">", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1))), apply("=", apply("edge_value", _xmt_interp_edge_TU_2.a_1, _xmt_interp_edge_TU_2.a_2), apply("-", apply("value", _xmt_interp_edge_TU_2.a_2), apply("value", _xmt_interp_edge_TU_2.a_1)))) AS G
+                 FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_2)
         ) AS Agg_23_G
 
 ===========================================

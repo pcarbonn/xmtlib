@@ -169,23 +169,20 @@ SELECT "x" AS x,
 -- Agg (0)
 SELECT y, x,
        or_aggregate(G) as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT "y" AS y,
-                     "x" AS x,
-                     apply("not", apply("domain", "y")) AS G
-              UNION ALL
-              -- Join(14)
-              SELECT "y" AS y,
-                     "x" AS x,
-                     apply("not", apply("<", "y", "x")) AS G
-              UNION ALL
-              -- Join(14)
-              SELECT "y" AS y,
-                     "x" AS x,
-                     apply(">", apply("mod", "x", "y"), 0) AS G)
-        WHERE G <> "false")
+ FROM (-- Join(7)
+       SELECT "y" AS y,
+              "x" AS x,
+              apply("not", apply("domain", "y")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "y" AS y,
+              "x" AS x,
+              apply("not", apply("<", "y", "x")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "y" AS y,
+              "x" AS x,
+              apply(">", apply("mod", "x", "y"), 0) AS G)
  GROUP BY y, x
 ----- UF -----------------------------------------------------------
 -- Join(0)
@@ -204,40 +201,31 @@ SELECT "y" AS y,
 -- Agg (0)
 SELECT x,
        and_aggregate(G) as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_domain_TU_5.a_1 AS y,
-                     "x" AS x,
-                     apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
-                FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
-        WHERE G <> "true")
+ FROM (-- Join(7)
+       SELECT _xmt_interp_domain_TU_5.a_1 AS y,
+              "x" AS x,
+              apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
+         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
  GROUP BY x
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT x,
        and_aggregate(G) as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_domain_TU_5.a_1 AS y,
-                     "x" AS x,
-                     apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
-                FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
-        WHERE G <> "true")
+ FROM (-- Join(7)
+       SELECT _xmt_interp_domain_TU_5.a_1 AS y,
+              "x" AS x,
+              apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
+         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
  GROUP BY x
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT x,
        and_aggregate(G) as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_domain_TU_5.a_1 AS y,
-                     "x" AS x,
-                     apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
-                FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
-        WHERE G <> "true")
+ FROM (-- Join(7)
+       SELECT _xmt_interp_domain_TU_5.a_1 AS y,
+              "x" AS x,
+              apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
+         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
  GROUP BY x
 
 ===  (= (prime x) (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0)))) ======================================
@@ -248,14 +236,11 @@ SELECT Agg_13_G.x AS x,
   FROM (-- Agg (8)
         SELECT x,
                and_aggregate(G) as G
-         FROM (-- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_domain_TU_5.a_1 AS y,
-                             "x" AS x,
-                             apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
-                        FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
-                WHERE G <> "true")
+         FROM (-- Join(15)
+               SELECT _xmt_interp_domain_TU_5.a_1 AS y,
+                      "x" AS x,
+                      apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
+                 FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
          GROUP BY x
         ) AS Agg_13_G
 ----- UF -----------------------------------------------------------
@@ -269,14 +254,11 @@ SELECT Outer_0.x AS x,
   FULL JOIN (-- Agg (8)
         SELECT x,
                and_aggregate(G) as G
-         FROM (-- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_domain_TU_5.a_1 AS y,
-                             "x" AS x,
-                             apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
-                        FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
-                WHERE G <> "true")
+         FROM (-- Join(15)
+               SELECT _xmt_interp_domain_TU_5.a_1 AS y,
+                      "x" AS x,
+                      apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
+                 FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
          GROUP BY x
         ) AS Agg_13_UF ON  Agg_13_UF.x = Outer_0.x
 ----- G ------------------------------------------------------------
@@ -286,14 +268,11 @@ SELECT Agg_13_G.x AS x,
   FROM (-- Agg (8)
         SELECT x,
                and_aggregate(G) as G
-         FROM (-- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_domain_TU_5.a_1 AS y,
-                             "x" AS x,
-                             apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
-                        FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
-                WHERE G <> "true")
+         FROM (-- Join(15)
+               SELECT _xmt_interp_domain_TU_5.a_1 AS y,
+                      "x" AS x,
+                      apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
+                 FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
          GROUP BY x
         ) AS Agg_13_G
 
@@ -302,29 +281,23 @@ SELECT Agg_13_G.x AS x,
 -- Agg (0)
 SELECT x,
        or_aggregate(G) as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT "x" AS x,
-                     apply("not", apply("domain", "x")) AS G
-              UNION ALL
-              -- Join(14)
-              SELECT Agg_13_G.x AS x,
-                     apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G) AS G
-                FROM (-- Agg (22)
-                      SELECT x,
-                             and_aggregate(G) as G
-                       FROM (-- exclude(29)
-                             SELECT *
-                              FROM (-- Join(36)
-                                    SELECT _xmt_interp_domain_TU_5.a_1 AS y,
-                                           "x" AS x,
-                                           apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
-                                      FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
-                              WHERE G <> "true")
-                       GROUP BY x
-                      ) AS Agg_13_G)
-        WHERE G <> "false")
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              apply("not", apply("domain", "x")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT Agg_13_G.x AS x,
+              apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G) AS G
+         FROM (-- Agg (15)
+               SELECT x,
+                      and_aggregate(G) as G
+                FROM (-- Join(22)
+                      SELECT _xmt_interp_domain_TU_5.a_1 AS y,
+                             "x" AS x,
+                             apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
+                        FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
+                GROUP BY x
+               ) AS Agg_13_G)
  GROUP BY x
 ----- UF -----------------------------------------------------------
 -- Join(0)
@@ -341,15 +314,12 @@ SELECT _xmt_interp_domain_TU_1.a_1 AS x,
           FULL JOIN (-- Agg (16)
                 SELECT x,
                        and_aggregate(G) as G
-                 FROM (-- exclude(23)
-                       SELECT *
-                        FROM (-- Join(30)
-                              SELECT _xmt_interp_domain_TU_5.a_1 AS y,
-                                     _xmt_interp_domain_TU_1.a_1 AS x,
-                                     or_(not_(compare_("<", _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_1.a_1)), compare_(">", left_("mod", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1), 0)) AS G
-                                FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
-                                JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)
-                        WHERE G <> "true")
+                 FROM (-- Join(23)
+                       SELECT _xmt_interp_domain_TU_5.a_1 AS y,
+                              _xmt_interp_domain_TU_1.a_1 AS x,
+                              or_(not_(compare_("<", _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_1.a_1)), compare_(">", left_("mod", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1), 0)) AS G
+                         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+                         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)
                  GROUP BY x
                 ) AS Agg_13_UF ON  Agg_13_UF.x = Outer_0.x
         ) AS _xmt_view__14_20
@@ -362,14 +332,11 @@ SELECT Agg_13_G.x AS x,
   FROM (-- Agg (8)
         SELECT x,
                and_aggregate(G) as G
-         FROM (-- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_domain_TU_5.a_1 AS y,
-                             "x" AS x,
-                             apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
-                        FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
-                WHERE G <> "true")
+         FROM (-- Join(15)
+               SELECT _xmt_interp_domain_TU_5.a_1 AS y,
+                      "x" AS x,
+                      apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
+                 FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
          GROUP BY x
         ) AS Agg_13_G
 
@@ -393,15 +360,12 @@ SELECT and_aggregate(G) as G
                  FULL JOIN (-- Agg (23)
                        SELECT x,
                               and_aggregate(G) as G
-                        FROM (-- exclude(30)
-                              SELECT *
-                               FROM (-- Join(37)
-                                     SELECT _xmt_interp_domain_TU_5.a_1 AS y,
-                                            _xmt_interp_domain_TU_1.a_1 AS x,
-                                            or_(not_(compare_("<", _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_1.a_1)), compare_(">", left_("mod", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1), 0)) AS G
-                                       FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
-                                       JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)
-                               WHERE G <> "true")
+                        FROM (-- Join(30)
+                              SELECT _xmt_interp_domain_TU_5.a_1 AS y,
+                                     _xmt_interp_domain_TU_1.a_1 AS x,
+                                     or_(not_(compare_("<", _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_1.a_1)), compare_(">", left_("mod", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1), 0)) AS G
+                                FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+                                JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)
                         GROUP BY x
                        ) AS Agg_13_UF ON  Agg_13_UF.x = Outer_0.x
                ) AS _xmt_view__14_20
@@ -424,15 +388,12 @@ SELECT G as G
                  FULL JOIN (-- Agg (23)
                        SELECT x,
                               and_aggregate(G) as G
-                        FROM (-- exclude(30)
-                              SELECT *
-                               FROM (-- Join(37)
-                                     SELECT _xmt_interp_domain_TU_5.a_1 AS y,
-                                            _xmt_interp_domain_TU_1.a_1 AS x,
-                                            or_(not_(compare_("<", _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_1.a_1)), compare_(">", left_("mod", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1), 0)) AS G
-                                       FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
-                                       JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)
-                               WHERE G <> "true")
+                        FROM (-- Join(30)
+                              SELECT _xmt_interp_domain_TU_5.a_1 AS y,
+                                     _xmt_interp_domain_TU_1.a_1 AS x,
+                                     or_(not_(compare_("<", _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_1.a_1)), compare_(">", left_("mod", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1), 0)) AS G
+                                FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+                                JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)
                         GROUP BY x
                        ) AS Agg_13_UF ON  Agg_13_UF.x = Outer_0.x
                ) AS _xmt_view__14_20
@@ -457,15 +418,12 @@ SELECT and_aggregate(G) as G
                  FULL JOIN (-- Agg (23)
                        SELECT x,
                               and_aggregate(G) as G
-                        FROM (-- exclude(30)
-                              SELECT *
-                               FROM (-- Join(37)
-                                     SELECT _xmt_interp_domain_TU_5.a_1 AS y,
-                                            _xmt_interp_domain_TU_1.a_1 AS x,
-                                            or_(not_(compare_("<", _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_1.a_1)), compare_(">", left_("mod", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1), 0)) AS G
-                                       FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
-                                       JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)
-                               WHERE G <> "true")
+                        FROM (-- Join(30)
+                              SELECT _xmt_interp_domain_TU_5.a_1 AS y,
+                                     _xmt_interp_domain_TU_1.a_1 AS x,
+                                     or_(not_(compare_("<", _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_1.a_1)), compare_(">", left_("mod", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1), 0)) AS G
+                                FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+                                JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)
                         GROUP BY x
                        ) AS Agg_13_UF ON  Agg_13_UF.x = Outer_0.x
                ) AS _xmt_view__14_20

@@ -150,16 +150,13 @@ SELECT "x" AS x,
 -- Agg (0)
 SELECT x,
        or_aggregate(G) as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT "x" AS x,
-                     apply("not", apply("domain", "x")) AS G
-              UNION ALL
-              -- Join(14)
-              SELECT "x" AS x,
-                     apply("=", apply("P", "x"), apply("Q", "x")) AS G)
-        WHERE G <> "false")
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              apply("not", apply("domain", "x")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "x" AS x,
+              apply("=", apply("P", "x"), apply("Q", "x")) AS G)
  GROUP BY x
 ----- UF -----------------------------------------------------------
 -- Join(0)

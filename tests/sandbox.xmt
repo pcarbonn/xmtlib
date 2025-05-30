@@ -249,46 +249,37 @@ SELECT _xmt_interp_manassignsscore_G_4.a_1 AS M,
 SELECT and_aggregate(G) as G
  FROM (SELECT NULL AS M, NULL AS W, NULL AS W1, "true" AS G 
        UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_manassignsscore_G_4.a_1 AS M,
-                     _xmt_interp_manassignsscore_G_4.a_2 AS W,
-                     _xmt_interp_manassignsscore_G_5.a_2 AS W1,
-                     apply("=", apply("manPrefers", _xmt_interp_manassignsscore_G_4.a_1, _xmt_interp_manassignsscore_G_4.a_2, _xmt_interp_manassignsscore_G_5.a_2), compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G)) AS G
-                FROM _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
-                JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
-                      ON _xmt_interp_manassignsscore_G_4.a_1 = _xmt_interp_manassignsscore_G_5.a_1)
-        WHERE G <> "true")
+       -- Join(7)
+       SELECT _xmt_interp_manassignsscore_G_4.a_1 AS M,
+              _xmt_interp_manassignsscore_G_4.a_2 AS W,
+              _xmt_interp_manassignsscore_G_5.a_2 AS W1,
+              apply("=", apply("manPrefers", _xmt_interp_manassignsscore_G_4.a_1, _xmt_interp_manassignsscore_G_4.a_2, _xmt_interp_manassignsscore_G_5.a_2), compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G)) AS G
+         FROM _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
+         JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
+               ON _xmt_interp_manassignsscore_G_4.a_1 = _xmt_interp_manassignsscore_G_5.a_1)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_manassignsscore_G_4.a_1 AS M,
-                     _xmt_interp_manassignsscore_G_4.a_2 AS W,
-                     _xmt_interp_manassignsscore_G_5.a_2 AS W1,
-                     apply("=", apply("manPrefers", _xmt_interp_manassignsscore_G_4.a_1, _xmt_interp_manassignsscore_G_4.a_2, _xmt_interp_manassignsscore_G_5.a_2), compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G)) AS G
-                FROM _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
-                JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
-                      ON _xmt_interp_manassignsscore_G_4.a_1 = _xmt_interp_manassignsscore_G_5.a_1)
-        WHERE G <> "true")
+ FROM (-- Join(7)
+       SELECT _xmt_interp_manassignsscore_G_4.a_1 AS M,
+              _xmt_interp_manassignsscore_G_4.a_2 AS W,
+              _xmt_interp_manassignsscore_G_5.a_2 AS W1,
+              apply("=", apply("manPrefers", _xmt_interp_manassignsscore_G_4.a_1, _xmt_interp_manassignsscore_G_4.a_2, _xmt_interp_manassignsscore_G_5.a_2), compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G)) AS G
+         FROM _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
+         JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
+               ON _xmt_interp_manassignsscore_G_4.a_1 = _xmt_interp_manassignsscore_G_5.a_1)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
  FROM (SELECT NULL AS M, NULL AS W, NULL AS W1, "true" AS G 
        UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_manassignsscore_G_4.a_1 AS M,
-                     _xmt_interp_manassignsscore_G_4.a_2 AS W,
-                     _xmt_interp_manassignsscore_G_5.a_2 AS W1,
-                     apply("=", apply("manPrefers", _xmt_interp_manassignsscore_G_4.a_1, _xmt_interp_manassignsscore_G_4.a_2, _xmt_interp_manassignsscore_G_5.a_2), compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G)) AS G
-                FROM _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
-                JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
-                      ON _xmt_interp_manassignsscore_G_4.a_1 = _xmt_interp_manassignsscore_G_5.a_1)
-        WHERE G <> "true")
+       -- Join(7)
+       SELECT _xmt_interp_manassignsscore_G_4.a_1 AS M,
+              _xmt_interp_manassignsscore_G_4.a_2 AS W,
+              _xmt_interp_manassignsscore_G_5.a_2 AS W1,
+              apply("=", apply("manPrefers", _xmt_interp_manassignsscore_G_4.a_1, _xmt_interp_manassignsscore_G_4.a_2, _xmt_interp_manassignsscore_G_5.a_2), compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G)) AS G
+         FROM _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
+         JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
+               ON _xmt_interp_manassignsscore_G_4.a_1 = _xmt_interp_manassignsscore_G_5.a_1)
 
 ===========================================

@@ -1200,7 +1200,7 @@ SELECT _xmt_sort_node.G AS n1,
   JOIN _xmt_sort_node AS _xmt_sort_node_1
 
 ===  (or (not (link n1 n2)) (not (= (colourOf n1) (colourOf n2)))) ======================================
------ TU -----------------------------------------------------------
+----- T ------------------------------------------------------------
 -- Agg (0)
 SELECT n1, n2,
        or_aggregate(G) as G
@@ -1239,38 +1239,29 @@ SELECT _xmt_interp_link_G_2.a_1 AS n1,
 SELECT and_aggregate(G) as G
  FROM (SELECT NULL AS n1, NULL AS n2, "true" AS G 
        UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_link_TU_2.a_1 AS n1,
-                     _xmt_interp_link_TU_2.a_2 AS n2,
-                     apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
-                FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2)
-        WHERE G <> "true")
+       -- Join(7)
+       SELECT _xmt_interp_link_TU_2.a_1 AS n1,
+              _xmt_interp_link_TU_2.a_2 AS n2,
+              apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
+         FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_link_TU_2.a_1 AS n1,
-                     _xmt_interp_link_TU_2.a_2 AS n2,
-                     apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
-                FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2)
-        WHERE G <> "true")
+ FROM (-- Join(7)
+       SELECT _xmt_interp_link_TU_2.a_1 AS n1,
+              _xmt_interp_link_TU_2.a_2 AS n2,
+              apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
+         FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
  FROM (SELECT NULL AS n1, NULL AS n2, "true" AS G 
        UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_link_TU_2.a_1 AS n1,
-                     _xmt_interp_link_TU_2.a_2 AS n2,
-                     apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
-                FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2)
-        WHERE G <> "true")
+       -- Join(7)
+       SELECT _xmt_interp_link_TU_2.a_1 AS n1,
+              _xmt_interp_link_TU_2.a_2 AS n2,
+              apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
+         FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2)
 
 === (top) (and (forall ((n1 Node) (n2 Node)) (or (not (link n1 n2)) (not (= (colourOf n1) (colourOf n2)))))) ======================================
 ----- TU -----------------------------------------------------------
@@ -1280,26 +1271,20 @@ SELECT Agg_9_TU.G AS G
         SELECT and_aggregate(G) as G
          FROM (SELECT NULL AS n1, NULL AS n2, "true" AS G 
                UNION ALL
-               -- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_link_TU_2.a_1 AS n1,
-                             _xmt_interp_link_TU_2.a_2 AS n2,
-                             apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
-                        FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2)
-                WHERE G <> "true")
+               -- Join(15)
+               SELECT _xmt_interp_link_TU_2.a_1 AS n1,
+                      _xmt_interp_link_TU_2.a_2 AS n2,
+                      apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
+                 FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2)
         ) AS Agg_9_TU
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_link_TU_2.a_1 AS n1,
-                     _xmt_interp_link_TU_2.a_2 AS n2,
-                     apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
-                FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2)
-        WHERE G <> "true")
+ FROM (-- Join(7)
+       SELECT _xmt_interp_link_TU_2.a_1 AS n1,
+              _xmt_interp_link_TU_2.a_2 AS n2,
+              apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
+         FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2)
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT Agg_9_G.G AS G
@@ -1307,14 +1292,11 @@ SELECT Agg_9_G.G AS G
         SELECT and_aggregate(G) as G
          FROM (SELECT NULL AS n1, NULL AS n2, "true" AS G 
                UNION ALL
-               -- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_link_TU_2.a_1 AS n1,
-                             _xmt_interp_link_TU_2.a_2 AS n2,
-                             apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
-                        FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2)
-                WHERE G <> "true")
+               -- Join(15)
+               SELECT _xmt_interp_link_TU_2.a_1 AS n1,
+                      _xmt_interp_link_TU_2.a_2 AS n2,
+                      apply("not", apply("=", apply("colourOf", _xmt_interp_link_TU_2.a_1), apply("colourOf", _xmt_interp_link_TU_2.a_2))) AS G
+                 FROM _xmt_interp_link_TU AS _xmt_interp_link_TU_2)
         ) AS Agg_9_G
 
 ===========================================
