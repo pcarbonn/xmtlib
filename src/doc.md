@@ -113,3 +113,11 @@ The documented topics are listed below:
 ## // LINK src/doc.md#_Infinite
 
 ## // LINK src/doc.md#_Constructor
+
+# // LINK src/doc.md#_precise
+
+A TU or UF query is precise only if it only has rows consistent with the view (e.g., no "false" in TU view).
+If a query is not precise, its TU or UF view has an exclude.
+A G view is always precise and does not have an exclude.
+
+A query (for boolean) has a G complexity if it is not precise.

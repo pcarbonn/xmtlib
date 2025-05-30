@@ -565,28 +565,30 @@ fn ground_compound(
                     }
                     "=" => {
                         // LINK src/doc.md#_Equality
+                        let tu = view_for_compound(qual_identifier, index, &mut gqs, &variant, Some(false), solver)?;
 
-                        let (mut gqs, variant) = match groundings.get(0) {
+                        let uf = match groundings.get(0) {
                             Some(Grounding::Boolean { .. }) => {
                                 if 2 < gqs.len() {
                                     return Err(SolverError::TermError("Too many boolean arguments", term.clone()))  //TODO relax constraint
                                 }
                                 let use_g = ufs.iter()
                                     .all(|g| g.has_g_complexity());
+
                                 if use_g {
-                                    (gqs, QueryVariant::Predefined(Predefined::Eq))
+                                    let variant = QueryVariant::Predefined(Predefined::Eq);
+                                    view_for_compound(qual_identifier, index, &mut gqs, &variant, Some(true), solver)?
                                 } else {
-                                    (ufs, QueryVariant::Equality(true))
+                                    let variant = QueryVariant::Equality(true);
+                                    view_for_compound(qual_identifier, index, &mut ufs, &variant, None, solver)?
                                 }
                             },
                             Some(Grounding::NonBoolean { .. }) => {
-                                (gqs, QueryVariant::Predefined(Predefined::Eq))
+                                let variant = QueryVariant::Predefined(Predefined::Eq);
+                                view_for_compound(qual_identifier, index, &mut gqs, &variant, Some(true), solver)?
                             },
                             None => return Err(SolverError::TermError("missing arguments", term.clone())),
                         };
-                        let tu = view_for_compound(qual_identifier, index, &mut gqs, &variant, Some(false), solver)?;
-
-                        let uf = view_for_compound(qual_identifier, index, &mut gqs, &variant, Some(true), solver)?;
 
                         let g = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
 

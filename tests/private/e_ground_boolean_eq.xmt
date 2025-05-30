@@ -57,9 +57,9 @@
 (assert (= (p green) (q green)))
 (assert (= true (q red)))
 (echo "negated")
+(assert (not (= true (q red))))
 (assert (not (= (p blue) true)))
 (assert (not (= (p green) (q green))))
-(assert (not (= true (q red))))
 Groundings:
 ===  x ======================================
  -- Join(0)
@@ -126,16 +126,8 @@ SELECT "x" AS x,
 ===  (= (P x) (Q x)) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT Outer_0.x AS x,
-       bool_eq_("true", Outer_0.G, Outer_1.G) AS G
-  FROM (-- Join(8)
-        SELECT "x" AS x,
-               apply("P", "x") AS G
-        ) AS Outer_0
-  FULL JOIN (-- Join(8)
-        SELECT "x" AS x,
-               apply("Q", "x") AS G
-        ) AS Outer_1 ON  Outer_1.x = Outer_0.x
+SELECT "x" AS x,
+       apply("=", apply("P", "x"), apply("Q", "x")) AS G
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT Outer_0.x AS x,
@@ -150,16 +142,8 @@ SELECT Outer_0.x AS x,
         ) AS Outer_1 ON  Outer_1.x = Outer_0.x
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT Outer_0.x AS x,
-       bool_eq_("true", Outer_0.G, Outer_1.G) AS G
-  FROM (-- Join(8)
-        SELECT "x" AS x,
-               apply("P", "x") AS G
-        ) AS Outer_0
-  FULL JOIN (-- Join(8)
-        SELECT "x" AS x,
-               apply("Q", "x") AS G
-        ) AS Outer_1 ON  Outer_1.x = Outer_0.x
+SELECT "x" AS x,
+       apply("=", apply("P", "x"), apply("Q", "x")) AS G
 
 ===  (or (not (domain x)) (= (P x) (Q x))) ======================================
 ----- TU -----------------------------------------------------------
@@ -173,16 +157,8 @@ SELECT x,
                      apply("not", apply("domain", "x")) AS G
               UNION ALL
               -- Join(14)
-              SELECT Outer_0.x AS x,
-                     bool_eq_("true", Outer_0.G, Outer_1.G) AS G
-                FROM (-- Join(22)
-                      SELECT "x" AS x,
-                             apply("P", "x") AS G
-                      ) AS Outer_0
-                FULL JOIN (-- Join(22)
-                      SELECT "x" AS x,
-                             apply("Q", "x") AS G
-                      ) AS Outer_1 ON  Outer_1.x = Outer_0.x)
+              SELECT "x" AS x,
+                     apply("=", apply("P", "x"), apply("Q", "x")) AS G)
         WHERE G <> "false")
  GROUP BY x
 ----- UF -----------------------------------------------------------
@@ -207,20 +183,8 @@ SELECT _xmt_interp_domain_TU_1.a_1 AS x,
  WHERE  _xmt_view__5_23.x = _xmt_interp_domain_TU_1.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_view__5_24.x AS x,
-       apply("or", apply("not", apply("domain", _xmt_view__5_24.x)), _xmt_view__5_24.G) AS G
-  FROM (-- Join(8)
-        SELECT Outer_0.x AS x,
-               bool_eq_("true", Outer_0.G, Outer_1.G) AS G
-          FROM (-- Join(16)
-                SELECT "x" AS x,
-                       apply("P", "x") AS G
-                ) AS Outer_0
-          FULL JOIN (-- Join(16)
-                SELECT "x" AS x,
-                       apply("Q", "x") AS G
-                ) AS Outer_1 ON  Outer_1.x = Outer_0.x
-        ) AS _xmt_view__5_24
+SELECT "x" AS x,
+       apply("or", apply("not", apply("domain", "x")), apply("=", apply("P", "x"), apply("Q", "x"))) AS G
 
 === (top) (forall ((x Int)) (or (not (domain x)) (= (P x) (Q x)))) ======================================
 ----- TU -----------------------------------------------------------
@@ -336,18 +300,11 @@ SELECT _xmt_interp_q_G_10.a_1 AS x,
 ===  (= (p x) (q x)) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_view_p_9_28.x AS x,
-       bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G) AS G
-  FROM (-- Join(8)
-        SELECT _xmt_interp_p_UF_9.a_1 AS x,
-               _xmt_interp_p_UF_9.G AS G
-          FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
-        ) AS _xmt_view_p_9_28
-  FULL JOIN (-- Join(8)
-        SELECT _xmt_interp_q_UF_10.a_1 AS x,
-               _xmt_interp_q_UF_10.G AS G
-          FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
-        ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x
+SELECT _xmt_interp_p_G_9.a_1 AS x,
+       eq_(_xmt_interp_p_G_9.G, _xmt_interp_q_G_10.G) AS G
+  FROM _xmt_interp_p_G AS _xmt_interp_p_G_9
+  JOIN _xmt_interp_q_G AS _xmt_interp_q_G_10
+        ON _xmt_interp_p_G_9.a_1 = _xmt_interp_q_G_10.a_1
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT _xmt_view_p_9_28.x AS x,
@@ -364,18 +321,11 @@ SELECT _xmt_view_p_9_28.x AS x,
         ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_view_p_9_28.x AS x,
-       bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G) AS G
-  FROM (-- Join(8)
-        SELECT _xmt_interp_p_UF_9.a_1 AS x,
-               _xmt_interp_p_UF_9.G AS G
-          FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
-        ) AS _xmt_view_p_9_28
-  FULL JOIN (-- Join(8)
-        SELECT _xmt_interp_q_UF_10.a_1 AS x,
-               _xmt_interp_q_UF_10.G AS G
-          FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
-        ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x
+SELECT _xmt_interp_p_G_9.a_1 AS x,
+       eq_(_xmt_interp_p_G_9.G, _xmt_interp_q_G_10.G) AS G
+  FROM _xmt_interp_p_G AS _xmt_interp_p_G_9
+  JOIN _xmt_interp_q_G AS _xmt_interp_q_G_10
+        ON _xmt_interp_p_G_9.a_1 = _xmt_interp_q_G_10.a_1
 
 === (top) (forall ((x Color)) (= (p x) (q x))) ======================================
 ----- TU -----------------------------------------------------------
@@ -383,62 +333,53 @@ SELECT _xmt_view_p_9_28.x AS x,
 SELECT and_aggregate(G) as G
  FROM (SELECT NULL AS x, "true" AS G 
        UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_view_p_9_28.x AS x,
-                     bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G) AS G
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_p_UF_9.a_1 AS x,
-                             _xmt_interp_p_UF_9.G AS G
-                        FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
-                      ) AS _xmt_view_p_9_28
-                FULL JOIN (-- Join(22)
-                      SELECT _xmt_interp_q_UF_10.a_1 AS x,
-                             _xmt_interp_q_UF_10.G AS G
-                        FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
-                      ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x)
-        WHERE G <> "true")
+       -- Join(7)
+       SELECT _xmt_view_p_9_28.x AS x,
+              bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G) AS G
+         FROM (-- Join(15)
+               SELECT _xmt_interp_p_UF_9.a_1 AS x,
+                      _xmt_interp_p_UF_9.G AS G
+                 FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
+               ) AS _xmt_view_p_9_28
+         FULL JOIN (-- Join(15)
+               SELECT _xmt_interp_q_UF_10.a_1 AS x,
+                      _xmt_interp_q_UF_10.G AS G
+                 FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
+               ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_view_p_9_28.x AS x,
-                     bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G) AS G
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_p_UF_9.a_1 AS x,
-                             _xmt_interp_p_UF_9.G AS G
-                        FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
-                      ) AS _xmt_view_p_9_28
-                FULL JOIN (-- Join(22)
-                      SELECT _xmt_interp_q_UF_10.a_1 AS x,
-                             _xmt_interp_q_UF_10.G AS G
-                        FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
-                      ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x)
-        WHERE G <> "true")
+ FROM (-- Join(7)
+       SELECT _xmt_view_p_9_28.x AS x,
+              bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G) AS G
+         FROM (-- Join(15)
+               SELECT _xmt_interp_p_UF_9.a_1 AS x,
+                      _xmt_interp_p_UF_9.G AS G
+                 FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
+               ) AS _xmt_view_p_9_28
+         FULL JOIN (-- Join(15)
+               SELECT _xmt_interp_q_UF_10.a_1 AS x,
+                      _xmt_interp_q_UF_10.G AS G
+                 FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
+               ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
  FROM (SELECT NULL AS x, "true" AS G 
        UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_view_p_9_28.x AS x,
-                     bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G) AS G
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_p_UF_9.a_1 AS x,
-                             _xmt_interp_p_UF_9.G AS G
-                        FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
-                      ) AS _xmt_view_p_9_28
-                FULL JOIN (-- Join(22)
-                      SELECT _xmt_interp_q_UF_10.a_1 AS x,
-                             _xmt_interp_q_UF_10.G AS G
-                        FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
-                      ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x)
-        WHERE G <> "true")
+       -- Join(7)
+       SELECT _xmt_view_p_9_28.x AS x,
+              bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G) AS G
+         FROM (-- Join(15)
+               SELECT _xmt_interp_p_UF_9.a_1 AS x,
+                      _xmt_interp_p_UF_9.G AS G
+                 FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
+               ) AS _xmt_view_p_9_28
+         FULL JOIN (-- Join(15)
+               SELECT _xmt_interp_q_UF_10.a_1 AS x,
+                      _xmt_interp_q_UF_10.G AS G
+                 FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
+               ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x)
 
 ===  (not (= (p x) (q x))) ======================================
 ----- TU -----------------------------------------------------------
@@ -457,32 +398,18 @@ SELECT _xmt_view_p_9_28.x AS x,
         ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x
 ----- UF -----------------------------------------------------------
 -- Join(0)
-SELECT _xmt_view_p_9_28.x AS x,
-       not_(bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G)) AS G
-  FROM (-- Join(8)
-        SELECT _xmt_interp_p_UF_9.a_1 AS x,
-               _xmt_interp_p_UF_9.G AS G
-          FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
-        ) AS _xmt_view_p_9_28
-  FULL JOIN (-- Join(8)
-        SELECT _xmt_interp_q_UF_10.a_1 AS x,
-               _xmt_interp_q_UF_10.G AS G
-          FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
-        ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x
+SELECT _xmt_interp_p_G_9.a_1 AS x,
+       not_(eq_(_xmt_interp_p_G_9.G, _xmt_interp_q_G_10.G)) AS G
+  FROM _xmt_interp_p_G AS _xmt_interp_p_G_9
+  JOIN _xmt_interp_q_G AS _xmt_interp_q_G_10
+        ON _xmt_interp_p_G_9.a_1 = _xmt_interp_q_G_10.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_view_p_9_28.x AS x,
-       not_(bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G)) AS G
-  FROM (-- Join(8)
-        SELECT _xmt_interp_p_UF_9.a_1 AS x,
-               _xmt_interp_p_UF_9.G AS G
-          FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
-        ) AS _xmt_view_p_9_28
-  FULL JOIN (-- Join(8)
-        SELECT _xmt_interp_q_UF_10.a_1 AS x,
-               _xmt_interp_q_UF_10.G AS G
-          FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
-        ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x
+SELECT _xmt_interp_p_G_9.a_1 AS x,
+       not_(eq_(_xmt_interp_p_G_9.G, _xmt_interp_q_G_10.G)) AS G
+  FROM _xmt_interp_p_G AS _xmt_interp_p_G_9
+  JOIN _xmt_interp_q_G AS _xmt_interp_q_G_10
+        ON _xmt_interp_p_G_9.a_1 = _xmt_interp_q_G_10.a_1
 
 === (top) (forall ((x Color)) (not (= (p x) (q x)))) ======================================
 ----- TU -----------------------------------------------------------
@@ -493,18 +420,11 @@ SELECT and_aggregate(G) as G
        -- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_view_p_9_28.x AS x,
-                     not_(bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G)) AS G
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_p_UF_9.a_1 AS x,
-                             _xmt_interp_p_UF_9.G AS G
-                        FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
-                      ) AS _xmt_view_p_9_28
-                FULL JOIN (-- Join(22)
-                      SELECT _xmt_interp_q_UF_10.a_1 AS x,
-                             _xmt_interp_q_UF_10.G AS G
-                        FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
-                      ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x)
+              SELECT _xmt_interp_p_G_9.a_1 AS x,
+                     not_(eq_(_xmt_interp_p_G_9.G, _xmt_interp_q_G_10.G)) AS G
+                FROM _xmt_interp_p_G AS _xmt_interp_p_G_9
+                JOIN _xmt_interp_q_G AS _xmt_interp_q_G_10
+                      ON _xmt_interp_p_G_9.a_1 = _xmt_interp_q_G_10.a_1)
         WHERE G <> "true")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -512,18 +432,11 @@ SELECT G as G
  FROM (-- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_view_p_9_28.x AS x,
-                     not_(bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G)) AS G
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_p_UF_9.a_1 AS x,
-                             _xmt_interp_p_UF_9.G AS G
-                        FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
-                      ) AS _xmt_view_p_9_28
-                FULL JOIN (-- Join(22)
-                      SELECT _xmt_interp_q_UF_10.a_1 AS x,
-                             _xmt_interp_q_UF_10.G AS G
-                        FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
-                      ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x)
+              SELECT _xmt_interp_p_G_9.a_1 AS x,
+                     not_(eq_(_xmt_interp_p_G_9.G, _xmt_interp_q_G_10.G)) AS G
+                FROM _xmt_interp_p_G AS _xmt_interp_p_G_9
+                JOIN _xmt_interp_q_G AS _xmt_interp_q_G_10
+                      ON _xmt_interp_p_G_9.a_1 = _xmt_interp_q_G_10.a_1)
         WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Agg (0)
@@ -533,18 +446,11 @@ SELECT and_aggregate(G) as G
        -- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_view_p_9_28.x AS x,
-                     not_(bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G)) AS G
-                FROM (-- Join(22)
-                      SELECT _xmt_interp_p_UF_9.a_1 AS x,
-                             _xmt_interp_p_UF_9.G AS G
-                        FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
-                      ) AS _xmt_view_p_9_28
-                FULL JOIN (-- Join(22)
-                      SELECT _xmt_interp_q_UF_10.a_1 AS x,
-                             _xmt_interp_q_UF_10.G AS G
-                        FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
-                      ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x)
+              SELECT _xmt_interp_p_G_9.a_1 AS x,
+                     not_(eq_(_xmt_interp_p_G_9.G, _xmt_interp_q_G_10.G)) AS G
+                FROM _xmt_interp_p_G AS _xmt_interp_p_G_9
+                JOIN _xmt_interp_q_G AS _xmt_interp_q_G_10
+                      ON _xmt_interp_p_G_9.a_1 = _xmt_interp_q_G_10.a_1)
         WHERE G <> "true")
 
 ===========================================
