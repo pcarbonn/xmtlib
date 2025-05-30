@@ -80,7 +80,7 @@ SELECT _xmt_interp_p_TU_5.a_1 AS x,
        _xmt_interp_p_TU_5.G AS G
   FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
   JOIN _xmt_interp_p_TU AS _xmt_interp_p_TU_5
-        ON join_(_xmt_interp_f_G_4.G, _xmt_interp_p_TU_5.a_2)
+        ON (NOT is_id(_xmt_interp_f_G_4.G) OR _xmt_interp_f_G_4.G = _xmt_interp_p_TU_5.a_2)
  WHERE _xmt_interp_p_TU_5.a_1 = _xmt_interp_f_G_4.a_1
 ----- UF -----------------------------------------------------------
 -- Join(0)
@@ -89,7 +89,7 @@ SELECT _xmt_interp_p_UF_5.a_1 AS x,
        _xmt_interp_p_UF_5.G AS G
   FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
   JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_5
-        ON join_(_xmt_interp_f_G_4.G, _xmt_interp_p_UF_5.a_2)
+        ON (NOT is_id(_xmt_interp_f_G_4.G) OR _xmt_interp_f_G_4.G = _xmt_interp_p_UF_5.a_2)
  WHERE _xmt_interp_p_UF_5.a_1 = _xmt_interp_f_G_4.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
@@ -98,7 +98,7 @@ SELECT _xmt_interp_p_G_5.a_1 AS x,
        _xmt_interp_p_G_5.G AS G
   FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
   JOIN _xmt_interp_p_G AS _xmt_interp_p_G_5
-        ON join_(_xmt_interp_f_G_4.G, _xmt_interp_p_G_5.a_2)
+        ON (NOT is_id(_xmt_interp_f_G_4.G) OR _xmt_interp_f_G_4.G = _xmt_interp_p_G_5.a_2)
  WHERE _xmt_interp_p_G_5.a_1 = _xmt_interp_f_G_4.a_1
 
 === (top) (forall ((x T)) (p x (f x))) ======================================
@@ -113,7 +113,7 @@ SELECT and_aggregate(implies_(if_, G)) as G
               _xmt_interp_p_UF_5.G AS G
          FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
          JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_5
-               ON join_(_xmt_interp_f_G_4.G, _xmt_interp_p_UF_5.a_2)
+               ON (NOT is_id(_xmt_interp_f_G_4.G) OR _xmt_interp_f_G_4.G = _xmt_interp_p_UF_5.a_2)
         WHERE _xmt_interp_p_UF_5.a_1 = _xmt_interp_f_G_4.a_1)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -124,7 +124,7 @@ SELECT implies_(if_, G) as G
               _xmt_interp_p_UF_5.G AS G
          FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
          JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_5
-               ON join_(_xmt_interp_f_G_4.G, _xmt_interp_p_UF_5.a_2)
+               ON (NOT is_id(_xmt_interp_f_G_4.G) OR _xmt_interp_f_G_4.G = _xmt_interp_p_UF_5.a_2)
         WHERE _xmt_interp_p_UF_5.a_1 = _xmt_interp_f_G_4.a_1)
 ----- G ------------------------------------------------------------
 -- Agg (0)
@@ -137,7 +137,7 @@ SELECT and_aggregate(implies_(if_, G)) as G
               _xmt_interp_p_UF_5.G AS G
          FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
          JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_5
-               ON join_(_xmt_interp_f_G_4.G, _xmt_interp_p_UF_5.a_2)
+               ON (NOT is_id(_xmt_interp_f_G_4.G) OR _xmt_interp_f_G_4.G = _xmt_interp_p_UF_5.a_2)
         WHERE _xmt_interp_p_UF_5.a_1 = _xmt_interp_f_G_4.a_1)
 
 ===========================================

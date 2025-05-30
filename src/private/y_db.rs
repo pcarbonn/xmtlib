@@ -161,18 +161,30 @@ pub(crate) fn init_db(
     )?;
 
     // // create function "is_id"
-    // conn.create_scalar_function(
-    //     "is_id",
-    //     1,                     // Number of arguments the function takes
-    //     FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC, // Deterministic (same input gives same output)
-    //     |ctx| {                // The function logic
-    //         if let Ok(a1) = ctx.get::<String>(0) {
-    //             bool_to_sql(! a1.starts_with("("))
-    //         } else {
-    //             bool_to_sql(true)
-    //         }
-    //     },
-    // )?;
+    conn.create_scalar_function(
+        "is_id",
+        1,                     // Number of arguments the function takes
+        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC, // Deterministic (same input gives same output)
+        |ctx| {                // The function logic
+            let value = ctx.get_raw(0);
+            match value {
+                rusqlite::types::ValueRef::Null =>
+                    Err(Error::InvalidFunctionParameterType(0, value.data_type())),
+                rusqlite::types::ValueRef::Integer(_) =>{
+                    Ok(true)
+                },
+                rusqlite::types::ValueRef::Real(_) => {
+                    Ok(true)
+                },
+                rusqlite::types::ValueRef::Text(_) => {
+                    let value = ctx.get::<String>(0)?;
+                    Ok(! value.starts_with("("))
+                }
+                rusqlite::types::ValueRef::Blob(_) =>
+                    Err(Error::InvalidFunctionParameterType(0, value.data_type())),
+            }
+        },
+    )?;
 
     // create function "if_" : `is_id(a1) OR a1 == a2` in SMT-Lib
     conn.create_scalar_function(
@@ -200,39 +212,6 @@ pub(crate) fn init_db(
                         }
                     }
                 },
-                rusqlite::types::ValueRef::Blob(_) =>
-                    Err(Error::InvalidFunctionParameterType(0, value.data_type())),
-            }
-        })?;
-
-    // create function "join_"  : `NOT is_id(a1) OR a1 == a2` in SQL
-    conn.create_scalar_function(
-        "join_",
-        2,
-        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,
-        |ctx| {
-            let value = ctx.get_raw(0);
-            match value {
-                rusqlite::types::ValueRef::Null =>
-                    Err(Error::InvalidFunctionParameterType(0, value.data_type())),
-                rusqlite::types::ValueRef::Integer(col) =>{
-                    Ok(value == rusqlite::types::ValueRef::Integer(col))
-                },
-                rusqlite::types::ValueRef::Real(col) => {
-                    Ok(value == rusqlite::types::ValueRef::Real(col))
-                },
-                rusqlite::types::ValueRef::Text(_) => {
-                    let value = ctx.get::<String>(0)?;
-                    if value.starts_with("(") {  // not an id
-                        Ok(true)
-                    } else {
-                        if let Ok(col) = ctx.get::<String>(1) {
-                            Ok(value == col)
-                        } else {  // col may be null
-                            Ok(false)
-                        }
-                    }
-                }
                 rusqlite::types::ValueRef::Blob(_) =>
                     Err(Error::InvalidFunctionParameterType(0, value.data_type())),
             }

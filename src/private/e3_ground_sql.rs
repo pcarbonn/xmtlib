@@ -110,8 +110,8 @@ impl Mapping {
         } else {
             match ids {
                 Ids::All => None,
-                Ids::Some => Some(format!("if_({}, {})", exp, col)),  // is_id(exp) or exp = col
-                Ids::None => Some(format!("apply(\"=\",{}, {})", exp, col))
+                Ids::Some => Some(format!("if_({exp}, {col})")),  // is_id(exp) or exp = col
+                Ids::None => Some(format!("apply(\"=\",{exp}, {col})"))
             }
         }
     }
@@ -127,8 +127,8 @@ impl Mapping {
             None
         } else {
             match ids {
-                Ids::All => Some(format!("{} = {}", exp, col)),
-                Ids::Some => Some(format!("join_({}, {})", exp, col)),  // NOT is_id(exp) or exp = col
+                Ids::All => Some(format!("{exp} = {col}")),
+                Ids::Some => Some(format!("(NOT is_id({exp}) OR {exp} = {col})")),
                 Ids::None => {
                     // LINK src/doc.md#_Variables
                     if let SQLExpr::Variable(_) = self.0 {  // an infinite variable mapped to an interpretation
