@@ -484,7 +484,7 @@ impl GroundingQuery {
         index: TermId,
         view_type: ViewType,
         exclude: Option<bool>,
-        all_ids: bool,
+        ids: Ids,
         solver: &mut Solver
     ) -> Result<GroundingView, SolverError> {
 
@@ -515,7 +515,7 @@ impl GroundingQuery {
                     has_g_rows: *has_g_rows
                 };
                 let table_alias = TableAlias{base_table, index: 0};
-                GroundingView::new(table_alias, free_variables, query, exclude, all_ids)
+                GroundingView::new(table_alias, free_variables, query, exclude, ids)
             }
             GroundingQuery::Aggregate { agg, infinite_variables, sub_view, default,.. } => {
                 let default = match default {
@@ -530,7 +530,7 @@ impl GroundingQuery {
                     sub_view: Box::new(sub_view.negate(index, view_type, solver)?)
                 };
                 let table_alias = TableAlias{base_table, index: 1};
-                GroundingView::new(table_alias, free_variables, query, exclude, all_ids)
+                GroundingView::new(table_alias, free_variables, query, exclude, ids)
             },
             GroundingQuery::Union {..} => unreachable!()  // because negation is pushed down conjunctions and disjunctions
         }

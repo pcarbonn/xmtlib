@@ -11,8 +11,7 @@ use crate::solver::{CanonicalSort, Solver};
 
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, get_function_object, Interpretation};
-use crate::private::e1_ground_view::{GroundingView, ViewType, QueryVariant,
-    view_for_constant, view_for_variable, view_for_compound, view_for_aggregate, view_for_union};
+use crate::private::e1_ground_view::{view_for_aggregate, view_for_compound, view_for_constant, view_for_union, view_for_variable, GroundingView, Ids, QueryVariant, ViewType};
 use crate::private::e2_ground_query::{TableName, TableAlias};
 use crate::private::e3_ground_sql::Predefined;
 
@@ -30,12 +29,12 @@ impl std::fmt::Display for Grounding {
         match self {
             Grounding::NonBoolean(query) => write!(f, " {query}"),
             Grounding::Boolean{tu, uf, g, ..} => {
-                if tu.get_ids() {
+                if tu.get_ids() == Ids::All {
                     writeln!(f, "----- T ------------------------------------------------------------\n{tu}")?;
                 } else {
                     writeln!(f, "----- TU -----------------------------------------------------------\n{tu}")?;
                 }
-                if uf.get_ids() {
+                if uf.get_ids() == Ids::All {
                     writeln!(f, "----- F ------------------------------------------------------------\n{uf}")?;
                 } else {
                     writeln!(f, "----- UF -----------------------------------------------------------\n{uf}")?;

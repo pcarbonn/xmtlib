@@ -1,5 +1,6 @@
 // Copyright Pierre Carbonnelle, 2025.
 
+use std::cmp::max;
 use std::hash::Hash;
 
 use indexmap::{IndexMap, IndexSet};
@@ -28,7 +29,7 @@ pub(crate) enum GroundingView {
         exclude: Option<bool>, // e.g., "false" in TU view
 
         query: GroundingQuery,  // the underlying query
-        all_ids: bool,  // true if all the groundings are certainly ids at the time of query creation.
+        ids: Ids,  // describe the groundings at the time of query creation.
     },
 }
 
@@ -69,7 +70,7 @@ impl GroundingView {
 
         match self {
             GroundingView::Empty => (format!("SELECT \"true\" AS G\n{indent} WHERE FALSE"), Ids::All),
-            GroundingView::View { query, exclude, all_ids, .. } =>
+            GroundingView::View { query, exclude, .. } =>
                 if let Some(exclude) = exclude {
                     let indent1 = format!("{indent}{INDENT}").to_string();
                     let (query, ids) = query.to_sql(var_joins, &indent1);
@@ -121,7 +122,7 @@ pub(crate) fn view_for_constant(
     };
     let base_table = TableName("ignore".to_string());
     let table_alias = TableAlias::new(base_table, 0);
-    GroundingView::new(table_alias, OptionMap::new(), query, None, true)
+    GroundingView::new(table_alias, OptionMap::new(), query, None, Ids::All)
 }
 
 
@@ -150,7 +151,7 @@ pub(crate) fn view_for_variable(
             has_g_rows: true
         };
         let free_variables = OptionMap::from([(symbol.clone(), Some(table_alias))]);
-        GroundingView::new(new_alias, free_variables, query, None, true) // todo perf: exclude for boolean
+        GroundingView::new(new_alias, free_variables, query, None, Ids::All) // todo perf: exclude for boolean
     } else {  // infinite variable ==> just "x"
         let variables = OptionMap::from([(symbol.clone(), None)]);
         let query = GroundingQuery::Join{
@@ -163,7 +164,7 @@ pub(crate) fn view_for_variable(
             has_g_rows: false
         };
         let free_variables = OptionMap::from([(symbol.clone(), None)]);
-        GroundingView::new(new_alias, free_variables, query, None, false)
+        GroundingView::new(new_alias, free_variables, query, None, Ids::None)
     }
 }
 
@@ -202,7 +203,7 @@ pub(crate) fn view_for_compound(
     let mut natural_joins = IndexSet::new();
     let mut theta_joins = IndexMap::new();
     let mut thetas = vec![];
-    let mut all_ids = true;
+    let mut ids = Ids::All;
     let mut has_g_rows = false;
 
     // LINK src/doc.md#_Equality
@@ -219,12 +220,12 @@ pub(crate) fn view_for_compound(
                     condition: sub_condition,
                     grounding,
                     query,
-                    all_ids: sub_all_ids,..} => {
+                    ids: sub_ids,..} => {
 
                 let to_add = sub_free_variables.iter()
                     .map(|(k, v)| (k.clone(), v.clone()));
                 free_variables.extend(to_add);
-                all_ids = all_ids && *sub_all_ids;
+                ids = max(ids, sub_ids.clone());
 
                 // if the sub-query is an Inner Join
                 let done = if let GroundingQuery::Join {
@@ -303,7 +304,7 @@ pub(crate) fn view_for_compound(
 
                                 // push `sub_grounding = column` to conditions and thetas
                                 let if_ = Mapping(sub_grounding.clone(), column);
-                                if ! *sub_all_ids {
+                                if *sub_ids != Ids::All {
                                     conditions.push(Left(if_.clone()));
                                 }
                                 // adds nothing if sub_ids == None
@@ -363,7 +364,7 @@ pub(crate) fn view_for_compound(
 
                                 // push `sub_grounding = column` to conditions and thetas
                                 let if_ = Mapping(SQLExpr::G(sub_table.clone(), ids.clone()), column);
-                                if ! *sub_all_ids {
+                                if *sub_ids != Ids::All {
                                     conditions.push(Left(if_.clone()));
                                 }
                                 // adds nothing if sub_ids == None
@@ -402,12 +403,12 @@ pub(crate) fn view_for_compound(
             }
         }).collect();
 
-    let grounding =  // also updates all_ids, theta_joins
+    let grounding =  // also updates ids, theta_joins
         match variant {
             QueryVariant::Interpretation(table_name, ids_) => {
                 theta_joins.insert(table_name.clone(), thetas.clone());
 
-                all_ids = *ids_ == Ids::All;  // reflects the grounding column, not if_
+                ids = ids_.clone();  // reflects the grounding column, not if_
                 match (ids_, exclude) {
                     (Ids::All, Some(false)) => {  // complete TU view
                         SQLExpr::Boolean(true)
@@ -419,14 +420,14 @@ pub(crate) fn view_for_compound(
                 }
             },
             QueryVariant::Apply => {
-                all_ids = false;
+                ids = Ids::None;
                 if let QualIdentifier::Identifier(L(identifier, _)) = qual_identifier {
                     solver.grounded.insert(identifier.clone());
                 };  // qualified identifier cannot be interpreted: they are either pre-defined or accessors
                 SQLExpr::Apply(qual_identifier.clone(), Box::new(groundings))
             },
             QueryVariant::Construct => {
-                // do not change all_ids.
+                // do not change ids.
                 match (qual_identifier.to_string().as_str(), exclude) {
                     ("true", Some(false)) => SQLExpr::Boolean(true),  // TU view
                     ("true", Some(true)) => return Ok(GroundingView::Empty), // UF view
@@ -472,7 +473,7 @@ pub(crate) fn view_for_compound(
         has_g_rows
     };
     let exclude = if ! has_g_rows { None } else { exclude };
-    GroundingView::new(table_alias, free_variables, query, exclude, all_ids)
+    GroundingView::new(table_alias, free_variables, query, exclude, ids)
 }
 
 
@@ -497,7 +498,7 @@ pub(crate) fn view_for_aggregate(
         GroundingView::Empty => {
             Ok(GroundingView::Empty)
         },
-        GroundingView::View{query, all_ids,..} => {
+        GroundingView::View{query, ids,..} => {
             // LINK src/doc.md#_Infinite
             // if the query is an aggregate, try to have only one aggregate
             if let GroundingQuery::Aggregate {
@@ -517,7 +518,7 @@ pub(crate) fn view_for_aggregate(
                         default,
                         sub_view: Box::new(*sub_sub_view.clone()),
                     };
-                    return GroundingView::new(table_alias, free_variables.clone(), query, exclude, *all_ids)
+                    return GroundingView::new(table_alias, free_variables.clone(), query, exclude, ids.clone())
                 }
             }
 
@@ -529,7 +530,7 @@ pub(crate) fn view_for_aggregate(
                 sub_view: Box::new(sub_query.clone()),
             };
 
-            GroundingView::new(table_alias, free_variables.clone(), query, exclude, *all_ids)
+            GroundingView::new(table_alias, free_variables.clone(), query, exclude, ids.clone())
         }
     }
 }
@@ -545,19 +546,19 @@ pub(crate) fn view_for_union(
     // determine variables and condition
     let mut free_variables = OptionMap::new();
     let mut condition = false;
-    let mut all_ids = true;
+    let mut ids = Ids::All;
     let mut has_g_rows = false;
     for sub_view in sub_views.clone() {
         if let GroundingView::View {
                     free_variables: sub_free_variables,
                     condition: sub_condition,
-                    all_ids: sub_all_ids,
+                    ids: sub_ids,
                     query, .. }
                 = sub_view {
 
             free_variables.append(&mut sub_free_variables.clone());
             condition |= sub_condition;
-            all_ids = all_ids && sub_all_ids;
+            ids = max(ids, sub_ids);
             has_g_rows |= query.has_g_rows();
         }
     }
@@ -651,7 +652,7 @@ pub(crate) fn view_for_union(
 
     let table_alias = TableAlias{base_table: TableName(format!("union_{index}")), index: 0};
     if sub_queries.len() == 1 {
-        return GroundingView::new(table_alias, free_variables, sub_queries.first().unwrap().clone(), exclude, all_ids)
+        return GroundingView::new(table_alias, free_variables, sub_queries.first().unwrap().clone(), exclude, ids)
     };
 
     // create the union
@@ -664,7 +665,7 @@ pub(crate) fn view_for_union(
         grounding: Either::Right(table_alias),
         query,
         exclude,
-        all_ids
+        ids: ids.clone()
     };
 
     // create the aggregate
@@ -677,7 +678,7 @@ pub(crate) fn view_for_union(
         sub_view: Box::new(sub_view),
     };
 
-    GroundingView::new(table_alias, free_variables, query, exclude, all_ids)
+    GroundingView::new(table_alias, free_variables, query, exclude, ids)
 }
 
 
@@ -691,7 +692,7 @@ impl GroundingView {
         free_variables: OptionMap<Symbol, TableAlias>,
         query: GroundingQuery,
         exclude: Option<bool>,
-        all_ids: bool
+        ids: Ids
     ) -> Result<GroundingView, SolverError> {
 
         match query {
@@ -706,7 +707,7 @@ impl GroundingView {
                         grounding: Either::Left(grounding.clone()),
                         query,
                         exclude,
-                        all_ids
+                        ids
                     })
                 } else {
                     let condition = conditions.len() > 0;
@@ -717,7 +718,7 @@ impl GroundingView {
                         grounding: Either::Right(table_alias),
                         query,
                         exclude,
-                        all_ids})
+                        ids})
                 }
             },
             GroundingQuery::Aggregate { .. } => {
@@ -728,7 +729,7 @@ impl GroundingView {
                         grounding: Either::Right(table_alias),
                         query,
                         exclude,
-                        all_ids: false
+                        ids: Ids::None
                     })
             },
             GroundingQuery::Union { ref sub_queries, .. } => {
@@ -745,7 +746,7 @@ impl GroundingView {
                     grounding: Either::Right(table_alias),
                     query,
                     exclude,
-                    all_ids
+                    ids
                 })
 
             }
@@ -783,10 +784,10 @@ impl GroundingView {
     }
 
 
-    pub(crate) fn get_ids(&self) -> bool {
+    pub(crate) fn get_ids(&self) -> Ids {
         match self {
-            GroundingView::Empty => true,
-            GroundingView::View{all_ids, ..} => *all_ids
+            GroundingView::Empty => Ids::All,
+            GroundingView::View{ids, ..} => ids.clone()
         }
     }
 
@@ -800,8 +801,8 @@ impl GroundingView {
 
         match self {
             GroundingView::Empty => Ok(self.clone()),
-            GroundingView::View{free_variables, query, exclude, all_ids, ..} =>
-                query.negate(free_variables.clone(), index, view_type, *exclude, *all_ids, solver)
+            GroundingView::View{free_variables, query, exclude, ids, ..} =>
+                query.negate(free_variables.clone(), index, view_type, *exclude, ids.clone(), solver)
         }
     }
 }

@@ -52,7 +52,7 @@ pub(crate) enum GroundingView {
         grounding: Either<SQLExpr, TableAlias>,
         exclude: Option<bool>,
         query: GroundingQuery,
-        all_ids: bool,
+        ids: Ids,
     },
 }
 pub(crate) enum GroundingQuery {
