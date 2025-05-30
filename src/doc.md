@@ -70,6 +70,7 @@ pub(crate) enum GroundingQuery {
         free_variables: OptionMap<Symbol, TableAlias>,
         infinite_variables: Vec<SortedVar>,
         sub_view: Box<GroundingView>,
+        has_g_rows: bool,
     },
     Union {
         sub_queries: Box<Vec<GroundingQuery>>,
@@ -114,9 +115,11 @@ The documented topics are listed below:
 
 ## // LINK src/doc.md#_Constructor
 
-# // LINK src/doc.md#_has_g_complexity
+# // LINK src/doc.md#_has_g_rows
 
-A query has G rows if it has as many rows as the cross-product of its free variables.
+A query has G rows if it has as many rows as the cross-product of its free variable.
+Hence, a finite G view has G rows, but any query over an infinite domain does not have G rows.
+
 A TU or UF view has an exclude iff its query has G rows.
 A finite G view has G complexity.  An infinite does not.
 A G view never has an exclude.

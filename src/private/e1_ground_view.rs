@@ -71,7 +71,7 @@ impl GroundingView {
         match self {
             GroundingView::Empty => (format!("SELECT \"true\" AS G\n{indent} WHERE FALSE"), Ids::All),
             GroundingView::View { query, exclude, ids, .. } =>
-                if *ids == Ids::None {
+                if *ids == Ids::None {  // LINK src/doc.md#_has_g_rows
                     query.to_sql(var_joins, indent)
                 } else if let Some(exclude) = exclude {
                     let indent1 = format!("{indent}{INDENT}").to_string();
@@ -163,7 +163,7 @@ pub(crate) fn view_for_variable(
             outer: None,
             natural_joins: IndexSet::new(),
             theta_joins: IndexMap::new(),
-            has_g_rows: false
+            has_g_rows: false  // LINK src/doc.md#_has_g_rows
         };
         let free_variables = OptionMap::from([(symbol.clone(), None)]);
         GroundingView::new(new_alias, free_variables, query, None, Ids::None)
@@ -493,6 +493,7 @@ pub(crate) fn view_for_aggregate(
     agg: &str,
     default: Option<bool>,
     exclude: Option<bool>,
+    has_g_rows: bool,
     table_alias: TableAlias
 ) -> Result<GroundingView, SolverError> {
 
@@ -500,7 +501,7 @@ pub(crate) fn view_for_aggregate(
         GroundingView::Empty => {
             Ok(GroundingView::Empty)
         },
-        GroundingView::View{query, ids,..} => {
+        GroundingView::View{query, ids, ..} => {
             // LINK src/doc.md#_Infinite
             // if the query is an aggregate, try to have only one aggregate
             if let GroundingQuery::Aggregate {
@@ -519,6 +520,7 @@ pub(crate) fn view_for_aggregate(
                         infinite_variables: infinite_variables.clone(),
                         default,
                         sub_view: Box::new(*sub_sub_view.clone()),
+                        has_g_rows
                     };
                     return GroundingView::new(table_alias, free_variables.clone(), query, exclude, ids.clone())
                 }
@@ -530,6 +532,7 @@ pub(crate) fn view_for_aggregate(
                 infinite_variables: infinite_variables.clone(),
                 default,
                 sub_view: Box::new(sub_query.clone()),
+                has_g_rows
             };
 
             GroundingView::new(table_alias, free_variables.clone(), query, exclude, ids.clone())
@@ -679,6 +682,7 @@ pub(crate) fn view_for_union(
         infinite_variables: vec![],
         default: None,
         sub_view: Box::new(sub_view),
+        has_g_rows
     };
 
     GroundingView::new(table_alias, free_variables, query, exclude, ids)

@@ -370,6 +370,7 @@ pub(crate) fn ground_term_(
                         "and",
                         Some(true),
                         Some(false),
+                        true,
                         TableAlias{base_table: TableName(format!("{table_name}_TU")), index: 0})?;
 
                     let uf = view_for_aggregate(
@@ -379,6 +380,7 @@ pub(crate) fn ground_term_(
                         if top_level { "" } else { "and" },
                         None,
                         None,
+                        false,
                         TableAlias{base_table: TableName(format!("{table_name}_UF")), index: 0})?;
 
                     let g = view_for_aggregate(
@@ -388,6 +390,7 @@ pub(crate) fn ground_term_(
                         "and",
                         Some(true),
                         None,
+                        true,
                         TableAlias{base_table: TableName(format!("{table_name}_G")), index: 0})?;
 
                     Ok((Grounding::Boolean{tu, uf, g}, canonical))
@@ -412,6 +415,7 @@ pub(crate) fn ground_term_(
                         "or",
                         None,
                         None,
+                        false,
                         TableAlias{base_table: TableName(format!("{table_name}_TU")), index: 0})?;
 
                     let uf = view_for_aggregate(
@@ -421,6 +425,7 @@ pub(crate) fn ground_term_(
                         "or",
                         Some(false),
                         Some(true),
+                        true,
                         TableAlias{base_table: TableName(format!("{table_name}_UF")), index: 0})?;
 
                     let g = view_for_aggregate(
@@ -430,6 +435,7 @@ pub(crate) fn ground_term_(
                         "or",
                         Some(false),
                         None,
+                        true,
                         TableAlias{base_table: TableName(format!("{table_name}_G")), index: 0})?;
                     Ok((Grounding::Boolean{tu, uf, g}, canonical))
                 },

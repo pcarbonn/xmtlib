@@ -31,7 +31,7 @@ pub(crate) enum GroundingQuery {
         natural_joins: IndexSet<NaturalJoin>,  // cross-products with sort, or joins with grounding sub-queries
         theta_joins: IndexMap<TableAlias, Vec<Option<Mapping>>>,  // joins with interpretation tables
 
-        has_g_rows: bool,  // true if the query has as many rows as a G view
+        has_g_rows: bool,  // LINK src/doc.md#_has_g_rows
     },
     Aggregate {
         agg: String,  // "" (top-level), "and" or "or"
@@ -40,12 +40,12 @@ pub(crate) enum GroundingQuery {
         default: Option<bool>,  // to generate Y cross-product
         sub_view: Box<GroundingView>,  // the sub_view has more variables than free_variables
 
-        // has_g_rows: always true
+        has_g_rows: bool,  // LINK src/doc.md#_has_g_rows
     },
     Union {
         sub_queries: Box<Vec<GroundingQuery>>,  // the sub-queries are Join and have the same columns
 
-        has_g_rows: bool,  // true if the query has as many rows as a G view
+        has_g_rows: bool,  // LINK src/doc.md#_has_g_rows
     }
 }
 
@@ -471,9 +471,9 @@ impl GroundingQuery {
     pub(crate) fn has_g_rows(&self) -> bool {
         match self {
             GroundingQuery::Join{ has_g_rows, ..}
-            | GroundingQuery::Union { has_g_rows, ..} =>
+            | GroundingQuery::Union { has_g_rows, ..}
+            | GroundingQuery::Aggregate { has_g_rows, ..} =>
                 *has_g_rows,
-            GroundingQuery::Aggregate {..} => true
         }
     }
 
@@ -517,7 +517,7 @@ impl GroundingQuery {
                 let table_alias = TableAlias{base_table, index: 0};
                 GroundingView::new(table_alias, free_variables, query, exclude, ids)
             }
-            GroundingQuery::Aggregate { agg, infinite_variables, sub_view, default,.. } => {
+            GroundingQuery::Aggregate { agg, infinite_variables, sub_view, default, has_g_rows, .. } => {
                 let default = match default {
                     Some(default) => Some(! default),
                     None => None,
@@ -527,7 +527,8 @@ impl GroundingQuery {
                     free_variables: free_variables.clone(),
                     infinite_variables: infinite_variables.clone(),
                     default,
-                    sub_view: Box::new(sub_view.negate(index, view_type, solver)?)
+                    sub_view: Box::new(sub_view.negate(index, view_type, solver)?),
+                    has_g_rows: *has_g_rows
                 };
                 let table_alias = TableAlias{base_table, index: 1};
                 GroundingView::new(table_alias, free_variables, query, exclude, ids)
