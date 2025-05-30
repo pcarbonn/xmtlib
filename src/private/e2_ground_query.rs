@@ -31,7 +31,7 @@ pub(crate) enum GroundingQuery {
         natural_joins: IndexSet<NaturalJoin>,  // cross-products with sort, or joins with grounding sub-queries
         theta_joins: IndexMap<TableAlias, Vec<Option<Mapping>>>,  // joins with interpretation tables
 
-        precise: bool,  // true if the (boolean) query only has rows consistent with the view (e.g., no "false" in TU view)
+        has_g_rows: bool,  // true if the query has as many rows as a G view
     },
     Aggregate {
         agg: String,  // "" (top-level), "and" or "or"
@@ -40,12 +40,12 @@ pub(crate) enum GroundingQuery {
         default: Option<bool>,  // to generate Y cross-product
         sub_view: Box<GroundingView>,  // the sub_view has more variables than free_variables
 
-        // precise: always false
+        // has_g_rows: always true
     },
     Union {
         sub_queries: Box<Vec<GroundingQuery>>,  // the sub-queries are Join and have the same columns
 
-        precise: bool  // true if the (boolean) query only has rows consistent with the view (e.g., no "false" in TU view)
+        has_g_rows: bool,  // true if the query has as many rows as a G view
     }
 }
 
@@ -468,12 +468,12 @@ impl std::fmt::Display for Column {
 
 
 impl GroundingQuery {
-    pub(crate) fn is_precise(&self) -> bool {
+    pub(crate) fn has_g_rows(&self) -> bool {
         match self {
-            GroundingQuery::Join{ precise, ..}
-            | GroundingQuery::Union { precise, ..} =>
-                *precise,
-            GroundingQuery::Aggregate {..} => false
+            GroundingQuery::Join{ has_g_rows, ..}
+            | GroundingQuery::Union { has_g_rows, ..} =>
+                *has_g_rows,
+            GroundingQuery::Aggregate {..} => true
         }
     }
 
@@ -497,7 +497,7 @@ impl GroundingQuery {
 
         match self {
             GroundingQuery::Join { variables, conditions, grounding,
-            outer, natural_joins, theta_joins, precise} => {
+            outer, natural_joins, theta_joins, has_g_rows} => {
 
                 let new_grounding =
                     match grounding {
@@ -512,7 +512,7 @@ impl GroundingQuery {
                     outer: *outer,
                     natural_joins: natural_joins.clone(),
                     theta_joins: theta_joins.clone(),
-                    precise: *precise
+                    has_g_rows: *has_g_rows
                 };
                 let table_alias = TableAlias{base_table, index: 0};
                 GroundingView::new(table_alias, free_variables, query, exclude, all_ids)

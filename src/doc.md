@@ -63,7 +63,7 @@ pub(crate) enum GroundingQuery {
         outer: Option<bool>,
         natural_joins: IndexSet<NaturalJoin>,
         theta_joins: IndexMap<TableAlias, Vec<Option<Mapping>>>,
-        precise: bool,
+        has_g_rows: bool,
     },
     Aggregate {
         agg: String,
@@ -73,7 +73,7 @@ pub(crate) enum GroundingQuery {
     },
     Union {
         sub_queries: Box<Vec<GroundingQuery>>,
-        precise: bool
+        has_g_rows: bool
     }
 }
 pub(crate) enum NaturalJoin {
@@ -114,10 +114,10 @@ The documented topics are listed below:
 
 ## // LINK src/doc.md#_Constructor
 
-# // LINK src/doc.md#_precise
+# // LINK src/doc.md#_has_g_complexity
 
-A TU or UF query is precise only if it only has rows consistent with the view (e.g., no "false" in TU view).
-If a query is not precise, its TU or UF view has an exclude.
-A G view is always precise and does not have an exclude.
+A TU or UF query has G rows if it has as many rows as the corresponding G query.
+A TU or UF view has an exclude iff its query has G rows.
+A G view has G complexity and does not have an exclude.
 
-A query (for boolean) has a G complexity if it is not precise.
+The exclude is not added to the sql if there are no Ids in the G column.
