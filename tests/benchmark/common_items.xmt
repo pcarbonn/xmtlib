@@ -12,7 +12,6 @@
 (x-interpret-pred r (x-set (e3)) )
 (assert (exists ((x element)) (and (p x) (r x))))
 (x-ground)
-(x-debug solver functions)
 (x-debug solver groundings)
 -------------------------
 (declare-datatype element ((e1 ) (e2 ) (e3 ) (e4 ) (e5 ) (e6 ) (e7 ) (e8 )))
@@ -22,47 +21,6 @@
 (echo "for p+q:")
 (echo "for p+r:")
 (assert false)
-Functions2:
- - true ()->Bool : Constructor
- - false ()->Bool : Constructor
- - not ()->Bool : Predefined (true)
- - => ()->Bool : Predefined (true)
- - and ()->Bool : Predefined (true)
- - or ()->Bool : Predefined (true)
- - xor ()->Bool : Predefined (true)
- - = ()->Bool : Predefined (true)
- - distinct ()->Bool : Predefined (true)
- - <= ()->Bool : Predefined (true)
- - < ()->Bool : Predefined (true)
- - >= ()->Bool : Predefined (true)
- - > ()->Bool : Predefined (true)
- - ite ()->Bool : Predefined (?)
- - let ()->Bool : Predefined (?)
- - + ()->Real : Predefined (false)
- - - ()->Real : Predefined (false)
- - * ()->Real : Predefined (false)
- - div ()->Real : Predefined (false)
- - mod ()->Real : Predefined (false)
- - abs ()->Real : Predefined (false)
- - e1 ()->element : Constructor
- - e2 ()->element : Constructor
- - e3 ()->element : Constructor
- - e4 ()->element : Constructor
- - e5 ()->element : Constructor
- - e6 ()->element : Constructor
- - e7 ()->element : Constructor
- - e8 ()->element : Constructor
- - (_ is e1) (element)->Bool : Boolean (_xmt_tester_element_e1_t Complete, _xmt_tester_element_e1_f Complete, _xmt_tester_element_e1_g Complete)
- - (_ is e2) (element)->Bool : Boolean (_xmt_tester_element_e2_t Complete, _xmt_tester_element_e2_f Complete, _xmt_tester_element_e2_g Complete)
- - (_ is e3) (element)->Bool : Boolean (_xmt_tester_element_e3_t Complete, _xmt_tester_element_e3_f Complete, _xmt_tester_element_e3_g Complete)
- - (_ is e4) (element)->Bool : Boolean (_xmt_tester_element_e4_t Complete, _xmt_tester_element_e4_f Complete, _xmt_tester_element_e4_g Complete)
- - (_ is e5) (element)->Bool : Boolean (_xmt_tester_element_e5_t Complete, _xmt_tester_element_e5_f Complete, _xmt_tester_element_e5_g Complete)
- - (_ is e6) (element)->Bool : Boolean (_xmt_tester_element_e6_t Complete, _xmt_tester_element_e6_f Complete, _xmt_tester_element_e6_g Complete)
- - (_ is e7) (element)->Bool : Boolean (_xmt_tester_element_e7_t Complete, _xmt_tester_element_e7_f Complete, _xmt_tester_element_e7_g Complete)
- - (_ is e8) (element)->Bool : Boolean (_xmt_tester_element_e8_t Complete, _xmt_tester_element_e8_f Complete, _xmt_tester_element_e8_g Complete)
- - p (element)->Bool : Boolean (_xmt_interp_p_TU Complete, _xmt_interp_p_UF Complete, _xmt_interp_p_G Complete)
- - q (element)->Bool : Boolean (_xmt_interp_q_TU Complete, _xmt_interp_q_UF Complete, _xmt_interp_q_G Complete)
- - r (element)->Bool : Boolean (_xmt_interp_r_TU Complete, _xmt_interp_r_UF Complete, _xmt_interp_r_G Complete)
 Groundings:
 ===  x ======================================
  -- Join(0)

@@ -13,38 +13,12 @@
                 (phi x y z)
             )))
 (x-ground)
-(x-debug solver functions)
-;(x-debug db-view Edge_UF)
 (x-debug solver groundings)
 (check-sat)
 -------------------------
 (declare-fun Edge (Int Int) Bool)
 (declare-fun phi (Int Int Int) Bool)
 (assert (phi 1 2 3))
-Functions2:
- - true ()->Bool : Constructor
- - false ()->Bool : Constructor
- - not ()->Bool : Predefined (true)
- - => ()->Bool : Predefined (true)
- - and ()->Bool : Predefined (true)
- - or ()->Bool : Predefined (true)
- - xor ()->Bool : Predefined (true)
- - = ()->Bool : Predefined (true)
- - distinct ()->Bool : Predefined (true)
- - <= ()->Bool : Predefined (true)
- - < ()->Bool : Predefined (true)
- - >= ()->Bool : Predefined (true)
- - > ()->Bool : Predefined (true)
- - ite ()->Bool : Predefined (?)
- - let ()->Bool : Predefined (?)
- - + ()->Real : Predefined (false)
- - - ()->Real : Predefined (false)
- - * ()->Real : Predefined (false)
- - div ()->Real : Predefined (false)
- - mod ()->Real : Predefined (false)
- - abs ()->Real : Predefined (false)
- - Edge (Int, Int)->Bool : Boolean (_xmt_interp_edge_TU Complete, (infinite), (infinite))
- - phi (Int, Int, Int)->Bool : Not interpreted
 Groundings:
 ===  x ======================================
  -- Join(0)

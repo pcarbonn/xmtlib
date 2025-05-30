@@ -17,7 +17,6 @@
 (assert (exists ((x Node) (y Node)) (Edge x y)))
 (x-ground)
 (x-debug solver groundings)
-(x-debug db _xmt_sort_node)
 (check-sat)
 -------------------------
 (declare-datatype Node ((|1| ) (|2| ) (|3| )))
@@ -507,14 +506,4 @@ SELECT and_(Agg_11_G.G, Agg_13_G.G, Agg_14_G.G) AS G
         ) AS Agg_14_G
 
 ===========================================
- TABLE: _xmt_sort_node
-┌─────────────┬───────┐
-│ constructor │ G     │
-├─────────────┼───────┤
-│ "|1|"       │ "|1|" │
-├─────────────┼───────┤
-│ "|2|"       │ "|2|" │
-├─────────────┼───────┤
-│ "|3|"       │ "|3|" │
-└─────────────┴───────┘
 (check-sat)

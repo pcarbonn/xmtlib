@@ -36,7 +36,6 @@
                 (= (edge_value x y) (- (value y) (value x))))))
 
 (x-ground)
-(x-debug solver functions)
 (x-debug solver groundings)
 -------------------------
 (declare-datatype node ((n1 ) (n2 ) (n3 ) (n4 ) (n5 ) (n6 ) (n7 ) (n8 ) (n9 )))
@@ -151,99 +150,6 @@
 (assert (or (not (> (value n4) (value n3))) (= (edge_value n3 n4) (- (value n4) (value n3)))))
 (assert (or (not (> (value n3) (value n2))) (= (edge_value n2 n3) (- (value n3) (value n2)))))
 (assert (or (not (> (value n2) (value n1))) (= (edge_value n1 n2) (- (value n2) (value n1)))))
-Functions2:
- - true ()->Bool : Constructor
- - false ()->Bool : Constructor
- - not ()->Bool : Predefined (true)
- - => ()->Bool : Predefined (true)
- - and ()->Bool : Predefined (true)
- - or ()->Bool : Predefined (true)
- - xor ()->Bool : Predefined (true)
- - = ()->Bool : Predefined (true)
- - distinct ()->Bool : Predefined (true)
- - <= ()->Bool : Predefined (true)
- - < ()->Bool : Predefined (true)
- - >= ()->Bool : Predefined (true)
- - > ()->Bool : Predefined (true)
- - ite ()->Bool : Predefined (?)
- - let ()->Bool : Predefined (?)
- - + ()->Real : Predefined (false)
- - - ()->Real : Predefined (false)
- - * ()->Real : Predefined (false)
- - div ()->Real : Predefined (false)
- - mod ()->Real : Predefined (false)
- - abs ()->Real : Predefined (false)
- - n1 ()->node : Constructor
- - n2 ()->node : Constructor
- - n3 ()->node : Constructor
- - n4 ()->node : Constructor
- - n5 ()->node : Constructor
- - n6 ()->node : Constructor
- - n7 ()->node : Constructor
- - n8 ()->node : Constructor
- - n9 ()->node : Constructor
- - (_ is n1) (node)->Bool : Boolean (_xmt_tester_node_n1_t Complete, _xmt_tester_node_n1_f Complete, _xmt_tester_node_n1_g Complete)
- - (_ is n2) (node)->Bool : Boolean (_xmt_tester_node_n2_t Complete, _xmt_tester_node_n2_f Complete, _xmt_tester_node_n2_g Complete)
- - (_ is n3) (node)->Bool : Boolean (_xmt_tester_node_n3_t Complete, _xmt_tester_node_n3_f Complete, _xmt_tester_node_n3_g Complete)
- - (_ is n4) (node)->Bool : Boolean (_xmt_tester_node_n4_t Complete, _xmt_tester_node_n4_f Complete, _xmt_tester_node_n4_g Complete)
- - (_ is n5) (node)->Bool : Boolean (_xmt_tester_node_n5_t Complete, _xmt_tester_node_n5_f Complete, _xmt_tester_node_n5_g Complete)
- - (_ is n6) (node)->Bool : Boolean (_xmt_tester_node_n6_t Complete, _xmt_tester_node_n6_f Complete, _xmt_tester_node_n6_g Complete)
- - (_ is n7) (node)->Bool : Boolean (_xmt_tester_node_n7_t Complete, _xmt_tester_node_n7_f Complete, _xmt_tester_node_n7_g Complete)
- - (_ is n8) (node)->Bool : Boolean (_xmt_tester_node_n8_t Complete, _xmt_tester_node_n8_f Complete, _xmt_tester_node_n8_g Complete)
- - (_ is n9) (node)->Bool : Boolean (_xmt_tester_node_n9_t Complete, _xmt_tester_node_n9_f Complete, _xmt_tester_node_n9_g Complete)
- - v1 ()->val : Constructor
- - v2 ()->val : Constructor
- - v3 ()->val : Constructor
- - v4 ()->val : Constructor
- - v5 ()->val : Constructor
- - v6 ()->val : Constructor
- - v7 ()->val : Constructor
- - v8 ()->val : Constructor
- - v9 ()->val : Constructor
- - v10 ()->val : Constructor
- - v11 ()->val : Constructor
- - v12 ()->val : Constructor
- - v13 ()->val : Constructor
- - v14 ()->val : Constructor
- - v15 ()->val : Constructor
- - v16 ()->val : Constructor
- - v17 ()->val : Constructor
- - v18 ()->val : Constructor
- - v19 ()->val : Constructor
- - v20 ()->val : Constructor
- - v21 ()->val : Constructor
- - v22 ()->val : Constructor
- - v23 ()->val : Constructor
- - v24 ()->val : Constructor
- - v25 ()->val : Constructor
- - (_ is v1) (val)->Bool : Boolean (_xmt_tester_val_v1_t Complete, _xmt_tester_val_v1_f Complete, _xmt_tester_val_v1_g Complete)
- - (_ is v2) (val)->Bool : Boolean (_xmt_tester_val_v2_t Complete, _xmt_tester_val_v2_f Complete, _xmt_tester_val_v2_g Complete)
- - (_ is v3) (val)->Bool : Boolean (_xmt_tester_val_v3_t Complete, _xmt_tester_val_v3_f Complete, _xmt_tester_val_v3_g Complete)
- - (_ is v4) (val)->Bool : Boolean (_xmt_tester_val_v4_t Complete, _xmt_tester_val_v4_f Complete, _xmt_tester_val_v4_g Complete)
- - (_ is v5) (val)->Bool : Boolean (_xmt_tester_val_v5_t Complete, _xmt_tester_val_v5_f Complete, _xmt_tester_val_v5_g Complete)
- - (_ is v6) (val)->Bool : Boolean (_xmt_tester_val_v6_t Complete, _xmt_tester_val_v6_f Complete, _xmt_tester_val_v6_g Complete)
- - (_ is v7) (val)->Bool : Boolean (_xmt_tester_val_v7_t Complete, _xmt_tester_val_v7_f Complete, _xmt_tester_val_v7_g Complete)
- - (_ is v8) (val)->Bool : Boolean (_xmt_tester_val_v8_t Complete, _xmt_tester_val_v8_f Complete, _xmt_tester_val_v8_g Complete)
- - (_ is v9) (val)->Bool : Boolean (_xmt_tester_val_v9_t Complete, _xmt_tester_val_v9_f Complete, _xmt_tester_val_v9_g Complete)
- - (_ is v10) (val)->Bool : Boolean (_xmt_tester_val_v10_t Complete, _xmt_tester_val_v10_f Complete, _xmt_tester_val_v10_g Complete)
- - (_ is v11) (val)->Bool : Boolean (_xmt_tester_val_v11_t Complete, _xmt_tester_val_v11_f Complete, _xmt_tester_val_v11_g Complete)
- - (_ is v12) (val)->Bool : Boolean (_xmt_tester_val_v12_t Complete, _xmt_tester_val_v12_f Complete, _xmt_tester_val_v12_g Complete)
- - (_ is v13) (val)->Bool : Boolean (_xmt_tester_val_v13_t Complete, _xmt_tester_val_v13_f Complete, _xmt_tester_val_v13_g Complete)
- - (_ is v14) (val)->Bool : Boolean (_xmt_tester_val_v14_t Complete, _xmt_tester_val_v14_f Complete, _xmt_tester_val_v14_g Complete)
- - (_ is v15) (val)->Bool : Boolean (_xmt_tester_val_v15_t Complete, _xmt_tester_val_v15_f Complete, _xmt_tester_val_v15_g Complete)
- - (_ is v16) (val)->Bool : Boolean (_xmt_tester_val_v16_t Complete, _xmt_tester_val_v16_f Complete, _xmt_tester_val_v16_g Complete)
- - (_ is v17) (val)->Bool : Boolean (_xmt_tester_val_v17_t Complete, _xmt_tester_val_v17_f Complete, _xmt_tester_val_v17_g Complete)
- - (_ is v18) (val)->Bool : Boolean (_xmt_tester_val_v18_t Complete, _xmt_tester_val_v18_f Complete, _xmt_tester_val_v18_g Complete)
- - (_ is v19) (val)->Bool : Boolean (_xmt_tester_val_v19_t Complete, _xmt_tester_val_v19_f Complete, _xmt_tester_val_v19_g Complete)
- - (_ is v20) (val)->Bool : Boolean (_xmt_tester_val_v20_t Complete, _xmt_tester_val_v20_f Complete, _xmt_tester_val_v20_g Complete)
- - (_ is v21) (val)->Bool : Boolean (_xmt_tester_val_v21_t Complete, _xmt_tester_val_v21_f Complete, _xmt_tester_val_v21_g Complete)
- - (_ is v22) (val)->Bool : Boolean (_xmt_tester_val_v22_t Complete, _xmt_tester_val_v22_f Complete, _xmt_tester_val_v22_g Complete)
- - (_ is v23) (val)->Bool : Boolean (_xmt_tester_val_v23_t Complete, _xmt_tester_val_v23_f Complete, _xmt_tester_val_v23_g Complete)
- - (_ is v24) (val)->Bool : Boolean (_xmt_tester_val_v24_t Complete, _xmt_tester_val_v24_f Complete, _xmt_tester_val_v24_g Complete)
- - (_ is v25) (val)->Bool : Boolean (_xmt_tester_val_v25_t Complete, _xmt_tester_val_v25_f Complete, _xmt_tester_val_v25_g Complete)
- - edge (node, node)->Bool : Boolean (_xmt_interp_edge_TU Complete, _xmt_interp_edge_UF Complete, _xmt_interp_edge_G Complete)
- - edge_value (node, node)->val : Not interpreted
- - value (node)->val : Not interpreted
 Groundings:
 ===  x ======================================
  -- Join(0)
