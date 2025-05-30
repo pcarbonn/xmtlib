@@ -85,7 +85,7 @@ impl GroundingView {
     pub(crate) fn has_g_complexity(&self) -> bool {
         match self {
             GroundingView::Empty => true,
-            GroundingView::View { exclude, .. } => exclude.is_some(),
+            GroundingView::View { query, .. } => ! query.is_precise(),
         }
     }
 }
@@ -409,8 +409,12 @@ pub(crate) fn view_for_compound(
 
                 all_ids = *ids_ == Ids::All;  // reflects the grounding column, not if_
                 match (ids_, exclude) {
-                    (Ids::All, Some(false)) => SQLExpr::Boolean(true),  // complete TU view_
-                    (Ids::All, Some(true)) => SQLExpr::Boolean(false),  // complete UF view
+                    (Ids::All, Some(false)) => {  // complete TU view
+                        SQLExpr::Boolean(true)
+                    },
+                    (Ids::All, Some(true)) => {  // complete UF view
+                        SQLExpr::Boolean(false)
+                    },
                     _ => SQLExpr::Value(Column::new(table_name, "G"), ids_.clone())
                 }
             },

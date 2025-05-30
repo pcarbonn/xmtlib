@@ -640,8 +640,8 @@ fn ground_compound(
                 // custom boolean function
                 let (mut tus, mut ufs) = collect_tu_uf(&groundings);
                 let  g = view_for_compound(qual_identifier, index, &mut gqs, &variant, None, solver)?;
-                let tu = view_for_compound(qual_identifier, index, &mut tus, &variant, Some(false), solver)?;
-                let uf = view_for_compound(qual_identifier, index, &mut ufs, &variant, Some(true), solver)?;
+                let tu = view_for_compound(qual_identifier, index, &mut tus, &variant, None, solver)?;
+                let uf = view_for_compound(qual_identifier, index, &mut ufs, &variant, None, solver)?;
 
                 Ok((Grounding::Boolean{tu, uf, g}, out_sort))
             } else {

@@ -31,7 +31,7 @@ pub(crate) enum GroundingQuery {
         natural_joins: IndexSet<NaturalJoin>,  // cross-products with sort, or joins with grounding sub-queries
         theta_joins: IndexMap<TableAlias, Vec<Option<Mapping>>>,  // joins with interpretation tables
 
-        precise: bool,  // true if the (boolean) grounding only has values consistent with the view (e.g., no "false" in TU view)
+        precise: bool,  // true if the (boolean) grounding only has rows consistent with the view (e.g., no "false" in TU view)
     },
     Aggregate {
         agg: String,  // "" (top-level), "and" or "or"
@@ -45,7 +45,7 @@ pub(crate) enum GroundingQuery {
     Union {
         sub_queries: Box<Vec<GroundingQuery>>,  // the sub-queries are Join and have the same columns
 
-        precise: bool  // true if the (boolean) grounding only has values consistent with the view (e.g., no "false" in TU view)
+        precise: bool  // true if the (boolean) grounding only has rows consistent with the view (e.g., no "false" in TU view)
     }
 }
 

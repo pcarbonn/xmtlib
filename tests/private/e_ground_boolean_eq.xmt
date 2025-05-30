@@ -9,6 +9,7 @@
 
 (x-interpret-pred domain (x-range 1 10))
 
+; finite domain
 (declare-datatype Color ( ( red ) ( blue ) ( green ) ))
 (declare-fun p (Color) Bool)
 (declare-fun q (Color) Bool)
@@ -22,6 +23,11 @@
 (assert (forall ((x Color)) (= (p x)
                                (q x)
                             )))
+(x-ground debug:)
+(echo "negated")
+(assert (forall ((x Color)) (not (= (p x)
+                               (q x)
+                            ))))
 (x-ground debug:)
 (x-debug solver groundings)
 (assert (forall ((x Color)) (= (p x)
@@ -50,6 +56,10 @@
 (assert (= (p blue) true))
 (assert (= (p green) (q green)))
 (assert (= true (q red)))
+(echo "negated")
+(assert (not (= (p blue) true)))
+(assert (not (= (p green) (q green))))
+(assert (not (= true (q red))))
 Groundings:
 ===  x ======================================
  -- Join(0)
@@ -430,9 +440,116 @@ SELECT and_aggregate(G) as G
                       ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x)
         WHERE G <> "true")
 
+===  (not (= (p x) (q x))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_view_p_9_28.x AS x,
+       not_(bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G)) AS G
+  FROM (-- Join(8)
+        SELECT _xmt_interp_p_UF_9.a_1 AS x,
+               _xmt_interp_p_UF_9.G AS G
+          FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
+        ) AS _xmt_view_p_9_28
+  FULL JOIN (-- Join(8)
+        SELECT _xmt_interp_q_UF_10.a_1 AS x,
+               _xmt_interp_q_UF_10.G AS G
+          FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
+        ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_view_p_9_28.x AS x,
+       not_(bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G)) AS G
+  FROM (-- Join(8)
+        SELECT _xmt_interp_p_UF_9.a_1 AS x,
+               _xmt_interp_p_UF_9.G AS G
+          FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
+        ) AS _xmt_view_p_9_28
+  FULL JOIN (-- Join(8)
+        SELECT _xmt_interp_q_UF_10.a_1 AS x,
+               _xmt_interp_q_UF_10.G AS G
+          FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
+        ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_view_p_9_28.x AS x,
+       not_(bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G)) AS G
+  FROM (-- Join(8)
+        SELECT _xmt_interp_p_UF_9.a_1 AS x,
+               _xmt_interp_p_UF_9.G AS G
+          FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
+        ) AS _xmt_view_p_9_28
+  FULL JOIN (-- Join(8)
+        SELECT _xmt_interp_q_UF_10.a_1 AS x,
+               _xmt_interp_q_UF_10.G AS G
+          FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
+        ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x
+
+=== (top) (forall ((x Color)) (not (= (p x) (q x)))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, "true" AS G 
+       UNION ALL
+       -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_view_p_9_28.x AS x,
+                     not_(bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G)) AS G
+                FROM (-- Join(22)
+                      SELECT _xmt_interp_p_UF_9.a_1 AS x,
+                             _xmt_interp_p_UF_9.G AS G
+                        FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
+                      ) AS _xmt_view_p_9_28
+                FULL JOIN (-- Join(22)
+                      SELECT _xmt_interp_q_UF_10.a_1 AS x,
+                             _xmt_interp_q_UF_10.G AS G
+                        FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
+                      ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x)
+        WHERE G <> "true")
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_view_p_9_28.x AS x,
+                     not_(bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G)) AS G
+                FROM (-- Join(22)
+                      SELECT _xmt_interp_p_UF_9.a_1 AS x,
+                             _xmt_interp_p_UF_9.G AS G
+                        FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
+                      ) AS _xmt_view_p_9_28
+                FULL JOIN (-- Join(22)
+                      SELECT _xmt_interp_q_UF_10.a_1 AS x,
+                             _xmt_interp_q_UF_10.G AS G
+                        FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
+                      ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x)
+        WHERE G <> "true")
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, "true" AS G 
+       UNION ALL
+       -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_view_p_9_28.x AS x,
+                     not_(bool_eq_("true", _xmt_view_p_9_28.G, _xmt_view_q_10_31.G)) AS G
+                FROM (-- Join(22)
+                      SELECT _xmt_interp_p_UF_9.a_1 AS x,
+                             _xmt_interp_p_UF_9.G AS G
+                        FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
+                      ) AS _xmt_view_p_9_28
+                FULL JOIN (-- Join(22)
+                      SELECT _xmt_interp_q_UF_10.a_1 AS x,
+                             _xmt_interp_q_UF_10.G AS G
+                        FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
+                      ) AS _xmt_view_q_10_31 ON  _xmt_view_q_10_31.x = _xmt_view_p_9_28.x)
+        WHERE G <> "true")
+
 ===========================================
-error: at position (27, 29): Too many boolean arguments
+error: at position (33, 29): Too many boolean arguments
    |
-27 | (assert (forall ((x Color)) (= (p x)
+33 | (assert (forall ((x Color)) (= (p x)
    |                             ^ Too many boolean arguments
    |
