@@ -3,6 +3,7 @@
 Below is a copy of a selection of the `struct` and `enum` declarations.
 
 ```
+
 pub struct Solver {
     pub(crate) backend: Backend,
     pub conn: Connection,
@@ -87,6 +88,7 @@ pub(crate) enum SQLExpr {
     Constant(SpecConstant),
     Variable(Symbol),
     Value(Column, Ids),
+    G(TableAlias),
     Apply(QualIdentifier, Box<Vec<SQLExpr>>),
     Construct(QualIdentifier, Box<Vec<SQLExpr>>),
     Predefined(Predefined, Box<Vec<SQLExpr>>),

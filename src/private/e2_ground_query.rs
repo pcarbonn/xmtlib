@@ -207,7 +207,7 @@ impl GroundingQuery {
                     };
 
                 // grounding
-                let (grounding_, ids) = grounding.to_sql(&variables);
+                let (grounding_, mut ids) = grounding.to_sql(&variables);
                 let grounding_ = format!("{grounding_} AS G");
 
                 // natural joins
@@ -247,7 +247,8 @@ impl GroundingQuery {
                                 }  // var_joins is {x: (f.a_1, 3), y:(f.a_3, 3)}
 
                                 let indent1 = format!("{indent}{INDENT} ").to_string();
-                                let query = query.to_sql(&var_joins, &indent1).0;
+                                let (query, ids_) = query.to_sql(&var_joins, &indent1);
+                                ids = max(ids.clone(), ids_);
 
                                 let name = name(table_name);
                                 let on = symbols.iter()

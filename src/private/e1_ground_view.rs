@@ -353,7 +353,7 @@ pub(crate) fn view_for_compound(
                         if *sub_condition {
                             conditions.push(Right(Some(sub_table.clone())));
                         }
-                        groundings.push(SQLExpr::G(sub_table.clone(), Ids::Some));
+                        groundings.push(SQLExpr::G(sub_table.clone()));
 
                         let map_variables = sub_free_variables.0.keys().cloned().collect();
                         let sub_natural_join = NaturalJoin::ViewJoin(query.clone(), sub_table.clone(), map_variables);
@@ -361,11 +361,11 @@ pub(crate) fn view_for_compound(
 
                         // create theta for later use
                         match variant {
-                            QueryVariant::Interpretation(table_name, ids) => {
+                            QueryVariant::Interpretation(table_name, _) => {
                                 let column = Column::new(table_name, &format!("a_{}", i+1));
 
                                 // push `sub_grounding = column` to conditions and thetas
-                                let if_ = Mapping(SQLExpr::G(sub_table.clone(), ids.clone()), column);
+                                let if_ = Mapping(SQLExpr::G(sub_table.clone()), column);
                                 if *sub_ids != Ids::All {
                                     conditions.push(Left(if_.clone()));
                                 }
@@ -640,7 +640,7 @@ pub(crate) fn view_for_union(
                             Some(GroundingQuery::Join {
                                 variables: q_variables,
                                 conditions,
-                                grounding: SQLExpr::G(table_name.clone(), Ids::Some),
+                                grounding: SQLExpr::G(table_name.clone()),
                                 outer: None,
                                 natural_joins,
                                 theta_joins: IndexMap::new(),
