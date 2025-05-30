@@ -66,12 +66,12 @@ SELECT _xmt_interp_mix_G_2.G AS G
 -- Join(0)
 SELECT eq_("green", _xmt_interp_mix_G_2.G) AS G
   FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_2
- WHERE "red" = _xmt_interp_mix_G_2.a_1 AND "green" = _xmt_interp_mix_G_2.a_2
+ WHERE (NOT is_id(_xmt_interp_mix_G_2.G) OR _xmt_interp_mix_G_2.G = "green") AND "red" = _xmt_interp_mix_G_2.a_1 AND "green" = _xmt_interp_mix_G_2.a_2
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT eq_("green", _xmt_interp_mix_G_2.G) AS G
   FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_2
- WHERE "red" = _xmt_interp_mix_G_2.a_1 AND "green" = _xmt_interp_mix_G_2.a_2
+ WHERE (NOT is_id(_xmt_interp_mix_G_2.G) OR _xmt_interp_mix_G_2.G != "green") AND "red" = _xmt_interp_mix_G_2.a_1 AND "green" = _xmt_interp_mix_G_2.a_2
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT eq_("green", _xmt_interp_mix_G_2.G) AS G
@@ -95,13 +95,13 @@ SELECT _xmt_interp_mix_G_5.a_1 AS x,
 SELECT _xmt_interp_mix_G_5.a_1 AS x,
        eq_(_xmt_interp_mix_G_5.G, _xmt_interp_mix_G_5.a_1) AS G
   FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_5
- WHERE _xmt_interp_mix_G_5.a_1 = _xmt_interp_mix_G_5.a_2
+ WHERE (NOT is_id(_xmt_interp_mix_G_5.G) OR _xmt_interp_mix_G_5.G = _xmt_interp_mix_G_5.a_1) AND _xmt_interp_mix_G_5.a_1 = _xmt_interp_mix_G_5.a_2
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT _xmt_interp_mix_G_5.a_1 AS x,
        eq_(_xmt_interp_mix_G_5.G, _xmt_interp_mix_G_5.a_1) AS G
   FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_5
- WHERE _xmt_interp_mix_G_5.a_1 = _xmt_interp_mix_G_5.a_2
+ WHERE (NOT is_id(_xmt_interp_mix_G_5.G) OR _xmt_interp_mix_G_5.G != _xmt_interp_mix_G_5.a_1) AND _xmt_interp_mix_G_5.a_1 = _xmt_interp_mix_G_5.a_2
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_interp_mix_G_5.a_1 AS x,
@@ -119,7 +119,7 @@ SELECT or_aggregate(G) as G
               SELECT _xmt_interp_mix_G_5.a_1 AS x,
                      eq_(_xmt_interp_mix_G_5.G, _xmt_interp_mix_G_5.a_1) AS G
                 FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_5
-               WHERE _xmt_interp_mix_G_5.a_1 = _xmt_interp_mix_G_5.a_2)
+               WHERE (NOT is_id(_xmt_interp_mix_G_5.G) OR _xmt_interp_mix_G_5.G = _xmt_interp_mix_G_5.a_1) AND _xmt_interp_mix_G_5.a_1 = _xmt_interp_mix_G_5.a_2)
         WHERE G <> "false")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -132,7 +132,7 @@ SELECT or_aggregate(G) as G
               SELECT _xmt_interp_mix_G_5.a_1 AS x,
                      eq_(_xmt_interp_mix_G_5.G, _xmt_interp_mix_G_5.a_1) AS G
                 FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_5
-               WHERE _xmt_interp_mix_G_5.a_1 = _xmt_interp_mix_G_5.a_2)
+               WHERE (NOT is_id(_xmt_interp_mix_G_5.G) OR _xmt_interp_mix_G_5.G = _xmt_interp_mix_G_5.a_1) AND _xmt_interp_mix_G_5.a_1 = _xmt_interp_mix_G_5.a_2)
         WHERE G <> "false")
 ----- G ------------------------------------------------------------
 -- Agg (0)
@@ -145,7 +145,7 @@ SELECT or_aggregate(G) as G
               SELECT _xmt_interp_mix_G_5.a_1 AS x,
                      eq_(_xmt_interp_mix_G_5.G, _xmt_interp_mix_G_5.a_1) AS G
                 FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_5
-               WHERE _xmt_interp_mix_G_5.a_1 = _xmt_interp_mix_G_5.a_2)
+               WHERE (NOT is_id(_xmt_interp_mix_G_5.G) OR _xmt_interp_mix_G_5.G = _xmt_interp_mix_G_5.a_1) AND _xmt_interp_mix_G_5.a_1 = _xmt_interp_mix_G_5.a_2)
         WHERE G <> "false")
 
 ===========================================

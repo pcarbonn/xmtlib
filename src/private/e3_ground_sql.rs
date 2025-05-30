@@ -15,6 +15,11 @@ use crate::private::z_utilities::OptionMap;
 pub(crate) struct Mapping (pub SQLExpr, pub Column);
 
 
+/// (NOT is_id(t0) OR NOT is_id(t1) OR t1 op t2)
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub(crate) struct Rho {pub t0: SQLExpr, pub op: String, pub t1: SQLExpr}
+
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum SQLExpr {
     Boolean(bool),
@@ -140,6 +145,28 @@ impl Mapping {
                 }
             }
         }
+    }
+}
+
+
+impl Rho {
+    pub(crate) fn to_sql(
+        &self,
+        variables: &OptionMap<Symbol, Column>
+    ) -> String {
+        let Rho{t0, op, t1} = self;
+        let (t0, ids0) = t0.to_sql(variables);
+        let (t1, ids1) = t1.to_sql(variables);
+
+        let if0 = if ids0 == Ids::All { "".to_string() }
+            else { format!("NOT is_id({t0})") };
+
+        let if01 = if ids1 == Ids::All { if0 }
+            else if 0 < if0.len() { format!("{if0} OR NOT is_id({t1})") }
+            else { format!("NOT is_id({t1})") };
+
+        if 0 < if01.len() { format!("({if01} OR {t0} {op} {t1})") }
+        else { format!("{t0} {op} {t1}") }
     }
 }
 

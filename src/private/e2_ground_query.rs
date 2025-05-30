@@ -11,7 +11,7 @@ use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 
 use crate::private::e1_ground_view::{GroundingView, Ids, ViewType};
-use crate::private::e3_ground_sql::{Mapping, SQLExpr, Predefined};
+use crate::private::e3_ground_sql::{Mapping, Rho, SQLExpr, Predefined};
 use crate::private::z_utilities::OptionMap;
 
 
@@ -30,6 +30,7 @@ pub(crate) enum GroundingQuery {
         outer: Option<bool>,  // the default boolean value for outer joins (None for inner join)
         natural_joins: IndexSet<NaturalJoin>,  // cross-products with sort, or joins with grounding sub-queries
         theta_joins: IndexMap<TableAlias, Vec<Option<Mapping>>>,  // joins with interpretation tables
+        rhos: Vec<Rho>,  // set of equality conditions
 
         has_g_rows: bool,  // LINK src/doc.md#_has_g_rows
     },
@@ -123,7 +124,7 @@ impl GroundingQuery {
 
         match self {
             GroundingQuery::Join{variables, conditions, grounding, outer,
-            natural_joins, theta_joins, ..} => {
+            natural_joins, theta_joins, rhos, ..} => {
 
                 // SELECT {variables.0} AS {variables.1},
                 //        {condition} AS if_,  -- if condition
@@ -210,8 +211,12 @@ impl GroundingQuery {
                 let (grounding_, mut ids) = grounding.to_sql(&variables);
                 let grounding_ = format!("{grounding_} AS G");
 
+                // rhos
+                let mut where_ = rhos.iter()
+                    .map(|rho| rho.to_sql(variables))
+                    .collect::<Vec<_>>();
+
                 // natural joins
-                let mut where_ = vec![];
                 let join = if outer.is_some() { "FULL JOIN" } else { "JOIN" };
                 let naturals = natural_joins.iter().enumerate()
                     .map(|(i, natural_join)| {
@@ -383,6 +388,7 @@ impl GroundingQuery {
                         var_joins.shift_remove(symbol);
                     }
 
+                    let (sub_view, mut ids) = sub_view.to_sql(&var_joins, format!("{indent}{INDENT}").as_str());
                     let default = match default {
                         None => "".to_string(),
                         Some(default) => {
@@ -405,6 +411,9 @@ impl GroundingQuery {
                             if cancel {
                                 "".to_string ()
                             } else {
+                                if ids == Ids::None {
+                                    ids = Ids::Some  // because of default
+                                }
                                 let subs = if subs.len() == 0 { "".to_string() }
                                     else { format!("{}, ", subs.join(", ")) };
                                 let joins = if joins.len() == 0 { "".to_string() }
@@ -416,7 +425,6 @@ impl GroundingQuery {
                             }
                         }
                     };
-                    let (sub_view, ids) = sub_view.to_sql(&var_joins, format!("{indent}{INDENT}").as_str());
 
                     let comment = format!("-- Agg ({})\n{indent}", indent.len());
                     (format!("{comment}SELECT {free}{grounding} as G\n{indent} FROM ({default}{sub_view}){group_by}"),
@@ -426,13 +434,21 @@ impl GroundingQuery {
                 }
             },
             GroundingQuery::Union { sub_queries, .. } => {
-                let mut ids = Ids::All;
+                let mut has_all = false;
+                let mut has_some = false;
+                let mut has_none = false;
                 let view = sub_queries.iter()
                     .map( |query| {
                         let (sql, ids_) = query.to_sql(var_joins, indent);
-                        ids = max(ids.clone(), ids_);
+                        has_all  |= ids_ == Ids::All;
+                        has_some |= ids_ == Ids::Some;
+                        has_none |= ids_ == Ids::None;
                         sql
                     }).collect::<Vec<_>>().join(format!("\n{indent}UNION ALL\n{indent}").as_str());
+                let ids = if has_some { Ids::Some}
+                    else if has_all && has_none { Ids:: Some }
+                    else if has_all { Ids::All }
+                    else { Ids::None };
                 (view, ids)
             }
         }
@@ -479,6 +495,9 @@ impl GroundingQuery {
     }
 
 
+    /// Finalize the negation of a auery.
+    /// Assumes that the the change from TU to UF (or vice-versa) has been done
+    /// but massage it to remain correct.
     pub(crate) fn negate(
         &self,
         free_variables: OptionMap<Symbol, TableAlias>,
@@ -498,7 +517,7 @@ impl GroundingQuery {
 
         match self {
             GroundingQuery::Join { variables, conditions, grounding,
-            outer, natural_joins, theta_joins, has_g_rows} => {
+            outer, natural_joins, theta_joins, rhos, has_g_rows} => {
 
                 let new_grounding =
                     match grounding {
@@ -506,6 +525,15 @@ impl GroundingQuery {
                         SQLExpr::Boolean(false) => SQLExpr::Boolean(true),
                         _ => SQLExpr::Predefined(Predefined::Not, Box::new(vec![grounding.clone()]))
                     };
+                let rhos = rhos.iter()
+                    .map(|Rho{t0, op, t1}| {
+                        let op = match op.as_str() {
+                            "=" => "!=".to_string(),
+                            "!=" => "=".to_string(),
+                            _ => return Err(SolverError::InternalError(58785596))
+                        };
+                        Ok(Rho{t0: t0.clone(), op, t1: t1.clone()})
+                    }).collect::<Result<Vec<_>,_>>()?;
                 let query = GroundingQuery::Join {
                     variables: variables.clone(),
                     conditions: conditions.clone(),
@@ -513,6 +541,7 @@ impl GroundingQuery {
                     outer: *outer,
                     natural_joins: natural_joins.clone(),
                     theta_joins: theta_joins.clone(),
+                    rhos,
                     has_g_rows: *has_g_rows
                 };
                 let table_alias = TableAlias{base_table, index: 0};

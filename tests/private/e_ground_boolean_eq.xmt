@@ -302,6 +302,7 @@ SELECT _xmt_interp_p_G_9.a_1 AS x,
   FROM _xmt_interp_p_G AS _xmt_interp_p_G_9
   JOIN _xmt_interp_q_G AS _xmt_interp_q_G_10
         ON _xmt_interp_p_G_9.a_1 = _xmt_interp_q_G_10.a_1
+ WHERE (NOT is_id(_xmt_interp_q_G_10.G) OR NOT is_id(_xmt_interp_p_G_9.G) OR _xmt_interp_q_G_10.G = _xmt_interp_p_G_9.G)
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT _xmt_view_p_9_28.x AS x,
@@ -400,6 +401,7 @@ SELECT _xmt_interp_p_G_9.a_1 AS x,
   FROM _xmt_interp_p_G AS _xmt_interp_p_G_9
   JOIN _xmt_interp_q_G AS _xmt_interp_q_G_10
         ON _xmt_interp_p_G_9.a_1 = _xmt_interp_q_G_10.a_1
+ WHERE (NOT is_id(_xmt_interp_q_G_10.G) OR NOT is_id(_xmt_interp_p_G_9.G) OR _xmt_interp_q_G_10.G != _xmt_interp_p_G_9.G)
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_interp_p_G_9.a_1 AS x,
@@ -421,7 +423,8 @@ SELECT and_aggregate(G) as G
                      not_(eq_(_xmt_interp_p_G_9.G, _xmt_interp_q_G_10.G)) AS G
                 FROM _xmt_interp_p_G AS _xmt_interp_p_G_9
                 JOIN _xmt_interp_q_G AS _xmt_interp_q_G_10
-                      ON _xmt_interp_p_G_9.a_1 = _xmt_interp_q_G_10.a_1)
+                      ON _xmt_interp_p_G_9.a_1 = _xmt_interp_q_G_10.a_1
+               WHERE (NOT is_id(_xmt_interp_q_G_10.G) OR NOT is_id(_xmt_interp_p_G_9.G) OR _xmt_interp_q_G_10.G != _xmt_interp_p_G_9.G))
         WHERE G <> "true")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -433,7 +436,8 @@ SELECT G as G
                      not_(eq_(_xmt_interp_p_G_9.G, _xmt_interp_q_G_10.G)) AS G
                 FROM _xmt_interp_p_G AS _xmt_interp_p_G_9
                 JOIN _xmt_interp_q_G AS _xmt_interp_q_G_10
-                      ON _xmt_interp_p_G_9.a_1 = _xmt_interp_q_G_10.a_1)
+                      ON _xmt_interp_p_G_9.a_1 = _xmt_interp_q_G_10.a_1
+               WHERE (NOT is_id(_xmt_interp_q_G_10.G) OR NOT is_id(_xmt_interp_p_G_9.G) OR _xmt_interp_q_G_10.G != _xmt_interp_p_G_9.G))
         WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Agg (0)
@@ -447,7 +451,8 @@ SELECT and_aggregate(G) as G
                      not_(eq_(_xmt_interp_p_G_9.G, _xmt_interp_q_G_10.G)) AS G
                 FROM _xmt_interp_p_G AS _xmt_interp_p_G_9
                 JOIN _xmt_interp_q_G AS _xmt_interp_q_G_10
-                      ON _xmt_interp_p_G_9.a_1 = _xmt_interp_q_G_10.a_1)
+                      ON _xmt_interp_p_G_9.a_1 = _xmt_interp_q_G_10.a_1
+               WHERE (NOT is_id(_xmt_interp_q_G_10.G) OR NOT is_id(_xmt_interp_p_G_9.G) OR _xmt_interp_q_G_10.G != _xmt_interp_p_G_9.G))
         WHERE G <> "true")
 
 ===========================================

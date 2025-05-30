@@ -332,12 +332,12 @@ SELECT _xmt_selector_sort_8_b_g_13.G AS G
 -- Join(0)
 SELECT eq_("red", _xmt_selector_sort_8_b_g_13.G) AS G
   FROM _xmt_selector_sort_8_b_g AS _xmt_selector_sort_8_b_g_13
- WHERE construct2("Left", "red") = _xmt_selector_sort_8_b_g_13.a_1
+ WHERE "red" = _xmt_selector_sort_8_b_g_13.G AND construct2("Left", "red") = _xmt_selector_sort_8_b_g_13.a_1
 ----- F ------------------------------------------------------------
 -- Join(0)
 SELECT eq_("red", _xmt_selector_sort_8_b_g_13.G) AS G
   FROM _xmt_selector_sort_8_b_g AS _xmt_selector_sort_8_b_g_13
- WHERE construct2("Left", "red") = _xmt_selector_sort_8_b_g_13.a_1
+ WHERE "red" != _xmt_selector_sort_8_b_g_13.G AND construct2("Left", "red") = _xmt_selector_sort_8_b_g_13.a_1
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT eq_("red", _xmt_selector_sort_8_b_g_13.G) AS G

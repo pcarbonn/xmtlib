@@ -581,7 +581,6 @@ fn ground_compound(
                                     .all(|g| g.has_g_complexity());
 
                                 if use_g {
-                                    let variant = QueryVariant::Predefined(Predefined::Eq);
                                     view_for_compound(qual_identifier, index, &mut gqs, &variant, Some(true), solver)?
                                 } else {
                                     let variant = QueryVariant::Equivalence(true);
@@ -589,7 +588,6 @@ fn ground_compound(
                                 }
                             },
                             Some(Grounding::NonBoolean { .. }) => {
-                                let variant = QueryVariant::Predefined(Predefined::Eq);
                                 view_for_compound(qual_identifier, index, &mut gqs, &variant, Some(true), solver)?
                             },
                             None => return Err(SolverError::TermError("missing arguments", term.clone())),

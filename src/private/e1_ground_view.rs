@@ -11,7 +11,7 @@ use crate::error::SolverError;
 use crate::solver::{Solver, TableType, TermId};
 
 use crate::private::e2_ground_query::{GroundingQuery, NaturalJoin, TableName, TableAlias, Column, INDENT};
-use crate::private::e3_ground_sql::{Mapping, SQLExpr, Predefined};
+use crate::private::e3_ground_sql::{Mapping, Rho, SQLExpr, Predefined};
 use crate::private::z_utilities::OptionMap;
 
 
@@ -120,6 +120,7 @@ pub(crate) fn view_for_constant(
         outer: None,
         natural_joins: IndexSet::new(),
         theta_joins: IndexMap::new(),
+        rhos: vec![],
         has_g_rows: false
     };
     let base_table = TableName("ignore".to_string());
@@ -150,6 +151,7 @@ pub(crate) fn view_for_variable(
             outer: None,
             natural_joins: IndexSet::from([NaturalJoin::CrossProduct(table_alias.clone(), symbol.clone())]),
             theta_joins: IndexMap::new(),
+            rhos: vec![],
             has_g_rows: true
         };
         let free_variables = OptionMap::from([(symbol.clone(), Some(table_alias))]);
@@ -163,6 +165,7 @@ pub(crate) fn view_for_variable(
             outer: None,
             natural_joins: IndexSet::new(),
             theta_joins: IndexMap::new(),
+            rhos: vec![],
             has_g_rows: false  // LINK src/doc.md#_has_g_rows
         };
         let free_variables = OptionMap::from([(symbol.clone(), None)]);
@@ -205,6 +208,21 @@ pub(crate) fn view_for_compound(
     let mut natural_joins = IndexSet::new();
     let mut theta_joins = IndexMap::new();
     let mut thetas = vec![];
+    let mut rhos = vec![];
+    let mut reference = None;  // for equality.  Ideally, an expression with all ids.
+
+        // helper function to update the reference expression in an equality
+        let mut update_reference = |grounding: &SQLExpr, ids: &Ids| {
+            reference = match reference {
+                None => Some(grounding.clone()),  // start with the first grounding
+                Some(_) => if *ids == Ids::All {
+                        Some(grounding.clone())  // prefer any grounding with all ids
+                    } else {
+                        reference.clone()  // unchanged
+                    }
+            };
+        };
+
     let mut ids = Ids::All;
     let mut has_g_rows = false;
 
@@ -214,7 +232,7 @@ pub(crate) fn view_for_compound(
     for (i, sub_q) in sub_queries.iter().enumerate() {
 
         match sub_q {
-            GroundingView::Empty => {
+            GroundingView::Empty => {  // TODO outer join
                 return Ok(GroundingView::Empty)
             },
             GroundingView::View {
@@ -237,6 +255,7 @@ pub(crate) fn view_for_compound(
                             outer: sub_outer,
                             natural_joins: sub_natural_joins,
                             theta_joins: sub_theta_joins,
+                            rhos: sub_rhos,
                             has_g_rows: sub_has_g_rows }
                         = query {
 
@@ -278,6 +297,10 @@ pub(crate) fn view_for_compound(
                                 theta_joins.insert(table_alias.clone(), mappings.clone());
                             }
                         }
+
+                        rhos.extend(sub_rhos.iter().cloned());
+                        update_reference(sub_grounding, sub_ids);
+
                         has_g_rows |= *sub_has_g_rows;
 
                         // merge the variables, preferring interpretations to sort
@@ -299,7 +322,7 @@ pub(crate) fn view_for_compound(
                             }
                         }
 
-                        // compute the join conditions, for later use
+                        // compute the theta join conditions, for later use
                         match variant {
                             QueryVariant::Interpretation(table_name, ..) => {
                                 let column = Column::new(table_name, &format!("a_{}", i+1));
@@ -317,13 +340,14 @@ pub(crate) fn view_for_compound(
                             | QueryVariant::Predefined(_)
                             | QueryVariant::Equivalence(..) => {}
                         }
+
                         true  // done
                     } else { false }
                 } else { false };
 
                 if ! done {  // not a Join --> use the ViewType
 
-                    let sub_table =
+                    let temp =
                         match grounding {
                             Either::Left(constant) => {
                                 if ! use_outer_join {  // no need to create a Join
@@ -332,52 +356,58 @@ pub(crate) fn view_for_compound(
                                         variables.insert(symbol.clone(), None);
                                     }
 
-                                    groundings.push(constant.clone());
-                                    None
+                                    Either::Left(constant.clone())
                                 } else {  // need to create a Join for outer join
                                     let base_table = TableName(format!("Outer_{i}").to_string());
-                                    Some(TableAlias{ base_table, index: 0})
+                                    Right(TableAlias{ base_table, index: 0})
                                 }
                             },
                             Either::Right(table_name) =>
-                                Some(table_name.clone())
+                                Right(table_name.clone())
                         };
 
-                    if let Some(sub_table) = sub_table {
-                        // merge the variables
-                        for (symbol, _) in sub_free_variables.clone().iter() {
-                            let column = Column::new(&sub_table, &symbol);
-                            variables.insert(symbol.clone(), Some(column));
-                        }
+                    let grounding = match temp {
+                        Left(grounding) => grounding,
+                        Right(sub_table) => {
+                            // merge the variables
+                            for (symbol, _) in sub_free_variables.clone().iter() {
+                                let column = Column::new(&sub_table, &symbol);
+                                variables.insert(symbol.clone(), Some(column));
+                            }
 
-                        if *sub_condition {
-                            conditions.push(Right(Some(sub_table.clone())));
-                        }
-                        groundings.push(SQLExpr::G(sub_table.clone()));
+                            if *sub_condition {
+                                conditions.push(Right(Some(sub_table.clone())));
+                            }
 
-                        let map_variables = sub_free_variables.0.keys().cloned().collect();
-                        let sub_natural_join = NaturalJoin::ViewJoin(query.clone(), sub_table.clone(), map_variables);
-                        natural_joins.insert(sub_natural_join.clone());
+                            let map_variables = sub_free_variables.0.keys().cloned().collect();
+                            let sub_natural_join = NaturalJoin::ViewJoin(query.clone(), sub_table.clone(), map_variables);
+                            natural_joins.insert(sub_natural_join.clone());
 
-                        // create theta for later use
-                        match variant {
-                            QueryVariant::Interpretation(table_name, _) => {
-                                let column = Column::new(table_name, &format!("a_{}", i+1));
+                            // compute the theta join conditions, for later use
+                            match variant {
+                                QueryVariant::Interpretation(table_name, ids) => {
+                                    assert_eq!(ids, sub_ids);
+                                    let column = Column::new(table_name, &format!("a_{}", i+1));
 
-                                // push `sub_grounding = column` to conditions and thetas
-                                let if_ = Mapping(SQLExpr::G(sub_table.clone()), column);
-                                if *sub_ids != Ids::All {
-                                    conditions.push(Left(if_.clone()));
-                                }
-                                // adds nothing if sub_ids == None
-                                thetas.push(Some(if_));
-                            },
-                            QueryVariant::Apply
-                            | QueryVariant::Construct
-                            | QueryVariant::Predefined(_)
-                            | QueryVariant::Equivalence(..) => {}
-                        }
-                    }
+                                    // push `sub_grounding = column` to conditions and thetas
+                                    let if_ = Mapping(SQLExpr::G(sub_table.clone()), column);
+                                    if *sub_ids != Ids::All {
+                                        conditions.push(Left(if_.clone()));
+                                    }
+                                    // adds nothing if sub_ids == None
+                                    thetas.push(Some(if_));
+                                },
+                                QueryVariant::Apply
+                                | QueryVariant::Construct
+                                | QueryVariant::Predefined(_)
+                                | QueryVariant::Equivalence(..) => {}
+                            };
+
+                            SQLExpr::G(sub_table.clone())
+                        },
+                    };
+                    groundings.push(grounding.clone());
+                    update_reference(&grounding, sub_ids);
                 }
             }
         }
@@ -404,6 +434,27 @@ pub(crate) fn view_for_compound(
                 }
             }
         }).collect();
+
+    // compute rho condition for equality
+    if ids != Ids::None {
+        if let QueryVariant::Predefined(Predefined::Eq) = variant {
+            if let Some(ref reference) = reference {
+                let op = match exclude {
+                        Some(true) => "!=",
+                        Some(false) => "=",
+                        None => "",
+                    }.to_string();
+                if 0 < op.len() {
+                    for grounding in groundings.iter() {
+                        if grounding != reference {
+                            let rho = Rho{t0: grounding.clone(), op: op.clone(), t1: reference.clone()};
+                            rhos.push(rho);
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     let grounding =  // also updates ids, theta_joins
         match variant {
@@ -472,6 +523,7 @@ pub(crate) fn view_for_compound(
         outer,
         natural_joins,
         theta_joins,
+        rhos,
         has_g_rows
     };
     let exclude = if ! has_g_rows { None } else { exclude };
@@ -593,6 +645,7 @@ pub(crate) fn view_for_union(
                             outer: None,
                             natural_joins: IndexSet::new(),
                             theta_joins: IndexMap::new(),
+                            rhos: vec![],
                             has_g_rows: false
                         })
                     },
@@ -644,6 +697,7 @@ pub(crate) fn view_for_union(
                                 outer: None,
                                 natural_joins,
                                 theta_joins: IndexMap::new(),
+                                rhos: vec![],
                                 has_g_rows: false  // because it is based on a view
                             })
                         }
@@ -798,6 +852,9 @@ impl GroundingView {
     }
 
 
+    /// Finalize the negation of a view.
+    /// Assumes that the the change from TU to UF (or vice-versa) has been done
+    /// but massage it to remain correct.
     pub(crate) fn negate(
         &self,
         index: TermId,
