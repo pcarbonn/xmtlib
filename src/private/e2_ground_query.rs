@@ -30,7 +30,7 @@ pub(crate) enum GroundingQuery {
         outer: Option<bool>,  // the default boolean value for outer joins (None for inner join)
         natural_joins: IndexSet<NaturalJoin>,  // cross-products with sort, or joins with grounding sub-queries
         theta_joins: IndexMap<TableAlias, Vec<Option<Mapping>>>,  // joins with interpretation tables
-        rhos: Vec<Rho>,  // set of equality conditions
+        wheres: Vec<Rho>,  // set of equality conditions
 
         has_g_rows: bool,  // LINK src/doc.md#_has_g_rows
     },
@@ -124,7 +124,7 @@ impl GroundingQuery {
 
         match self {
             GroundingQuery::Join{variables, conditions, grounding, outer,
-            natural_joins, theta_joins, rhos, ..} => {
+            natural_joins, theta_joins, wheres, ..} => {
 
                 // SELECT {variables.0} AS {variables.1},
                 //        {condition} AS if_,  -- if condition
@@ -211,8 +211,8 @@ impl GroundingQuery {
                 let (grounding_, mut ids) = grounding.to_sql(&variables);
                 let grounding_ = format!("{grounding_} AS G");
 
-                // rhos
-                let mut where_ = rhos.iter()
+                // wheres
+                let mut where_ = wheres.iter()
                     .map(|rho| rho.to_sql(variables))
                     .collect::<Vec<_>>();
 
@@ -517,7 +517,7 @@ impl GroundingQuery {
 
         match self {
             GroundingQuery::Join { variables, conditions, grounding,
-            outer, natural_joins, theta_joins, rhos, has_g_rows} => {
+            outer, natural_joins, theta_joins, wheres, has_g_rows} => {
 
                 let new_grounding =
                     match grounding {
@@ -525,7 +525,7 @@ impl GroundingQuery {
                         SQLExpr::Boolean(false) => SQLExpr::Boolean(true),
                         _ => SQLExpr::Predefined(Predefined::Not, Box::new(vec![grounding.clone()]))
                     };
-                let rhos = rhos.iter()
+                let wheres = wheres.iter()
                     .map(|Rho{t0, op, t1}| {
                         let op = match op.as_str() {
                             "=" => "!=".to_string(),
@@ -541,7 +541,7 @@ impl GroundingQuery {
                     outer: *outer,
                     natural_joins: natural_joins.clone(),
                     theta_joins: theta_joins.clone(),
-                    rhos,
+                    wheres,
                     has_g_rows: *has_g_rows
                 };
                 let table_alias = TableAlias{base_table, index: 0};

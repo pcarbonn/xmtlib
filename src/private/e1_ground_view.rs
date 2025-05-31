@@ -120,7 +120,7 @@ pub(crate) fn view_for_constant(
         outer: None,
         natural_joins: IndexSet::new(),
         theta_joins: IndexMap::new(),
-        rhos: vec![],
+        wheres: vec![],
         has_g_rows: false
     };
     let base_table = TableName("ignore".to_string());
@@ -151,7 +151,7 @@ pub(crate) fn view_for_variable(
             outer: None,
             natural_joins: IndexSet::from([NaturalJoin::CrossProduct(table_alias.clone(), symbol.clone())]),
             theta_joins: IndexMap::new(),
-            rhos: vec![],
+            wheres: vec![],
             has_g_rows: true
         };
         let free_variables = OptionMap::from([(symbol.clone(), Some(table_alias))]);
@@ -165,7 +165,7 @@ pub(crate) fn view_for_variable(
             outer: None,
             natural_joins: IndexSet::new(),
             theta_joins: IndexMap::new(),
-            rhos: vec![],
+            wheres: vec![],
             has_g_rows: false  // LINK src/doc.md#_has_g_rows
         };
         let free_variables = OptionMap::from([(symbol.clone(), None)]);
@@ -208,7 +208,7 @@ pub(crate) fn view_for_compound(
     let mut natural_joins = IndexSet::new();
     let mut theta_joins = IndexMap::new();
     let mut thetas = vec![];
-    let mut rhos = vec![];
+    let mut wheres = vec![];
     let mut reference = None;  // for equality.  Ideally, an expression with all ids.
 
         // helper function to update the reference expression in an equality
@@ -255,7 +255,7 @@ pub(crate) fn view_for_compound(
                             outer: sub_outer,
                             natural_joins: sub_natural_joins,
                             theta_joins: sub_theta_joins,
-                            rhos: sub_rhos,
+                            wheres: sub_rhos,
                             has_g_rows: sub_has_g_rows }
                         = query {
 
@@ -298,7 +298,7 @@ pub(crate) fn view_for_compound(
                             }
                         }
 
-                        rhos.extend(sub_rhos.iter().cloned());
+                        wheres.extend(sub_rhos.iter().cloned());
                         update_reference(sub_grounding, sub_ids);
 
                         has_g_rows |= *sub_has_g_rows;
@@ -448,7 +448,7 @@ pub(crate) fn view_for_compound(
                     for grounding in groundings.iter() {
                         if grounding != reference {
                             let rho = Rho{t0: grounding.clone(), op: op.clone(), t1: reference.clone()};
-                            rhos.push(rho);
+                            wheres.push(rho);
                         }
                     }
                 }
@@ -523,7 +523,7 @@ pub(crate) fn view_for_compound(
         outer,
         natural_joins,
         theta_joins,
-        rhos,
+        wheres,
         has_g_rows
     };
     let exclude = if ! has_g_rows { None } else { exclude };
@@ -645,7 +645,7 @@ pub(crate) fn view_for_union(
                             outer: None,
                             natural_joins: IndexSet::new(),
                             theta_joins: IndexMap::new(),
-                            rhos: vec![],
+                            wheres: vec![],
                             has_g_rows: false
                         })
                     },
@@ -697,7 +697,7 @@ pub(crate) fn view_for_union(
                                 outer: None,
                                 natural_joins,
                                 theta_joins: IndexMap::new(),
-                                rhos: vec![],
+                                wheres: vec![],
                                 has_g_rows: false  // because it is based on a view
                             })
                         }
