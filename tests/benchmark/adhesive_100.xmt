@@ -54,7 +54,7 @@
 (assert (possible_bonding (adhesion chosen_glue substrateA)))
 (assert (possible_bonding (adhesion chosen_glue substrateB)))
 (x-ground debug:)
--------------------------
+------- RESULTS ------------------
 (declare-datatype substrate ((a ) (b )))
 (declare-datatype glue ((A ) (B )))
 (declare-datatype fam ((epoxy ) (put ) (pue ) (mma )))

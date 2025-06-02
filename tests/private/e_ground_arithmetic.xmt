@@ -23,7 +23,7 @@
 (x-debug solver groundings)
 (x-debug db tables)
 (x-debug db _xmt_interp_row_T)
--------------------------
+------- RESULTS ------------------
 (declare-const c Int)
 (declare-const d Real)
 (declare-fun Row (Int) Bool)

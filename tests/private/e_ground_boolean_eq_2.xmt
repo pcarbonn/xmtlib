@@ -10,7 +10,7 @@
 )
 (x-ground debug:)
 (x-debug solver groundings)
--------------------------
+------- RESULTS ------------------
 (declare-datatype T ((A ) (B )))
 (declare-fun p (T T) Bool)
 (assert (= (p A A) true))

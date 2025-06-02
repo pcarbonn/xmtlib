@@ -52,7 +52,7 @@
 (x-ground debug:)
 (x-debug solver functions)
 (x-debug solver groundings)
--------------------------
+------- RESULTS ------------------
 (declare-datatype man ((m1 ) (m2 ) (m3 )))
 (declare-datatype woman ((w1 ) (w2 ) (w3 )))
 (declare-fun manOf (woman) man)

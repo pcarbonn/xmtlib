@@ -54,7 +54,7 @@ fn test_file(path: &Path) -> bool {
     // read file
     let expected = fs::read_to_string(path)
         .expect("Should have been able to read the input file");
-    let input = expected.split("\n-------------------------\n").collect::<Vec<&str>>()[0];
+    let input = expected.split("\n------- RESULTS ------------------\n").collect::<Vec<&str>>()[0];
 
     // execute file
     let panic = std::panic::catch_unwind(|| {
@@ -65,7 +65,7 @@ fn test_file(path: &Path) -> bool {
     });
     if let Ok(result) = panic {
         // compare to expected
-        let actual = input.to_owned() + "\n-------------------------\n"+ &result;
+        let actual = input.to_owned() + "\n------- RESULTS ------------------\n"+ &result;
         if actual != expected {  // write to file
             let mut expected_file = File::create(path).expect("creation failed");
             expected_file.write(actual.as_bytes(),).expect("write failed");

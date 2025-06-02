@@ -16,7 +16,7 @@
 (x-ground debug:)
 (x-debug solver functions)
 (x-debug solver groundings)
--------------------------
+------- RESULTS ------------------
 (declare-fun Edge (Int Int) Bool)
 (assert (Edge 1 1))
 (assert (Edge 2 2))

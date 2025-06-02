@@ -23,7 +23,7 @@
 (x-debug db _xmt_tester_sort_8_left_g)
 (x-debug solver groundings)
 (check-sat)
--------------------------
+------- RESULTS ------------------
 (declare-datatype Color ((red ) (blue ) (green )))
 (declare-datatype Material ((soft ) (hard )))
 (declare-datatype Either (par (T) ((nil ) (Left (b T)) (Right (right T)))))

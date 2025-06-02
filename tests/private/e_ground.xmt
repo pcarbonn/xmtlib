@@ -14,7 +14,7 @@
 (x-debug solver groundings)
 (x-debug db tables)
 (x-debug db _xmt_interp_is_true_UF)
--------------------------
+------- RESULTS ------------------
 (declare-fun is_true (Bool) Bool)
 (assert false)
 (assert false)

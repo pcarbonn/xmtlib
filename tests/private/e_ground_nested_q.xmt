@@ -12,7 +12,7 @@
                               (exists ((y Int)) (Q x y)))))
 (x-ground debug:)
 (x-debug solver groundings)
--------------------------
+------- RESULTS ------------------
 (declare-fun domain (Int) Bool)
 (declare-fun domain2 (Int Int) Bool)
 (declare-fun P (Int) Bool)

@@ -43,7 +43,7 @@
 
 ;todo convert to definition
 (x-interpret-pred dark (x-set (red)))
--------------------------
+------- RESULTS ------------------
 (declare-fun p () Bool)
 (declare-const P Bool)
 (declare-datatype Color ((red ) (green )))

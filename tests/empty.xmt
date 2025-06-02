@@ -1,6 +1,6 @@
 (set-option :backend none)
 (assert false)
 (check-sat)
--------------------------
+------- RESULTS ------------------
 (assert false)
 (check-sat)

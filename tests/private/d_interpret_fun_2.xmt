@@ -41,7 +41,7 @@
       ((0) red)
    ) red
 )
--------------------------
+------- RESULTS ------------------
 (declare-datatype Color ((red ) (green )))
 (declare-const C Color)
 (declare-fun c () Color)

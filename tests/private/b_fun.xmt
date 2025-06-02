@@ -9,7 +9,7 @@
 (x-debug solver sorts)
 (x-debug solver functions)
 (x-debug db tables)
--------------------------
+------- RESULTS ------------------
 (declare-datatype Color ((red ) (green )))
 (declare-datatype Pair (par (X) ((pair (first X) (second X)))))
 (define-sort PairColor () (Pair Color))

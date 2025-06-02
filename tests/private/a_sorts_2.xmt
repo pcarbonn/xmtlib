@@ -21,7 +21,7 @@
 (x-debug db tables)
 (check-sat)
 
--------------------------
+------- RESULTS ------------------
 (declare-datatypes ((Tree 1) (TreeList 1)) ((par (X) ((node (value X) (children (TreeList X))))) (par (Y) ((empty ) (insert (head (Tree Y)) (tail (TreeList Y)))))))
 (declare-datatype TreeInt ((treeint (value (Tree Int)))))
 (declare-datatype Color ((red ) (green )))

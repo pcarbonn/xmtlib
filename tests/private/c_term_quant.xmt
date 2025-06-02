@@ -16,7 +16,7 @@
 (x-ground debug:)
 (x-debug solver groundings)
 (x-debug db tables)
--------------------------
+------- RESULTS ------------------
 (declare-datatype Color ((red ) (green )))
 (declare-fun p (Color) Bool)
 (declare-fun q (Int) Bool)

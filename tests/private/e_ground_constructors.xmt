@@ -19,7 +19,7 @@
 (x-debug db _xmt_interp_p_G)
 (x-debug solver groundings)
 (check-sat)
--------------------------
+------- RESULTS ------------------
 (declare-datatype Color ((red ) (blue ) (green )))
 (declare-datatype Either ((nil ) (Left (b Color)) (Right (right Color))))
 (declare-fun p (Either) Bool)

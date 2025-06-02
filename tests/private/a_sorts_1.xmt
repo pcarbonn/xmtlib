@@ -19,7 +19,7 @@
 (x-debug db _xmt_sort_Q)
 (check-sat)
 (define-sort MyBitVec () (MyPair (_ BitVec 2)))
--------------------------
+------- RESULTS ------------------
 (declare-datatype Color ((red ) (green )))
 (declare-datatype color ((blue ) (white )))
 (declare-datatype Pair (par (X Y) ((white ) (pair (first X) (second Y)))))

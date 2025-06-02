@@ -35,7 +35,7 @@
                                (r x)
                             )))
 (x-ground debug:)
--------------------------
+------- RESULTS ------------------
 (declare-fun domain (Int) Bool)
 (declare-fun P (Int) Bool)
 (declare-fun Q (Int) Bool)

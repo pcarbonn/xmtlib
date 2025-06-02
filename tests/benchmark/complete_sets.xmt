@@ -7,11 +7,24 @@
 (assert (forall ((x element)) (or (p x) (q x))))
 
 (x-ground)
+(x-debug db _xmt_interp_p_UF)
 (x-debug solver groundings)
--------------------------
+------- RESULTS ------------------
 (declare-datatype element ((e1 ) (e2 ) (e3 ) (e4 ) (e5 ) (e6 ) (e7 ) (e8 )))
 (declare-fun p (element) Bool)
 (declare-fun q (element) Bool)
+ TABLE: _xmt_interp_p_uf
+┌──────┬─────────┐
+│ a_1  │ G       │
+├──────┼─────────┤
+│ "e5" │ "false" │
+├──────┼─────────┤
+│ "e6" │ "false" │
+├──────┼─────────┤
+│ "e7" │ "false" │
+├──────┼─────────┤
+│ "e8" │ "false" │
+└──────┴─────────┘
 Groundings:
 ===  x ======================================
  -- Join(0)

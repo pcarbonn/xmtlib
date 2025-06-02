@@ -8,7 +8,7 @@
 (x-ground debug:)
 (x-debug solver groundings)
 (x-debug db tables)
--------------------------
+------- RESULTS ------------------
 (declare-const p Bool)
 (declare-fun q (Int) Bool)
 (assert false)

@@ -10,7 +10,7 @@
 (x-interpret-pred domain (x-range 2 10))
 (x-ground debug:)
 (x-debug solver groundings)
--------------------------
+------- RESULTS ------------------
 (declare-fun domain (Int) Bool)
 (declare-fun prime (Int) Bool)
 (assert (= (prime 2) true))

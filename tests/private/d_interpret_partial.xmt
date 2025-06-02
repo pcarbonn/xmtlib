@@ -18,7 +18,7 @@
 (x-debug solver groundings)
 (x-debug db tables)
 (x-debug db _xmt_interp_mix_g)
--------------------------
+------- RESULTS ------------------
 (declare-datatype Color ((red ) (green )))
 (declare-fun mix (Color Color) Color)
 (assert (= (mix red red) red))
