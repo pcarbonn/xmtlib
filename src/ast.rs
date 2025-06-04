@@ -518,6 +518,7 @@ pub enum Command {
     Echo(String_),
     SetOption(Option_),
     XDebug(L<Identifier>, L<Identifier>),
+    XDuration(String_),
     XGround{no: bool, debug: bool},
     XInterpretPred(L<Identifier>, XSet),
     XInterpretFun(L<Identifier>, Either<Vec<(XTuple, L<Term>)>, String_>, Option<L<Term>>),
@@ -562,7 +563,7 @@ impl Display for Command {
                 let variables = m1.iter().format(" ");
                 write!(f, "(define-sort {m0} ({variables}) {m2})\n")
             }
-            Self::Echo(m0) => write!(f, "(echo {})\n", m0),
+            Self::Echo(m0) => write!(f, "(echo {m0})\n"),
             // Self::Exit => write!(f, "(exit)\n"),
             // Self::GetAssertions => write!(f, "(get-assertions)\n"),
             // Self::GetAssignment => write!(f, "(get-assignment)\n"),
@@ -582,6 +583,13 @@ impl Display for Command {
             Self::SetOption(m0) => write!(f, "(set-option {})", m0),
             // Self::Simplify(m0) => write!(f, "(simplify {})\n", m0),
 
+            Self::XDebug(s1, s2) => write!(f, "(x-debug {s1} {s2})\n"),
+            Self::XDuration(m0) => write!(f, "(x-duration {m0})\n"),
+            Self::XGround{no, debug}=>
+                write!(f, "(x-ground{}{})\n",
+                            if *no {" no:"} else {""},
+                            if *debug {" debug:"} else {""}
+                        ),
             Self::XInterpretPred(s1, s2 ) => write!(f, "(x-interpret-pred {s1} {s2})\n"),
             Self::XInterpretFun(s1, s2, s3 ) => {
                 let else_ =
@@ -590,7 +598,7 @@ impl Display for Command {
                     } else {
                         "".to_string()
                     };
-               match s2 {
+                match s2 {
                     Left(tuples) => {
                         let tuples = tuples.iter()
                             .map(|(args, value)| format!("({args} {value})"))
@@ -601,12 +609,6 @@ impl Display for Command {
                         write!(f, "(x-interpret-fun {s1} (x-sql {s} ) {else_})\n")
                 }
             },
-            Self::XDebug(s1, s2) => write!(f, "(x-debug {s1} {s2})\n"),
-            Self::XGround{no, debug}=>
-                write!(f, "(x-ground{}{})\n",
-                            if *no {" no:"} else {""},
-                            if *debug {" debug:"} else {""}
-                        ),
             Self::Verbatim(s) => write!(f, "{s}\n"),
         }
     }

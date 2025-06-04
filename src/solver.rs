@@ -2,6 +2,7 @@
 
 use regex::Regex;
 use std::future::Future;
+use std::time::Instant;
 
 use derive_more::Display;
 use genawaiter::{sync::Gen, sync::gen, yield_};
@@ -267,8 +268,9 @@ impl Solver {
     ) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {
 
         gen!({
+            let mut start = Instant::now();
             for command in commands {
-                for result in self.execute1(command) {
+                for result in self.execute1(command, &mut start) {
                     if result.is_err() {
                         yield_!(result);
                         break
@@ -281,11 +283,12 @@ impl Solver {
     }
 
     /// Execute one command and returns a generator of strings containing the results.
-    pub(crate) fn execute1 (
-        &mut self,
-        c: Command
-    ) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {
-
+    pub(crate) fn execute1<'a> (
+        &'a mut self,
+        c: Command,
+        start: &'a mut Instant
+    ) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + 'a>
+    {
         gen!({
             let command = c.to_string();
             match c {
@@ -434,6 +437,12 @@ impl Solver {
                         },
                         _ => yield_!(Err(SolverError::IdentifierError("Unknown 'x-debug' parameter\n", typ)))
                     }
+                },
+
+                Command::XDuration(string) => {
+                    let duration = start.elapsed().as_secs_f32();
+                    *start = Instant::now();
+                    yield_!(Ok(format!("{}{:.3} sec\n", string.0, duration)))
                 },
 
                 Command::XGround{no, debug} => {

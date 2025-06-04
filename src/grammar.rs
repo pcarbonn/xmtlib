@@ -393,6 +393,7 @@ peg::parser!{
                       / xinterpret_pred()
                       / xinterpret_fun()
                       / xdebug()
+                      / xduration()
                       / xground()
                       / verbatim()) _
               ")"
@@ -480,6 +481,23 @@ peg::parser!{
 
         // //////////////////////////// X-Commands     ////////////////////////////
 
+        rule xdebug() -> Command
+            = "x-debug" _
+              typ:identifier() _
+              object:identifier()
+            { XDebug (typ, object) }
+
+        rule xduration() -> Command
+            = "x-duration" _
+              string: string()
+            { XDuration(string) }
+
+        rule xground() -> Command
+            = "x-ground" _
+              no: "no:"? _
+              debug: "debug:"?
+            { XGround{no: no.is_some(), debug: debug.is_some()} }
+
         rule xinterpret_const() -> Command
             = "x-interpret-const" _
               identifier: identifier() _
@@ -522,18 +540,6 @@ peg::parser!{
               ")" _
               else_: term()?
             { XInterpretFun(identifier, Right(sql), else_) }
-
-        rule xdebug() -> Command
-            = "x-debug" _
-              typ:identifier() _
-              object:identifier()
-            { XDebug (typ, object) }
-
-        rule xground() -> Command
-            = "x-ground" _
-              no: "no:"? _
-              debug: "debug:"?
-            { XGround{no: no.is_some(), debug: debug.is_some()} }
 
         rule verbatim() -> Command
             = command: ( "check-sat-assuming"
