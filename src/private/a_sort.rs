@@ -729,7 +729,7 @@ fn create_core_table(
     conn: &mut Connection
 ) -> Result<(), SolverError> {
 
-    conn.execute(&format!("CREATE TABLE {table} (constructor, G TEXT TEXT PRIMARY KEY)"), ())?;
+    conn.execute(&format!("CREATE TABLE {table} (constructor TEXT, G TEXT PRIMARY KEY)"), ())?;
 
     let mut stmt = conn.prepare(&format!("INSERT INTO {table} (constructor, G) VALUES (?, ?)"))?;
     for (symbol, code) in values {

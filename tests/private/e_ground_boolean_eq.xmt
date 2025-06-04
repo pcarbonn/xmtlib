@@ -57,9 +57,9 @@
 (assert (= (p green) (q green)))
 (assert (= true (q red)))
 (echo "negated")
-(assert (not (= true (q red))))
 (assert (not (= (p blue) true)))
 (assert (not (= (p green) (q green))))
+(assert (not (= true (q red))))
 Groundings:
 ===  x ======================================
  -- Join(0)
