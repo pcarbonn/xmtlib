@@ -158,15 +158,15 @@ Functions2:
  - m1 ()->man : Constructor
  - m2 ()->man : Constructor
  - m3 ()->man : Constructor
- - (_ is m1) (man)->Bool : Boolean (_xmt_tester_man_m1_t Complete, _xmt_tester_man_m1_f Complete, _xmt_tester_man_m1_g Complete)
- - (_ is m2) (man)->Bool : Boolean (_xmt_tester_man_m2_t Complete, _xmt_tester_man_m2_f Complete, _xmt_tester_man_m2_g Complete)
- - (_ is m3) (man)->Bool : Boolean (_xmt_tester_man_m3_t Complete, _xmt_tester_man_m3_f Complete, _xmt_tester_man_m3_g Complete)
+ - (_ is m1) (man)->Bool : Predefined (true)
+ - (_ is m2) (man)->Bool : Predefined (true)
+ - (_ is m3) (man)->Bool : Predefined (true)
  - w1 ()->woman : Constructor
  - w2 ()->woman : Constructor
  - w3 ()->woman : Constructor
- - (_ is w1) (woman)->Bool : Boolean (_xmt_tester_woman_w1_t Complete, _xmt_tester_woman_w1_f Complete, _xmt_tester_woman_w1_g Complete)
- - (_ is w2) (woman)->Bool : Boolean (_xmt_tester_woman_w2_t Complete, _xmt_tester_woman_w2_f Complete, _xmt_tester_woman_w2_g Complete)
- - (_ is w3) (woman)->Bool : Boolean (_xmt_tester_woman_w3_t Complete, _xmt_tester_woman_w3_f Complete, _xmt_tester_woman_w3_g Complete)
+ - (_ is w1) (woman)->Bool : Predefined (true)
+ - (_ is w2) (woman)->Bool : Predefined (true)
+ - (_ is w3) (woman)->Bool : Predefined (true)
  - manOf (woman)->man : Not interpreted
  - womanOf (man)->woman : Not interpreted
  - manPrefers (man, woman, woman)->Bool : Not interpreted

@@ -108,27 +108,27 @@ SELECT x, y,
  FROM (-- exclude(7)
        SELECT *
         FROM (-- Join(14)
-              SELECT _xmt_view__4_12.x AS x,
+              SELECT _xmt_view__4_6.x AS x,
                      _xmt_sort_t_1.G AS y,
-                     _xmt_view__4_12.G AS G
+                     _xmt_view__4_6.G AS G
                 FROM (-- Join(22)
                       SELECT _xmt_sort_t.G AS x,
                              eq_(_xmt_sort_t.G, "A") AS G
                         FROM _xmt_sort_t
                        WHERE _xmt_sort_t.G != "A"
-                      ) AS _xmt_view__4_12
+                      ) AS _xmt_view__4_6
                 JOIN _xmt_sort_t AS _xmt_sort_t_1
               UNION ALL
               -- Join(14)
               SELECT _xmt_sort_t.G AS x,
-                     _xmt_view__5_15.y AS y,
-                     _xmt_view__5_15.G AS G
+                     _xmt_view__5_9.y AS y,
+                     _xmt_view__5_9.G AS G
                 FROM (-- Join(22)
                       SELECT _xmt_sort_t_1.G AS y,
                              eq_(_xmt_sort_t_1.G, "A") AS G
                         FROM _xmt_sort_t AS _xmt_sort_t_1
                        WHERE _xmt_sort_t_1.G != "A"
-                      ) AS _xmt_view__5_15
+                      ) AS _xmt_view__5_9
                 JOIN _xmt_sort_t)
         WHERE G <> "true")
  GROUP BY x, y

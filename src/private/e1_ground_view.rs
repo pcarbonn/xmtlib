@@ -6,8 +6,8 @@ use std::hash::Hash;
 use indexmap::{IndexMap, IndexSet};
 use itertools::Either::{self, Left, Right};
 
-use crate::ast::{QualIdentifier, SortedVar, SpecConstant, Symbol, L};
-use crate::error::SolverError;
+use crate::ast::{QualIdentifier, Identifier, SortedVar, SpecConstant, Symbol, L};
+use crate::error::{SolverError, Offset};
 use crate::solver::{Solver, TableType, TermId};
 
 use crate::private::e2_ground_query::{GroundingQuery, NaturalJoin, TableName, TableAlias, Column, INDENT};
@@ -438,20 +438,27 @@ pub(crate) fn view_for_join(
 
     // compute rho condition for equality
     if ids != Ids::None {
-        if let QueryVariant::Predefined(Predefined::Eq) = variant {
-            if let Some(ref reference) = reference {
-                let op = match exclude {
-                        Some(true) => "!=",
-                        Some(false) => "=",
-                        None => "",
-                    }.to_string();
-                if 0 < op.len() {
+        let op = match exclude {
+                Some(true) => "!=",
+                Some(false) => "=",
+                None => "",
+            }.to_string();
+        if 0 < op.len() {
+            if let QueryVariant::Predefined(Predefined::Eq) = variant {
+                if let Some(ref reference) = reference {
                     for grounding in groundings.iter() {
                         if grounding != reference {
                             let rho = Rho{t0: grounding.clone(), op: op.clone(), t1: reference.clone()};
                             wheres.push(rho);
                         }
                     }
+                }
+            } else if let QueryVariant::Predefined(Predefined::Is(constructor)) = variant {
+                let qual = QualIdentifier::Identifier(L(Identifier::Simple(constructor.clone()), Offset(0)));
+                let reference = SQLExpr::Construct(qual, Box::new(vec!()));
+                for grounding in groundings.iter() {  // normally only one
+                    let rho = Rho{t0: grounding.clone(), op: op.clone(), t1: reference.clone()};
+                    wheres.push(rho);
                 }
             }
         }

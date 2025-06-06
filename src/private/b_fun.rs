@@ -204,9 +204,13 @@ pub(crate) fn get_function_object<'a>(
                     }
                 }
                 None => { // some predefined functions have no sorts
-                    let (out_sort, f) = get_function_object(term, function, &vec![], solver)?;
-                    if let FunctionObject::Predefined{..} = f { Ok( (out_sort, f) ) }
-                    else { Err(SolverError::TermError("Unknown function application", term.clone())) }
+                    if 0 < sorts.len() {  // to avoid infinite loop
+                        let (out_sort, f) = get_function_object(term, function, &vec![], solver)?;
+                        if let FunctionObject::Predefined{..} = f { Ok( (out_sort, f) ) }
+                        else { Err(SolverError::TermError("Unknown function application", term.clone())) }
+                    } else {
+                        Err(SolverError::TermError("Unknown identifier", term.clone()))
+                    }
                 }
             }
         },

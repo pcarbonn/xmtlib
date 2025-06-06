@@ -598,7 +598,8 @@ fn ground_compound(
 
                         Ok((Grounding::Boolean{tu, uf, g}, out_sort))
                     }
-                    Predefined::Less
+                    Predefined::Is(_)
+                    | Predefined::Less
                     | Predefined::LE
                     | Predefined::Greater
                     | Predefined::GE

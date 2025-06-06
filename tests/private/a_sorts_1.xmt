@@ -45,7 +45,7 @@ Sorts:
  - (infinite) String
  - (infinite) RegLan
  - (_xmt_sort_color: 2) Color: ((red ) (green ))
- - (_xmt_sort_color_7: 2) color: ((blue ) (white ))
+ - (_xmt_sort_color_1: 2) color: ((blue ) (white ))
  - (Sort_8: 5) (Pair Color Color): ((white ) (pair (first Color) (second Color)))
  - (_xmt_sort_p: 5) P: ((p (x (Pair Color Color))))
  - (Sort_10: 11) (Pair Color (Pair Color Color)): ((white ) (pair (first Color) (second (Pair Color Color))))
@@ -86,17 +86,17 @@ Functions2:
  - abs ()->Real : Predefined (false)
  - red ()->Color : Constructor
  - green ()->Color : Constructor
- - (_ is red) (Color)->Bool : Boolean (_xmt_tester_color_red_t Complete, _xmt_tester_color_red_f Complete, _xmt_tester_color_red_g Complete)
- - (_ is green) (Color)->Bool : Boolean (_xmt_tester_color_green_t Complete, _xmt_tester_color_green_f Complete, _xmt_tester_color_green_g Complete)
+ - (_ is red) (Color)->Bool : Predefined (true)
+ - (_ is green) (Color)->Bool : Predefined (true)
  - blue ()->color : Constructor
  - white ()->color : Constructor
  - white ()->(Pair Color Color) : Constructor
  - white ()->(Pair Color (Pair Color Color)) : Constructor
  - white ()->(Pair (Pair Color Color) (Pair Color Color)) : Constructor
- - (_ is blue) (color)->Bool : Boolean (_xmt_tester_color_7_blue_t Complete, _xmt_tester_color_7_blue_f Complete, _xmt_tester_color_7_blue_g Complete)
- - (_ is white) (color)->Bool : Boolean (_xmt_tester_color_7_white_t Complete, _xmt_tester_color_7_white_f Complete, _xmt_tester_color_7_white_g Complete)
+ - (_ is blue) (color)->Bool : Predefined (true)
+ - (_ is white) (color)->Bool : Predefined (true)
  - pair (Color, Color)->(Pair Color Color) : Constructor
- - (_ is white) ((Pair Color Color))->Bool : Boolean (_xmt_tester_sort_8_white_t Complete, _xmt_tester_sort_8_white_f Complete, _xmt_tester_sort_8_white_g Complete)
+ - (_ is white) ((Pair Color Color))->Bool : Predefined (true)
  - (_ is pair) ((Pair Color Color))->Bool : Boolean (_xmt_tester_sort_8_pair_t Complete, _xmt_tester_sort_8_pair_f Complete, _xmt_tester_sort_8_pair_g Complete)
  - first ((Pair Color Color))->Color : Non Boolean (_xmt_selector_sort_8_first_g Complete)
  - second ((Pair Color Color))->Color : Non Boolean (_xmt_selector_sort_8_second_g Complete)
@@ -104,7 +104,7 @@ Functions2:
  - (_ is p) (P)->Bool : Boolean (_xmt_tester_p_p_t Complete, _xmt_tester_p_p_f Complete, _xmt_tester_p_p_g Complete)
  - x (P)->(Pair Color Color) : Non Boolean (_xmt_selector_p_x_g Complete)
  - pair (Color, (Pair Color Color))->(Pair Color (Pair Color Color)) : Constructor
- - (_ is white) ((Pair Color (Pair Color Color)))->Bool : Boolean (_xmt_tester_sort_10_white_t Complete, _xmt_tester_sort_10_white_f Complete, _xmt_tester_sort_10_white_g Complete)
+ - (_ is white) ((Pair Color (Pair Color Color)))->Bool : Predefined (true)
  - (_ is pair) ((Pair Color (Pair Color Color)))->Bool : Boolean (_xmt_tester_sort_10_pair_t Complete, _xmt_tester_sort_10_pair_f Complete, _xmt_tester_sort_10_pair_g Complete)
  - first ((Pair Color (Pair Color Color)))->Color : Non Boolean (_xmt_selector_sort_10_first_g Complete)
  - second ((Pair Color (Pair Color Color)))->(Pair Color Color) : Non Boolean (_xmt_selector_sort_10_second_g Complete)
@@ -115,31 +115,16 @@ Functions2:
  - (_ is q) (Q)->Bool : Boolean (_xmt_tester_q_q_t Complete, _xmt_tester_q_q_f Complete, _xmt_tester_q_q_g Complete)
  - x (Q)->(Triplet Color) : Non Boolean (_xmt_selector_q_x_g Complete)
  - pair ((Pair Color Color), (Pair Color Color))->(Pair (Pair Color Color) (Pair Color Color)) : Constructor
- - (_ is white) ((Pair (Pair Color Color) (Pair Color Color)))->Bool : Boolean (_xmt_tester_sort_18_white_t Complete, _xmt_tester_sort_18_white_f Complete, _xmt_tester_sort_18_white_g Complete)
+ - (_ is white) ((Pair (Pair Color Color) (Pair Color Color)))->Bool : Predefined (true)
  - (_ is pair) ((Pair (Pair Color Color) (Pair Color Color)))->Bool : Boolean (_xmt_tester_sort_18_pair_t Complete, _xmt_tester_sort_18_pair_f Complete, _xmt_tester_sort_18_pair_g Complete)
  - first ((Pair (Pair Color Color) (Pair Color Color)))->(Pair Color Color) : Non Boolean (_xmt_selector_sort_18_first_g Complete)
  - second ((Pair (Pair Color Color) (Pair Color Color)))->(Pair Color Color) : Non Boolean (_xmt_selector_sort_18_second_g Complete)
 Tables and Views:
  - Bool (table)
  - _xmt_sort_color (table)
- - _xmt_tester_color_red_g (view)
- - _xmt_tester_color_red_t (view)
- - _xmt_tester_color_red_f (view)
- - _xmt_tester_color_green_g (view)
- - _xmt_tester_color_green_t (view)
- - _xmt_tester_color_green_f (view)
- - _xmt_sort_color_7 (table)
- - _xmt_tester_color_7_blue_g (view)
- - _xmt_tester_color_7_blue_t (view)
- - _xmt_tester_color_7_blue_f (view)
- - _xmt_tester_color_7_white_g (view)
- - _xmt_tester_color_7_white_t (view)
- - _xmt_tester_color_7_white_f (view)
+ - _xmt_sort_color_1 (table)
  - Sort_8_core (table)
  - Sort_8 (table)
- - _xmt_tester_sort_8_white_g (view)
- - _xmt_tester_sort_8_white_t (view)
- - _xmt_tester_sort_8_white_f (view)
  - _xmt_tester_sort_8_pair_g (view)
  - _xmt_tester_sort_8_pair_t (view)
  - _xmt_tester_sort_8_pair_f (view)
@@ -152,9 +137,6 @@ Tables and Views:
  - _xmt_selector_p_x_g (view)
  - Sort_10_core (table)
  - Sort_10 (table)
- - _xmt_tester_sort_10_white_g (view)
- - _xmt_tester_sort_10_white_t (view)
- - _xmt_tester_sort_10_white_f (view)
  - _xmt_tester_sort_10_pair_g (view)
  - _xmt_tester_sort_10_pair_t (view)
  - _xmt_tester_sort_10_pair_f (view)
@@ -172,9 +154,6 @@ Tables and Views:
  - _xmt_selector_q_x_g (view)
  - Sort_18_core (table)
  - Sort_18 (table)
- - _xmt_tester_sort_18_white_g (view)
- - _xmt_tester_sort_18_white_t (view)
- - _xmt_tester_sort_18_white_f (view)
  - _xmt_tester_sort_18_pair_g (view)
  - _xmt_tester_sort_18_pair_t (view)
  - _xmt_tester_sort_18_pair_f (view)

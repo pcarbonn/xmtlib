@@ -51,8 +51,8 @@ Functions2:
  - abs ()->Real : Predefined (false)
  - red ()->Color : Constructor
  - green ()->Color : Constructor
- - (_ is red) (Color)->Bool : Boolean (_xmt_tester_color_red_t Complete, _xmt_tester_color_red_f Complete, _xmt_tester_color_red_g Complete)
- - (_ is green) (Color)->Bool : Boolean (_xmt_tester_color_green_t Complete, _xmt_tester_color_green_f Complete, _xmt_tester_color_green_g Complete)
+ - (_ is red) (Color)->Bool : Predefined (true)
+ - (_ is green) (Color)->Bool : Predefined (true)
  - pair (Color, Color)->(Pair Color) : Constructor
  - (_ is pair) ((Pair Color))->Bool : Boolean (_xmt_tester_sort_7_pair_t Complete, _xmt_tester_sort_7_pair_f Complete, _xmt_tester_sort_7_pair_g Complete)
  - first ((Pair Color))->Color : Non Boolean (_xmt_selector_sort_7_first_g Complete)
@@ -64,12 +64,6 @@ Functions2:
 Tables and Views:
  - Bool (table)
  - _xmt_sort_color (table)
- - _xmt_tester_color_red_g (view)
- - _xmt_tester_color_red_t (view)
- - _xmt_tester_color_red_f (view)
- - _xmt_tester_color_green_g (view)
- - _xmt_tester_color_green_t (view)
- - _xmt_tester_color_green_f (view)
  - Sort_7 (table)
  - _xmt_tester_sort_7_pair_g (view)
  - _xmt_tester_sort_7_pair_t (view)

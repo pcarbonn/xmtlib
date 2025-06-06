@@ -121,8 +121,8 @@ Functions2:
  - P ()->Bool : Boolean (_xmt_interp_p_3_TU Complete, _xmt_interp_p_3_UF Complete, _xmt_interp_p_3_G Complete)
  - red ()->Color : Constructor
  - green ()->Color : Constructor
- - (_ is red) (Color)->Bool : Boolean (_xmt_tester_color_red_t Complete, _xmt_tester_color_red_f Complete, _xmt_tester_color_red_g Complete)
- - (_ is green) (Color)->Bool : Boolean (_xmt_tester_color_green_t Complete, _xmt_tester_color_green_f Complete, _xmt_tester_color_green_g Complete)
+ - (_ is red) (Color)->Bool : Predefined (true)
+ - (_ is green) (Color)->Bool : Predefined (true)
  - bright (Color)->Bool : Boolean (_xmt_interp_bright_TU Complete, _xmt_interp_bright_UF Complete, _xmt_interp_bright_G Complete)
  - empty (Color)->Bool : Boolean (_xmt_interp_empty_TU Complete, _xmt_interp_empty_UF Complete, _xmt_interp_empty_G Complete)
  - same (Color, Color)->Bool : Boolean (_xmt_interp_same_TU Complete, _xmt_interp_same_UF Complete, _xmt_interp_same_G Complete)
@@ -224,18 +224,18 @@ SELECT _xmt_interp_empty_G_4.a_1 AS x,
  WHERE _xmt_interp_empty_G_4.G = _xmt_interp_bright_G_2.G
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_view_empty_4_28.x AS x,
-       bool_eq_("true", _xmt_view_empty_4_28.G, _xmt_view_bright_2_25.G) AS G
+SELECT _xmt_view_empty_4_22.x AS x,
+       bool_eq_("true", _xmt_view_empty_4_22.G, _xmt_view_bright_2_19.G) AS G
   FROM (-- Join(8)
         SELECT _xmt_interp_empty_UF_4.a_1 AS x,
                "false" AS G
           FROM _xmt_interp_empty_UF AS _xmt_interp_empty_UF_4
-        ) AS _xmt_view_empty_4_28
+        ) AS _xmt_view_empty_4_22
   FULL JOIN (-- Join(8)
         SELECT _xmt_interp_bright_UF_2.a_1 AS x,
                "false" AS G
           FROM _xmt_interp_bright_UF AS _xmt_interp_bright_UF_2
-        ) AS _xmt_view_bright_2_25 ON  _xmt_view_bright_2_25.x = _xmt_view_empty_4_28.x
+        ) AS _xmt_view_bright_2_19 ON  _xmt_view_bright_2_19.x = _xmt_view_empty_4_22.x
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_interp_empty_G_4.a_1 AS x,
@@ -503,12 +503,6 @@ Tables and Views:
  - _xmt_interp_p_3_UF (view)
  - _xmt_interp_p_3_G (view)
  - _xmt_sort_color (table)
- - _xmt_tester_color_red_g (view)
- - _xmt_tester_color_red_t (view)
- - _xmt_tester_color_red_f (view)
- - _xmt_tester_color_green_g (view)
- - _xmt_tester_color_green_t (view)
- - _xmt_tester_color_green_f (view)
  - _xmt_interp_bright_T (table)
  - _xmt_interp_bright_TU (view)
  - _xmt_interp_bright_UF (view)

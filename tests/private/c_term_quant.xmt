@@ -366,11 +366,5 @@ SELECT and_aggregate(G) as G
 Tables and Views:
  - Bool (table)
  - _xmt_sort_color (table)
- - _xmt_tester_color_red_g (view)
- - _xmt_tester_color_red_t (view)
- - _xmt_tester_color_red_f (view)
- - _xmt_tester_color_green_g (view)
- - _xmt_tester_color_green_t (view)
- - _xmt_tester_color_green_f (view)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)

@@ -29,30 +29,13 @@
 (declare-datatype Either (par (T) ((nil ) (Left (b T)) (Right (right T)))))
 (declare-fun p ((Either Color)) Bool)
 (declare-fun q ((Either Material)) Color)
+(assert ((_ is nil)  (as nil (Either Material))))
 Tables and Views:
  - Bool (table)
  - _xmt_sort_color (table)
- - _xmt_tester_color_red_g (view)
- - _xmt_tester_color_red_t (view)
- - _xmt_tester_color_red_f (view)
- - _xmt_tester_color_blue_g (view)
- - _xmt_tester_color_blue_t (view)
- - _xmt_tester_color_blue_f (view)
- - _xmt_tester_color_green_g (view)
- - _xmt_tester_color_green_t (view)
- - _xmt_tester_color_green_f (view)
  - _xmt_sort_material (table)
- - _xmt_tester_material_soft_g (view)
- - _xmt_tester_material_soft_t (view)
- - _xmt_tester_material_soft_f (view)
- - _xmt_tester_material_hard_g (view)
- - _xmt_tester_material_hard_t (view)
- - _xmt_tester_material_hard_f (view)
  - Sort_8_core (table)
  - Sort_8 (table)
- - _xmt_tester_sort_8_nil_g (view)
- - _xmt_tester_sort_8_nil_t (view)
- - _xmt_tester_sort_8_nil_f (view)
  - _xmt_tester_sort_8_left_g (view)
  - _xmt_tester_sort_8_left_t (view)
  - _xmt_tester_sort_8_left_f (view)
@@ -67,9 +50,6 @@ Tables and Views:
  - _xmt_interp_p_G (view)
  - Sort_9_core (table)
  - Sort_9 (table)
- - _xmt_tester_sort_9_nil_g (view)
- - _xmt_tester_sort_9_nil_t (view)
- - _xmt_tester_sort_9_nil_f (view)
  - _xmt_tester_sort_9_left_g (view)
  - _xmt_tester_sort_9_left_t (view)
  - _xmt_tester_sort_9_left_f (view)
@@ -137,18 +117,18 @@ Functions2:
  - red ()->Color : Constructor
  - blue ()->Color : Constructor
  - green ()->Color : Constructor
- - (_ is red) (Color)->Bool : Boolean (_xmt_tester_color_red_t Complete, _xmt_tester_color_red_f Complete, _xmt_tester_color_red_g Complete)
- - (_ is blue) (Color)->Bool : Boolean (_xmt_tester_color_blue_t Complete, _xmt_tester_color_blue_f Complete, _xmt_tester_color_blue_g Complete)
- - (_ is green) (Color)->Bool : Boolean (_xmt_tester_color_green_t Complete, _xmt_tester_color_green_f Complete, _xmt_tester_color_green_g Complete)
+ - (_ is red) (Color)->Bool : Predefined (true)
+ - (_ is blue) (Color)->Bool : Predefined (true)
+ - (_ is green) (Color)->Bool : Predefined (true)
  - soft ()->Material : Constructor
  - hard ()->Material : Constructor
- - (_ is soft) (Material)->Bool : Boolean (_xmt_tester_material_soft_t Complete, _xmt_tester_material_soft_f Complete, _xmt_tester_material_soft_g Complete)
- - (_ is hard) (Material)->Bool : Boolean (_xmt_tester_material_hard_t Complete, _xmt_tester_material_hard_f Complete, _xmt_tester_material_hard_g Complete)
+ - (_ is soft) (Material)->Bool : Predefined (true)
+ - (_ is hard) (Material)->Bool : Predefined (true)
  - nil ()->(Either Color) : Constructor
  - nil ()->(Either Material) : Constructor
  - Left (Color)->(Either Color) : Constructor
  - Right (Color)->(Either Color) : Constructor
- - (_ is nil) ((Either Color))->Bool : Boolean (_xmt_tester_sort_8_nil_t Complete, _xmt_tester_sort_8_nil_f Complete, _xmt_tester_sort_8_nil_g Complete)
+ - (_ is nil) ((Either Color))->Bool : Predefined (true)
  - (_ is Left) ((Either Color))->Bool : Boolean (_xmt_tester_sort_8_left_t Complete, _xmt_tester_sort_8_left_f Complete, _xmt_tester_sort_8_left_g Complete)
  - b ((Either Color))->Color : Non Boolean (_xmt_selector_sort_8_b_g Complete)
  - (_ is Right) ((Either Color))->Bool : Boolean (_xmt_tester_sort_8_right_t Complete, _xmt_tester_sort_8_right_f Complete, _xmt_tester_sort_8_right_g Complete)
@@ -156,7 +136,7 @@ Functions2:
  - p ((Either Color))->Bool : Boolean (_xmt_interp_p_TU Complete, _xmt_interp_p_UF Complete, _xmt_interp_p_G Complete)
  - Left (Material)->(Either Material) : Constructor
  - Right (Material)->(Either Material) : Constructor
- - (_ is nil) ((Either Material))->Bool : Boolean (_xmt_tester_sort_9_nil_t Complete, _xmt_tester_sort_9_nil_f Complete, _xmt_tester_sort_9_nil_g Complete)
+ - (_ is nil) ((Either Material))->Bool : Predefined (true)
  - (_ is Left) ((Either Material))->Bool : Boolean (_xmt_tester_sort_9_left_t Complete, _xmt_tester_sort_9_left_f Complete, _xmt_tester_sort_9_left_g Complete)
  - b ((Either Material))->Material : Non Boolean (_xmt_selector_sort_9_b_g Complete)
  - (_ is Right) ((Either Material))->Bool : Boolean (_xmt_tester_sort_9_right_t Complete, _xmt_tester_sort_9_right_f Complete, _xmt_tester_sort_9_right_g Complete)
@@ -285,19 +265,13 @@ SELECT " (as nil (Either Material))" AS G
 === (top) ((_ is nil)  (as nil (Either Material))) ======================================
 ----- T ------------------------------------------------------------
 -- Join(0)
-SELECT "true" AS G
-  FROM _xmt_tester_sort_9_nil_t AS _xmt_tester_sort_9_nil_t_9
- WHERE " (as nil (Either Material))" = _xmt_tester_sort_9_nil_t_9.a_1
+SELECT apply("(_ is nil)", " (as nil (Either Material))") AS G
 ----- F ------------------------------------------------------------
 -- Join(0)
-SELECT "false" AS G
-  FROM _xmt_tester_sort_9_nil_f AS _xmt_tester_sort_9_nil_f_9
- WHERE " (as nil (Either Material))" = _xmt_tester_sort_9_nil_f_9.a_1
+SELECT apply("(_ is nil)", " (as nil (Either Material))") AS G
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT _xmt_tester_sort_9_nil_g_9.G AS G
-  FROM _xmt_tester_sort_9_nil_g AS _xmt_tester_sort_9_nil_g_9
- WHERE " (as nil (Either Material))" = _xmt_tester_sort_9_nil_g_9.a_1
+SELECT apply("(_ is nil)", " (as nil (Either Material))") AS G
 
 ===  blue ======================================
  -- Join(0)

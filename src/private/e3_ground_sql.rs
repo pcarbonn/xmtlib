@@ -43,6 +43,7 @@ pub(crate) enum Predefined {
     #[strum(to_string = "xor")] _Xor,
     // "=>" is replaced by a disjunction during annotation
     #[strum(to_string = "="  )] BoolEq(bool),
+    #[strum(to_string = "1563278")] Is(Symbol),  // do not use to_string()
     #[strum(to_string = "="  )] Eq,
     #[strum(to_string = "<"  )] Less,
     #[strum(to_string = "<=" )] LE,
@@ -81,6 +82,7 @@ fn associativity(function: &Predefined) -> Associativity {
         Predefined::_Xor      => Associativity::LeftAssoc,
         Predefined::BoolEq(_) => Associativity::Chainable,
         Predefined::Eq        => Associativity::Chainable,
+        Predefined::Is(_)     => Associativity::Unary,
         Predefined::Less      => Associativity::Chainable,
         Predefined::LE        => Associativity::Chainable,
         Predefined::GE        => Associativity::Chainable,
@@ -217,6 +219,8 @@ impl SQLExpr {
                             (format!("apply(\"{function}\", {expr})"), Ids::None)
                         } else if *function == Predefined::Not {
                             (format!("not_({expr})"), ids)
+                        } else if let Predefined::Is(constructor) = function {
+                            (format!("apply(\"(_ is {constructor})\", {expr})"), ids)
                         } else {
                             (format!("abs_({expr})"), ids)
                         }
