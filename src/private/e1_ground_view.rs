@@ -225,7 +225,7 @@ pub(crate) fn view_for_join(
         };
 
     let mut ids = Ids::All;
-    let mut has_g_complexity = false;
+    let mut has_g_complexity = false;  // LINK src/doc.md#_has_g_complexity
 
     // LINK src/doc.md#_Equality
     let use_outer_join = matches!(variant, QueryVariant::Equivalence(_));
@@ -302,7 +302,7 @@ pub(crate) fn view_for_join(
                         wheres.extend(sub_rhos.iter().cloned());
                         update_reference(sub_grounding, sub_ids);
 
-                        has_g_complexity |= *sub_has_g_rows;
+                        has_g_complexity |= *sub_has_g_rows;  // LINK src/doc.md#_has_g_complexity
 
                         // merge the variables, preferring interpretations to sort
                         for (k, v) in sub_variables.iter() {
@@ -519,13 +519,13 @@ pub(crate) fn view_for_join(
                         exclude = None  // LINK src/doc.md#_exclude
                     }
                 } else { // term equality, comparisons, arithmetic operations
-                    has_g_complexity = true
+                    has_g_complexity = true  // LINK src/doc.md#_has_g_complexity
                 };
 
                 SQLExpr::Predefined(function.clone(), Box::new(groundings))
             },
             QueryVariant::Equivalence(default) => {
-                has_g_complexity = true;
+                has_g_complexity = true;  // LINK src/doc.md#_has_g_complexity
                 SQLExpr::Predefined(Predefined::BoolEq(*default), Box::new(groundings))
             }
         };
@@ -636,7 +636,7 @@ pub(crate) fn view_for_union(
             free_variables.append(&mut sub_free_variables.clone());
             condition |= sub_condition;
             ids = min(ids, sub_ids);
-            has_g_complexity |= query.has_g_complexity();
+            has_g_complexity |= query.has_g_complexity();  // LINK src/doc.md#_has_g_complexity
         }
     }
     let exclude = if ! has_g_complexity { None } else { exclude };

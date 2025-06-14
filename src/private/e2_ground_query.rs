@@ -418,7 +418,7 @@ impl GroundingQuery {
                                     else { format!("{}, ", subs.join(", ")) };
                                 let joins = if joins.len() == 0 { "".to_string() }
                                     else { format!("FROM {} ", joins.join(" JOIN "))};
-                                let if_ = if condition { "\true\" AS if_, "}
+                                let if_ = if condition { "\"true\" AS if_, "}
                                     else { "" }.to_string();
 
                                 format!("SELECT {subs}{if_}\"{default}\" AS G {joins}\n{indent}{INDENT}UNION ALL\n{indent}{INDENT}")

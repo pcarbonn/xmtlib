@@ -127,6 +127,7 @@ Hence:
 * a finite G view has G complexity
 * any query over an infinite domain does not have G complexity
 * the TU query for a compound term for a predicate with a truncated interpretation does not have G complexity.
+* an equality or comparison has G complexity.
 
 # // LINK src/doc.md#_exclude
 

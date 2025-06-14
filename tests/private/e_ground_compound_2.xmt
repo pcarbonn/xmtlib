@@ -117,7 +117,7 @@ SELECT _xmt_interp_p_G_3.a_1 AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(implies_(if_, G)) as G
- FROM (SELECT NULL AS x, 	rue" AS if_, "true" AS G 
+ FROM (SELECT NULL AS x, "true" AS if_, "true" AS G 
        UNION ALL
        -- Join(7)
        SELECT _xmt_interp_p_UF_3.a_1 AS x,
@@ -151,7 +151,7 @@ SELECT G as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(implies_(if_, G)) as G
- FROM (SELECT NULL AS x, 	rue" AS if_, "true" AS G 
+ FROM (SELECT NULL AS x, "true" AS if_, "true" AS G 
        UNION ALL
        -- Join(7)
        SELECT _xmt_interp_p_UF_3.a_1 AS x,
@@ -194,7 +194,7 @@ SELECT _xmt_interp_p_G_10.a_1 AS x,
 ----- TU -----------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(implies_(if_, G)) as G
- FROM (SELECT NULL AS x, 	rue" AS if_, "true" AS G 
+ FROM (SELECT NULL AS x, "true" AS if_, "true" AS G 
        UNION ALL
        -- exclude(7)
        SELECT *
@@ -218,7 +218,7 @@ SELECT implies_(if_, G) as G
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(implies_(if_, G)) as G
- FROM (SELECT NULL AS x, 	rue" AS if_, "true" AS G 
+ FROM (SELECT NULL AS x, "true" AS if_, "true" AS G 
        UNION ALL
        -- exclude(7)
        SELECT *
