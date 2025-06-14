@@ -107,38 +107,47 @@ SELECT _xmt_interp_p_G_5.a_1 AS x,
 SELECT and_aggregate(implies_(if_, G)) as G
  FROM (SELECT NULL AS x, 	rue" AS if_, "true" AS G 
        UNION ALL
-       -- Join(7)
-       SELECT _xmt_interp_p_UF_5.a_1 AS x,
-              if_(_xmt_interp_f_G_4.G, _xmt_interp_p_UF_5.a_2) AS if_, 
-              _xmt_interp_p_UF_5.G AS G
-         FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
-         JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_5
-               ON (NOT is_id(_xmt_interp_f_G_4.G) OR _xmt_interp_f_G_4.G = _xmt_interp_p_UF_5.a_2)
-        WHERE _xmt_interp_p_UF_5.a_1 = _xmt_interp_f_G_4.a_1)
+       -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_interp_p_UF_5.a_1 AS x,
+                     if_(_xmt_interp_f_G_4.G, _xmt_interp_p_UF_5.a_2) AS if_, 
+                     _xmt_interp_p_UF_5.G AS G
+                FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
+                JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_5
+                      ON (NOT is_id(_xmt_interp_f_G_4.G) OR _xmt_interp_f_G_4.G = _xmt_interp_p_UF_5.a_2)
+               WHERE _xmt_interp_p_UF_5.a_1 = _xmt_interp_f_G_4.a_1)
+        WHERE G <> "true")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT implies_(if_, G) as G
- FROM (-- Join(7)
-       SELECT _xmt_interp_p_UF_5.a_1 AS x,
-              if_(_xmt_interp_f_G_4.G, _xmt_interp_p_UF_5.a_2) AS if_, 
-              _xmt_interp_p_UF_5.G AS G
-         FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
-         JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_5
-               ON (NOT is_id(_xmt_interp_f_G_4.G) OR _xmt_interp_f_G_4.G = _xmt_interp_p_UF_5.a_2)
-        WHERE _xmt_interp_p_UF_5.a_1 = _xmt_interp_f_G_4.a_1)
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_interp_p_UF_5.a_1 AS x,
+                     if_(_xmt_interp_f_G_4.G, _xmt_interp_p_UF_5.a_2) AS if_, 
+                     _xmt_interp_p_UF_5.G AS G
+                FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
+                JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_5
+                      ON (NOT is_id(_xmt_interp_f_G_4.G) OR _xmt_interp_f_G_4.G = _xmt_interp_p_UF_5.a_2)
+               WHERE _xmt_interp_p_UF_5.a_1 = _xmt_interp_f_G_4.a_1)
+        WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(implies_(if_, G)) as G
  FROM (SELECT NULL AS x, 	rue" AS if_, "true" AS G 
        UNION ALL
-       -- Join(7)
-       SELECT _xmt_interp_p_UF_5.a_1 AS x,
-              if_(_xmt_interp_f_G_4.G, _xmt_interp_p_UF_5.a_2) AS if_, 
-              _xmt_interp_p_UF_5.G AS G
-         FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
-         JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_5
-               ON (NOT is_id(_xmt_interp_f_G_4.G) OR _xmt_interp_f_G_4.G = _xmt_interp_p_UF_5.a_2)
-        WHERE _xmt_interp_p_UF_5.a_1 = _xmt_interp_f_G_4.a_1)
+       -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_interp_p_UF_5.a_1 AS x,
+                     if_(_xmt_interp_f_G_4.G, _xmt_interp_p_UF_5.a_2) AS if_, 
+                     _xmt_interp_p_UF_5.G AS G
+                FROM _xmt_interp_f_G AS _xmt_interp_f_G_4
+                JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_5
+                      ON (NOT is_id(_xmt_interp_f_G_4.G) OR _xmt_interp_f_G_4.G = _xmt_interp_p_UF_5.a_2)
+               WHERE _xmt_interp_p_UF_5.a_1 = _xmt_interp_f_G_4.a_1)
+        WHERE G <> "true")
 
 ===========================================
 Tables and Views:

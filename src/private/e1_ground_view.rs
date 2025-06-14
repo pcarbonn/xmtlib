@@ -197,7 +197,7 @@ pub(crate) fn view_for_join(
     index: TermId,
     sub_queries: &Vec<GroundingView>,
     variant: &QueryVariant,
-    exclude: Option<bool>,
+    exclude: Option<bool>,  // LINK src/doc.md#_exclude
     solver: &mut Solver
 ) -> Result<GroundingView, SolverError> {
 
@@ -209,6 +209,7 @@ pub(crate) fn view_for_join(
     let mut theta_joins = IndexMap::new();
     let mut thetas = vec![];
     let mut wheres = vec![];
+    let mut exclude = exclude.clone();
     let mut reference = None;  // for equality.  Ideally, an expression with all ids.
 
         // helper function to update the reference expression in an equality
@@ -464,9 +465,11 @@ pub(crate) fn view_for_join(
                 ids = ids_.clone();  // reflects the grounding column, not if_
                 match (ids_, exclude) {
                     (Ids::All, Some(false)) => {  // complete TU view
+                        exclude = None;  // LINK src/doc.md#_exclude
                         SQLExpr::Boolean(true)
                     },
                     (Ids::All, Some(true)) => {  // complete UF view
+                        exclude = None;
                         SQLExpr::Boolean(false)
                     },
                     _ => SQLExpr::Value(Column::new(table_name, "G"), ids_.clone())
@@ -482,12 +485,18 @@ pub(crate) fn view_for_join(
             QueryVariant::Construct => {
                 // do not change ids.
                 match (qual_identifier.to_string().as_str(), exclude) {
-                    ("true", Some(false)) => SQLExpr::Boolean(true),  // TU view
+                    ("true", Some(false)) => {  // TU view
+                        exclude = None;  // LINK src/doc.md#_exclude
+                        SQLExpr::Boolean(true)
+                    },
                     ("true", Some(true)) => return Ok(GroundingView::Empty), // UF view
-                    ("true", None) => SQLExpr::Boolean(true),  // G view
+                    ("true", None) => SQLExpr::Boolean(true),  // G view,
 
                     ("false", Some(false)) => return Ok(GroundingView::Empty),  // TU view
-                    ("false", Some(true)) => SQLExpr::Boolean(false),  // UF view
+                    ("false", Some(true)) => {  // UF view
+                        exclude = None;  // LINK src/doc.md#_exclude
+                        SQLExpr::Boolean(false)
+                    },
                     ("false", None) => SQLExpr::Boolean(false),  // G view
 
                     _ => SQLExpr::Construct(qual_identifier.clone(), Box::new(groundings))
@@ -495,10 +504,14 @@ pub(crate) fn view_for_join(
             },
             QueryVariant::Predefined(function) => {
                 // LINK src/doc.md#_Equality
-                if ! [  Predefined::And,
-                        Predefined::Or,
-                        Predefined::Not
-                     ].contains(&function) {  // term equality, comparisons, arithmetic operations
+                if [  Predefined::And,
+                      Predefined::Or,
+                      Predefined::Not
+                   ].contains(&function) {
+                    if ids == Ids::All {
+                        exclude = None  // LINK src/doc.md#_exclude
+                    }
+                } else { // term equality, comparisons, arithmetic operations
                     has_g_complexity = true
                 };
 
@@ -526,7 +539,6 @@ pub(crate) fn view_for_join(
         wheres,
         has_g_complexity
     };
-    let exclude = if ! has_g_complexity { None } else { exclude };
     GroundingView::new(table_alias, free_variables, query, exclude, ids)
 }
 
@@ -544,7 +556,7 @@ pub(crate) fn view_for_aggregate(
     infinite_variables: &Vec<SortedVar>,
     agg: &str,
     default: Option<bool>,
-    exclude: Option<bool>,
+    exclude: Option<bool>,  // LINK src/doc.md#_exclude
     has_g_complexity: bool,
     table_alias: TableAlias
 ) -> Result<GroundingView, SolverError> {
@@ -596,7 +608,7 @@ pub(crate) fn view_for_aggregate(
 /// for `and^UF`, `or^TU`
 pub(crate) fn view_for_union(
     sub_views: Vec<GroundingView>,
-    exclude: Option<bool>,
+    exclude: Option<bool>,  // LINK src/doc.md#_exclude
     agg: String,
     index: TermId
 ) -> Result<GroundingView, SolverError> {
