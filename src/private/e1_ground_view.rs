@@ -91,6 +91,13 @@ impl GroundingView {
             GroundingView::View { query, .. } => query.has_g_complexity(),
         }
     }
+
+    pub(crate) fn has_condition(&self) -> bool {
+        match self {
+            GroundingView::Empty => false,
+            GroundingView::View { condition, .. } => *condition,
+        }
+    }
 }
 
 

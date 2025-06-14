@@ -526,11 +526,24 @@ fn ground_compound(
         FunctionObject::Predefined {function, boolean: Some(boolean), .. } => {
             let variant = QueryVariant::Predefined(function.clone());
             if *boolean {
-                let (mut tus, mut ufs) = collect_tu_uf(&groundings);
+                let (tus, mut ufs) = collect_tu_uf(&groundings);
 
                 match function {
                     Predefined::And => {
-                        let tu = view_for_join(qual_identifier, index, &mut tus, &variant, Some(false), solver)?;
+
+                        let mut collapsed = tus.iter().enumerate()
+                            .map(|(index, tu)| {
+                                if ! tu.has_condition() {
+                                    Ok(tu.clone())
+                                } else {
+                                    let table_name = TableName(format!("Agg_{index}"));
+                                    let table_alias = TableAlias{base_table: TableName(format!("{table_name}")), index: 0};
+                                    let (free_variables, _) = tu.get_free_variables(&vec![]).clone();
+                                    view_for_aggregate(tu, &free_variables, &vec![], "or", None, None, false, table_alias)
+                                }
+                            }).collect::<Result<Vec<_>,_>>()?;
+
+                        let tu = view_for_join(qual_identifier, index, &mut collapsed, &variant, Some(false), solver)?;
 
                         let agg = if top_level { "" } else { "and" };
                         let uf = view_for_union(ufs, Some(true), agg.to_string(), index)?;
@@ -542,7 +555,19 @@ fn ground_compound(
                     Predefined::Or => {
                         let tu = view_for_union(tus, Some(false), "or".to_string(), index)?;
 
-                        let uf = view_for_join(qual_identifier,  index, &mut ufs, &variant, Some(true), solver)?;
+                        let mut collapsed = ufs.iter().enumerate()
+                            .map(|(index, uf)| {
+                                if ! uf.has_condition() {
+                                    Ok(uf.clone())
+                                } else {
+                                    let table_name = TableName(format!("Agg_{index}"));
+                                    let table_alias = TableAlias{base_table: TableName(format!("{table_name}")), index: 0};
+                                    let (free_variables, _) = uf.get_free_variables(&vec![]).clone();
+                                    view_for_aggregate(uf, &free_variables, &vec![], "and", None, None, false, table_alias)
+                                }
+                            }).collect::<Result<Vec<_>,_>>()?;
+
+                        let uf = view_for_join(qual_identifier,  index, &mut collapsed, &variant, Some(true), solver)?;
 
                         let g = view_for_join(qual_identifier, index, &mut gqs, &variant, None, solver)?;
 
