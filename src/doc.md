@@ -65,7 +65,7 @@ pub(crate) enum GroundingQuery {
         natural_joins: IndexSet<NaturalJoin>,
         theta_joins: IndexMap<TableAlias, Vec<Option<Mapping>>>,
         wheres: Vec<Rho>,
-        has_g_rows: bool,
+        has_g_complexity: bool,
     },
     Aggregate {
         agg: String,
@@ -73,11 +73,11 @@ pub(crate) enum GroundingQuery {
         infinite_variables: Vec<SortedVar>,
         default: Option<bool>,
         sub_view: Box<GroundingView>,
-        has_g_rows: bool,
+        has_g_complexity: bool,
     },
     Union {
         sub_queries: Box<Vec<GroundingQuery>>,
-        has_g_rows: bool
+        has_g_complexity: bool
     }
 }
 pub(crate) enum NaturalJoin {
@@ -119,13 +119,17 @@ The documented topics are listed below:
 
 ## // LINK src/doc.md#_Constructor
 
-# // LINK src/doc.md#_has_g_rows
+# // LINK src/doc.md#_has_g_complexity
 
-A query has G rows if it has as many rows as the cross-product of its free variable.
-Hence, a finite G view has G rows, but any query over an infinite domain does not have G rows.
+A query has G complexity if it generates (before filtering by a where clause) as many rows as the cross-product of its free variable.
+Hence:
 
-A TU or UF view has an exclude iff its query has G rows.
-A finite G view has G complexity.  An infinite does not.
+* a finite G view has G complexity
+* any query over an infinite domain does not have G complexity
+* the TU query for a compound term for a predicate with a truncated interpretation does not have G complexity.
+
+# // LINK src/doc.md#_exclude
+
 A G view never has an exclude.
-
-The exclude is not added to the sql if there are no Ids in the G column.
+A TU or UF view has an exclude iff its query has G complexity.
+The exclude is not added to the sql if the G column is true (or false).

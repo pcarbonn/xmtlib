@@ -71,7 +71,7 @@ impl GroundingView {
         match self {
             GroundingView::Empty => (format!("SELECT \"true\" AS G\n{indent} WHERE FALSE"), Ids::All),
             GroundingView::View { query, exclude, ids, .. } =>
-                if *ids == Ids::None {  // LINK src/doc.md#_has_g_rows
+                if *ids == Ids::None {  // LINK src/doc.md#_has_g_complexity
                     query.to_sql(var_joins, indent)
                 } else if let Some(exclude) = exclude {
                     let indent1 = format!("{indent}{INDENT}").to_string();
@@ -88,7 +88,7 @@ impl GroundingView {
     pub(crate) fn has_g_complexity(&self) -> bool {
         match self {
             GroundingView::Empty => true,
-            GroundingView::View { query, .. } => query.has_g_rows(),
+            GroundingView::View { query, .. } => query.has_g_complexity(),
         }
     }
 }
@@ -121,7 +121,7 @@ pub(crate) fn view_for_constant(
         natural_joins: IndexSet::new(),
         theta_joins: IndexMap::new(),
         wheres: vec![],
-        has_g_rows: false
+        has_g_complexity: false
     };
     let base_table = TableName("ignore".to_string());
     let table_alias = TableAlias::new(base_table, 0);
@@ -152,7 +152,7 @@ pub(crate) fn view_for_variable(
             natural_joins: IndexSet::from([NaturalJoin::CrossProduct(table_alias.clone(), symbol.clone())]),
             theta_joins: IndexMap::new(),
             wheres: vec![],
-            has_g_rows: true
+            has_g_complexity: true
         };
         let free_variables = OptionMap::from([(symbol.clone(), Some(table_alias))]);
         GroundingView::new(new_alias, free_variables, query, None, Ids::All) // todo perf: exclude for boolean
@@ -166,7 +166,7 @@ pub(crate) fn view_for_variable(
             natural_joins: IndexSet::new(),
             theta_joins: IndexMap::new(),
             wheres: vec![],
-            has_g_rows: false  // LINK src/doc.md#_has_g_rows
+            has_g_complexity: false  // LINK src/doc.md#_has_g_complexity
         };
         let free_variables = OptionMap::from([(symbol.clone(), None)]);
         GroundingView::new(new_alias, free_variables, query, None, Ids::None)
@@ -192,7 +192,7 @@ pub(crate) enum QueryVariant {
 }
 
 /// Creates a query for a compound term, according to `variant`.
-pub(crate) fn view_for_compound(
+pub(crate) fn view_for_join(
     qual_identifier: &QualIdentifier,
     index: TermId,
     sub_queries: &Vec<GroundingView>,
@@ -224,7 +224,7 @@ pub(crate) fn view_for_compound(
         };
 
     let mut ids = Ids::All;
-    let mut has_g_rows = false;
+    let mut has_g_complexity = false;
 
     // LINK src/doc.md#_Equality
     let use_outer_join = matches!(variant, QueryVariant::Equivalence(_));
@@ -256,7 +256,7 @@ pub(crate) fn view_for_compound(
                             natural_joins: sub_natural_joins,
                             theta_joins: sub_theta_joins,
                             wheres: sub_rhos,
-                            has_g_rows: sub_has_g_rows }
+                            has_g_complexity: sub_has_g_rows }
                         = query {
 
                     if ! use_outer_join && sub_outer.is_none() {
@@ -301,7 +301,7 @@ pub(crate) fn view_for_compound(
                         wheres.extend(sub_rhos.iter().cloned());
                         update_reference(sub_grounding, sub_ids);
 
-                        has_g_rows |= *sub_has_g_rows;
+                        has_g_complexity |= *sub_has_g_rows;
 
                         // merge the variables, preferring interpretations to sort
                         for (k, v) in sub_variables.iter() {
@@ -499,13 +499,13 @@ pub(crate) fn view_for_compound(
                         Predefined::Or,
                         Predefined::Not
                      ].contains(&function) {  // term equality, comparisons, arithmetic operations
-                    has_g_rows = true
+                    has_g_complexity = true
                 };
 
                 SQLExpr::Predefined(function.clone(), Box::new(groundings))
             },
             QueryVariant::Equivalence(default) => {
-                has_g_rows = true;
+                has_g_complexity = true;
                 SQLExpr::Predefined(Predefined::BoolEq(*default), Box::new(groundings))
             }
         };
@@ -524,9 +524,9 @@ pub(crate) fn view_for_compound(
         natural_joins,
         theta_joins,
         wheres,
-        has_g_rows
+        has_g_complexity
     };
-    let exclude = if ! has_g_rows { None } else { exclude };
+    let exclude = if ! has_g_complexity { None } else { exclude };
     GroundingView::new(table_alias, free_variables, query, exclude, ids)
 }
 
@@ -545,7 +545,7 @@ pub(crate) fn view_for_aggregate(
     agg: &str,
     default: Option<bool>,
     exclude: Option<bool>,
-    has_g_rows: bool,
+    has_g_complexity: bool,
     table_alias: TableAlias
 ) -> Result<GroundingView, SolverError> {
 
@@ -572,7 +572,7 @@ pub(crate) fn view_for_aggregate(
                         infinite_variables: infinite_variables.clone(),
                         default,
                         sub_view: Box::new(*sub_sub_view.clone()),
-                        has_g_rows
+                        has_g_complexity
                     };
                     return GroundingView::new(table_alias, free_variables.clone(), query, exclude, ids.clone())
                 }
@@ -584,7 +584,7 @@ pub(crate) fn view_for_aggregate(
                 infinite_variables: infinite_variables.clone(),
                 default,
                 sub_view: Box::new(sub_query.clone()),
-                has_g_rows
+                has_g_complexity
             };
 
             GroundingView::new(table_alias, free_variables.clone(), query, exclude, ids.clone())
@@ -605,7 +605,7 @@ pub(crate) fn view_for_union(
     let mut free_variables = OptionMap::new();
     let mut condition = false;
     let mut ids = Ids::None;
-    let mut has_g_rows = false;
+    let mut has_g_complexity = false;
     for sub_view in sub_views.clone() {
         if let GroundingView::View {
                     free_variables: sub_free_variables,
@@ -617,10 +617,10 @@ pub(crate) fn view_for_union(
             free_variables.append(&mut sub_free_variables.clone());
             condition |= sub_condition;
             ids = min(ids, sub_ids);
-            has_g_rows |= query.has_g_rows();
+            has_g_complexity |= query.has_g_complexity();
         }
     }
-    let exclude = if ! has_g_rows { None } else { exclude };
+    let exclude = if ! has_g_complexity { None } else { exclude };
 
     // build the sub-queries
     let sub_queries = sub_views.iter()
@@ -646,7 +646,7 @@ pub(crate) fn view_for_union(
                             natural_joins: IndexSet::new(),
                             theta_joins: IndexMap::new(),
                             wheres: vec![],
-                            has_g_rows: false
+                            has_g_complexity: false
                         })
                     },
                     Either::Right(table_name) => {
@@ -698,7 +698,7 @@ pub(crate) fn view_for_union(
                                 natural_joins,
                                 theta_joins: IndexMap::new(),
                                 wheres: vec![],
-                                has_g_rows: false  // because it is based on a view
+                                has_g_complexity: false  // because it is based on a view
                             })
                         }
                     },
@@ -716,7 +716,7 @@ pub(crate) fn view_for_union(
     };
 
     // create the union
-    let query = GroundingQuery::Union{ sub_queries: Box::new(sub_queries), has_g_rows };
+    let query = GroundingQuery::Union{ sub_queries: Box::new(sub_queries), has_g_complexity };
 
     // create the sub_view
     let sub_view = GroundingView::View {
@@ -736,7 +736,7 @@ pub(crate) fn view_for_union(
         infinite_variables: vec![],
         default: None,
         sub_view: Box::new(sub_view),
-        has_g_rows
+        has_g_complexity
     };
 
     GroundingView::new(table_alias, free_variables, query, exclude, ids)

@@ -32,7 +32,7 @@ pub(crate) enum GroundingQuery {
         theta_joins: IndexMap<TableAlias, Vec<Option<Mapping>>>,  // joins with interpretation tables
         wheres: Vec<Rho>,  // set of equality conditions
 
-        has_g_rows: bool,  // LINK src/doc.md#_has_g_rows
+        has_g_complexity: bool,  // LINK src/doc.md#_has_g_complexity
     },
     Aggregate {
         agg: String,  // "" (top-level), "and" or "or"
@@ -41,12 +41,12 @@ pub(crate) enum GroundingQuery {
         default: Option<bool>,  // to generate Y cross-product
         sub_view: Box<GroundingView>,  // the sub_view has more variables than free_variables
 
-        has_g_rows: bool,  // LINK src/doc.md#_has_g_rows
+        has_g_complexity: bool,  // LINK src/doc.md#_has_g_complexity
     },
     Union {
         sub_queries: Box<Vec<GroundingQuery>>,  // the sub-queries are Join and have the same columns
 
-        has_g_rows: bool,  // LINK src/doc.md#_has_g_rows
+        has_g_complexity: bool,  // LINK src/doc.md#_has_g_complexity
     }
 }
 
@@ -317,7 +317,7 @@ impl GroundingQuery {
                 let tables = if 0 < naturals.len() + thetas.len() {
                         format!("\n{indent}  FROM {naturals}{thetas}{where_}")
                     } else {
-                        "".to_string()
+                        "".to_string()  // no benefits gained by adding where_ clause
                     };
 
                 let comment = format!("-- Join({})\n{indent}", indent.len());
@@ -485,12 +485,12 @@ impl std::fmt::Display for Column {
 
 
 impl GroundingQuery {
-    pub(crate) fn has_g_rows(&self) -> bool {
+    pub(crate) fn has_g_complexity(&self) -> bool {
         match self {
-            GroundingQuery::Join{ has_g_rows, ..}
-            | GroundingQuery::Union { has_g_rows, ..}
-            | GroundingQuery::Aggregate { has_g_rows, ..} =>
-                *has_g_rows,
+            GroundingQuery::Join{ has_g_complexity, ..}
+            | GroundingQuery::Union { has_g_complexity, ..}
+            | GroundingQuery::Aggregate { has_g_complexity, ..} =>
+                *has_g_complexity,
         }
     }
 
@@ -517,7 +517,7 @@ impl GroundingQuery {
 
         match self {
             GroundingQuery::Join { variables, conditions, grounding,
-            outer, natural_joins, theta_joins, wheres, has_g_rows} => {
+            outer, natural_joins, theta_joins, wheres, has_g_complexity} => {
 
                 let new_grounding =
                     match grounding {
@@ -542,12 +542,12 @@ impl GroundingQuery {
                     natural_joins: natural_joins.clone(),
                     theta_joins: theta_joins.clone(),
                     wheres,
-                    has_g_rows: *has_g_rows
+                    has_g_complexity: *has_g_complexity
                 };
                 let table_alias = TableAlias{base_table, index: 0};
                 GroundingView::new(table_alias, free_variables, query, exclude, ids)
             }
-            GroundingQuery::Aggregate { agg, infinite_variables, sub_view, default, has_g_rows, .. } => {
+            GroundingQuery::Aggregate { agg, infinite_variables, sub_view, default, has_g_complexity, .. } => {
                 let default = match default {
                     Some(default) => Some(! default),
                     None => None,
@@ -558,7 +558,7 @@ impl GroundingQuery {
                     infinite_variables: infinite_variables.clone(),
                     default,
                     sub_view: Box::new(sub_view.negate(index, view_type, solver)?),
-                    has_g_rows: *has_g_rows
+                    has_g_complexity: *has_g_complexity
                 };
                 let table_alias = TableAlias{base_table, index: 1};
                 GroundingView::new(table_alias, free_variables, query, exclude, ids)
