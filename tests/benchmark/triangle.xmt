@@ -19,7 +19,7 @@
 (x-debug solver groundings)
 (check-sat)
 ------- RESULTS ------------------
-(declare-datatype Node ((|1| ) (|2| ) (|3| )))
+(declare-datatype Node ((|1|) (|2|) (|3|)))
 (declare-fun Edge (Node Node) Bool)
 (declare-fun phi (Node Node Node) Bool)
 (assert (phi |1| |2| |3|))

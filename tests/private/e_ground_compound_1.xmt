@@ -19,8 +19,8 @@
 (x-debug solver groundings)
 (x-debug db tables)
 ------- RESULTS ------------------
-(declare-datatype T ((a ) (b )))
-(declare-datatype Tf ((A ) (B )))
+(declare-datatype T ((a) (b)))
+(declare-datatype Tf ((A) (B)))
 (declare-fun p (T Tf) Bool)
 (declare-fun f (T) Tf)
 (assert (p b B))

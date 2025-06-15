@@ -10,7 +10,7 @@
 (x-debug solver functions)
 (x-debug db tables)
 ------- RESULTS ------------------
-(declare-datatype Color ((red ) (green )))
+(declare-datatype Color ((red) (green)))
 (declare-datatype Pair (par (X) ((pair (first X) (second X)))))
 (define-sort PairColor () (Pair Color))
 (declare-fun bright (Color) Bool)
@@ -18,13 +18,13 @@
 (declare-fun brightest ((Pair Color)) Color)
 (declare-fun colorOf (PairColor) PairColor)
 Sorts:
- - (Bool: 2) Bool: ((true ) (false ))
+ - (Bool: 2) Bool: ((true) (false))
  - (infinite) Int
  - (infinite) Real
  - (infinite) RoundingMode
  - (infinite) String
  - (infinite) RegLan
- - (_xmt_sort_color: 2) Color: ((red ) (green ))
+ - (_xmt_sort_color: 2) Color: ((red) (green))
  - (Sort_7: 4) (Pair Color): ((pair (first Color) (second Color)))
  - (Sort_7: 4) PairColor (= (Pair Color)): ((pair (first Color) (second Color)))
 Functions2:

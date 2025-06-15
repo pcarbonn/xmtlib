@@ -22,9 +22,9 @@
 (check-sat)
 
 ------- RESULTS ------------------
-(declare-datatypes ((Tree 1) (TreeList 1)) ((par (X) ((node (value X) (children (TreeList X))))) (par (Y) ((empty ) (insert (head (Tree Y)) (tail (TreeList Y)))))))
+(declare-datatypes ((Tree 1) (TreeList 1)) ((par (X) ((node (value X) (children (TreeList X))))) (par (Y) ((empty) (insert (head (Tree Y)) (tail (TreeList Y)))))))
 (declare-datatype TreeInt ((treeint (value (Tree Int)))))
-(declare-datatype Color ((red ) (green )))
+(declare-datatype Color ((red) (green)))
 (define-sort TreeListColor () (TreeList Color))
 (declare-sort Pair 2)
 (declare-sort A 0)
@@ -33,10 +33,10 @@
 Polymorphic datatypes:
  - (unknown): Array
  - (recursive) Tree: (par (X) ((node (value X) (children (TreeList X)))))
- - (recursive) TreeList: (par (Y) ((empty ) (insert (head (Tree Y)) (tail (TreeList Y)))))
+ - (recursive) TreeList: (par (Y) ((empty) (insert (head (Tree Y)) (tail (TreeList Y)))))
  - (unknown): Pair
 Sorts:
- - (Bool: 2) Bool: ((true ) (false ))
+ - (Bool: 2) Bool: ((true) (false))
  - (infinite) Int
  - (infinite) Real
  - (infinite) RoundingMode
@@ -45,7 +45,7 @@ Sorts:
  - (recursive) (Tree Int)
  - (recursive) (TreeList Int)
  - (recursive) TreeInt
- - (_xmt_sort_color: 2) Color: ((red ) (green ))
+ - (_xmt_sort_color: 2) Color: ((red) (green))
  - (recursive) (TreeList Color)
  - (recursive) (Tree Color)
  - (recursive) TreeListColor (= (TreeList Color))

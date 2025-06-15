@@ -39,7 +39,7 @@
 (declare-fun domain (Int) Bool)
 (declare-fun P (Int) Bool)
 (declare-fun Q (Int) Bool)
-(declare-datatype Color ((red ) (blue ) (green )))
+(declare-datatype Color ((red) (blue) (green)))
 (declare-fun p (Color) Bool)
 (declare-fun q (Color) Bool)
 (declare-fun r (Color) Bool)

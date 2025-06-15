@@ -431,7 +431,11 @@ impl Display for SelectorDec {
 pub struct ConstructorDec(pub Symbol, pub Vec<SelectorDec>);
 impl Display for ConstructorDec {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "({} {})", self.0, self.1.iter().format(" "))
+        if self.1.len() == 0 {
+            write!(f, "({})", self.0)
+        } else {
+            write!(f, "({} {})", self.0, self.1.iter().format(" "))
+        }
     }
 }
 

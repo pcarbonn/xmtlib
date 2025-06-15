@@ -24,9 +24,9 @@
 (x-debug solver groundings)
 (check-sat)
 ------- RESULTS ------------------
-(declare-datatype Color ((red ) (blue ) (green )))
-(declare-datatype Material ((soft ) (hard )))
-(declare-datatype Either (par (T) ((nil ) (Left (b T)) (Right (right T)))))
+(declare-datatype Color ((red) (blue) (green)))
+(declare-datatype Material ((soft) (hard)))
+(declare-datatype Either (par (T) ((nil) (Left (b T)) (Right (right T)))))
 (declare-fun p ((Either Color)) Bool)
 (declare-fun q ((Either Material)) Color)
 (assert ((_ is nil)  (as nil (Either Material))))
@@ -80,18 +80,18 @@ Tables and Views:
 └─────────────┴─────────┴─────────┴────────────────────────────┘
 Polymorphic datatypes:
  - (unknown): Array
- - Either: (par (T) ((nil ) (Left (b T)) (Right (right T))))
+ - Either: (par (T) ((nil) (Left (b T)) (Right (right T))))
 Sorts:
- - (Bool: 2) Bool: ((true ) (false ))
+ - (Bool: 2) Bool: ((true) (false))
  - (infinite) Int
  - (infinite) Real
  - (infinite) RoundingMode
  - (infinite) String
  - (infinite) RegLan
- - (_xmt_sort_color: 3) Color: ((red ) (blue ) (green ))
- - (_xmt_sort_material: 2) Material: ((soft ) (hard ))
- - (Sort_8: 7) (Either Color): ((nil ) (Left (b Color)) (Right (right Color)))
- - (Sort_9: 5) (Either Material): ((nil ) (Left (b Material)) (Right (right Material)))
+ - (_xmt_sort_color: 3) Color: ((red) (blue) (green))
+ - (_xmt_sort_material: 2) Material: ((soft) (hard))
+ - (Sort_8: 7) (Either Color): ((nil) (Left (b Color)) (Right (right Color)))
+ - (Sort_9: 5) (Either Material): ((nil) (Left (b Material)) (Right (right Material)))
 Functions2:
  - true ()->Bool : Constructor
  - false ()->Bool : Constructor

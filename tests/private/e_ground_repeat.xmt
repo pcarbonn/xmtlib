@@ -17,7 +17,7 @@
 (x-debug solver groundings)
 (x-debug db tables)
 ------- RESULTS ------------------
-(declare-datatype T ((a ) (b )))
+(declare-datatype T ((a) (b)))
 (declare-fun ku (T T) Bool)
 (declare-fun kuf (T) T)
 (assert (not (and (= (kuf b) a) (= (kuf b) b))))

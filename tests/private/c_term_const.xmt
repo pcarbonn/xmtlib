@@ -15,7 +15,7 @@
 ------- RESULTS ------------------
 (declare-const p Bool)
 (declare-const c Int)
-(declare-datatype Color ((red ) (green )))
+(declare-datatype Color ((red) (green)))
 (declare-fun q (Color) Bool)
 (assert p)
 (assert (q red))

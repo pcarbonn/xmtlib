@@ -20,35 +20,35 @@
 (check-sat)
 (define-sort MyBitVec () (MyPair (_ BitVec 2)))
 ------- RESULTS ------------------
-(declare-datatype Color ((red ) (green )))
-(declare-datatype color ((blue ) (white )))
-(declare-datatype Pair (par (X Y) ((white ) (pair (first X) (second Y)))))
+(declare-datatype Color ((red) (green)))
+(declare-datatype color ((blue) (white)))
+(declare-datatype Pair (par (X Y) ((white) (pair (first X) (second Y)))))
 (declare-datatype P ((p (x (Pair Color Color)))))
 (declare-datatype Triplet (par (X) ((triplet (first (Pair X (Pair X X)))))))
 (declare-datatype Q ((q (x (Triplet Color)))))
 (declare-datatype R ((r (x Int))))
-(declare-datatype ColorList ((nil ) (cons (head Color) (tail (Triplet ColorList)))))
+(declare-datatype ColorList ((nil) (cons (head Color) (tail (Triplet ColorList)))))
 (define-sort MyPair (T) (Pair T T))
 (define-sort PairColor () (Pair Color Color))
 (define-sort MyPairColor () (MyPair PairColor))
 (define-sort MyArray () (Array Color Color))
 Polymorphic datatypes:
  - (unknown): Array
- - Pair: (par (X Y) ((white ) (pair (first X) (second Y))))
+ - Pair: (par (X Y) ((white) (pair (first X) (second Y))))
  - Triplet: (par (X) ((triplet (first (Pair X (Pair X X))))))
  - MyPair: (T) -> (Pair T T)
 Sorts:
- - (Bool: 2) Bool: ((true ) (false ))
+ - (Bool: 2) Bool: ((true) (false))
  - (infinite) Int
  - (infinite) Real
  - (infinite) RoundingMode
  - (infinite) String
  - (infinite) RegLan
- - (_xmt_sort_color: 2) Color: ((red ) (green ))
- - (_xmt_sort_color_1: 2) color: ((blue ) (white ))
- - (Sort_8: 5) (Pair Color Color): ((white ) (pair (first Color) (second Color)))
+ - (_xmt_sort_color: 2) Color: ((red) (green))
+ - (_xmt_sort_color_1: 2) color: ((blue) (white))
+ - (Sort_8: 5) (Pair Color Color): ((white) (pair (first Color) (second Color)))
  - (_xmt_sort_p: 5) P: ((p (x (Pair Color Color))))
- - (Sort_10: 11) (Pair Color (Pair Color Color)): ((white ) (pair (first Color) (second (Pair Color Color))))
+ - (Sort_10: 11) (Pair Color (Pair Color Color)): ((white) (pair (first Color) (second (Pair Color Color))))
  - (Sort_11: 11) (Triplet Color): ((triplet (first (Pair Color (Pair Color Color)))))
  - (_xmt_sort_q: 11) Q: ((q (x (Triplet Color))))
  - (infinite) R
@@ -56,10 +56,10 @@ Sorts:
  - (recursive) (Pair ColorList ColorList)
  - (recursive) (Pair ColorList (Pair ColorList ColorList))
  - (recursive) (Triplet ColorList)
- - (Sort_8: 5) PairColor (= (Pair Color Color)): ((white ) (pair (first Color) (second Color)))
- - (Sort_18: 26) (Pair PairColor PairColor) (= (Pair (Pair Color Color) (Pair Color Color))): ((white ) (pair (first PairColor) (second PairColor)))
- - (Sort_18: 26) (MyPair PairColor) (= (Pair (Pair Color Color) (Pair Color Color))): ((white ) (pair (first PairColor) (second PairColor)))
- - (Sort_18: 26) MyPairColor (= (Pair (Pair Color Color) (Pair Color Color))): ((white ) (pair (first PairColor) (second PairColor)))
+ - (Sort_8: 5) PairColor (= (Pair Color Color)): ((white) (pair (first Color) (second Color)))
+ - (Sort_18: 26) (Pair PairColor PairColor) (= (Pair (Pair Color Color) (Pair Color Color))): ((white) (pair (first PairColor) (second PairColor)))
+ - (Sort_18: 26) (MyPair PairColor) (= (Pair (Pair Color Color) (Pair Color Color))): ((white) (pair (first PairColor) (second PairColor)))
+ - (Sort_18: 26) MyPairColor (= (Pair (Pair Color Color) (Pair Color Color))): ((white) (pair (first PairColor) (second PairColor)))
  - (unknown) (Array Color Color)
  - (unknown) MyArray (= (Array Color Color))
 Functions2:

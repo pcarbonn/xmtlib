@@ -20,21 +20,21 @@
 (x-debug solver groundings)
 (check-sat)
 ------- RESULTS ------------------
-(declare-datatype Color ((red ) (blue ) (green )))
-(declare-datatype Either ((nil ) (Left (b Color)) (Right (right Color))))
+(declare-datatype Color ((red) (blue) (green)))
+(declare-datatype Either ((nil) (Left (b Color)) (Right (right Color))))
 (declare-fun p (Either) Bool)
 (assert ((_ is nil) nil))
 Polymorphic datatypes:
  - (unknown): Array
 Sorts:
- - (Bool: 2) Bool: ((true ) (false ))
+ - (Bool: 2) Bool: ((true) (false))
  - (infinite) Int
  - (infinite) Real
  - (infinite) RoundingMode
  - (infinite) String
  - (infinite) RegLan
- - (_xmt_sort_color: 3) Color: ((red ) (blue ) (green ))
- - (_xmt_sort_either: 7) Either: ((nil ) (Left (b Color)) (Right (right Color)))
+ - (_xmt_sort_color: 3) Color: ((red) (blue) (green))
+ - (_xmt_sort_either: 7) Either: ((nil) (Left (b Color)) (Right (right Color)))
 Functions2:
  - true ()->Bool : Constructor
  - false ()->Bool : Constructor

@@ -46,7 +46,7 @@
 ------- RESULTS ------------------
 (declare-fun p () Bool)
 (declare-const P Bool)
-(declare-datatype Color ((red ) (green )))
+(declare-datatype Color ((red) (green)))
 (declare-fun bright (Color) Bool)
 (declare-fun empty (Color) Bool)
 (declare-fun same (Color Color) Bool)

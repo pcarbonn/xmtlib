@@ -11,7 +11,7 @@
 (x-debug solver groundings)
 (x-debug db tables)
 ------- RESULTS ------------------
-(declare-datatype Color ((red ) (blue ) (green )))
+(declare-datatype Color ((red) (blue) (green)))
 (assert false)
 (assert false)
 (assert false)
