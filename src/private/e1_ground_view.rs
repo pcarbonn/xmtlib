@@ -292,11 +292,9 @@ pub(crate) fn view_for_join(
                         groundings.push(sub_grounding.clone());
                         natural_joins.extend(sub_natural_joins.iter().cloned());
                         for (table_alias, mappings) in sub_theta_joins.iter() {
-                            if theta_joins.contains_key(table_alias) {
-                                unreachable!()
-                            } else {
+                            if ! theta_joins.contains_key(table_alias) {
                                 theta_joins.insert(table_alias.clone(), mappings.clone());
-                            }
+                            }  // else: no need to repeat the join
                         }
 
                         wheres.extend(sub_rhos.iter().cloned());
