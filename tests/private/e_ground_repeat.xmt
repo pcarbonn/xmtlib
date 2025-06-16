@@ -54,7 +54,8 @@ SELECT _xmt_interp_kuf_G_1.a_1 AS x,
        _xmt_interp_ku_TU_2.G AS G
   FROM _xmt_interp_kuf_G AS _xmt_interp_kuf_G_1
   JOIN _xmt_interp_ku_TU AS _xmt_interp_ku_TU_2
-        ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_TU_2.a_1) AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_TU_2.a_2)
+        ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_TU_2.a_1) 
+       AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_TU_2.a_2)
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT _xmt_interp_kuf_G_1.a_1 AS x,
@@ -62,7 +63,8 @@ SELECT _xmt_interp_kuf_G_1.a_1 AS x,
        _xmt_interp_ku_UF_2.G AS G
   FROM _xmt_interp_kuf_G AS _xmt_interp_kuf_G_1
   JOIN _xmt_interp_ku_UF AS _xmt_interp_ku_UF_2
-        ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_1) AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_2)
+        ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_1) 
+       AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_2)
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_interp_kuf_G_1.a_1 AS x,
@@ -70,7 +72,8 @@ SELECT _xmt_interp_kuf_G_1.a_1 AS x,
        _xmt_interp_ku_G_2.G AS G
   FROM _xmt_interp_kuf_G AS _xmt_interp_kuf_G_1
   JOIN _xmt_interp_ku_G AS _xmt_interp_ku_G_2
-        ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_G_2.a_1) AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_G_2.a_2)
+        ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_G_2.a_1) 
+       AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_G_2.a_2)
 
 === (top) (forall ((x T)) (ku (kuf x) (kuf x))) ======================================
 ----- TU -----------------------------------------------------------
@@ -86,7 +89,8 @@ SELECT and_aggregate(implies_(if_, G)) as G
                      _xmt_interp_ku_UF_2.G AS G
                 FROM _xmt_interp_kuf_G AS _xmt_interp_kuf_G_1
                 JOIN _xmt_interp_ku_UF AS _xmt_interp_ku_UF_2
-                      ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_1) AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_2))
+                      ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_1) 
+                     AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_2))
         WHERE G <> "true")
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -99,7 +103,8 @@ SELECT implies_(if_, G) as G
                      _xmt_interp_ku_UF_2.G AS G
                 FROM _xmt_interp_kuf_G AS _xmt_interp_kuf_G_1
                 JOIN _xmt_interp_ku_UF AS _xmt_interp_ku_UF_2
-                      ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_1) AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_2))
+                      ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_1) 
+                     AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_2))
         WHERE G <> "true")
 ----- G ------------------------------------------------------------
 -- Agg (0)
@@ -114,7 +119,8 @@ SELECT and_aggregate(implies_(if_, G)) as G
                      _xmt_interp_ku_UF_2.G AS G
                 FROM _xmt_interp_kuf_G AS _xmt_interp_kuf_G_1
                 JOIN _xmt_interp_ku_UF AS _xmt_interp_ku_UF_2
-                      ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_1) AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_2))
+                      ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_1) 
+                     AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_2))
         WHERE G <> "true")
 
 ===========================================

@@ -255,7 +255,8 @@ SELECT _xmt_interp_edge_TU_2.a_1 AS x,
   JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5
         ON _xmt_interp_edge_TU_2.a_2 = _xmt_interp_edge_TU_5.a_1
   JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_7
-        ON _xmt_interp_edge_TU_2.a_1 = _xmt_interp_edge_TU_7.a_1 AND _xmt_interp_edge_TU_5.a_2 = _xmt_interp_edge_TU_7.a_2
+        ON _xmt_interp_edge_TU_2.a_1 = _xmt_interp_edge_TU_7.a_1 
+       AND _xmt_interp_edge_TU_5.a_2 = _xmt_interp_edge_TU_7.a_2
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_interp_edge_G_2.a_1 AS x,
@@ -266,7 +267,8 @@ SELECT _xmt_interp_edge_G_2.a_1 AS x,
   JOIN _xmt_interp_edge_G AS _xmt_interp_edge_G_5
         ON _xmt_interp_edge_G_2.a_2 = _xmt_interp_edge_G_5.a_1
   JOIN _xmt_interp_edge_G AS _xmt_interp_edge_G_7
-        ON _xmt_interp_edge_G_2.a_1 = _xmt_interp_edge_G_7.a_1 AND _xmt_interp_edge_G_5.a_2 = _xmt_interp_edge_G_7.a_2
+        ON _xmt_interp_edge_G_2.a_1 = _xmt_interp_edge_G_7.a_1 
+       AND _xmt_interp_edge_G_5.a_2 = _xmt_interp_edge_G_7.a_2
 
 === (top) (forall ((x Node) (y Node) (z Node)) (or (not (Edge x y)) (not (Edge y z)) (not (Edge x z)) (phi x y z))) ======================================
 ----- TU -----------------------------------------------------------
@@ -283,7 +285,8 @@ SELECT and_aggregate(G) as G
          JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5
                ON _xmt_interp_edge_TU_2.a_2 = _xmt_interp_edge_TU_5.a_1
          JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_7
-               ON _xmt_interp_edge_TU_2.a_1 = _xmt_interp_edge_TU_7.a_1 AND _xmt_interp_edge_TU_5.a_2 = _xmt_interp_edge_TU_7.a_2)
+               ON _xmt_interp_edge_TU_2.a_1 = _xmt_interp_edge_TU_7.a_1 
+              AND _xmt_interp_edge_TU_5.a_2 = _xmt_interp_edge_TU_7.a_2)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
@@ -296,7 +299,8 @@ SELECT G as G
          JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5
                ON _xmt_interp_edge_TU_2.a_2 = _xmt_interp_edge_TU_5.a_1
          JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_7
-               ON _xmt_interp_edge_TU_2.a_1 = _xmt_interp_edge_TU_7.a_1 AND _xmt_interp_edge_TU_5.a_2 = _xmt_interp_edge_TU_7.a_2)
+               ON _xmt_interp_edge_TU_2.a_1 = _xmt_interp_edge_TU_7.a_1 
+              AND _xmt_interp_edge_TU_5.a_2 = _xmt_interp_edge_TU_7.a_2)
 ----- G ------------------------------------------------------------
 -- Agg (0)
 SELECT and_aggregate(G) as G
@@ -311,7 +315,8 @@ SELECT and_aggregate(G) as G
          JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5
                ON _xmt_interp_edge_TU_2.a_2 = _xmt_interp_edge_TU_5.a_1
          JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_7
-               ON _xmt_interp_edge_TU_2.a_1 = _xmt_interp_edge_TU_7.a_1 AND _xmt_interp_edge_TU_5.a_2 = _xmt_interp_edge_TU_7.a_2)
+               ON _xmt_interp_edge_TU_2.a_1 = _xmt_interp_edge_TU_7.a_1 
+              AND _xmt_interp_edge_TU_5.a_2 = _xmt_interp_edge_TU_7.a_2)
 
 ===  (Edge x x) ======================================
 ----- T ------------------------------------------------------------
@@ -410,7 +415,8 @@ SELECT and_(Agg_11_TU.G, Agg_13_TU.G, Agg_14_TU.G) AS G
                  JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5
                        ON _xmt_interp_edge_TU_2.a_2 = _xmt_interp_edge_TU_5.a_1
                  JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_7
-                       ON _xmt_interp_edge_TU_2.a_1 = _xmt_interp_edge_TU_7.a_1 AND _xmt_interp_edge_TU_5.a_2 = _xmt_interp_edge_TU_7.a_2)
+                       ON _xmt_interp_edge_TU_2.a_1 = _xmt_interp_edge_TU_7.a_1 
+                      AND _xmt_interp_edge_TU_5.a_2 = _xmt_interp_edge_TU_7.a_2)
         ) AS Agg_11_TU
   JOIN (-- Agg (8)
         SELECT and_aggregate(G) as G
@@ -446,7 +452,8 @@ SELECT G as G
                        JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5
                              ON _xmt_interp_edge_TU_2.a_2 = _xmt_interp_edge_TU_5.a_1
                        JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_7
-                             ON _xmt_interp_edge_TU_2.a_1 = _xmt_interp_edge_TU_7.a_1 AND _xmt_interp_edge_TU_5.a_2 = _xmt_interp_edge_TU_7.a_2)
+                             ON _xmt_interp_edge_TU_2.a_1 = _xmt_interp_edge_TU_7.a_1 
+                            AND _xmt_interp_edge_TU_5.a_2 = _xmt_interp_edge_TU_7.a_2)
               UNION ALL
               -- Agg (14)
               SELECT G as G
@@ -482,7 +489,8 @@ SELECT and_(Agg_11_G.G, Agg_13_G.G, Agg_14_G.G) AS G
                  JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5
                        ON _xmt_interp_edge_TU_2.a_2 = _xmt_interp_edge_TU_5.a_1
                  JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_7
-                       ON _xmt_interp_edge_TU_2.a_1 = _xmt_interp_edge_TU_7.a_1 AND _xmt_interp_edge_TU_5.a_2 = _xmt_interp_edge_TU_7.a_2)
+                       ON _xmt_interp_edge_TU_2.a_1 = _xmt_interp_edge_TU_7.a_1 
+                      AND _xmt_interp_edge_TU_5.a_2 = _xmt_interp_edge_TU_7.a_2)
         ) AS Agg_11_G
   JOIN (-- Agg (8)
         SELECT and_aggregate(G) as G

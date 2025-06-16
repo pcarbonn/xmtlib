@@ -50,17 +50,20 @@ SELECT "B" AS G
 -- Join(0)
 SELECT _xmt_interp_p_TU_2.G AS G
   FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_2
- WHERE "b" = _xmt_interp_p_TU_2.a_1 AND "B" = _xmt_interp_p_TU_2.a_2
+ WHERE "b" = _xmt_interp_p_TU_2.a_1 
+       AND "B" = _xmt_interp_p_TU_2.a_2
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT _xmt_interp_p_UF_2.G AS G
   FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_2
- WHERE "b" = _xmt_interp_p_UF_2.a_1 AND "B" = _xmt_interp_p_UF_2.a_2
+ WHERE "b" = _xmt_interp_p_UF_2.a_1 
+       AND "B" = _xmt_interp_p_UF_2.a_2
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_interp_p_G_2.G AS G
   FROM _xmt_interp_p_G AS _xmt_interp_p_G_2
- WHERE "b" = _xmt_interp_p_G_2.a_1 AND "B" = _xmt_interp_p_G_2.a_2
+ WHERE "b" = _xmt_interp_p_G_2.a_1 
+       AND "B" = _xmt_interp_p_G_2.a_2
 
 ===  x ======================================
  -- Join(0)

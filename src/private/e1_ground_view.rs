@@ -155,7 +155,7 @@ pub(crate) fn view_for_variable(
             has_g_complexity: true
         };
         let free_variables = OptionMap::from([(symbol.clone(), Some(table_alias))]);
-        GroundingView::new(new_alias, free_variables, query, None, Ids::All) // todo perf: exclude for boolean
+        GroundingView::new(new_alias, free_variables, query, None, Ids::All) // TODO perf: exclude for boolean
     } else {  // infinite variable ==> just "x"
         let variables = OptionMap::from([(symbol.clone(), None)]);
         let query = GroundingQuery::Join{

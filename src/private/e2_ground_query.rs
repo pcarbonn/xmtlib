@@ -122,6 +122,7 @@ impl GroundingQuery {
         indent: &str
     ) -> (String, Ids) {
 
+        let indent1 = format!("{indent}{INDENT} ").to_string();
         match self {
             GroundingQuery::Join{variables, conditions, grounding, outer,
             natural_joins, theta_joins, wheres, ..} => {
@@ -251,7 +252,6 @@ impl GroundingQuery {
                                     }
                                 }  // var_joins is {x: (f.a_1, 3), y:(f.a_3, 3)}
 
-                                let indent1 = format!("{indent}{INDENT} ").to_string();
                                 let (query, ids_) = query.to_sql(&var_joins, &indent1);
                                 ids = max(ids.clone(), ids_);
 
@@ -269,7 +269,7 @@ impl GroundingQuery {
                                         } else {
                                             unreachable!("348595")
                                         }
-                                    }).collect::<Vec<_>>().join(" AND ");
+                                    }).collect::<Vec<_>>().join(format!(" \n{indent1}AND ").as_str());
 
                                 if on == "" {
                                     format!("({query}\n{indent1}) AS {name}")
@@ -295,7 +295,7 @@ impl GroundingQuery {
                                 if let Some(expr) = expr {
                                     expr.to_join(variables)
                                 } else { None })
-                            .collect::<Vec<_>>().join(" AND ");
+                            .collect::<Vec<_>>().join(format!(" \n{indent}{INDENT}AND ").as_str());
                         if i == 0 && naturals.len() == 0 {
                             if on != "" { where_.push(on) };
                             format!("{} AS {table_name}", table_name.base_table)
@@ -309,7 +309,7 @@ impl GroundingQuery {
                 let where_ = if where_.len() == 0 {
                         "".to_string()
                     } else {
-                        format!("\n{indent} WHERE {}", where_.join(" AND "))
+                        format!("\n{indent} WHERE {}", where_.join(format!(" \n{indent}{INDENT}AND ").as_str()))
                     };
 
 

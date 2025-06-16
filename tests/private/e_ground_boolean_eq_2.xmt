@@ -100,7 +100,8 @@ SELECT _xmt_sort_t.G AS x,
        and_(eq_(_xmt_sort_t.G, "A"), eq_(_xmt_sort_t_1.G, "A")) AS G
   FROM _xmt_sort_t
   JOIN _xmt_sort_t AS _xmt_sort_t_1
- WHERE _xmt_sort_t.G = "A" AND _xmt_sort_t_1.G = "A"
+ WHERE _xmt_sort_t.G = "A" 
+       AND _xmt_sort_t_1.G = "A"
 ----- F ------------------------------------------------------------
 -- Agg (0)
 SELECT x, y,
