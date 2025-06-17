@@ -260,7 +260,10 @@ fn execute_query(
                                     yield_!(Ok(assert));
                                 }
                             }
-                            Err(e) => yield_!(Err(SolverError::from(e)))
+                            Err(e) => {
+                                yield_!(Err(SolverError::from(e)));
+                                break
+                            }
                         }
                     }
                 }
