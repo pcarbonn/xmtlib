@@ -192,13 +192,8 @@ fn execute_term(
                     Grounding::Boolean{uf, ..} => {
                         // execute the UF query
                         let query = uf.to_string();
-                        match execute_query(query, &mut solver.conn) {
-                            Ok(asserts) => {
-                                for assert in asserts {
-                                    yield_!(solver.exec(&assert));
-                                }
-                            },
-                            Err(e) => yield_!(Err(e))
+                        for res in execute_query(query, &mut solver.conn) {
+                            yield_!(res)
                         }
                     }
                 }
@@ -208,67 +203,73 @@ fn execute_term(
     })
 }
 
-
 fn execute_query(
     query: String,
     conn: &mut Connection
-) -> Result<Vec<String>, SolverError> {
-
-    let mut stmt = conn.prepare(&query)?;
-    if stmt.column_count() == 1 {  //  just G
-        let row_iter = stmt.query_map([], |row| {
-            row.get::<usize, String>(0)
-        })?;
-
-        let mut res = vec![];
-        for row in row_iter {
-            match row {
-                Err(e) => return Err(SolverError::from(e)),
-                Ok(g) => {
-                    if g != "true" {
-                        let assert = format!("(assert {g})\n");
-                        res.push(assert);
-                        if g == "false" {
-                            break
-                        }
-                    }
-                }
+) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {
+    gen!({
+        let mut stmt = match conn.prepare(&query) {
+            Ok(stmt) => stmt,
+            Err(e) => {
+                yield_!(Err(SolverError::from(e)));
+                return;
             }
-        }
-        return Ok(res)
-    } else if stmt.column_count() == 2 {  // with an if_ column
-        let row_iter = stmt.query_map([], |row| {
-            Ok((
-                row.get::<usize, String>(0)?,
-                row.get::<usize, String>(1)?
-            ))
-        })?;
-
-        let mut res = vec![];
-        for row in row_iter {
-            match row {
-                Err(e) => return Err(SolverError::from(e)),
-                Ok((if_, g)) => {
-                    if if_ == "" {
-                        if g != "true" {
-                            let assert = format!("(assert {g})\n");
-                            res.push(assert);
-                            if g == "false" {
-                                break
+        };
+        if stmt.column_count() == 1 {  //  just G
+            match stmt.query_map([], |row| {
+                        row.get::<usize, String>(0)
+                    }) {
+                Ok(row_iter) => {
+                    for row in row_iter {
+                        match row {
+                            Ok(g) => {
+                                if g != "true" {
+                                    let assert = format!("(assert {g})\n");
+                                    yield_!(Ok(assert));
+                                    if g == "false" {  // theory is unsatisfiable anyway
+                                        break
+                                    }
+                                }
                             }
+                            Err(e) => yield_!(Err(SolverError::from(e)))
                         }
-                    } else {
-                        let assert = format!("(assert (=> {if_} {g}))\n");
-                        res.push(assert);
                     }
                 }
-            }
+                Err(e) => yield_!(Err(SolverError::from(e)))
+            };
+        } else if stmt.column_count() == 2 {  // with an if_ column
+            match stmt.query_map([], |row| {
+                        row.get::<usize, String>(0).and_then(|col0| {
+                            row.get::<usize, String>(1).map(|col1| (col0, col1))
+                        })
+                    }) {
+                Ok(row_iter) => {
+                    for row in row_iter {
+                        match row {
+                            Ok((if_, g)) => {
+                                if if_ == "" || if_ == "true" {
+                                    if g != "true" {
+                                        let assert = format!("(assert {g})\n");
+                                        yield_!(Ok(assert));
+                                        if g == "false" {  // theory is unsatisfiable anyway
+                                            break
+                                        }
+                                    }
+                                } else {
+                                    let assert = format!("(assert (=> {if_} {g}))\n");
+                                    yield_!(Ok(assert));
+                                }
+                            }
+                            Err(e) => yield_!(Err(SolverError::from(e)))
+                        }
+                    }
+                }
+                Err(e) => yield_!(Err(SolverError::from(e)))
+            };
+        } else {
+            unreachable!()
         }
-        return Ok(res)
-    } else {
-        unreachable!()
-    }
-
+    })
 }
 
 
