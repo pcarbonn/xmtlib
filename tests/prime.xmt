@@ -1,4 +1,4 @@
-(set-option :backend none)
+(set-option :backend Z3)
 (declare-fun domain (Int) Bool)
 (declare-fun prime (Int) Bool)
 (assert (forall ((x Int)) (=> (domain x)
@@ -9,19 +9,17 @@
 
 (x-interpret-pred domain (x-range 2 10))
 (x-ground debug:)
+(check-sat)
+(get-model)
 (x-debug solver groundings)
 ------- RESULTS ------------------
-(declare-fun domain (Int) Bool)
-(declare-fun prime (Int) Bool)
-(assert (= (prime 2) true))
-(assert (= (prime 3) true))
-(assert (= (prime 4) false))
-(assert (= (prime 5) true))
-(assert (= (prime 6) false))
-(assert (= (prime 7) true))
-(assert (= (prime 8) false))
-(assert (= (prime 9) false))
-(assert (= (prime 10) false))
+sat
+(
+  (define-fun prime ((x!0 Int)) Bool
+    (or (= x!0 2) (= x!0 3) (= x!0 5) (= x!0 7)))
+  (define-fun domain ((x!0 Int)) Bool
+    false)
+)
 Groundings:
 ===  x ======================================
  -- Join(0)

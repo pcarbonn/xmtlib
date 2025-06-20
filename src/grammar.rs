@@ -542,7 +542,7 @@ peg::parser!{
             { XInterpretFun(identifier, Right(sql), else_) }
 
         rule verbatim() -> Command
-            = command: ( "check-sat-assuming"
+            = command: $( "check-sat-assuming"
                          / "get-assertions"
                          / "get-assignment"
                          / "get-info"
@@ -561,7 +561,11 @@ peg::parser!{
                          / "simplify"
                          ) _
               s: (s_expr() ** _)
-            { Verbatim(format!("{}", SExpr::Paren(s))) }
+            { if s.len() == 0 {
+              Verbatim(format!("({command})"))
+             } else {
+              Verbatim(format!("({command} {})", SExpr::Paren(s)))
+             } }
 
         pub rule script() -> Vec<Command>
             = _ l:(command()** _ ) _
