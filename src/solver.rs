@@ -30,6 +30,27 @@ pub(crate) enum Backend {
     Z3(Z3_context)
 }
 
+impl Backend {
+    /// execute a command string
+    pub(crate) fn exec(&mut self, cmd: &str) -> Result<String, SolverError> {
+        match self {
+            Backend::NoDriver => {
+                return Ok(cmd.to_string())
+            },
+            Backend::Z3(ctx) => {
+                unsafe {
+                    let c_cmd = std::ffi::CString::new(cmd).unwrap();
+                    let response = Z3_eval_smtlib2_string(*ctx, c_cmd.as_ptr());
+                    let c_str: &std::ffi::CStr = std::ffi::CStr::from_ptr(response);
+                    let str_slice: &str = c_str.to_str().unwrap();
+                    let result: String = str_slice.to_owned();
+                    return Ok(result)
+                }
+            }
+        }
+    }
+}
+
 pub(crate) type TermId = usize;
 
 // A non-parametric sort without use of aliases (defined sort)
@@ -461,21 +482,7 @@ impl Solver {
         if cmd.to_string().len() != 0 {
             self.started = true;
         }
-        match self.backend {
-            Backend::NoDriver => {
-                return Ok(cmd.to_string())
-            },
-            Backend::Z3(ctx) => {
-                unsafe {
-                    let c_cmd = std::ffi::CString::new(cmd).unwrap();
-                    let response = Z3_eval_smtlib2_string(ctx, c_cmd.as_ptr());
-                    let c_str: &std::ffi::CStr = std::ffi::CStr::from_ptr(response);
-                    let str_slice: &str = c_str.to_str().unwrap();
-                    let result: String = str_slice.to_owned();
-                    return Ok(result)
-                }
-            }
-        }
+        self.backend.exec(cmd)
     }
 
     pub(crate) fn set_option(&mut self, option: Option_, cmd: String) -> Result<String, SolverError> {
