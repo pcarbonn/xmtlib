@@ -27,20 +27,21 @@
 (assert (exists ((x Color)) (= (mix x x) x)))
 (assert (exists ((x Color)) (= (mix x x) x green)))
 
+; infinite
+(declare-fun RGB (Int) Color)
+(x-interpret-fun RGB
+   (x-mapping
+      ((0) red)
+   )
+)
+(assert (= green (RGB 0)))
+
 (x-ground debug:)
 (x-debug solver functions)
 (x-debug solver groundings)
 (x-debug db tables)
 (x-debug db _xmt_interp_p_UF)
 (x-debug db _xmt_interp_mix_g)
-
-; infinite
-(declare-fun RGB (Int) Color)
-(x-interpret-fun RGB
-   (x-mapping
-      ((0) red)
-   ) red
-)
 ------- RESULTS ------------------
 (declare-datatype Color ((red) (green)))
 (declare-const C Color)
@@ -48,9 +49,11 @@
 (declare-fun p () Bool)
 (declare-fun Mix (Color Color) Color)
 (declare-fun mix (Color Color) Color)
+(declare-fun RGB (Int) Color)
 (assert false)
 (assert (= (mix green green) green))
 (assert (= (mix green green) green green))
+(assert false)
 Functions2:
  - true ()->Bool : Constructor
  - false ()->Bool : Constructor
@@ -82,6 +85,7 @@ Functions2:
  - p ()->Bool : Boolean (_xmt_interp_p_TU Complete, _xmt_interp_p_UF Complete, _xmt_interp_p_G Complete)
  - Mix (Color, Color)->Color : Non Boolean (_xmt_interp_mix_5_G Partial)
  - mix (Color, Color)->Color : Non Boolean (_xmt_interp_mix_G Partial)
+ - RGB (Int)->Color : Non Boolean (_xmt_interp_rgb_G Complete)
 Groundings:
 ===  c ======================================
  -- Join(0)
@@ -250,6 +254,33 @@ SELECT or_aggregate(G) as G
                      AND _xmt_interp_mix_G_4.a_1 = _xmt_interp_mix_G_4.a_2)
         WHERE G <> "false")
 
+===  0 ======================================
+ -- Join(0)
+SELECT 0 AS G
+===  (RGB 0) ======================================
+ -- Join(0)
+SELECT _xmt_interp_rgb_G_10.G AS G
+  FROM _xmt_interp_rgb_G AS _xmt_interp_rgb_G_10
+ WHERE 0 = _xmt_interp_rgb_G_10.a_1
+=== (top) (= green (RGB 0)) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT eq_("green", _xmt_interp_rgb_G_10.G) AS G
+  FROM _xmt_interp_rgb_G AS _xmt_interp_rgb_G_10
+ WHERE "green" = _xmt_interp_rgb_G_10.G 
+       AND 0 = _xmt_interp_rgb_G_10.a_1
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT eq_("green", _xmt_interp_rgb_G_10.G) AS G
+  FROM _xmt_interp_rgb_G AS _xmt_interp_rgb_G_10
+ WHERE "green" != _xmt_interp_rgb_G_10.G 
+       AND 0 = _xmt_interp_rgb_G_10.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT eq_("green", _xmt_interp_rgb_G_10.G) AS G
+  FROM _xmt_interp_rgb_G AS _xmt_interp_rgb_G_10
+ WHERE 0 = _xmt_interp_rgb_G_10.a_1
+
 ===========================================
 Tables and Views:
  - Bool (table)
@@ -263,6 +294,7 @@ Tables and Views:
  - _xmt_interp_mix_5_K (table)
  - _xmt_interp_mix_5_U (view)
  - _xmt_interp_mix_5_G (view)
+ - _xmt_interp_rgb_G (table)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
  TABLE: _xmt_interp_p_uf
@@ -281,9 +313,3 @@ Tables and Views:
 ├─────────┼─────────┼─────────────────────┤
 │ "green" │ "red"   │ "green"             │
 └─────────┴─────────┴─────────────────────┘
-(declare-fun RGB (Int) Color)
-error: at position (39, 18): Cannot interpret a symbol with infinite domain
-   |
-39 | (x-interpret-fun RGB
-   |                  ^ Cannot interpret a symbol with infinite domain
-   |

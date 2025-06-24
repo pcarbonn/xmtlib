@@ -288,6 +288,9 @@ pub(crate) fn interpret_fun(
                     return Err(SolverError::TermError("Unnecessary `else` value", else_.clone()))
                 }
             } else if let Some(else_) = else_ {  // incomplete interpretation
+                if size == 0 {
+                    return Err(SolverError::IdentifierError("Cannot have `else` value for function with infinite domain", identifier))
+                }
 
                 let else_ = if else_.to_string() == "?" {
                     ids = Ids::Some;
@@ -304,9 +307,9 @@ pub(crate) fn interpret_fun(
                     table_g.clone(),
                     solver
                 )?;
-            } else {
+            } else if size != 0 {
                 return Err(SolverError::IdentifierError("Missing `else` value", identifier))
-            };
+            };  // use table_g if size is 0
 
             let table_g = Interpretation::Table{name: table_g, ids};
             let function_object = FunctionObject::Interpreted(table_g);

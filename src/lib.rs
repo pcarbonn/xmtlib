@@ -193,9 +193,9 @@
 //!
 //! ## (x-interpret-pred ...)
 //!
-//! An `x-interpret-pred` command specifies the total interpretation of a boolean function symbol (aka a predicate),
+//! The `x-interpret-pred` command is used to specify the total interpretation of a boolean function symbol (aka a predicate),
 //! by listing all the tuples of arguments that make it true.
-//! Such an intepretation can be given only once.
+//! Such an interpretation can be given only once.
 //!
 //! This list of tuples can be supplied using:
 //!
@@ -225,9 +225,16 @@
 //!
 //! ## (x-interpret-fun ...)
 //!
-//! An `x-interpret-fun` command specifies the interpretation of a function symbol, possibly partially,
-//! by mapping a value to tuples of arguments, and by giving a default value.
-//! (The interpretation of a function with an infinite domain cannot be given)
+//! The `x-interpret-fun` command is used to specify the interpretation of a function symbol.
+//! If the domain of the function is finite, its interpretation is specified
+//! by mapping a value to some tuples of arguments in its domain,
+//! and by giving a default value for the remaining tuples in its domain.
+//! If the domain of the function is infinite, but its "domain of definition" is finite
+//! (i.e., the domain where its value is meaningful and relevant for the problem at hand),
+//! its interpretation is given by mapping a value to all tuples of arguments in its domain of definition.
+//! If the domain of definition of the function is infinite,
+//! one cannot specify its interpretation with this command:
+//! the SMT-Lib `(define-fun` command must be used instead.
 //!
 //! The grammar for this command is:
 //! ```text
@@ -255,8 +262,9 @@
 //! The mappings may not have duplicate tuples,
 //! and the values in the mapping must be of the appropriate type.
 //!
-//! The default value must be given if the set of tuples in the interpretation
-//! does not cover the domain of the function;
+//! The default value may be `? `(for unknown).
+//! It may only be given for functions with finite domain
+//! when the set of tuples in the interpretation does not cover the domain;
 //! it may not be given otherwise.
 //!
 //! Note that pre-interpreted terms may take any value in a model obtained by `(get-model)`.
