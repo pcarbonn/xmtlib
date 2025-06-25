@@ -184,7 +184,7 @@ SELECT _xmt_interp_edge_TU_2.a_1 AS x,
 SELECT "x" AS x,
        "y" AS y,
        "z" AS z,
-       apply("or", apply("not", apply("Edge", "x", "y")), apply("not", apply("Edge", "y", "z")), apply("Edge", "x", "z")) AS G
+       or_(apply("not", apply("Edge", "x", "y")), apply("not", apply("Edge", "y", "z")), apply("Edge", "x", "z")) AS G
 
 === (top) (forall ((x Int) (y Int) (z Int)) (or (not (Edge x y)) (not (Edge y z)) (Edge x z))) ======================================
 ----- TU -----------------------------------------------------------

@@ -26,33 +26,15 @@
 (assert (Val (queen 1)))
 (assert (Val (queen 2)))
 (assert (Val (queen 3)))
-(assert (or true (not (= (queen 1) (queen 1)))))
-(assert (or false (not (= (queen 1) (queen 2)))))
-(assert (or false (not (= (queen 1) (queen 3)))))
-(assert (or true (not (= (queen 2) (queen 1)))))
-(assert (or true (not (= (queen 2) (queen 2)))))
-(assert (or false (not (= (queen 2) (queen 3)))))
-(assert (or true (not (= (queen 3) (queen 1)))))
-(assert (or true (not (= (queen 3) (queen 2)))))
-(assert (or true (not (= (queen 3) (queen 3)))))
-(assert (or true (not (= (+ (queen 1) 1) (+ (queen 1) 1)))))
-(assert (or false (not (= (+ (queen 1) 1) (+ (queen 2) 2)))))
-(assert (or false (not (= (+ (queen 1) 1) (+ (queen 3) 3)))))
-(assert (or true (not (= (+ (queen 2) 2) (+ (queen 1) 1)))))
-(assert (or true (not (= (+ (queen 2) 2) (+ (queen 2) 2)))))
-(assert (or false (not (= (+ (queen 2) 2) (+ (queen 3) 3)))))
-(assert (or true (not (= (+ (queen 3) 3) (+ (queen 1) 1)))))
-(assert (or true (not (= (+ (queen 3) 3) (+ (queen 2) 2)))))
-(assert (or true (not (= (+ (queen 3) 3) (+ (queen 3) 3)))))
-(assert (or true (not (= (- (queen 1) 1) (- (queen 1) 1)))))
-(assert (or false (not (= (- (queen 1) 1) (- (queen 2) 2)))))
-(assert (or false (not (= (- (queen 1) 1) (- (queen 3) 3)))))
-(assert (or true (not (= (- (queen 2) 2) (- (queen 1) 1)))))
-(assert (or true (not (= (- (queen 2) 2) (- (queen 2) 2)))))
-(assert (or false (not (= (- (queen 2) 2) (- (queen 3) 3)))))
-(assert (or true (not (= (- (queen 3) 3) (- (queen 1) 1)))))
-(assert (or true (not (= (- (queen 3) 3) (- (queen 2) 2)))))
-(assert (or true (not (= (- (queen 3) 3) (- (queen 3) 3)))))
+(assert (not (= (queen 1) (queen 2))))
+(assert (not (= (queen 1) (queen 3))))
+(assert (not (= (queen 2) (queen 3))))
+(assert (not (= (+ (queen 1) 1) (+ (queen 2) 2))))
+(assert (not (= (+ (queen 1) 1) (+ (queen 3) 3))))
+(assert (not (= (+ (queen 2) 2) (+ (queen 3) 3))))
+(assert (not (= (- (queen 1) 1) (- (queen 2) 2))))
+(assert (not (= (- (queen 1) 1) (- (queen 3) 3))))
+(assert (not (= (- (queen 2) 2) (- (queen 3) 3))))
 Groundings:
 ===  v ======================================
  -- Join(0)
@@ -131,7 +113,7 @@ SELECT _xmt_interp_val_TU_1.a_1 AS v,
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT "v" AS v,
-       apply("or", apply("not", apply("Val", "v")), apply("Val", apply("queen", "v"))) AS G
+       or_(apply("not", apply("Val", "v")), apply("Val", apply("queen", "v"))) AS G
 
 === (top) (forall ((v Int)) (or (not (Val v)) (Val (queen v)))) ======================================
 ----- TU -----------------------------------------------------------
@@ -333,14 +315,14 @@ SELECT v1, v2,
 -- Join(0)
 SELECT _xmt_interp_val_TU_8.a_1 AS v1,
        _xmt_interp_val_TU_11.a_1 AS v2,
-       apply("or", not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("queen", _xmt_interp_val_TU_8.a_1), apply("queen", _xmt_interp_val_TU_11.a_1)))) AS G
+       or_(not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("queen", _xmt_interp_val_TU_8.a_1), apply("queen", _xmt_interp_val_TU_11.a_1)))) AS G
   FROM _xmt_interp_val_TU AS _xmt_interp_val_TU_8
   JOIN _xmt_interp_val_TU AS _xmt_interp_val_TU_11
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT "v1" AS v1,
        "v2" AS v2,
-       apply("or", apply("not", apply("Val", "v1")), apply("not", apply("Val", "v2")), apply("not", apply("<", "v1", "v2")), apply("not", apply("=", apply("queen", "v1"), apply("queen", "v2")))) AS G
+       or_(apply("not", apply("Val", "v1")), apply("not", apply("Val", "v2")), apply("not", apply("<", "v1", "v2")), apply("not", apply("=", apply("queen", "v1"), apply("queen", "v2")))) AS G
 
 === (top) (forall ((v1 Int) (v2 Int)) (or (not (Val v1)) (not (Val v2)) (not (< v1 v2)) (not (= (queen v1) (queen v2))))) ======================================
 ----- TU -----------------------------------------------------------
@@ -351,7 +333,7 @@ SELECT and_aggregate(G) as G
        -- Join(7)
        SELECT _xmt_interp_val_TU_8.a_1 AS v1,
               _xmt_interp_val_TU_11.a_1 AS v2,
-              apply("or", not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("queen", _xmt_interp_val_TU_8.a_1), apply("queen", _xmt_interp_val_TU_11.a_1)))) AS G
+              or_(not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("queen", _xmt_interp_val_TU_8.a_1), apply("queen", _xmt_interp_val_TU_11.a_1)))) AS G
          FROM _xmt_interp_val_TU AS _xmt_interp_val_TU_8
          JOIN _xmt_interp_val_TU AS _xmt_interp_val_TU_11)
 ----- UF -----------------------------------------------------------
@@ -360,7 +342,7 @@ SELECT G as G
  FROM (-- Join(7)
        SELECT _xmt_interp_val_TU_8.a_1 AS v1,
               _xmt_interp_val_TU_11.a_1 AS v2,
-              apply("or", not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("queen", _xmt_interp_val_TU_8.a_1), apply("queen", _xmt_interp_val_TU_11.a_1)))) AS G
+              or_(not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("queen", _xmt_interp_val_TU_8.a_1), apply("queen", _xmt_interp_val_TU_11.a_1)))) AS G
          FROM _xmt_interp_val_TU AS _xmt_interp_val_TU_8
          JOIN _xmt_interp_val_TU AS _xmt_interp_val_TU_11)
 ----- G ------------------------------------------------------------
@@ -371,7 +353,7 @@ SELECT and_aggregate(G) as G
        -- Join(7)
        SELECT _xmt_interp_val_TU_8.a_1 AS v1,
               _xmt_interp_val_TU_11.a_1 AS v2,
-              apply("or", not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("queen", _xmt_interp_val_TU_8.a_1), apply("queen", _xmt_interp_val_TU_11.a_1)))) AS G
+              or_(not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("queen", _xmt_interp_val_TU_8.a_1), apply("queen", _xmt_interp_val_TU_11.a_1)))) AS G
          FROM _xmt_interp_val_TU AS _xmt_interp_val_TU_8
          JOIN _xmt_interp_val_TU AS _xmt_interp_val_TU_11)
 
@@ -446,14 +428,14 @@ SELECT v1, v2,
 -- Join(0)
 SELECT _xmt_interp_val_TU_8.a_1 AS v1,
        _xmt_interp_val_TU_11.a_1 AS v2,
-       apply("or", not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("+", apply("queen", _xmt_interp_val_TU_8.a_1), _xmt_interp_val_TU_8.a_1), apply("+", apply("queen", _xmt_interp_val_TU_11.a_1), _xmt_interp_val_TU_11.a_1)))) AS G
+       or_(not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("+", apply("queen", _xmt_interp_val_TU_8.a_1), _xmt_interp_val_TU_8.a_1), apply("+", apply("queen", _xmt_interp_val_TU_11.a_1), _xmt_interp_val_TU_11.a_1)))) AS G
   FROM _xmt_interp_val_TU AS _xmt_interp_val_TU_8
   JOIN _xmt_interp_val_TU AS _xmt_interp_val_TU_11
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT "v1" AS v1,
        "v2" AS v2,
-       apply("or", apply("not", apply("Val", "v1")), apply("not", apply("Val", "v2")), apply("not", apply("<", "v1", "v2")), apply("not", apply("=", apply("+", apply("queen", "v1"), "v1"), apply("+", apply("queen", "v2"), "v2")))) AS G
+       or_(apply("not", apply("Val", "v1")), apply("not", apply("Val", "v2")), apply("not", apply("<", "v1", "v2")), apply("not", apply("=", apply("+", apply("queen", "v1"), "v1"), apply("+", apply("queen", "v2"), "v2")))) AS G
 
 === (top) (forall ((v1 Int) (v2 Int)) (or (not (Val v1)) (not (Val v2)) (not (< v1 v2)) (not (= (+ (queen v1) v1) (+ (queen v2) v2))))) ======================================
 ----- TU -----------------------------------------------------------
@@ -464,7 +446,7 @@ SELECT and_aggregate(G) as G
        -- Join(7)
        SELECT _xmt_interp_val_TU_8.a_1 AS v1,
               _xmt_interp_val_TU_11.a_1 AS v2,
-              apply("or", not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("+", apply("queen", _xmt_interp_val_TU_8.a_1), _xmt_interp_val_TU_8.a_1), apply("+", apply("queen", _xmt_interp_val_TU_11.a_1), _xmt_interp_val_TU_11.a_1)))) AS G
+              or_(not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("+", apply("queen", _xmt_interp_val_TU_8.a_1), _xmt_interp_val_TU_8.a_1), apply("+", apply("queen", _xmt_interp_val_TU_11.a_1), _xmt_interp_val_TU_11.a_1)))) AS G
          FROM _xmt_interp_val_TU AS _xmt_interp_val_TU_8
          JOIN _xmt_interp_val_TU AS _xmt_interp_val_TU_11)
 ----- UF -----------------------------------------------------------
@@ -473,7 +455,7 @@ SELECT G as G
  FROM (-- Join(7)
        SELECT _xmt_interp_val_TU_8.a_1 AS v1,
               _xmt_interp_val_TU_11.a_1 AS v2,
-              apply("or", not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("+", apply("queen", _xmt_interp_val_TU_8.a_1), _xmt_interp_val_TU_8.a_1), apply("+", apply("queen", _xmt_interp_val_TU_11.a_1), _xmt_interp_val_TU_11.a_1)))) AS G
+              or_(not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("+", apply("queen", _xmt_interp_val_TU_8.a_1), _xmt_interp_val_TU_8.a_1), apply("+", apply("queen", _xmt_interp_val_TU_11.a_1), _xmt_interp_val_TU_11.a_1)))) AS G
          FROM _xmt_interp_val_TU AS _xmt_interp_val_TU_8
          JOIN _xmt_interp_val_TU AS _xmt_interp_val_TU_11)
 ----- G ------------------------------------------------------------
@@ -484,7 +466,7 @@ SELECT and_aggregate(G) as G
        -- Join(7)
        SELECT _xmt_interp_val_TU_8.a_1 AS v1,
               _xmt_interp_val_TU_11.a_1 AS v2,
-              apply("or", not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("+", apply("queen", _xmt_interp_val_TU_8.a_1), _xmt_interp_val_TU_8.a_1), apply("+", apply("queen", _xmt_interp_val_TU_11.a_1), _xmt_interp_val_TU_11.a_1)))) AS G
+              or_(not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("+", apply("queen", _xmt_interp_val_TU_8.a_1), _xmt_interp_val_TU_8.a_1), apply("+", apply("queen", _xmt_interp_val_TU_11.a_1), _xmt_interp_val_TU_11.a_1)))) AS G
          FROM _xmt_interp_val_TU AS _xmt_interp_val_TU_8
          JOIN _xmt_interp_val_TU AS _xmt_interp_val_TU_11)
 
@@ -559,14 +541,14 @@ SELECT v1, v2,
 -- Join(0)
 SELECT _xmt_interp_val_TU_8.a_1 AS v1,
        _xmt_interp_val_TU_11.a_1 AS v2,
-       apply("or", not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("-", apply("queen", _xmt_interp_val_TU_8.a_1), _xmt_interp_val_TU_8.a_1), apply("-", apply("queen", _xmt_interp_val_TU_11.a_1), _xmt_interp_val_TU_11.a_1)))) AS G
+       or_(not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("-", apply("queen", _xmt_interp_val_TU_8.a_1), _xmt_interp_val_TU_8.a_1), apply("-", apply("queen", _xmt_interp_val_TU_11.a_1), _xmt_interp_val_TU_11.a_1)))) AS G
   FROM _xmt_interp_val_TU AS _xmt_interp_val_TU_8
   JOIN _xmt_interp_val_TU AS _xmt_interp_val_TU_11
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT "v1" AS v1,
        "v2" AS v2,
-       apply("or", apply("not", apply("Val", "v1")), apply("not", apply("Val", "v2")), apply("not", apply("<", "v1", "v2")), apply("not", apply("=", apply("-", apply("queen", "v1"), "v1"), apply("-", apply("queen", "v2"), "v2")))) AS G
+       or_(apply("not", apply("Val", "v1")), apply("not", apply("Val", "v2")), apply("not", apply("<", "v1", "v2")), apply("not", apply("=", apply("-", apply("queen", "v1"), "v1"), apply("-", apply("queen", "v2"), "v2")))) AS G
 
 === (top) (forall ((v1 Int) (v2 Int)) (or (not (Val v1)) (not (Val v2)) (not (< v1 v2)) (not (= (- (queen v1) v1) (- (queen v2) v2))))) ======================================
 ----- TU -----------------------------------------------------------
@@ -577,7 +559,7 @@ SELECT and_aggregate(G) as G
        -- Join(7)
        SELECT _xmt_interp_val_TU_8.a_1 AS v1,
               _xmt_interp_val_TU_11.a_1 AS v2,
-              apply("or", not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("-", apply("queen", _xmt_interp_val_TU_8.a_1), _xmt_interp_val_TU_8.a_1), apply("-", apply("queen", _xmt_interp_val_TU_11.a_1), _xmt_interp_val_TU_11.a_1)))) AS G
+              or_(not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("-", apply("queen", _xmt_interp_val_TU_8.a_1), _xmt_interp_val_TU_8.a_1), apply("-", apply("queen", _xmt_interp_val_TU_11.a_1), _xmt_interp_val_TU_11.a_1)))) AS G
          FROM _xmt_interp_val_TU AS _xmt_interp_val_TU_8
          JOIN _xmt_interp_val_TU AS _xmt_interp_val_TU_11)
 ----- UF -----------------------------------------------------------
@@ -586,7 +568,7 @@ SELECT G as G
  FROM (-- Join(7)
        SELECT _xmt_interp_val_TU_8.a_1 AS v1,
               _xmt_interp_val_TU_11.a_1 AS v2,
-              apply("or", not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("-", apply("queen", _xmt_interp_val_TU_8.a_1), _xmt_interp_val_TU_8.a_1), apply("-", apply("queen", _xmt_interp_val_TU_11.a_1), _xmt_interp_val_TU_11.a_1)))) AS G
+              or_(not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("-", apply("queen", _xmt_interp_val_TU_8.a_1), _xmt_interp_val_TU_8.a_1), apply("-", apply("queen", _xmt_interp_val_TU_11.a_1), _xmt_interp_val_TU_11.a_1)))) AS G
          FROM _xmt_interp_val_TU AS _xmt_interp_val_TU_8
          JOIN _xmt_interp_val_TU AS _xmt_interp_val_TU_11)
 ----- G ------------------------------------------------------------
@@ -597,7 +579,7 @@ SELECT and_aggregate(G) as G
        -- Join(7)
        SELECT _xmt_interp_val_TU_8.a_1 AS v1,
               _xmt_interp_val_TU_11.a_1 AS v2,
-              apply("or", not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("-", apply("queen", _xmt_interp_val_TU_8.a_1), _xmt_interp_val_TU_8.a_1), apply("-", apply("queen", _xmt_interp_val_TU_11.a_1), _xmt_interp_val_TU_11.a_1)))) AS G
+              or_(not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("-", apply("queen", _xmt_interp_val_TU_8.a_1), _xmt_interp_val_TU_8.a_1), apply("-", apply("queen", _xmt_interp_val_TU_11.a_1), _xmt_interp_val_TU_11.a_1)))) AS G
          FROM _xmt_interp_val_TU AS _xmt_interp_val_TU_8
          JOIN _xmt_interp_val_TU AS _xmt_interp_val_TU_11)
 

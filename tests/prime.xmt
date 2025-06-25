@@ -186,13 +186,13 @@ SELECT y, x,
 -- Join(0)
 SELECT _xmt_interp_domain_TU_5.a_1 AS y,
        "x" AS x,
-       apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
+       or_(apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
   FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT "y" AS y,
        "x" AS x,
-       apply("or", apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G
+       or_(apply("not", apply("domain", "y")), apply("not", apply("<", "y", "x")), apply(">", apply("mod", "x", "y"), 0)) AS G
 
 ===  (forall ((y Int)) (or (not (domain y)) (not (< y x)) (> (mod x y) 0))) ======================================
 ----- TU -----------------------------------------------------------
@@ -202,7 +202,7 @@ SELECT x,
  FROM (-- Join(7)
        SELECT _xmt_interp_domain_TU_5.a_1 AS y,
               "x" AS x,
-              apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
+              or_(apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
          FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
  GROUP BY x
 ----- UF -----------------------------------------------------------
@@ -212,7 +212,7 @@ SELECT x,
  FROM (-- Join(7)
        SELECT _xmt_interp_domain_TU_5.a_1 AS y,
               "x" AS x,
-              apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
+              or_(apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
          FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
  GROUP BY x
 ----- G ------------------------------------------------------------
@@ -222,7 +222,7 @@ SELECT x,
  FROM (-- Join(7)
        SELECT _xmt_interp_domain_TU_5.a_1 AS y,
               "x" AS x,
-              apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
+              or_(apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
          FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
  GROUP BY x
 
@@ -237,7 +237,7 @@ SELECT Agg_13_G.x AS x,
          FROM (-- Join(15)
                SELECT _xmt_interp_domain_TU_5.a_1 AS y,
                       "x" AS x,
-                      apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
+                      or_(apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
                  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
          GROUP BY x
         ) AS Agg_13_G
@@ -255,7 +255,7 @@ SELECT Outer_0.x AS x,
          FROM (-- Join(15)
                SELECT _xmt_interp_domain_TU_5.a_1 AS y,
                       "x" AS x,
-                      apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
+                      or_(apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
                  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
          GROUP BY x
         ) AS Agg_13_UF ON  Agg_13_UF.x = Outer_0.x
@@ -269,7 +269,7 @@ SELECT Agg_13_G.x AS x,
          FROM (-- Join(15)
                SELECT _xmt_interp_domain_TU_5.a_1 AS y,
                       "x" AS x,
-                      apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
+                      or_(apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
                  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
          GROUP BY x
         ) AS Agg_13_G
@@ -292,7 +292,7 @@ SELECT x,
                 FROM (-- Join(22)
                       SELECT _xmt_interp_domain_TU_5.a_1 AS y,
                              "x" AS x,
-                             apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
+                             or_(apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
                         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
                 GROUP BY x
                ) AS Agg_13_G)
@@ -326,14 +326,14 @@ SELECT _xmt_interp_domain_TU_1.a_1 AS x,
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT Agg_13_G.x AS x,
-       apply("or", apply("not", apply("domain", Agg_13_G.x)), apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G)) AS G
+       or_(apply("not", apply("domain", Agg_13_G.x)), apply("=", apply("prime", Agg_13_G.x), Agg_13_G.G)) AS G
   FROM (-- Agg (8)
         SELECT x,
                and_aggregate(G) as G
          FROM (-- Join(15)
                SELECT _xmt_interp_domain_TU_5.a_1 AS y,
                       "x" AS x,
-                      apply("or", apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
+                      or_(apply("not", apply("<", _xmt_interp_domain_TU_5.a_1, "x")), apply(">", apply("mod", "x", _xmt_interp_domain_TU_5.a_1), 0)) AS G
                  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5)
          GROUP BY x
         ) AS Agg_13_G

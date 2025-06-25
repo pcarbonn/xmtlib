@@ -178,7 +178,7 @@ SELECT _xmt_sort_node_4.G AS Z,
 SELECT _xmt_interp_edge_TU_5.a_1 AS X,
        _xmt_interp_edge_TU_5.a_2 AS Z,
        _xmt_sort_node_1.G AS Y,
-       apply("and", apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
+       and_(apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
   FROM _xmt_sort_node AS _xmt_sort_node_1
   JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5
 ----- F ------------------------------------------------------------
@@ -229,7 +229,7 @@ SELECT X, Z, Y,
 SELECT _xmt_interp_edge_G_5.a_1 AS X,
        _xmt_interp_edge_G_5.a_2 AS Z,
        _xmt_sort_node_1.G AS Y,
-       apply("and", _xmt_interp_edge_G_5.G, apply("reaches", _xmt_interp_edge_G_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_G_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_G_5.a_1, _xmt_sort_node_1.G))) AS G
+       and_(_xmt_interp_edge_G_5.G, apply("reaches", _xmt_interp_edge_G_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_G_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_G_5.a_1, _xmt_sort_node_1.G))) AS G
   FROM _xmt_sort_node AS _xmt_sort_node_1
   JOIN _xmt_interp_edge_G AS _xmt_interp_edge_G_5
 
@@ -242,7 +242,7 @@ SELECT X, Y,
        SELECT _xmt_interp_edge_TU_5.a_1 AS X,
               _xmt_interp_edge_TU_5.a_2 AS Z,
               _xmt_sort_node_1.G AS Y,
-              apply("and", apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
+              and_(apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
          FROM _xmt_sort_node AS _xmt_sort_node_1
          JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5)
  GROUP BY X, Y
@@ -256,7 +256,7 @@ SELECT X, Y,
        SELECT _xmt_interp_edge_TU_5.a_1 AS X,
               _xmt_interp_edge_TU_5.a_2 AS Z,
               _xmt_sort_node_1.G AS Y,
-              apply("and", apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
+              and_(apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
          FROM _xmt_sort_node AS _xmt_sort_node_1
          JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5)
  GROUP BY X, Y
@@ -270,7 +270,7 @@ SELECT X, Y,
        SELECT _xmt_interp_edge_TU_5.a_1 AS X,
               _xmt_interp_edge_TU_5.a_2 AS Z,
               _xmt_sort_node_1.G AS Y,
-              apply("and", apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
+              and_(apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
          FROM _xmt_sort_node AS _xmt_sort_node_1
          JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5)
  GROUP BY X, Y
@@ -293,7 +293,7 @@ SELECT X, Y,
               SELECT _xmt_interp_edge_TU_5.a_1 AS X,
                      _xmt_interp_edge_TU_5.a_2 AS Z,
                      _xmt_sort_node_1.G AS Y,
-                     apply("and", apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
+                     and_(apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
                 FROM _xmt_sort_node AS _xmt_sort_node_1
                 JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5)
         GROUP BY X, Y)
@@ -312,7 +312,7 @@ SELECT _xmt_interp_edge_UF_3.a_1 AS X,
                SELECT _xmt_interp_edge_TU_5.a_1 AS X,
                       _xmt_interp_edge_TU_5.a_2 AS Z,
                       _xmt_sort_node_1.G AS Y,
-                      apply("and", apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
+                      and_(apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
                  FROM _xmt_sort_node AS _xmt_sort_node_1
                  JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5)
          GROUP BY X, Y
@@ -334,7 +334,7 @@ SELECT _xmt_interp_edge_G_3.a_1 AS X,
                SELECT _xmt_interp_edge_TU_5.a_1 AS X,
                       _xmt_interp_edge_TU_5.a_2 AS Z,
                       _xmt_sort_node_1.G AS Y,
-                      apply("and", apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
+                      and_(apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
                  FROM _xmt_sort_node AS _xmt_sort_node_1
                  JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5)
          GROUP BY X, Y
@@ -358,7 +358,7 @@ SELECT _xmt_interp_edge_G_3.a_1 AS X,
                SELECT _xmt_interp_edge_TU_5.a_1 AS X,
                       _xmt_interp_edge_TU_5.a_2 AS Z,
                       _xmt_sort_node_1.G AS Y,
-                      apply("and", apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
+                      and_(apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
                  FROM _xmt_sort_node AS _xmt_sort_node_1
                  JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5)
          GROUP BY X, Y
@@ -391,7 +391,7 @@ SELECT _xmt_view_reaches_2_4.X AS X,
                        SELECT _xmt_interp_edge_TU_5.a_1 AS X,
                               _xmt_interp_edge_TU_5.a_2 AS Z,
                               _xmt_sort_node_1.G AS Y,
-                              apply("and", apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
+                              and_(apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
                          FROM _xmt_sort_node AS _xmt_sort_node_1
                          JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5)
                  GROUP BY X, Y
@@ -415,7 +415,7 @@ SELECT _xmt_interp_edge_G_3.a_1 AS X,
                SELECT _xmt_interp_edge_TU_5.a_1 AS X,
                       _xmt_interp_edge_TU_5.a_2 AS Z,
                       _xmt_sort_node_1.G AS Y,
-                      apply("and", apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
+                      and_(apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
                  FROM _xmt_sort_node AS _xmt_sort_node_1
                  JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5)
          GROUP BY X, Y
@@ -454,7 +454,7 @@ SELECT and_aggregate(G) as G
                               SELECT _xmt_interp_edge_TU_5.a_1 AS X,
                                      _xmt_interp_edge_TU_5.a_2 AS Z,
                                      _xmt_sort_node_1.G AS Y,
-                                     apply("and", apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
+                                     and_(apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
                                 FROM _xmt_sort_node AS _xmt_sort_node_1
                                 JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5)
                         GROUP BY X, Y
@@ -491,7 +491,7 @@ SELECT G as G
                               SELECT _xmt_interp_edge_TU_5.a_1 AS X,
                                      _xmt_interp_edge_TU_5.a_2 AS Z,
                                      _xmt_sort_node_1.G AS Y,
-                                     apply("and", apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
+                                     and_(apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
                                 FROM _xmt_sort_node AS _xmt_sort_node_1
                                 JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5)
                         GROUP BY X, Y
@@ -530,7 +530,7 @@ SELECT and_aggregate(G) as G
                               SELECT _xmt_interp_edge_TU_5.a_1 AS X,
                                      _xmt_interp_edge_TU_5.a_2 AS Z,
                                      _xmt_sort_node_1.G AS Y,
-                                     apply("and", apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
+                                     and_(apply("reaches", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("<", apply("level", _xmt_interp_edge_TU_5.a_2, _xmt_sort_node_1.G), apply("level", _xmt_interp_edge_TU_5.a_1, _xmt_sort_node_1.G))) AS G
                                 FROM _xmt_sort_node AS _xmt_sort_node_1
                                 JOIN _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5)
                         GROUP BY X, Y

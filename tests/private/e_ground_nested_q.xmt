@@ -145,7 +145,7 @@ SELECT _xmt_interp_domain_TU_1.a_1 AS x,
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT Agg_5_G.x AS x,
-       apply("or", apply("not", apply("domain", Agg_5_G.x)), Agg_5_G.G) AS G
+       or_(apply("not", apply("domain", Agg_5_G.x)), Agg_5_G.G) AS G
   FROM (-- Agg (8)
         SELECT x,
                "(exists ((y Int)) " || or_aggregate(G) || ")" as G
@@ -292,7 +292,7 @@ SELECT _xmt_interp_domain2_TU_8.a_1 AS x,
 -- Join(0)
 SELECT Agg_5_G.x AS x,
        "y" AS y,
-       apply("or", apply("not", apply("domain2", Agg_5_G.x, "y")), Agg_5_G.G) AS G
+       or_(apply("not", apply("domain2", Agg_5_G.x, "y")), Agg_5_G.G) AS G
   FROM (-- Agg (8)
         SELECT x,
                "(exists ((y Int)) " || or_aggregate(G) || ")" as G

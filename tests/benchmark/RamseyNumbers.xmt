@@ -43,70 +43,6 @@
 (assert (or (not (red 1 2)) (not (blue 1 2))))
 (assert (or (not (red 2 1)) (not (blue 2 1))))
 (assert (or (not (red 2 2)) (not (blue 2 2))))
-(assert (or true (not (red 1 1)) (not (red 1 1)) (not (red 1 1)) (not (red 1 1)) (not (red 1 1)) (not (red 1 1)) (not (red 1 1)) (not (red 1 1)) (not (red 1 1)) (not (red 1 1))))
-(assert (or true (not (red 1 1)) (not (red 1 1)) (not (red 1 1)) (not (red 1 2)) (not (red 1 1)) (not (red 1 1)) (not (red 1 2)) (not (red 1 1)) (not (red 1 2)) (not (red 1 2))))
-(assert (or true (not (red 1 1)) (not (red 1 1)) (not (red 1 2)) (not (red 2 1)) (not (red 1 1)) (not (red 1 2)) (not (red 1 1)) (not (red 1 2)) (not (red 1 1)) (not (red 1 1))))
-(assert (or true (not (red 1 1)) (not (red 1 1)) (not (red 1 2)) (not (red 2 2)) (not (red 1 1)) (not (red 1 2)) (not (red 1 2)) (not (red 1 2)) (not (red 1 2)) (not (red 1 2))))
-(assert (or true (not (red 1 1)) (not (red 1 2)) (not (red 2 1)) (not (red 1 1)) (not (red 1 2)) (not (red 1 1)) (not (red 1 1)) (not (red 1 1)) (not (red 1 1)) (not (red 2 1))))
-(assert (or true (not (red 1 1)) (not (red 1 2)) (not (red 2 1)) (not (red 1 2)) (not (red 1 2)) (not (red 1 1)) (not (red 1 2)) (not (red 1 1)) (not (red 1 2)) (not (red 2 2))))
-(assert (or true (not (red 1 1)) (not (red 1 2)) (not (red 2 2)) (not (red 2 1)) (not (red 1 2)) (not (red 1 2)) (not (red 1 1)) (not (red 1 2)) (not (red 1 1)) (not (red 2 1))))
-(assert (or true (not (red 1 1)) (not (red 1 2)) (not (red 2 2)) (not (red 2 2)) (not (red 1 2)) (not (red 1 2)) (not (red 1 2)) (not (red 1 2)) (not (red 1 2)) (not (red 2 2))))
-(assert (or true (not (red 2 1)) (not (red 1 1)) (not (red 1 1)) (not (red 1 1)) (not (red 2 1)) (not (red 2 1)) (not (red 2 1)) (not (red 1 1)) (not (red 1 1)) (not (red 1 1))))
-(assert (or true (not (red 2 1)) (not (red 1 1)) (not (red 1 1)) (not (red 1 2)) (not (red 2 1)) (not (red 2 1)) (not (red 2 2)) (not (red 1 1)) (not (red 1 2)) (not (red 1 2))))
-(assert (or true (not (red 2 1)) (not (red 1 1)) (not (red 1 2)) (not (red 2 1)) (not (red 2 1)) (not (red 2 2)) (not (red 2 1)) (not (red 1 2)) (not (red 1 1)) (not (red 1 1))))
-(assert (or true (not (red 2 1)) (not (red 1 1)) (not (red 1 2)) (not (red 2 2)) (not (red 2 1)) (not (red 2 2)) (not (red 2 2)) (not (red 1 2)) (not (red 1 2)) (not (red 1 2))))
-(assert (or true (not (red 2 1)) (not (red 1 2)) (not (red 2 1)) (not (red 1 1)) (not (red 2 2)) (not (red 2 1)) (not (red 2 1)) (not (red 1 1)) (not (red 1 1)) (not (red 2 1))))
-(assert (or true (not (red 2 1)) (not (red 1 2)) (not (red 2 1)) (not (red 1 2)) (not (red 2 2)) (not (red 2 1)) (not (red 2 2)) (not (red 1 1)) (not (red 1 2)) (not (red 2 2))))
-(assert (or true (not (red 2 1)) (not (red 1 2)) (not (red 2 2)) (not (red 2 1)) (not (red 2 2)) (not (red 2 2)) (not (red 2 1)) (not (red 1 2)) (not (red 1 1)) (not (red 2 1))))
-(assert (or true (not (red 2 1)) (not (red 1 2)) (not (red 2 2)) (not (red 2 2)) (not (red 2 2)) (not (red 2 2)) (not (red 2 2)) (not (red 1 2)) (not (red 1 2)) (not (red 2 2))))
-(assert (or true (not (red 1 2)) (not (red 2 1)) (not (red 1 1)) (not (red 1 1)) (not (red 1 1)) (not (red 1 1)) (not (red 1 1)) (not (red 2 1)) (not (red 2 1)) (not (red 1 1))))
-(assert (or true (not (red 1 2)) (not (red 2 1)) (not (red 1 1)) (not (red 1 2)) (not (red 1 1)) (not (red 1 1)) (not (red 1 2)) (not (red 2 1)) (not (red 2 2)) (not (red 1 2))))
-(assert (or true (not (red 1 2)) (not (red 2 1)) (not (red 1 2)) (not (red 2 1)) (not (red 1 1)) (not (red 1 2)) (not (red 1 1)) (not (red 2 2)) (not (red 2 1)) (not (red 1 1))))
-(assert (or true (not (red 1 2)) (not (red 2 1)) (not (red 1 2)) (not (red 2 2)) (not (red 1 1)) (not (red 1 2)) (not (red 1 2)) (not (red 2 2)) (not (red 2 2)) (not (red 1 2))))
-(assert (or true (not (red 1 2)) (not (red 2 2)) (not (red 2 1)) (not (red 1 1)) (not (red 1 2)) (not (red 1 1)) (not (red 1 1)) (not (red 2 1)) (not (red 2 1)) (not (red 2 1))))
-(assert (or true (not (red 1 2)) (not (red 2 2)) (not (red 2 1)) (not (red 1 2)) (not (red 1 2)) (not (red 1 1)) (not (red 1 2)) (not (red 2 1)) (not (red 2 2)) (not (red 2 2))))
-(assert (or true (not (red 1 2)) (not (red 2 2)) (not (red 2 2)) (not (red 2 1)) (not (red 1 2)) (not (red 1 2)) (not (red 1 1)) (not (red 2 2)) (not (red 2 1)) (not (red 2 1))))
-(assert (or true (not (red 1 2)) (not (red 2 2)) (not (red 2 2)) (not (red 2 2)) (not (red 1 2)) (not (red 1 2)) (not (red 1 2)) (not (red 2 2)) (not (red 2 2)) (not (red 2 2))))
-(assert (or true (not (red 2 2)) (not (red 2 1)) (not (red 1 1)) (not (red 1 1)) (not (red 2 1)) (not (red 2 1)) (not (red 2 1)) (not (red 2 1)) (not (red 2 1)) (not (red 1 1))))
-(assert (or true (not (red 2 2)) (not (red 2 1)) (not (red 1 1)) (not (red 1 2)) (not (red 2 1)) (not (red 2 1)) (not (red 2 2)) (not (red 2 1)) (not (red 2 2)) (not (red 1 2))))
-(assert (or true (not (red 2 2)) (not (red 2 1)) (not (red 1 2)) (not (red 2 1)) (not (red 2 1)) (not (red 2 2)) (not (red 2 1)) (not (red 2 2)) (not (red 2 1)) (not (red 1 1))))
-(assert (or true (not (red 2 2)) (not (red 2 1)) (not (red 1 2)) (not (red 2 2)) (not (red 2 1)) (not (red 2 2)) (not (red 2 2)) (not (red 2 2)) (not (red 2 2)) (not (red 1 2))))
-(assert (or true (not (red 2 2)) (not (red 2 2)) (not (red 2 1)) (not (red 1 1)) (not (red 2 2)) (not (red 2 1)) (not (red 2 1)) (not (red 2 1)) (not (red 2 1)) (not (red 2 1))))
-(assert (or true (not (red 2 2)) (not (red 2 2)) (not (red 2 1)) (not (red 1 2)) (not (red 2 2)) (not (red 2 1)) (not (red 2 2)) (not (red 2 1)) (not (red 2 2)) (not (red 2 2))))
-(assert (or true (not (red 2 2)) (not (red 2 2)) (not (red 2 2)) (not (red 2 1)) (not (red 2 2)) (not (red 2 2)) (not (red 2 1)) (not (red 2 2)) (not (red 2 1)) (not (red 2 1))))
-(assert (or true (not (red 2 2)) (not (red 2 2)) (not (red 2 2)) (not (red 2 2)) (not (red 2 2)) (not (red 2 2)) (not (red 2 2)) (not (red 2 2)) (not (red 2 2)) (not (red 2 2))))
-(assert (or true (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 1))))
-(assert (or true (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 1 2))))
-(assert (or true (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 2 1)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 1 1)) (not (blue 1 1))))
-(assert (or true (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 2 2)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 1 2)) (not (blue 1 2)) (not (blue 1 2)) (not (blue 1 2))))
-(assert (or true (not (blue 1 1)) (not (blue 1 2)) (not (blue 2 1)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 2 1))))
-(assert (or true (not (blue 1 1)) (not (blue 1 2)) (not (blue 2 1)) (not (blue 1 2)) (not (blue 1 2)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 2 2))))
-(assert (or true (not (blue 1 1)) (not (blue 1 2)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 1 2)) (not (blue 1 2)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 1 1)) (not (blue 2 1))))
-(assert (or true (not (blue 1 1)) (not (blue 1 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 1 2)) (not (blue 1 2)) (not (blue 1 2)) (not (blue 1 2)) (not (blue 1 2)) (not (blue 2 2))))
-(assert (or true (not (blue 2 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 2 1)) (not (blue 2 1)) (not (blue 2 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 1))))
-(assert (or true (not (blue 2 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 2 1)) (not (blue 2 1)) (not (blue 2 2)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 1 2))))
-(assert (or true (not (blue 2 1)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 2 1)) (not (blue 2 1)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 1 2)) (not (blue 1 1)) (not (blue 1 1))))
-(assert (or true (not (blue 2 1)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 1 2)) (not (blue 1 2)) (not (blue 1 2))))
-(assert (or true (not (blue 2 1)) (not (blue 1 2)) (not (blue 2 1)) (not (blue 1 1)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 2 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 2 1))))
-(assert (or true (not (blue 2 1)) (not (blue 1 2)) (not (blue 2 1)) (not (blue 1 2)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 2 2)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 2 2))))
-(assert (or true (not (blue 2 1)) (not (blue 1 2)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 1 2)) (not (blue 1 1)) (not (blue 2 1))))
-(assert (or true (not (blue 2 1)) (not (blue 1 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 1 2)) (not (blue 1 2)) (not (blue 2 2))))
-(assert (or true (not (blue 1 2)) (not (blue 2 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 2 1)) (not (blue 2 1)) (not (blue 1 1))))
-(assert (or true (not (blue 1 2)) (not (blue 2 1)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 2 1)) (not (blue 2 2)) (not (blue 1 2))))
-(assert (or true (not (blue 1 2)) (not (blue 2 1)) (not (blue 1 2)) (not (blue 2 1)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 1 1)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 1 1))))
-(assert (or true (not (blue 1 2)) (not (blue 2 1)) (not (blue 1 2)) (not (blue 2 2)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 1 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 1 2))))
-(assert (or true (not (blue 1 2)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 2 1)) (not (blue 2 1)) (not (blue 2 1))))
-(assert (or true (not (blue 1 2)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 1 2)) (not (blue 1 2)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 2 1)) (not (blue 2 2)) (not (blue 2 2))))
-(assert (or true (not (blue 1 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 1 2)) (not (blue 1 2)) (not (blue 1 1)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 2 1))))
-(assert (or true (not (blue 1 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 1 2)) (not (blue 1 2)) (not (blue 1 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 2))))
-(assert (or true (not (blue 2 2)) (not (blue 2 1)) (not (blue 1 1)) (not (blue 1 1)) (not (blue 2 1)) (not (blue 2 1)) (not (blue 2 1)) (not (blue 2 1)) (not (blue 2 1)) (not (blue 1 1))))
-(assert (or true (not (blue 2 2)) (not (blue 2 1)) (not (blue 1 1)) (not (blue 1 2)) (not (blue 2 1)) (not (blue 2 1)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 2 2)) (not (blue 1 2))))
-(assert (or true (not (blue 2 2)) (not (blue 2 1)) (not (blue 1 2)) (not (blue 2 1)) (not (blue 2 1)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 1 1))))
-(assert (or true (not (blue 2 2)) (not (blue 2 1)) (not (blue 1 2)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 1 2))))
-(assert (or true (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 1 1)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 2 1)) (not (blue 2 1)) (not (blue 2 1)) (not (blue 2 1))))
-(assert (or true (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 1 2)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 2 2)) (not (blue 2 2))))
-(assert (or true (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 2 2)) (not (blue 2 1)) (not (blue 2 1))))
-(assert (or true (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 2)) (not (blue 2 2))))
 Groundings:
 ===  x ======================================
  -- Join(0)
@@ -246,19 +182,19 @@ SELECT x, y,
 -- Join(0)
 SELECT "x" AS x,
        "y" AS y,
-       apply("or", apply("red", "x", "y"), apply("blue", "x", "y")) AS G
+       or_(apply("red", "x", "y"), apply("blue", "x", "y")) AS G
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT "x" AS x,
        "y" AS y,
-       apply("or", apply("red", "x", "y"), apply("blue", "x", "y")) AS G
+       or_(apply("red", "x", "y"), apply("blue", "x", "y")) AS G
 
 ===  (= (< x y) (or (red x y) (blue x y))) ======================================
 ----- TU -----------------------------------------------------------
 -- Join(0)
 SELECT "x" AS x,
        "y" AS y,
-       apply("=", apply("<", "x", "y"), apply("or", apply("red", "x", "y"), apply("blue", "x", "y"))) AS G
+       apply("=", apply("<", "x", "y"), or_(apply("red", "x", "y"), apply("blue", "x", "y"))) AS G
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT Outer_0.x AS x,
@@ -272,14 +208,14 @@ SELECT Outer_0.x AS x,
   FULL JOIN (-- Join(8)
         SELECT "x" AS x,
                "y" AS y,
-               apply("or", apply("red", "x", "y"), apply("blue", "x", "y")) AS G
+               or_(apply("red", "x", "y"), apply("blue", "x", "y")) AS G
         ) AS Outer_1 ON  Outer_1.x = Outer_0.x 
         AND  Outer_1.y = Outer_0.y
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT "x" AS x,
        "y" AS y,
-       apply("=", apply("<", "x", "y"), apply("or", apply("red", "x", "y"), apply("blue", "x", "y"))) AS G
+       apply("=", apply("<", "x", "y"), or_(apply("red", "x", "y"), apply("blue", "x", "y"))) AS G
 
 ===  (or (not (Node x)) (not (Node y)) (= (< x y) (or (red x y) (blue x y)))) ======================================
 ----- TU -----------------------------------------------------------
@@ -299,7 +235,7 @@ SELECT x, y,
        -- Join(7)
        SELECT "x" AS x,
               "y" AS y,
-              apply("=", apply("<", "x", "y"), apply("or", apply("red", "x", "y"), apply("blue", "x", "y"))) AS G)
+              apply("=", apply("<", "x", "y"), or_(apply("red", "x", "y"), apply("blue", "x", "y"))) AS G)
  GROUP BY x, y
 ----- UF -----------------------------------------------------------
 -- Join(0)
@@ -320,7 +256,7 @@ SELECT _xmt_interp_node_TU_1.a_1 AS x,
           FULL JOIN (-- Join(16)
                 SELECT _xmt_interp_node_TU_1.a_1 AS x,
                        _xmt_interp_node_TU_4.a_1 AS y,
-                       apply("or", apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1), apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)) AS G
+                       or_(apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1), apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)) AS G
                   FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
                   JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
                 ) AS Outer_1 ON  Outer_1.x = Outer_0.x 
@@ -334,7 +270,7 @@ SELECT _xmt_interp_node_TU_1.a_1 AS x,
 -- Join(0)
 SELECT "x" AS x,
        "y" AS y,
-       apply("or", apply("not", apply("Node", "x")), apply("not", apply("Node", "y")), apply("=", apply("<", "x", "y"), apply("or", apply("red", "x", "y"), apply("blue", "x", "y")))) AS G
+       or_(apply("not", apply("Node", "x")), apply("not", apply("Node", "y")), apply("=", apply("<", "x", "y"), or_(apply("red", "x", "y"), apply("blue", "x", "y")))) AS G
 
 === (top) (forall ((x Int) (y Int)) (or (not (Node x)) (not (Node y)) (= (< x y) (or (red x y) (blue x y))))) ======================================
 ----- TU -----------------------------------------------------------
@@ -360,7 +296,7 @@ SELECT and_aggregate(G) as G
                  FULL JOIN (-- Join(23)
                        SELECT _xmt_interp_node_TU_1.a_1 AS x,
                               _xmt_interp_node_TU_4.a_1 AS y,
-                              apply("or", apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1), apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)) AS G
+                              or_(apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1), apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)) AS G
                          FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
                          JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
                        ) AS Outer_1 ON  Outer_1.x = Outer_0.x 
@@ -391,7 +327,7 @@ SELECT G as G
                  FULL JOIN (-- Join(23)
                        SELECT _xmt_interp_node_TU_1.a_1 AS x,
                               _xmt_interp_node_TU_4.a_1 AS y,
-                              apply("or", apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1), apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)) AS G
+                              or_(apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1), apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)) AS G
                          FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
                          JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
                        ) AS Outer_1 ON  Outer_1.x = Outer_0.x 
@@ -424,7 +360,7 @@ SELECT and_aggregate(G) as G
                  FULL JOIN (-- Join(23)
                        SELECT _xmt_interp_node_TU_1.a_1 AS x,
                               _xmt_interp_node_TU_4.a_1 AS y,
-                              apply("or", apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1), apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)) AS G
+                              or_(apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1), apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)) AS G
                          FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
                          JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
                        ) AS Outer_1 ON  Outer_1.x = Outer_0.x 
@@ -498,14 +434,14 @@ SELECT x, y,
 -- Join(0)
 SELECT _xmt_interp_node_TU_1.a_1 AS x,
        _xmt_interp_node_TU_4.a_1 AS y,
-       apply("or", apply("not", apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1))) AS G
+       or_(apply("not", apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1))) AS G
   FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
   JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT "x" AS x,
        "y" AS y,
-       apply("or", apply("not", apply("Node", "x")), apply("not", apply("Node", "y")), apply("not", apply("red", "x", "y")), apply("not", apply("blue", "x", "y"))) AS G
+       or_(apply("not", apply("Node", "x")), apply("not", apply("Node", "y")), apply("not", apply("red", "x", "y")), apply("not", apply("blue", "x", "y"))) AS G
 
 === (top) (forall ((x Int) (y Int)) (or (not (Node x)) (not (Node y)) (not (red x y)) (not (blue x y)))) ======================================
 ----- TU -----------------------------------------------------------
@@ -516,7 +452,7 @@ SELECT and_aggregate(G) as G
        -- Join(7)
        SELECT _xmt_interp_node_TU_1.a_1 AS x,
               _xmt_interp_node_TU_4.a_1 AS y,
-              apply("or", apply("not", apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1))) AS G
+              or_(apply("not", apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1))) AS G
          FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
          JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4)
 ----- UF -----------------------------------------------------------
@@ -525,7 +461,7 @@ SELECT G as G
  FROM (-- Join(7)
        SELECT _xmt_interp_node_TU_1.a_1 AS x,
               _xmt_interp_node_TU_4.a_1 AS y,
-              apply("or", apply("not", apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1))) AS G
+              or_(apply("not", apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1))) AS G
          FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
          JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4)
 ----- G ------------------------------------------------------------
@@ -536,7 +472,7 @@ SELECT and_aggregate(G) as G
        -- Join(7)
        SELECT _xmt_interp_node_TU_1.a_1 AS x,
               _xmt_interp_node_TU_4.a_1 AS y,
-              apply("or", apply("not", apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1))) AS G
+              or_(apply("not", apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1))) AS G
          FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
          JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4)
 
@@ -1242,7 +1178,7 @@ SELECT _xmt_interp_node_TU_18.a_1 AS X,
        _xmt_interp_node_TU_24.a_1 AS Y,
        _xmt_interp_node_TU_27.a_1 AS Z,
        _xmt_interp_node_TU_30.a_1 AS T,
-       apply("or", not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
+       or_(not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
   FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
   JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_21
   JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24
@@ -1255,7 +1191,7 @@ SELECT "X" AS X,
        "Y" AS Y,
        "Z" AS Z,
        "T" AS T,
-       apply("or", apply("not", apply("Node", "X")), apply("not", apply("Node", "W")), apply("not", apply("Node", "Y")), apply("not", apply("Node", "Z")), apply("not", apply("Node", "T")), apply("not", apply("<", "W", "X", "Y", "Z", "T")), apply("not", apply("red", "W", "X")), apply("not", apply("red", "X", "Y")), apply("not", apply("red", "Y", "Z")), apply("not", apply("red", "Z", "T")), apply("not", apply("red", "W", "Y")), apply("not", apply("red", "W", "Z")), apply("not", apply("red", "W", "T")), apply("not", apply("red", "X", "Z")), apply("not", apply("red", "X", "T")), apply("not", apply("red", "Y", "T"))) AS G
+       or_(apply("not", apply("Node", "X")), apply("not", apply("Node", "W")), apply("not", apply("Node", "Y")), apply("not", apply("Node", "Z")), apply("not", apply("Node", "T")), apply("not", apply("<", "W", "X", "Y", "Z", "T")), apply("not", apply("red", "W", "X")), apply("not", apply("red", "X", "Y")), apply("not", apply("red", "Y", "Z")), apply("not", apply("red", "Z", "T")), apply("not", apply("red", "W", "Y")), apply("not", apply("red", "W", "Z")), apply("not", apply("red", "W", "T")), apply("not", apply("red", "X", "Z")), apply("not", apply("red", "X", "T")), apply("not", apply("red", "Y", "T"))) AS G
 
 === (top) (forall ((X Int) (W Int) (Y Int) (Z Int) (T Int)) (or (not (Node X)) (not (Node W)) (not (Node Y)) (not (Node Z)) (not (Node T)) (not (< W X Y Z T)) (not (red W X)) (not (red X Y)) (not (red Y Z)) (not (red Z T)) (not (red W Y)) (not (red W Z)) (not (red W T)) (not (red X Z)) (not (red X T)) (not (red Y T)))) ======================================
 ----- TU -----------------------------------------------------------
@@ -1269,7 +1205,7 @@ SELECT and_aggregate(G) as G
               _xmt_interp_node_TU_24.a_1 AS Y,
               _xmt_interp_node_TU_27.a_1 AS Z,
               _xmt_interp_node_TU_30.a_1 AS T,
-              apply("or", not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
+              or_(not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
          FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
          JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_21
          JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24
@@ -1284,7 +1220,7 @@ SELECT G as G
               _xmt_interp_node_TU_24.a_1 AS Y,
               _xmt_interp_node_TU_27.a_1 AS Z,
               _xmt_interp_node_TU_30.a_1 AS T,
-              apply("or", not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
+              or_(not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
          FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
          JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_21
          JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24
@@ -1301,7 +1237,7 @@ SELECT and_aggregate(G) as G
               _xmt_interp_node_TU_24.a_1 AS Y,
               _xmt_interp_node_TU_27.a_1 AS Z,
               _xmt_interp_node_TU_30.a_1 AS T,
-              apply("or", not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
+              or_(not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
          FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
          JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_21
          JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24
@@ -1788,7 +1724,7 @@ SELECT _xmt_interp_node_TU_18.a_1 AS X,
        _xmt_interp_node_TU_24.a_1 AS Y,
        _xmt_interp_node_TU_27.a_1 AS Z,
        _xmt_interp_node_TU_30.a_1 AS T,
-       apply("or", not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
+       or_(not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
   FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
   JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_21
   JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24
@@ -1801,7 +1737,7 @@ SELECT "X" AS X,
        "Y" AS Y,
        "Z" AS Z,
        "T" AS T,
-       apply("or", apply("not", apply("Node", "X")), apply("not", apply("Node", "W")), apply("not", apply("Node", "Y")), apply("not", apply("Node", "Z")), apply("not", apply("Node", "T")), apply("not", apply("<", "W", "X", "Y", "Z", "T")), apply("not", apply("blue", "W", "X")), apply("not", apply("blue", "X", "Y")), apply("not", apply("blue", "Y", "Z")), apply("not", apply("blue", "Z", "T")), apply("not", apply("blue", "W", "Y")), apply("not", apply("blue", "W", "Z")), apply("not", apply("blue", "W", "T")), apply("not", apply("blue", "X", "Z")), apply("not", apply("blue", "X", "T")), apply("not", apply("blue", "Y", "T"))) AS G
+       or_(apply("not", apply("Node", "X")), apply("not", apply("Node", "W")), apply("not", apply("Node", "Y")), apply("not", apply("Node", "Z")), apply("not", apply("Node", "T")), apply("not", apply("<", "W", "X", "Y", "Z", "T")), apply("not", apply("blue", "W", "X")), apply("not", apply("blue", "X", "Y")), apply("not", apply("blue", "Y", "Z")), apply("not", apply("blue", "Z", "T")), apply("not", apply("blue", "W", "Y")), apply("not", apply("blue", "W", "Z")), apply("not", apply("blue", "W", "T")), apply("not", apply("blue", "X", "Z")), apply("not", apply("blue", "X", "T")), apply("not", apply("blue", "Y", "T"))) AS G
 
 === (top) (forall ((X Int) (W Int) (Y Int) (Z Int) (T Int)) (or (not (Node X)) (not (Node W)) (not (Node Y)) (not (Node Z)) (not (Node T)) (not (< W X Y Z T)) (not (blue W X)) (not (blue X Y)) (not (blue Y Z)) (not (blue Z T)) (not (blue W Y)) (not (blue W Z)) (not (blue W T)) (not (blue X Z)) (not (blue X T)) (not (blue Y T)))) ======================================
 ----- TU -----------------------------------------------------------
@@ -1815,7 +1751,7 @@ SELECT and_aggregate(G) as G
               _xmt_interp_node_TU_24.a_1 AS Y,
               _xmt_interp_node_TU_27.a_1 AS Z,
               _xmt_interp_node_TU_30.a_1 AS T,
-              apply("or", not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
+              or_(not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
          FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
          JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_21
          JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24
@@ -1830,7 +1766,7 @@ SELECT G as G
               _xmt_interp_node_TU_24.a_1 AS Y,
               _xmt_interp_node_TU_27.a_1 AS Z,
               _xmt_interp_node_TU_30.a_1 AS T,
-              apply("or", not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
+              or_(not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
          FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
          JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_21
          JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24
@@ -1847,7 +1783,7 @@ SELECT and_aggregate(G) as G
               _xmt_interp_node_TU_24.a_1 AS Y,
               _xmt_interp_node_TU_27.a_1 AS Z,
               _xmt_interp_node_TU_30.a_1 AS T,
-              apply("or", not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
+              or_(not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
          FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
          JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_21
          JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24

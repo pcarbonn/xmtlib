@@ -181,7 +181,7 @@ SELECT _xmt_interp_domain_TU_1.a_1 AS x,
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT "x" AS x,
-       apply("or", apply("not", apply("domain", "x")), apply("=", apply("P", "x"), apply("Q", "x"))) AS G
+       or_(apply("not", apply("domain", "x")), apply("=", apply("P", "x"), apply("Q", "x"))) AS G
 
 === (top) (forall ((x Int)) (or (not (domain x)) (= (P x) (Q x)))) ======================================
 ----- TU -----------------------------------------------------------

@@ -44,38 +44,14 @@
 (declare-fun assigned (Int) Bool)
 (assert (= (assigned 1) (or (assign 1 1 1) (assign 1 1 2) (assign 1 2 1) (assign 1 2 2))))
 (assert (= (assigned 2) (or (assign 2 1 1) (assign 2 1 2) (assign 2 2 1) (assign 2 2 2))))
-(assert (or (not (assign 1 1 1)) (not (assign 1 1 1)) true))
-(assert (or (not (assign 1 1 2)) (not (assign 1 1 2)) true))
-(assert (or (not (assign 1 1 1)) (not (assign 1 2 1)) false))
-(assert (or (not (assign 1 1 2)) (not (assign 1 2 2)) false))
-(assert (or (not (assign 1 2 1)) (not (assign 1 1 1)) true))
-(assert (or (not (assign 1 2 2)) (not (assign 1 1 2)) true))
-(assert (or (not (assign 1 2 1)) (not (assign 1 2 1)) true))
-(assert (or (not (assign 1 2 2)) (not (assign 1 2 2)) true))
-(assert (or (not (assign 2 1 1)) (not (assign 2 1 1)) true))
-(assert (or (not (assign 2 1 2)) (not (assign 2 1 2)) true))
-(assert (or (not (assign 2 1 1)) (not (assign 2 2 1)) false))
-(assert (or (not (assign 2 1 2)) (not (assign 2 2 2)) false))
-(assert (or (not (assign 2 2 1)) (not (assign 2 1 1)) true))
-(assert (or (not (assign 2 2 2)) (not (assign 2 1 2)) true))
-(assert (or (not (assign 2 2 1)) (not (assign 2 2 1)) true))
-(assert (or (not (assign 2 2 2)) (not (assign 2 2 2)) true))
-(assert (or (not (assign 1 1 1)) (not (assign 1 1 1)) true))
-(assert (or (not (assign 1 1 1)) (not (assign 1 1 2)) false))
-(assert (or (not (assign 1 1 2)) (not (assign 1 1 1)) true))
-(assert (or (not (assign 1 1 2)) (not (assign 1 1 2)) true))
-(assert (or (not (assign 1 2 1)) (not (assign 1 2 1)) true))
-(assert (or (not (assign 1 2 1)) (not (assign 1 2 2)) false))
-(assert (or (not (assign 1 2 2)) (not (assign 1 2 1)) true))
-(assert (or (not (assign 1 2 2)) (not (assign 1 2 2)) true))
-(assert (or (not (assign 2 1 1)) (not (assign 2 1 1)) true))
-(assert (or (not (assign 2 1 1)) (not (assign 2 1 2)) false))
-(assert (or (not (assign 2 1 2)) (not (assign 2 1 1)) true))
-(assert (or (not (assign 2 1 2)) (not (assign 2 1 2)) true))
-(assert (or (not (assign 2 2 1)) (not (assign 2 2 1)) true))
-(assert (or (not (assign 2 2 1)) (not (assign 2 2 2)) false))
-(assert (or (not (assign 2 2 2)) (not (assign 2 2 1)) true))
-(assert (or (not (assign 2 2 2)) (not (assign 2 2 2)) true))
+(assert (or (not (assign 1 1 1)) (not (assign 1 2 1))))
+(assert (or (not (assign 1 1 2)) (not (assign 1 2 2))))
+(assert (or (not (assign 2 1 1)) (not (assign 2 2 1))))
+(assert (or (not (assign 2 1 2)) (not (assign 2 2 2))))
+(assert (or (not (assign 1 1 1)) (not (assign 1 1 2))))
+(assert (or (not (assign 1 2 1)) (not (assign 1 2 2))))
+(assert (or (not (assign 2 1 1)) (not (assign 2 1 2))))
+(assert (or (not (assign 2 2 1)) (not (assign 2 2 2))))
 (assert (not (not (assign 1 1 1))))
 (assert (not (not (assigned 1))))
 (assert (not (not (assigned 2))))
@@ -222,7 +198,7 @@ SELECT x, y, V,
 SELECT "x" AS x,
        "y" AS y,
        "V" AS V,
-       apply("and", apply("Domain", "x"), apply("Domain", "y"), apply("assign", "V", "x", "y")) AS G
+       and_(apply("Domain", "x"), apply("Domain", "y"), apply("assign", "V", "x", "y")) AS G
 
 ===  (exists ((x Int) (y Int)) (and (Domain x) (Domain y) (assign V x y))) ======================================
 ----- TU -----------------------------------------------------------
@@ -372,7 +348,7 @@ SELECT _xmt_interp_domain_TU_1.a_1 AS V,
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT Agg_10_G.V AS V,
-       apply("or", apply("not", apply("Domain", Agg_10_G.V)), apply("=", apply("assigned", Agg_10_G.V), Agg_10_G.G)) AS G
+       or_(apply("not", apply("Domain", Agg_10_G.V)), apply("=", apply("assigned", Agg_10_G.V), Agg_10_G.G)) AS G
   FROM (-- Agg (8)
         SELECT V,
                or_aggregate(G) as G
@@ -739,7 +715,7 @@ SELECT _xmt_interp_domain_TU_1.a_1 AS V,
        _xmt_interp_domain_TU_15.a_1 AS x1,
        _xmt_interp_domain_TU_18.a_1 AS x2,
        _xmt_interp_domain_TU_7.a_1 AS y,
-       apply("or", apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_7.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_18.a_1, _xmt_interp_domain_TU_7.a_1)), not_(compare_("<", _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_18.a_1))) AS G
+       or_(apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_7.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_18.a_1, _xmt_interp_domain_TU_7.a_1)), not_(compare_("<", _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_18.a_1))) AS G
   FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
   JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_15
   JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_18
@@ -750,7 +726,7 @@ SELECT "V" AS V,
        "x1" AS x1,
        "x2" AS x2,
        "y" AS y,
-       apply("or", apply("not", apply("Domain", "V")), apply("not", apply("Domain", "x1")), apply("not", apply("Domain", "x2")), apply("not", apply("Domain", "y")), apply("not", apply("assign", "V", "x1", "y")), apply("not", apply("assign", "V", "x2", "y")), apply("not", apply("<", "x1", "x2"))) AS G
+       or_(apply("not", apply("Domain", "V")), apply("not", apply("Domain", "x1")), apply("not", apply("Domain", "x2")), apply("not", apply("Domain", "y")), apply("not", apply("assign", "V", "x1", "y")), apply("not", apply("assign", "V", "x2", "y")), apply("not", apply("<", "x1", "x2"))) AS G
 
 === (top) (forall ((V Int) (x1 Int) (x2 Int) (y Int)) (or (not (Domain V)) (not (Domain x1)) (not (Domain x2)) (not (Domain y)) (not (assign V x1 y)) (not (assign V x2 y)) (not (< x1 x2)))) ======================================
 ----- TU -----------------------------------------------------------
@@ -763,7 +739,7 @@ SELECT and_aggregate(G) as G
               _xmt_interp_domain_TU_15.a_1 AS x1,
               _xmt_interp_domain_TU_18.a_1 AS x2,
               _xmt_interp_domain_TU_7.a_1 AS y,
-              apply("or", apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_7.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_18.a_1, _xmt_interp_domain_TU_7.a_1)), not_(compare_("<", _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_18.a_1))) AS G
+              or_(apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_7.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_18.a_1, _xmt_interp_domain_TU_7.a_1)), not_(compare_("<", _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_18.a_1))) AS G
          FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
          JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_15
          JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_18
@@ -776,7 +752,7 @@ SELECT G as G
               _xmt_interp_domain_TU_15.a_1 AS x1,
               _xmt_interp_domain_TU_18.a_1 AS x2,
               _xmt_interp_domain_TU_7.a_1 AS y,
-              apply("or", apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_7.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_18.a_1, _xmt_interp_domain_TU_7.a_1)), not_(compare_("<", _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_18.a_1))) AS G
+              or_(apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_7.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_18.a_1, _xmt_interp_domain_TU_7.a_1)), not_(compare_("<", _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_18.a_1))) AS G
          FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
          JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_15
          JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_18
@@ -791,7 +767,7 @@ SELECT and_aggregate(G) as G
               _xmt_interp_domain_TU_15.a_1 AS x1,
               _xmt_interp_domain_TU_18.a_1 AS x2,
               _xmt_interp_domain_TU_7.a_1 AS y,
-              apply("or", apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_7.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_18.a_1, _xmt_interp_domain_TU_7.a_1)), not_(compare_("<", _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_18.a_1))) AS G
+              or_(apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_7.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_18.a_1, _xmt_interp_domain_TU_7.a_1)), not_(compare_("<", _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_18.a_1))) AS G
          FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
          JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_15
          JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_18
@@ -1054,7 +1030,7 @@ SELECT _xmt_interp_domain_TU_1.a_1 AS V,
        _xmt_interp_domain_TU_5.a_1 AS x,
        _xmt_interp_domain_TU_31.a_1 AS y1,
        _xmt_interp_domain_TU_34.a_1 AS y2,
-       apply("or", apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_31.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_34.a_1)), not_(compare_("<", _xmt_interp_domain_TU_31.a_1, _xmt_interp_domain_TU_34.a_1))) AS G
+       or_(apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_31.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_34.a_1)), not_(compare_("<", _xmt_interp_domain_TU_31.a_1, _xmt_interp_domain_TU_34.a_1))) AS G
   FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
   JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
   JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_31
@@ -1065,7 +1041,7 @@ SELECT "V" AS V,
        "x" AS x,
        "y1" AS y1,
        "y2" AS y2,
-       apply("or", apply("not", apply("Domain", "V")), apply("not", apply("Domain", "x")), apply("not", apply("Domain", "y1")), apply("not", apply("Domain", "y2")), apply("not", apply("assign", "V", "x", "y1")), apply("not", apply("assign", "V", "x", "y2")), apply("not", apply("<", "y1", "y2"))) AS G
+       or_(apply("not", apply("Domain", "V")), apply("not", apply("Domain", "x")), apply("not", apply("Domain", "y1")), apply("not", apply("Domain", "y2")), apply("not", apply("assign", "V", "x", "y1")), apply("not", apply("assign", "V", "x", "y2")), apply("not", apply("<", "y1", "y2"))) AS G
 
 === (top) (forall ((V Int) (x Int) (y1 Int) (y2 Int)) (or (not (Domain V)) (not (Domain x)) (not (Domain y1)) (not (Domain y2)) (not (assign V x y1)) (not (assign V x y2)) (not (< y1 y2)))) ======================================
 ----- TU -----------------------------------------------------------
@@ -1078,7 +1054,7 @@ SELECT and_aggregate(G) as G
               _xmt_interp_domain_TU_5.a_1 AS x,
               _xmt_interp_domain_TU_31.a_1 AS y1,
               _xmt_interp_domain_TU_34.a_1 AS y2,
-              apply("or", apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_31.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_34.a_1)), not_(compare_("<", _xmt_interp_domain_TU_31.a_1, _xmt_interp_domain_TU_34.a_1))) AS G
+              or_(apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_31.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_34.a_1)), not_(compare_("<", _xmt_interp_domain_TU_31.a_1, _xmt_interp_domain_TU_34.a_1))) AS G
          FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
          JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
          JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_31
@@ -1091,7 +1067,7 @@ SELECT G as G
               _xmt_interp_domain_TU_5.a_1 AS x,
               _xmt_interp_domain_TU_31.a_1 AS y1,
               _xmt_interp_domain_TU_34.a_1 AS y2,
-              apply("or", apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_31.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_34.a_1)), not_(compare_("<", _xmt_interp_domain_TU_31.a_1, _xmt_interp_domain_TU_34.a_1))) AS G
+              or_(apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_31.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_34.a_1)), not_(compare_("<", _xmt_interp_domain_TU_31.a_1, _xmt_interp_domain_TU_34.a_1))) AS G
          FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
          JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
          JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_31
@@ -1106,7 +1082,7 @@ SELECT and_aggregate(G) as G
               _xmt_interp_domain_TU_5.a_1 AS x,
               _xmt_interp_domain_TU_31.a_1 AS y1,
               _xmt_interp_domain_TU_34.a_1 AS y2,
-              apply("or", apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_31.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_34.a_1)), not_(compare_("<", _xmt_interp_domain_TU_31.a_1, _xmt_interp_domain_TU_34.a_1))) AS G
+              or_(apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_31.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_34.a_1)), not_(compare_("<", _xmt_interp_domain_TU_31.a_1, _xmt_interp_domain_TU_34.a_1))) AS G
          FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
          JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
          JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_31
@@ -1301,7 +1277,7 @@ SELECT _xmt_interp_domain_TU_45.a_1 AS s,
 SELECT "s" AS s,
        "x" AS x,
        "y" AS y,
-       apply("or", apply("not", apply("Domain", "s")), apply("not", apply("Domain", "x")), apply("not", apply("Domain", "y")), apply("not", apply("state", "x", "y", "s")), apply("not", apply("not", apply("assign", "s", "x", "y")))) AS G
+       or_(apply("not", apply("Domain", "s")), apply("not", apply("Domain", "x")), apply("not", apply("Domain", "y")), apply("not", apply("state", "x", "y", "s")), apply("not", apply("not", apply("assign", "s", "x", "y")))) AS G
 
 === (top) (forall ((s Int) (x Int) (y Int)) (or (not (Domain s)) (not (Domain x)) (not (Domain y)) (not (state x y s)) (not (not (assign s x y))))) ======================================
 ----- TU -----------------------------------------------------------
@@ -1403,7 +1379,7 @@ SELECT _xmt_interp_domain_TU_1.a_1 AS V,
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT "V" AS V,
-       apply("or", apply("not", apply("Domain", "V")), apply("not", apply("not", apply("assigned", "V")))) AS G
+       or_(apply("not", apply("Domain", "V")), apply("not", apply("not", apply("assigned", "V")))) AS G
 
 === (top) (forall ((V Int)) (or (not (Domain V)) (not (not (assigned V))))) ======================================
 ----- TU -----------------------------------------------------------

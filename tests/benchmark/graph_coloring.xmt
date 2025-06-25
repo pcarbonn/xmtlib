@@ -165,7 +165,7 @@ SELECT _xmt_interp_link_TU_2.a_1 AS n1,
 -- Join(0)
 SELECT _xmt_interp_link_G_2.a_1 AS n1,
        _xmt_interp_link_G_2.a_2 AS n2,
-       apply("or", not_(_xmt_interp_link_G_2.G), apply("not", apply("=", apply("colourOf", _xmt_interp_link_G_2.a_1), apply("colourOf", _xmt_interp_link_G_2.a_2)))) AS G
+       or_(not_(_xmt_interp_link_G_2.G), apply("not", apply("=", apply("colourOf", _xmt_interp_link_G_2.a_1), apply("colourOf", _xmt_interp_link_G_2.a_2)))) AS G
   FROM _xmt_interp_link_G AS _xmt_interp_link_G_2
 
 === (top) (forall ((n1 Node) (n2 Node)) (or (not (link n1 n2)) (not (= (colourOf n1) (colourOf n2))))) ======================================

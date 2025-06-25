@@ -31,12 +31,12 @@
 (declare-fun keep (Node) Bool)
 (declare-fun kept_edge (Node Node) Bool)
 (declare-fun color (Node) Color)
-(assert (or (keep a) (keep b) false))
-(assert (or (keep b) (keep a) false))
-(assert (= (kept_edge a a) (and (keep a) (keep a) false)))
-(assert (= (kept_edge a b) (and (keep a) (keep b) true)))
-(assert (= (kept_edge b a) (and (keep b) (keep a) false)))
-(assert (= (kept_edge b b) (and (keep b) (keep b) false)))
+(assert (or (keep a) (keep b)))
+(assert (or (keep b) (keep a)))
+(assert (= (kept_edge a a) false))
+(assert (= (kept_edge a b) (and (keep a) (keep b))))
+(assert (= (kept_edge b a) false))
+(assert (= (kept_edge b b) false))
 (assert (or (not (kept_edge a a)) (not (= (color a) (color a)))))
 (assert (or (not (kept_edge a b)) (not (= (color a) (color b)))))
 (assert (or (not (kept_edge b a)) (not (= (color b) (color a)))))
@@ -155,7 +155,7 @@ SELECT x, y,
 -- Join(0)
 SELECT _xmt_sort_node.G AS x,
        _xmt_sort_node_2.G AS y,
-       apply("or", apply("keep", _xmt_sort_node.G), apply("keep", _xmt_sort_node_2.G), eq_(_xmt_sort_node.G, _xmt_sort_node_2.G)) AS G
+       or_(apply("keep", _xmt_sort_node.G), apply("keep", _xmt_sort_node_2.G), eq_(_xmt_sort_node.G, _xmt_sort_node_2.G)) AS G
   FROM _xmt_sort_node
   JOIN _xmt_sort_node AS _xmt_sort_node_2
  WHERE _xmt_sort_node.G != _xmt_sort_node_2.G
@@ -163,7 +163,7 @@ SELECT _xmt_sort_node.G AS x,
 -- Join(0)
 SELECT _xmt_sort_node.G AS x,
        _xmt_sort_node_2.G AS y,
-       apply("or", apply("keep", _xmt_sort_node.G), apply("keep", _xmt_sort_node_2.G), eq_(_xmt_sort_node.G, _xmt_sort_node_2.G)) AS G
+       or_(apply("keep", _xmt_sort_node.G), apply("keep", _xmt_sort_node_2.G), eq_(_xmt_sort_node.G, _xmt_sort_node_2.G)) AS G
   FROM _xmt_sort_node
   JOIN _xmt_sort_node AS _xmt_sort_node_2
 
@@ -176,7 +176,7 @@ SELECT and_aggregate(G) as G
        -- Join(7)
        SELECT _xmt_sort_node.G AS x,
               _xmt_sort_node_2.G AS y,
-              apply("or", apply("keep", _xmt_sort_node.G), apply("keep", _xmt_sort_node_2.G), eq_(_xmt_sort_node.G, _xmt_sort_node_2.G)) AS G
+              or_(apply("keep", _xmt_sort_node.G), apply("keep", _xmt_sort_node_2.G), eq_(_xmt_sort_node.G, _xmt_sort_node_2.G)) AS G
          FROM _xmt_sort_node
          JOIN _xmt_sort_node AS _xmt_sort_node_2
         WHERE _xmt_sort_node.G != _xmt_sort_node_2.G)
@@ -186,7 +186,7 @@ SELECT G as G
  FROM (-- Join(7)
        SELECT _xmt_sort_node.G AS x,
               _xmt_sort_node_2.G AS y,
-              apply("or", apply("keep", _xmt_sort_node.G), apply("keep", _xmt_sort_node_2.G), eq_(_xmt_sort_node.G, _xmt_sort_node_2.G)) AS G
+              or_(apply("keep", _xmt_sort_node.G), apply("keep", _xmt_sort_node_2.G), eq_(_xmt_sort_node.G, _xmt_sort_node_2.G)) AS G
          FROM _xmt_sort_node
          JOIN _xmt_sort_node AS _xmt_sort_node_2
         WHERE _xmt_sort_node.G != _xmt_sort_node_2.G)
@@ -198,7 +198,7 @@ SELECT and_aggregate(G) as G
        -- Join(7)
        SELECT _xmt_sort_node.G AS x,
               _xmt_sort_node_2.G AS y,
-              apply("or", apply("keep", _xmt_sort_node.G), apply("keep", _xmt_sort_node_2.G), eq_(_xmt_sort_node.G, _xmt_sort_node_2.G)) AS G
+              or_(apply("keep", _xmt_sort_node.G), apply("keep", _xmt_sort_node_2.G), eq_(_xmt_sort_node.G, _xmt_sort_node_2.G)) AS G
          FROM _xmt_sort_node
          JOIN _xmt_sort_node AS _xmt_sort_node_2
         WHERE _xmt_sort_node.G != _xmt_sort_node_2.G)
@@ -251,7 +251,7 @@ SELECT _xmt_interp_edge_G_8.a_1 AS x,
 -- Join(0)
 SELECT _xmt_interp_edge_TU_8.a_1 AS x,
        _xmt_interp_edge_TU_8.a_2 AS y,
-       apply("and", apply("keep", _xmt_interp_edge_TU_8.a_1), apply("keep", _xmt_interp_edge_TU_8.a_2)) AS G
+       and_(apply("keep", _xmt_interp_edge_TU_8.a_1), apply("keep", _xmt_interp_edge_TU_8.a_2)) AS G
   FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_8
 ----- F ------------------------------------------------------------
 -- Agg (0)
@@ -292,7 +292,7 @@ SELECT x, y,
 -- Join(0)
 SELECT _xmt_interp_edge_G_8.a_1 AS x,
        _xmt_interp_edge_G_8.a_2 AS y,
-       apply("and", apply("keep", _xmt_interp_edge_G_8.a_1), apply("keep", _xmt_interp_edge_G_8.a_2), _xmt_interp_edge_G_8.G) AS G
+       and_(apply("keep", _xmt_interp_edge_G_8.a_1), apply("keep", _xmt_interp_edge_G_8.a_2), _xmt_interp_edge_G_8.G) AS G
   FROM _xmt_interp_edge_G AS _xmt_interp_edge_G_8
 
 ===  (= (kept_edge x y) (and (keep x) (keep y) (edge x y))) ======================================
@@ -300,19 +300,19 @@ SELECT _xmt_interp_edge_G_8.a_1 AS x,
 -- Join(0)
 SELECT _xmt_interp_edge_G_8.a_1 AS x,
        _xmt_interp_edge_G_8.a_2 AS y,
-       apply("=", apply("kept_edge", _xmt_interp_edge_G_8.a_1, _xmt_interp_edge_G_8.a_2), apply("and", apply("keep", _xmt_interp_edge_G_8.a_1), apply("keep", _xmt_interp_edge_G_8.a_2), _xmt_interp_edge_G_8.G)) AS G
+       apply("=", apply("kept_edge", _xmt_interp_edge_G_8.a_1, _xmt_interp_edge_G_8.a_2), and_(apply("keep", _xmt_interp_edge_G_8.a_1), apply("keep", _xmt_interp_edge_G_8.a_2), _xmt_interp_edge_G_8.G)) AS G
   FROM _xmt_interp_edge_G AS _xmt_interp_edge_G_8
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT _xmt_interp_edge_G_8.a_1 AS x,
        _xmt_interp_edge_G_8.a_2 AS y,
-       apply("=", apply("kept_edge", _xmt_interp_edge_G_8.a_1, _xmt_interp_edge_G_8.a_2), apply("and", apply("keep", _xmt_interp_edge_G_8.a_1), apply("keep", _xmt_interp_edge_G_8.a_2), _xmt_interp_edge_G_8.G)) AS G
+       apply("=", apply("kept_edge", _xmt_interp_edge_G_8.a_1, _xmt_interp_edge_G_8.a_2), and_(apply("keep", _xmt_interp_edge_G_8.a_1), apply("keep", _xmt_interp_edge_G_8.a_2), _xmt_interp_edge_G_8.G)) AS G
   FROM _xmt_interp_edge_G AS _xmt_interp_edge_G_8
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_interp_edge_G_8.a_1 AS x,
        _xmt_interp_edge_G_8.a_2 AS y,
-       apply("=", apply("kept_edge", _xmt_interp_edge_G_8.a_1, _xmt_interp_edge_G_8.a_2), apply("and", apply("keep", _xmt_interp_edge_G_8.a_1), apply("keep", _xmt_interp_edge_G_8.a_2), _xmt_interp_edge_G_8.G)) AS G
+       apply("=", apply("kept_edge", _xmt_interp_edge_G_8.a_1, _xmt_interp_edge_G_8.a_2), and_(apply("keep", _xmt_interp_edge_G_8.a_1), apply("keep", _xmt_interp_edge_G_8.a_2), _xmt_interp_edge_G_8.G)) AS G
   FROM _xmt_interp_edge_G AS _xmt_interp_edge_G_8
 
 === (top) (forall ((x Node) (y Node)) (= (kept_edge x y) (and (keep x) (keep y) (edge x y)))) ======================================
@@ -324,7 +324,7 @@ SELECT and_aggregate(G) as G
        -- Join(7)
        SELECT _xmt_interp_edge_G_8.a_1 AS x,
               _xmt_interp_edge_G_8.a_2 AS y,
-              apply("=", apply("kept_edge", _xmt_interp_edge_G_8.a_1, _xmt_interp_edge_G_8.a_2), apply("and", apply("keep", _xmt_interp_edge_G_8.a_1), apply("keep", _xmt_interp_edge_G_8.a_2), _xmt_interp_edge_G_8.G)) AS G
+              apply("=", apply("kept_edge", _xmt_interp_edge_G_8.a_1, _xmt_interp_edge_G_8.a_2), and_(apply("keep", _xmt_interp_edge_G_8.a_1), apply("keep", _xmt_interp_edge_G_8.a_2), _xmt_interp_edge_G_8.G)) AS G
          FROM _xmt_interp_edge_G AS _xmt_interp_edge_G_8)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -332,7 +332,7 @@ SELECT G as G
  FROM (-- Join(7)
        SELECT _xmt_interp_edge_G_8.a_1 AS x,
               _xmt_interp_edge_G_8.a_2 AS y,
-              apply("=", apply("kept_edge", _xmt_interp_edge_G_8.a_1, _xmt_interp_edge_G_8.a_2), apply("and", apply("keep", _xmt_interp_edge_G_8.a_1), apply("keep", _xmt_interp_edge_G_8.a_2), _xmt_interp_edge_G_8.G)) AS G
+              apply("=", apply("kept_edge", _xmt_interp_edge_G_8.a_1, _xmt_interp_edge_G_8.a_2), and_(apply("keep", _xmt_interp_edge_G_8.a_1), apply("keep", _xmt_interp_edge_G_8.a_2), _xmt_interp_edge_G_8.G)) AS G
          FROM _xmt_interp_edge_G AS _xmt_interp_edge_G_8)
 ----- G ------------------------------------------------------------
 -- Agg (0)
@@ -342,7 +342,7 @@ SELECT and_aggregate(G) as G
        -- Join(7)
        SELECT _xmt_interp_edge_G_8.a_1 AS x,
               _xmt_interp_edge_G_8.a_2 AS y,
-              apply("=", apply("kept_edge", _xmt_interp_edge_G_8.a_1, _xmt_interp_edge_G_8.a_2), apply("and", apply("keep", _xmt_interp_edge_G_8.a_1), apply("keep", _xmt_interp_edge_G_8.a_2), _xmt_interp_edge_G_8.G)) AS G
+              apply("=", apply("kept_edge", _xmt_interp_edge_G_8.a_1, _xmt_interp_edge_G_8.a_2), and_(apply("keep", _xmt_interp_edge_G_8.a_1), apply("keep", _xmt_interp_edge_G_8.a_2), _xmt_interp_edge_G_8.G)) AS G
          FROM _xmt_interp_edge_G AS _xmt_interp_edge_G_8)
 
 ===  (not (kept_edge x y)) ======================================
@@ -447,14 +447,14 @@ SELECT x, y,
 -- Join(0)
 SELECT _xmt_sort_node.G AS x,
        _xmt_sort_node_2.G AS y,
-       apply("or", apply("not", apply("kept_edge", _xmt_sort_node.G, _xmt_sort_node_2.G)), apply("not", apply("=", apply("color", _xmt_sort_node.G), apply("color", _xmt_sort_node_2.G)))) AS G
+       or_(apply("not", apply("kept_edge", _xmt_sort_node.G, _xmt_sort_node_2.G)), apply("not", apply("=", apply("color", _xmt_sort_node.G), apply("color", _xmt_sort_node_2.G)))) AS G
   FROM _xmt_sort_node
   JOIN _xmt_sort_node AS _xmt_sort_node_2
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_sort_node.G AS x,
        _xmt_sort_node_2.G AS y,
-       apply("or", apply("not", apply("kept_edge", _xmt_sort_node.G, _xmt_sort_node_2.G)), apply("not", apply("=", apply("color", _xmt_sort_node.G), apply("color", _xmt_sort_node_2.G)))) AS G
+       or_(apply("not", apply("kept_edge", _xmt_sort_node.G, _xmt_sort_node_2.G)), apply("not", apply("=", apply("color", _xmt_sort_node.G), apply("color", _xmt_sort_node_2.G)))) AS G
   FROM _xmt_sort_node
   JOIN _xmt_sort_node AS _xmt_sort_node_2
 
@@ -467,7 +467,7 @@ SELECT and_aggregate(G) as G
        -- Join(7)
        SELECT _xmt_sort_node.G AS x,
               _xmt_sort_node_2.G AS y,
-              apply("or", apply("not", apply("kept_edge", _xmt_sort_node.G, _xmt_sort_node_2.G)), apply("not", apply("=", apply("color", _xmt_sort_node.G), apply("color", _xmt_sort_node_2.G)))) AS G
+              or_(apply("not", apply("kept_edge", _xmt_sort_node.G, _xmt_sort_node_2.G)), apply("not", apply("=", apply("color", _xmt_sort_node.G), apply("color", _xmt_sort_node_2.G)))) AS G
          FROM _xmt_sort_node
          JOIN _xmt_sort_node AS _xmt_sort_node_2)
 ----- UF -----------------------------------------------------------
@@ -476,7 +476,7 @@ SELECT G as G
  FROM (-- Join(7)
        SELECT _xmt_sort_node.G AS x,
               _xmt_sort_node_2.G AS y,
-              apply("or", apply("not", apply("kept_edge", _xmt_sort_node.G, _xmt_sort_node_2.G)), apply("not", apply("=", apply("color", _xmt_sort_node.G), apply("color", _xmt_sort_node_2.G)))) AS G
+              or_(apply("not", apply("kept_edge", _xmt_sort_node.G, _xmt_sort_node_2.G)), apply("not", apply("=", apply("color", _xmt_sort_node.G), apply("color", _xmt_sort_node_2.G)))) AS G
          FROM _xmt_sort_node
          JOIN _xmt_sort_node AS _xmt_sort_node_2)
 ----- G ------------------------------------------------------------
@@ -487,7 +487,7 @@ SELECT and_aggregate(G) as G
        -- Join(7)
        SELECT _xmt_sort_node.G AS x,
               _xmt_sort_node_2.G AS y,
-              apply("or", apply("not", apply("kept_edge", _xmt_sort_node.G, _xmt_sort_node_2.G)), apply("not", apply("=", apply("color", _xmt_sort_node.G), apply("color", _xmt_sort_node_2.G)))) AS G
+              or_(apply("not", apply("kept_edge", _xmt_sort_node.G, _xmt_sort_node_2.G)), apply("not", apply("=", apply("color", _xmt_sort_node.G), apply("color", _xmt_sort_node_2.G)))) AS G
          FROM _xmt_sort_node
          JOIN _xmt_sort_node AS _xmt_sort_node_2)
 
@@ -563,12 +563,12 @@ SELECT x,
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT _xmt_sort_node.G AS x,
-       apply("or", apply("not", apply("not", apply("keep", _xmt_sort_node.G))), apply("=", apply("color", _xmt_sort_node.G), "red")) AS G
+       or_(apply("not", apply("not", apply("keep", _xmt_sort_node.G))), apply("=", apply("color", _xmt_sort_node.G), "red")) AS G
   FROM _xmt_sort_node
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_sort_node.G AS x,
-       apply("or", apply("not", apply("not", apply("keep", _xmt_sort_node.G))), apply("=", apply("color", _xmt_sort_node.G), "red")) AS G
+       or_(apply("not", apply("not", apply("keep", _xmt_sort_node.G))), apply("=", apply("color", _xmt_sort_node.G), "red")) AS G
   FROM _xmt_sort_node
 
 === (top) (forall ((x Node)) (or (not (not (keep x))) (= (color x) red))) ======================================
@@ -579,14 +579,14 @@ SELECT and_aggregate(G) as G
        UNION ALL
        -- Join(7)
        SELECT _xmt_sort_node.G AS x,
-              apply("or", apply("not", apply("not", apply("keep", _xmt_sort_node.G))), apply("=", apply("color", _xmt_sort_node.G), "red")) AS G
+              or_(apply("not", apply("not", apply("keep", _xmt_sort_node.G))), apply("=", apply("color", _xmt_sort_node.G), "red")) AS G
          FROM _xmt_sort_node)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
 SELECT G as G
  FROM (-- Join(7)
        SELECT _xmt_sort_node.G AS x,
-              apply("or", apply("not", apply("not", apply("keep", _xmt_sort_node.G))), apply("=", apply("color", _xmt_sort_node.G), "red")) AS G
+              or_(apply("not", apply("not", apply("keep", _xmt_sort_node.G))), apply("=", apply("color", _xmt_sort_node.G), "red")) AS G
          FROM _xmt_sort_node)
 ----- G ------------------------------------------------------------
 -- Agg (0)
@@ -595,7 +595,7 @@ SELECT and_aggregate(G) as G
        UNION ALL
        -- Join(7)
        SELECT _xmt_sort_node.G AS x,
-              apply("or", apply("not", apply("not", apply("keep", _xmt_sort_node.G))), apply("=", apply("color", _xmt_sort_node.G), "red")) AS G
+              or_(apply("not", apply("not", apply("keep", _xmt_sort_node.G))), apply("=", apply("color", _xmt_sort_node.G), "red")) AS G
          FROM _xmt_sort_node)
 
 ===========================================

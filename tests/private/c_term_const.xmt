@@ -93,10 +93,10 @@ SELECT or_aggregate(G) as G
        SELECT apply("q", "green") AS G)
 ----- UF -----------------------------------------------------------
 -- Join(0)
-SELECT apply("or", apply("q", "red"), apply("q", "green")) AS G
+SELECT or_(apply("q", "red"), apply("q", "green")) AS G
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT apply("or", apply("q", "red"), apply("q", "green")) AS G
+SELECT or_(apply("q", "red"), apply("q", "green")) AS G
 
 === (top) (or (q red) (q red)) ======================================
 ----- TU -----------------------------------------------------------
@@ -109,10 +109,10 @@ SELECT or_aggregate(G) as G
        SELECT apply("q", "red") AS G)
 ----- UF -----------------------------------------------------------
 -- Join(0)
-SELECT apply("or", apply("q", "red"), apply("q", "red")) AS G
+SELECT or_(apply("q", "red"), apply("q", "red")) AS G
 ----- G ------------------------------------------------------------
 -- Join(0)
-SELECT apply("or", apply("q", "red"), apply("q", "red")) AS G
+SELECT or_(apply("q", "red"), apply("q", "red")) AS G
 
 ===========================================
 Tables and Views:

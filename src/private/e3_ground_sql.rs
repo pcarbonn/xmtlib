@@ -274,11 +274,7 @@ impl SQLExpr {
                         } else if exprs.len() == 1 {
                             (exprs.first().unwrap().clone(), ids)
                         } else {
-                            if ids == Ids::None {
-                                (format!("apply(\"{name}\", {})", exprs.join(", ")), ids)
-                            } else {
-                                (format!("{name}_({})", exprs.join(", ")), ids)
-                            }
+                            (format!("{name}_({})", exprs.join(", ")), ids)
                         }
                     },
                     Associativity::Chainable => {

@@ -262,7 +262,7 @@ SELECT _xmt_interp_edge_TU_2.a_1 AS x,
 SELECT _xmt_interp_edge_G_2.a_1 AS x,
        _xmt_interp_edge_G_2.a_2 AS y,
        _xmt_interp_edge_G_5.a_2 AS z,
-       apply("or", not_(_xmt_interp_edge_G_2.G), not_(_xmt_interp_edge_G_5.G), not_(_xmt_interp_edge_G_7.G), apply("phi", _xmt_interp_edge_G_2.a_1, _xmt_interp_edge_G_2.a_2, _xmt_interp_edge_G_5.a_2)) AS G
+       or_(not_(_xmt_interp_edge_G_2.G), not_(_xmt_interp_edge_G_5.G), not_(_xmt_interp_edge_G_7.G), apply("phi", _xmt_interp_edge_G_2.a_1, _xmt_interp_edge_G_2.a_2, _xmt_interp_edge_G_5.a_2)) AS G
   FROM _xmt_interp_edge_G AS _xmt_interp_edge_G_2
   JOIN _xmt_interp_edge_G AS _xmt_interp_edge_G_5
         ON _xmt_interp_edge_G_2.a_2 = _xmt_interp_edge_G_5.a_1

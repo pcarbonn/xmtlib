@@ -186,13 +186,13 @@ SELECT n1, n2,
 -- Join(0)
 SELECT _xmt_interp_edge_UF_5.a_1 AS n1,
        _xmt_interp_edge_UF_5.a_2 AS n2,
-       apply("or", apply("not", apply("=", apply("path", _xmt_interp_edge_UF_5.a_1), _xmt_interp_edge_UF_5.a_2)), apply("=", _xmt_interp_edge_UF_5.a_1, "end")) AS G
+       or_(apply("not", apply("=", apply("path", _xmt_interp_edge_UF_5.a_1), _xmt_interp_edge_UF_5.a_2)), apply("=", _xmt_interp_edge_UF_5.a_1, "end")) AS G
   FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_5
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_interp_edge_G_5.a_1 AS n1,
        _xmt_interp_edge_G_5.a_2 AS n2,
-       apply("or", apply("not", apply("=", apply("path", _xmt_interp_edge_G_5.a_1), _xmt_interp_edge_G_5.a_2)), _xmt_interp_edge_G_5.G, apply("=", _xmt_interp_edge_G_5.a_1, "end")) AS G
+       or_(apply("not", apply("=", apply("path", _xmt_interp_edge_G_5.a_1), _xmt_interp_edge_G_5.a_2)), _xmt_interp_edge_G_5.G, apply("=", _xmt_interp_edge_G_5.a_1, "end")) AS G
   FROM _xmt_interp_edge_G AS _xmt_interp_edge_G_5
 
 === (top) (forall ((n1 Node) (n2 Node)) (or (not (= (path n1) n2)) (edge n1 n2) (= n1 end))) ======================================
@@ -204,7 +204,7 @@ SELECT and_aggregate(G) as G
        -- Join(7)
        SELECT _xmt_interp_edge_UF_5.a_1 AS n1,
               _xmt_interp_edge_UF_5.a_2 AS n2,
-              apply("or", apply("not", apply("=", apply("path", _xmt_interp_edge_UF_5.a_1), _xmt_interp_edge_UF_5.a_2)), apply("=", _xmt_interp_edge_UF_5.a_1, "end")) AS G
+              or_(apply("not", apply("=", apply("path", _xmt_interp_edge_UF_5.a_1), _xmt_interp_edge_UF_5.a_2)), apply("=", _xmt_interp_edge_UF_5.a_1, "end")) AS G
          FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_5)
 ----- UF -----------------------------------------------------------
 -- Agg (0)
@@ -212,7 +212,7 @@ SELECT G as G
  FROM (-- Join(7)
        SELECT _xmt_interp_edge_UF_5.a_1 AS n1,
               _xmt_interp_edge_UF_5.a_2 AS n2,
-              apply("or", apply("not", apply("=", apply("path", _xmt_interp_edge_UF_5.a_1), _xmt_interp_edge_UF_5.a_2)), apply("=", _xmt_interp_edge_UF_5.a_1, "end")) AS G
+              or_(apply("not", apply("=", apply("path", _xmt_interp_edge_UF_5.a_1), _xmt_interp_edge_UF_5.a_2)), apply("=", _xmt_interp_edge_UF_5.a_1, "end")) AS G
          FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_5)
 ----- G ------------------------------------------------------------
 -- Agg (0)
@@ -222,7 +222,7 @@ SELECT and_aggregate(G) as G
        -- Join(7)
        SELECT _xmt_interp_edge_UF_5.a_1 AS n1,
               _xmt_interp_edge_UF_5.a_2 AS n2,
-              apply("or", apply("not", apply("=", apply("path", _xmt_interp_edge_UF_5.a_1), _xmt_interp_edge_UF_5.a_2)), apply("=", _xmt_interp_edge_UF_5.a_1, "end")) AS G
+              or_(apply("not", apply("=", apply("path", _xmt_interp_edge_UF_5.a_1), _xmt_interp_edge_UF_5.a_2)), apply("=", _xmt_interp_edge_UF_5.a_1, "end")) AS G
          FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_5)
 
 ===  (path end) ======================================
@@ -359,7 +359,7 @@ SELECT _xmt_sort_node_2.G AS n2,
 -- Join(0)
 SELECT _xmt_sort_node_2.G AS n2,
        _xmt_sort_node.G AS n1,
-       apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+       and_(apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
   FROM _xmt_sort_node AS _xmt_sort_node_2
   JOIN _xmt_sort_node
 ----- UF -----------------------------------------------------------
@@ -395,7 +395,7 @@ SELECT n2, n1,
 -- Join(0)
 SELECT _xmt_sort_node_2.G AS n2,
        _xmt_sort_node.G AS n1,
-       apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+       and_(apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
   FROM _xmt_sort_node AS _xmt_sort_node_2
   JOIN _xmt_sort_node
 
@@ -407,7 +407,7 @@ SELECT n1,
  FROM (-- Join(7)
        SELECT _xmt_sort_node_2.G AS n2,
               _xmt_sort_node.G AS n1,
-              apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+              and_(apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
          FROM _xmt_sort_node AS _xmt_sort_node_2
          JOIN _xmt_sort_node)
  GROUP BY n1
@@ -420,7 +420,7 @@ SELECT n1,
        -- Join(7)
        SELECT _xmt_sort_node_2.G AS n2,
               _xmt_sort_node.G AS n1,
-              apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+              and_(apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
          FROM _xmt_sort_node AS _xmt_sort_node_2
          JOIN _xmt_sort_node)
  GROUP BY n1
@@ -433,7 +433,7 @@ SELECT n1,
        -- Join(7)
        SELECT _xmt_sort_node_2.G AS n2,
               _xmt_sort_node.G AS n1,
-              apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+              and_(apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
          FROM _xmt_sort_node AS _xmt_sort_node_2
          JOIN _xmt_sort_node)
  GROUP BY n1
@@ -454,7 +454,7 @@ SELECT n1,
         FROM (-- Join(14)
               SELECT _xmt_sort_node_2.G AS n2,
                      _xmt_sort_node.G AS n1,
-                     apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+                     and_(apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
                 FROM _xmt_sort_node AS _xmt_sort_node_2
                 JOIN _xmt_sort_node)
         GROUP BY n1)
@@ -462,7 +462,7 @@ SELECT n1,
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT _xmt_sort_node.G AS n1,
-       apply("or", apply("=", _xmt_sort_node.G, "start"), Agg_22_UF.G) AS G
+       or_(apply("=", _xmt_sort_node.G, "start"), Agg_22_UF.G) AS G
   FROM _xmt_sort_node
   JOIN (-- Agg (8)
         SELECT n1,
@@ -472,7 +472,7 @@ SELECT _xmt_sort_node.G AS n1,
                -- Join(15)
                SELECT _xmt_sort_node_2.G AS n2,
                       _xmt_sort_node.G AS n1,
-                      apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+                      and_(apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
                  FROM _xmt_sort_node AS _xmt_sort_node_2
                  JOIN _xmt_sort_node)
          GROUP BY n1
@@ -480,7 +480,7 @@ SELECT _xmt_sort_node.G AS n1,
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_sort_node.G AS n1,
-       apply("or", apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G) AS G
+       or_(apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G) AS G
   FROM _xmt_sort_node
   JOIN (-- Agg (8)
         SELECT n1,
@@ -490,7 +490,7 @@ SELECT _xmt_sort_node.G AS n1,
                -- Join(15)
                SELECT _xmt_sort_node_2.G AS n2,
                       _xmt_sort_node.G AS n1,
-                      apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+                      and_(apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
                  FROM _xmt_sort_node AS _xmt_sort_node_2
                  JOIN _xmt_sort_node)
          GROUP BY n1
@@ -500,7 +500,7 @@ SELECT _xmt_sort_node.G AS n1,
 ----- TU -----------------------------------------------------------
 -- Join(0)
 SELECT _xmt_sort_node.G AS n1,
-       apply("=", apply("reached", _xmt_sort_node.G), apply("or", apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
+       apply("=", apply("reached", _xmt_sort_node.G), or_(apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
   FROM _xmt_sort_node
   JOIN (-- Agg (8)
         SELECT n1,
@@ -510,7 +510,7 @@ SELECT _xmt_sort_node.G AS n1,
                -- Join(15)
                SELECT _xmt_sort_node_2.G AS n2,
                       _xmt_sort_node.G AS n1,
-                      apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+                      and_(apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
                  FROM _xmt_sort_node AS _xmt_sort_node_2
                  JOIN _xmt_sort_node)
          GROUP BY n1
@@ -518,7 +518,7 @@ SELECT _xmt_sort_node.G AS n1,
 ----- UF -----------------------------------------------------------
 -- Join(0)
 SELECT _xmt_sort_node.G AS n1,
-       apply("=", apply("reached", _xmt_sort_node.G), apply("or", apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
+       apply("=", apply("reached", _xmt_sort_node.G), or_(apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
   FROM _xmt_sort_node
   JOIN (-- Agg (8)
         SELECT n1,
@@ -528,7 +528,7 @@ SELECT _xmt_sort_node.G AS n1,
                -- Join(15)
                SELECT _xmt_sort_node_2.G AS n2,
                       _xmt_sort_node.G AS n1,
-                      apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+                      and_(apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
                  FROM _xmt_sort_node AS _xmt_sort_node_2
                  JOIN _xmt_sort_node)
          GROUP BY n1
@@ -536,7 +536,7 @@ SELECT _xmt_sort_node.G AS n1,
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_sort_node.G AS n1,
-       apply("=", apply("reached", _xmt_sort_node.G), apply("or", apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
+       apply("=", apply("reached", _xmt_sort_node.G), or_(apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
   FROM _xmt_sort_node
   JOIN (-- Agg (8)
         SELECT n1,
@@ -546,7 +546,7 @@ SELECT _xmt_sort_node.G AS n1,
                -- Join(15)
                SELECT _xmt_sort_node_2.G AS n2,
                       _xmt_sort_node.G AS n1,
-                      apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+                      and_(apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
                  FROM _xmt_sort_node AS _xmt_sort_node_2
                  JOIN _xmt_sort_node)
          GROUP BY n1
@@ -560,7 +560,7 @@ SELECT and_aggregate(G) as G
        UNION ALL
        -- Join(7)
        SELECT _xmt_sort_node.G AS n1,
-              apply("=", apply("reached", _xmt_sort_node.G), apply("or", apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
+              apply("=", apply("reached", _xmt_sort_node.G), or_(apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
          FROM _xmt_sort_node
          JOIN (-- Agg (15)
                SELECT n1,
@@ -570,7 +570,7 @@ SELECT and_aggregate(G) as G
                       -- Join(22)
                       SELECT _xmt_sort_node_2.G AS n2,
                              _xmt_sort_node.G AS n1,
-                             apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+                             and_(apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
                         FROM _xmt_sort_node AS _xmt_sort_node_2
                         JOIN _xmt_sort_node)
                 GROUP BY n1
@@ -580,7 +580,7 @@ SELECT and_aggregate(G) as G
 SELECT G as G
  FROM (-- Join(7)
        SELECT _xmt_sort_node.G AS n1,
-              apply("=", apply("reached", _xmt_sort_node.G), apply("or", apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
+              apply("=", apply("reached", _xmt_sort_node.G), or_(apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
          FROM _xmt_sort_node
          JOIN (-- Agg (15)
                SELECT n1,
@@ -590,7 +590,7 @@ SELECT G as G
                       -- Join(22)
                       SELECT _xmt_sort_node_2.G AS n2,
                              _xmt_sort_node.G AS n1,
-                             apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+                             and_(apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
                         FROM _xmt_sort_node AS _xmt_sort_node_2
                         JOIN _xmt_sort_node)
                 GROUP BY n1
@@ -602,7 +602,7 @@ SELECT and_aggregate(G) as G
        UNION ALL
        -- Join(7)
        SELECT _xmt_sort_node.G AS n1,
-              apply("=", apply("reached", _xmt_sort_node.G), apply("or", apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
+              apply("=", apply("reached", _xmt_sort_node.G), or_(apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
          FROM _xmt_sort_node
          JOIN (-- Agg (15)
                SELECT n1,
@@ -612,7 +612,7 @@ SELECT and_aggregate(G) as G
                       -- Join(22)
                       SELECT _xmt_sort_node_2.G AS n2,
                              _xmt_sort_node.G AS n1,
-                             apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+                             and_(apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
                         FROM _xmt_sort_node AS _xmt_sort_node_2
                         JOIN _xmt_sort_node)
                 GROUP BY n1

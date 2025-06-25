@@ -320,14 +320,14 @@ SELECT M, W,
 -- Join(0)
 SELECT _xmt_sort_man.G AS M,
        _xmt_sort_woman_2.G AS W,
-       apply("or", apply("not", apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_2.G, apply("womanOf", _xmt_sort_man.G))), apply("not", apply("womanPrefers", _xmt_sort_woman_2.G, _xmt_sort_man.G, apply("manOf", _xmt_sort_woman_2.G)))) AS G
+       or_(apply("not", apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_2.G, apply("womanOf", _xmt_sort_man.G))), apply("not", apply("womanPrefers", _xmt_sort_woman_2.G, _xmt_sort_man.G, apply("manOf", _xmt_sort_woman_2.G)))) AS G
   FROM _xmt_sort_man
   JOIN _xmt_sort_woman AS _xmt_sort_woman_2
 ----- G ------------------------------------------------------------
 -- Join(0)
 SELECT _xmt_sort_man.G AS M,
        _xmt_sort_woman_2.G AS W,
-       apply("or", apply("not", apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_2.G, apply("womanOf", _xmt_sort_man.G))), apply("not", apply("womanPrefers", _xmt_sort_woman_2.G, _xmt_sort_man.G, apply("manOf", _xmt_sort_woman_2.G)))) AS G
+       or_(apply("not", apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_2.G, apply("womanOf", _xmt_sort_man.G))), apply("not", apply("womanPrefers", _xmt_sort_woman_2.G, _xmt_sort_man.G, apply("manOf", _xmt_sort_woman_2.G)))) AS G
   FROM _xmt_sort_man
   JOIN _xmt_sort_woman AS _xmt_sort_woman_2
 
@@ -340,7 +340,7 @@ SELECT and_aggregate(G) as G
        -- Join(7)
        SELECT _xmt_sort_man.G AS M,
               _xmt_sort_woman_2.G AS W,
-              apply("or", apply("not", apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_2.G, apply("womanOf", _xmt_sort_man.G))), apply("not", apply("womanPrefers", _xmt_sort_woman_2.G, _xmt_sort_man.G, apply("manOf", _xmt_sort_woman_2.G)))) AS G
+              or_(apply("not", apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_2.G, apply("womanOf", _xmt_sort_man.G))), apply("not", apply("womanPrefers", _xmt_sort_woman_2.G, _xmt_sort_man.G, apply("manOf", _xmt_sort_woman_2.G)))) AS G
          FROM _xmt_sort_man
          JOIN _xmt_sort_woman AS _xmt_sort_woman_2)
 ----- UF -----------------------------------------------------------
@@ -349,7 +349,7 @@ SELECT G as G
  FROM (-- Join(7)
        SELECT _xmt_sort_man.G AS M,
               _xmt_sort_woman_2.G AS W,
-              apply("or", apply("not", apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_2.G, apply("womanOf", _xmt_sort_man.G))), apply("not", apply("womanPrefers", _xmt_sort_woman_2.G, _xmt_sort_man.G, apply("manOf", _xmt_sort_woman_2.G)))) AS G
+              or_(apply("not", apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_2.G, apply("womanOf", _xmt_sort_man.G))), apply("not", apply("womanPrefers", _xmt_sort_woman_2.G, _xmt_sort_man.G, apply("manOf", _xmt_sort_woman_2.G)))) AS G
          FROM _xmt_sort_man
          JOIN _xmt_sort_woman AS _xmt_sort_woman_2)
 ----- G ------------------------------------------------------------
@@ -360,7 +360,7 @@ SELECT and_aggregate(G) as G
        -- Join(7)
        SELECT _xmt_sort_man.G AS M,
               _xmt_sort_woman_2.G AS W,
-              apply("or", apply("not", apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_2.G, apply("womanOf", _xmt_sort_man.G))), apply("not", apply("womanPrefers", _xmt_sort_woman_2.G, _xmt_sort_man.G, apply("manOf", _xmt_sort_woman_2.G)))) AS G
+              or_(apply("not", apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_2.G, apply("womanOf", _xmt_sort_man.G))), apply("not", apply("womanPrefers", _xmt_sort_woman_2.G, _xmt_sort_man.G, apply("manOf", _xmt_sort_woman_2.G)))) AS G
          FROM _xmt_sort_man
          JOIN _xmt_sort_woman AS _xmt_sort_woman_2)
 
