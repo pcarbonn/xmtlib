@@ -1,0 +1,670 @@
+(set-option :backend none)
+
+(declare-datatype Node ( (a) (b) (c) ))
+
+(declare-fun edge    (Node Node) Bool)
+(declare-fun path    (Node) Node)
+(declare-fun start   () Node)
+(declare-fun end     () Node)
+(declare-fun reached (Node) Bool)
+(declare-fun level   (Node) Real)
+
+(assert (forall ((n1 Node) (n2 Node))
+                (=> (= (path n1) n2)
+                    (or (edge n1 n2) (= n1 end)))))
+(assert (= (path end) start))
+(assert (forall ((n1 Node))
+                (= (reached n1)
+                   (or (= n1 start)
+                       (exists ((n2 Node))
+                               (and (= (path n2) n1)
+                                    (reached n2)
+                                    (< (level n2) (level n1))))))))
+(assert (forall ((n Node))  (reached n)))
+
+(x-interpret-pred edge (x-set (a b) (b c)))
+
+(x-ground debug:)
+(x-debug solver groundings)
+------- RESULTS ------------------
+(declare-datatype Node ((a) (b) (c)))
+(declare-fun edge (Node Node) Bool)
+(declare-fun path (Node) Node)
+(declare-fun start () Node)
+(declare-fun end () Node)
+(declare-fun reached (Node) Bool)
+(declare-fun level (Node) Real)
+(assert (or (not (= (path a) a)) (= a end)))
+(assert (or (not (= (path a) c)) (= a end)))
+(assert (or (not (= (path b) a)) (= b end)))
+(assert (or (not (= (path b) b)) (= b end)))
+(assert (or (not (= (path c) a)) (= c end)))
+(assert (or (not (= (path c) b)) (= c end)))
+(assert (or (not (= (path c) c)) (= c end)))
+(assert (= (path end) start))
+(assert (= (reached a) (or (= a start) (or (and (= (path a) a) (reached a) (< (level a) (level a))) (and (= (path b) a) (reached b) (< (level b) (level a))) (and (= (path c) a) (reached c) (< (level c) (level a)))))))
+(assert (= (reached b) (or (= b start) (or (and (= (path a) b) (reached a) (< (level a) (level b))) (and (= (path b) b) (reached b) (< (level b) (level b))) (and (= (path c) b) (reached c) (< (level c) (level b)))))))
+(assert (= (reached c) (or (= c start) (or (and (= (path a) c) (reached a) (< (level a) (level c))) (and (= (path b) c) (reached b) (< (level b) (level c))) (and (= (path c) c) (reached c) (< (level c) (level c)))))))
+(assert (reached a))
+(assert (reached b))
+(assert (reached c))
+Groundings:
+===  n1 ======================================
+ -- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       _xmt_sort_node.G AS G
+  FROM _xmt_sort_node
+===  (path n1) ======================================
+ -- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       apply("path", _xmt_sort_node.G) AS G
+  FROM _xmt_sort_node
+===  n2 ======================================
+ -- Join(0)
+SELECT _xmt_sort_node_2.G AS n2,
+       _xmt_sort_node_2.G AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_2
+===  (= (path n1) n2) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       _xmt_sort_node_2.G AS n2,
+       apply("=", apply("path", _xmt_sort_node.G), _xmt_sort_node_2.G) AS G
+  FROM _xmt_sort_node
+  JOIN _xmt_sort_node AS _xmt_sort_node_2
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       _xmt_sort_node_2.G AS n2,
+       apply("=", apply("path", _xmt_sort_node.G), _xmt_sort_node_2.G) AS G
+  FROM _xmt_sort_node
+  JOIN _xmt_sort_node AS _xmt_sort_node_2
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       _xmt_sort_node_2.G AS n2,
+       apply("=", apply("path", _xmt_sort_node.G), _xmt_sort_node_2.G) AS G
+  FROM _xmt_sort_node
+  JOIN _xmt_sort_node AS _xmt_sort_node_2
+
+===  (not (= (path n1) n2)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       _xmt_sort_node_2.G AS n2,
+       apply("not", apply("=", apply("path", _xmt_sort_node.G), _xmt_sort_node_2.G)) AS G
+  FROM _xmt_sort_node
+  JOIN _xmt_sort_node AS _xmt_sort_node_2
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       _xmt_sort_node_2.G AS n2,
+       apply("not", apply("=", apply("path", _xmt_sort_node.G), _xmt_sort_node_2.G)) AS G
+  FROM _xmt_sort_node
+  JOIN _xmt_sort_node AS _xmt_sort_node_2
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       _xmt_sort_node_2.G AS n2,
+       apply("not", apply("=", apply("path", _xmt_sort_node.G), _xmt_sort_node_2.G)) AS G
+  FROM _xmt_sort_node
+  JOIN _xmt_sort_node AS _xmt_sort_node_2
+
+===  (edge n1 n2) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_edge_TU_5.a_1 AS n1,
+       _xmt_interp_edge_TU_5.a_2 AS n2,
+       "true" AS G
+  FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_edge_UF_5.a_1 AS n1,
+       _xmt_interp_edge_UF_5.a_2 AS n2,
+       "false" AS G
+  FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_5
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_edge_G_5.a_1 AS n1,
+       _xmt_interp_edge_G_5.a_2 AS n2,
+       _xmt_interp_edge_G_5.G AS G
+  FROM _xmt_interp_edge_G AS _xmt_interp_edge_G_5
+
+===  end ======================================
+ -- Join(0)
+SELECT "end" AS G
+===  (= n1 end) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       apply("=", _xmt_sort_node.G, "end") AS G
+  FROM _xmt_sort_node
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       apply("=", _xmt_sort_node.G, "end") AS G
+  FROM _xmt_sort_node
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       apply("=", _xmt_sort_node.G, "end") AS G
+  FROM _xmt_sort_node
+
+===  (or (not (= (path n1) n2)) (edge n1 n2) (= n1 end)) ======================================
+----- T ------------------------------------------------------------
+-- Agg (0)
+SELECT n1, n2,
+       or_aggregate(G) as G
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_sort_node.G AS n1,
+                     _xmt_sort_node_2.G AS n2,
+                     apply("not", apply("=", apply("path", _xmt_sort_node.G), _xmt_sort_node_2.G)) AS G
+                FROM _xmt_sort_node
+                JOIN _xmt_sort_node AS _xmt_sort_node_2
+              UNION ALL
+              -- Join(14)
+              SELECT _xmt_interp_edge_TU_5.a_1 AS n1,
+                     _xmt_interp_edge_TU_5.a_2 AS n2,
+                     "true" AS G
+                FROM _xmt_interp_edge_TU AS _xmt_interp_edge_TU_5
+              UNION ALL
+              -- Join(14)
+              SELECT _xmt_view__7.n1 AS n1,
+                     _xmt_sort_node_2.G AS n2,
+                     _xmt_view__7.G AS G
+                FROM (-- Join(22)
+                      SELECT _xmt_sort_node.G AS n1,
+                             apply("=", _xmt_sort_node.G, "end") AS G
+                        FROM _xmt_sort_node
+                      ) AS _xmt_view__7
+                JOIN _xmt_sort_node AS _xmt_sort_node_2)
+        WHERE G <> "false")
+ GROUP BY n1, n2
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_edge_UF_5.a_1 AS n1,
+       _xmt_interp_edge_UF_5.a_2 AS n2,
+       apply("or", apply("not", apply("=", apply("path", _xmt_interp_edge_UF_5.a_1), _xmt_interp_edge_UF_5.a_2)), apply("=", _xmt_interp_edge_UF_5.a_1, "end")) AS G
+  FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_5
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_edge_G_5.a_1 AS n1,
+       _xmt_interp_edge_G_5.a_2 AS n2,
+       apply("or", apply("not", apply("=", apply("path", _xmt_interp_edge_G_5.a_1), _xmt_interp_edge_G_5.a_2)), _xmt_interp_edge_G_5.G, apply("=", _xmt_interp_edge_G_5.a_1, "end")) AS G
+  FROM _xmt_interp_edge_G AS _xmt_interp_edge_G_5
+
+=== (top) (forall ((n1 Node) (n2 Node)) (or (not (= (path n1) n2)) (edge n1 n2) (= n1 end))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS n1, NULL AS n2, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_edge_UF_5.a_1 AS n1,
+              _xmt_interp_edge_UF_5.a_2 AS n2,
+              apply("or", apply("not", apply("=", apply("path", _xmt_interp_edge_UF_5.a_1), _xmt_interp_edge_UF_5.a_2)), apply("=", _xmt_interp_edge_UF_5.a_1, "end")) AS G
+         FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_5)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_interp_edge_UF_5.a_1 AS n1,
+              _xmt_interp_edge_UF_5.a_2 AS n2,
+              apply("or", apply("not", apply("=", apply("path", _xmt_interp_edge_UF_5.a_1), _xmt_interp_edge_UF_5.a_2)), apply("=", _xmt_interp_edge_UF_5.a_1, "end")) AS G
+         FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_5)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS n1, NULL AS n2, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_edge_UF_5.a_1 AS n1,
+              _xmt_interp_edge_UF_5.a_2 AS n2,
+              apply("or", apply("not", apply("=", apply("path", _xmt_interp_edge_UF_5.a_1), _xmt_interp_edge_UF_5.a_2)), apply("=", _xmt_interp_edge_UF_5.a_1, "end")) AS G
+         FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_5)
+
+===  (path end) ======================================
+ -- Join(0)
+SELECT apply("path", "end") AS G
+===  start ======================================
+ -- Join(0)
+SELECT "start" AS G
+=== (top) (= (path end) start) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT apply("=", apply("path", "end"), "start") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT apply("=", apply("path", "end"), "start") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT apply("=", apply("path", "end"), "start") AS G
+
+===  (reached n1) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       apply("reached", _xmt_sort_node.G) AS G
+  FROM _xmt_sort_node
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       apply("reached", _xmt_sort_node.G) AS G
+  FROM _xmt_sort_node
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       apply("reached", _xmt_sort_node.G) AS G
+  FROM _xmt_sort_node
+
+===  (= n1 start) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       apply("=", _xmt_sort_node.G, "start") AS G
+  FROM _xmt_sort_node
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       apply("=", _xmt_sort_node.G, "start") AS G
+  FROM _xmt_sort_node
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       apply("=", _xmt_sort_node.G, "start") AS G
+  FROM _xmt_sort_node
+
+===  (path n2) ======================================
+ -- Join(0)
+SELECT _xmt_sort_node_2.G AS n2,
+       apply("path", _xmt_sort_node_2.G) AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_2
+===  (= (path n2) n1) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node_2.G AS n2,
+       _xmt_sort_node.G AS n1,
+       apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G) AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_2
+  JOIN _xmt_sort_node
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node_2.G AS n2,
+       _xmt_sort_node.G AS n1,
+       apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G) AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_2
+  JOIN _xmt_sort_node
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node_2.G AS n2,
+       _xmt_sort_node.G AS n1,
+       apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G) AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_2
+  JOIN _xmt_sort_node
+
+===  (reached n2) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node_2.G AS n2,
+       apply("reached", _xmt_sort_node_2.G) AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_2
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node_2.G AS n2,
+       apply("reached", _xmt_sort_node_2.G) AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_2
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node_2.G AS n2,
+       apply("reached", _xmt_sort_node_2.G) AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_2
+
+===  (level n2) ======================================
+ -- Join(0)
+SELECT _xmt_sort_node_2.G AS n2,
+       apply("level", _xmt_sort_node_2.G) AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_2
+===  (level n1) ======================================
+ -- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       apply("level", _xmt_sort_node.G) AS G
+  FROM _xmt_sort_node
+===  (< (level n2) (level n1)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node_2.G AS n2,
+       _xmt_sort_node.G AS n1,
+       apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G)) AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_2
+  JOIN _xmt_sort_node
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node_2.G AS n2,
+       _xmt_sort_node.G AS n1,
+       apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G)) AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_2
+  JOIN _xmt_sort_node
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node_2.G AS n2,
+       _xmt_sort_node.G AS n1,
+       apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G)) AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_2
+  JOIN _xmt_sort_node
+
+===  (and (= (path n2) n1) (reached n2) (< (level n2) (level n1))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node_2.G AS n2,
+       _xmt_sort_node.G AS n1,
+       apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_2
+  JOIN _xmt_sort_node
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT n2, n1,
+       and_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT _xmt_sort_node_2.G AS n2,
+              _xmt_sort_node.G AS n1,
+              apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G) AS G
+         FROM _xmt_sort_node AS _xmt_sort_node_2
+         JOIN _xmt_sort_node
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_view_reached_17_32.n2 AS n2,
+              _xmt_sort_node.G AS n1,
+              _xmt_view_reached_17_32.G AS G
+         FROM (-- Join(15)
+               SELECT _xmt_sort_node_2.G AS n2,
+                      apply("reached", _xmt_sort_node_2.G) AS G
+                 FROM _xmt_sort_node AS _xmt_sort_node_2
+               ) AS _xmt_view_reached_17_32
+         JOIN _xmt_sort_node
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_sort_node_2.G AS n2,
+              _xmt_sort_node.G AS n1,
+              apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G)) AS G
+         FROM _xmt_sort_node AS _xmt_sort_node_2
+         JOIN _xmt_sort_node)
+ GROUP BY n2, n1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node_2.G AS n2,
+       _xmt_sort_node.G AS n1,
+       apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_2
+  JOIN _xmt_sort_node
+
+===  (exists ((n2 Node)) (and (= (path n2) n1) (reached n2) (< (level n2) (level n1)))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT n1,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT _xmt_sort_node_2.G AS n2,
+              _xmt_sort_node.G AS n1,
+              apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+         FROM _xmt_sort_node AS _xmt_sort_node_2
+         JOIN _xmt_sort_node)
+ GROUP BY n1
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT n1,
+       or_aggregate(G) as G
+ FROM (SELECT NULL AS n2, _xmt_sort_node.G AS n1, "false" AS G FROM _xmt_sort_node AS _xmt_sort_node 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_sort_node_2.G AS n2,
+              _xmt_sort_node.G AS n1,
+              apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+         FROM _xmt_sort_node AS _xmt_sort_node_2
+         JOIN _xmt_sort_node)
+ GROUP BY n1
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT n1,
+       or_aggregate(G) as G
+ FROM (SELECT NULL AS n2, _xmt_sort_node.G AS n1, "false" AS G FROM _xmt_sort_node AS _xmt_sort_node 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_sort_node_2.G AS n2,
+              _xmt_sort_node.G AS n1,
+              apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+         FROM _xmt_sort_node AS _xmt_sort_node_2
+         JOIN _xmt_sort_node)
+ GROUP BY n1
+
+===  (or (= n1 start) (exists ((n2 Node)) (and (= (path n2) n1) (reached n2) (< (level n2) (level n1))))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT n1,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT _xmt_sort_node.G AS n1,
+              apply("=", _xmt_sort_node.G, "start") AS G
+         FROM _xmt_sort_node
+       UNION ALL
+       -- Agg (7)
+       SELECT n1,
+              or_aggregate(G) as G
+        FROM (-- Join(14)
+              SELECT _xmt_sort_node_2.G AS n2,
+                     _xmt_sort_node.G AS n1,
+                     apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+                FROM _xmt_sort_node AS _xmt_sort_node_2
+                JOIN _xmt_sort_node)
+        GROUP BY n1)
+ GROUP BY n1
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       apply("or", apply("=", _xmt_sort_node.G, "start"), Agg_22_UF.G) AS G
+  FROM _xmt_sort_node
+  JOIN (-- Agg (8)
+        SELECT n1,
+               or_aggregate(G) as G
+         FROM (SELECT NULL AS n2, _xmt_sort_node.G AS n1, "false" AS G FROM _xmt_sort_node AS _xmt_sort_node 
+               UNION ALL
+               -- Join(15)
+               SELECT _xmt_sort_node_2.G AS n2,
+                      _xmt_sort_node.G AS n1,
+                      apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+                 FROM _xmt_sort_node AS _xmt_sort_node_2
+                 JOIN _xmt_sort_node)
+         GROUP BY n1
+        ) AS Agg_22_UF ON  Agg_22_UF.n1 = _xmt_sort_node.G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       apply("or", apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G) AS G
+  FROM _xmt_sort_node
+  JOIN (-- Agg (8)
+        SELECT n1,
+               or_aggregate(G) as G
+         FROM (SELECT NULL AS n2, _xmt_sort_node.G AS n1, "false" AS G FROM _xmt_sort_node AS _xmt_sort_node 
+               UNION ALL
+               -- Join(15)
+               SELECT _xmt_sort_node_2.G AS n2,
+                      _xmt_sort_node.G AS n1,
+                      apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+                 FROM _xmt_sort_node AS _xmt_sort_node_2
+                 JOIN _xmt_sort_node)
+         GROUP BY n1
+        ) AS Agg_22_G ON  Agg_22_G.n1 = _xmt_sort_node.G
+
+===  (= (reached n1) (or (= n1 start) (exists ((n2 Node)) (and (= (path n2) n1) (reached n2) (< (level n2) (level n1)))))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       apply("=", apply("reached", _xmt_sort_node.G), apply("or", apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
+  FROM _xmt_sort_node
+  JOIN (-- Agg (8)
+        SELECT n1,
+               or_aggregate(G) as G
+         FROM (SELECT NULL AS n2, _xmt_sort_node.G AS n1, "false" AS G FROM _xmt_sort_node AS _xmt_sort_node 
+               UNION ALL
+               -- Join(15)
+               SELECT _xmt_sort_node_2.G AS n2,
+                      _xmt_sort_node.G AS n1,
+                      apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+                 FROM _xmt_sort_node AS _xmt_sort_node_2
+                 JOIN _xmt_sort_node)
+         GROUP BY n1
+        ) AS Agg_22_G ON  Agg_22_G.n1 = _xmt_sort_node.G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       apply("=", apply("reached", _xmt_sort_node.G), apply("or", apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
+  FROM _xmt_sort_node
+  JOIN (-- Agg (8)
+        SELECT n1,
+               or_aggregate(G) as G
+         FROM (SELECT NULL AS n2, _xmt_sort_node.G AS n1, "false" AS G FROM _xmt_sort_node AS _xmt_sort_node 
+               UNION ALL
+               -- Join(15)
+               SELECT _xmt_sort_node_2.G AS n2,
+                      _xmt_sort_node.G AS n1,
+                      apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+                 FROM _xmt_sort_node AS _xmt_sort_node_2
+                 JOIN _xmt_sort_node)
+         GROUP BY n1
+        ) AS Agg_22_G ON  Agg_22_G.n1 = _xmt_sort_node.G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node.G AS n1,
+       apply("=", apply("reached", _xmt_sort_node.G), apply("or", apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
+  FROM _xmt_sort_node
+  JOIN (-- Agg (8)
+        SELECT n1,
+               or_aggregate(G) as G
+         FROM (SELECT NULL AS n2, _xmt_sort_node.G AS n1, "false" AS G FROM _xmt_sort_node AS _xmt_sort_node 
+               UNION ALL
+               -- Join(15)
+               SELECT _xmt_sort_node_2.G AS n2,
+                      _xmt_sort_node.G AS n1,
+                      apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+                 FROM _xmt_sort_node AS _xmt_sort_node_2
+                 JOIN _xmt_sort_node)
+         GROUP BY n1
+        ) AS Agg_22_G ON  Agg_22_G.n1 = _xmt_sort_node.G
+
+=== (top) (forall ((n1 Node)) (= (reached n1) (or (= n1 start) (exists ((n2 Node)) (and (= (path n2) n1) (reached n2) (< (level n2) (level n1))))))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS n1, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_sort_node.G AS n1,
+              apply("=", apply("reached", _xmt_sort_node.G), apply("or", apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
+         FROM _xmt_sort_node
+         JOIN (-- Agg (15)
+               SELECT n1,
+                      or_aggregate(G) as G
+                FROM (SELECT NULL AS n2, _xmt_sort_node.G AS n1, "false" AS G FROM _xmt_sort_node AS _xmt_sort_node 
+                      UNION ALL
+                      -- Join(22)
+                      SELECT _xmt_sort_node_2.G AS n2,
+                             _xmt_sort_node.G AS n1,
+                             apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+                        FROM _xmt_sort_node AS _xmt_sort_node_2
+                        JOIN _xmt_sort_node)
+                GROUP BY n1
+               ) AS Agg_22_G ON  Agg_22_G.n1 = _xmt_sort_node.G)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_sort_node.G AS n1,
+              apply("=", apply("reached", _xmt_sort_node.G), apply("or", apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
+         FROM _xmt_sort_node
+         JOIN (-- Agg (15)
+               SELECT n1,
+                      or_aggregate(G) as G
+                FROM (SELECT NULL AS n2, _xmt_sort_node.G AS n1, "false" AS G FROM _xmt_sort_node AS _xmt_sort_node 
+                      UNION ALL
+                      -- Join(22)
+                      SELECT _xmt_sort_node_2.G AS n2,
+                             _xmt_sort_node.G AS n1,
+                             apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+                        FROM _xmt_sort_node AS _xmt_sort_node_2
+                        JOIN _xmt_sort_node)
+                GROUP BY n1
+               ) AS Agg_22_G ON  Agg_22_G.n1 = _xmt_sort_node.G)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS n1, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_sort_node.G AS n1,
+              apply("=", apply("reached", _xmt_sort_node.G), apply("or", apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
+         FROM _xmt_sort_node
+         JOIN (-- Agg (15)
+               SELECT n1,
+                      or_aggregate(G) as G
+                FROM (SELECT NULL AS n2, _xmt_sort_node.G AS n1, "false" AS G FROM _xmt_sort_node AS _xmt_sort_node 
+                      UNION ALL
+                      -- Join(22)
+                      SELECT _xmt_sort_node_2.G AS n2,
+                             _xmt_sort_node.G AS n1,
+                             apply("and", apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+                        FROM _xmt_sort_node AS _xmt_sort_node_2
+                        JOIN _xmt_sort_node)
+                GROUP BY n1
+               ) AS Agg_22_G ON  Agg_22_G.n1 = _xmt_sort_node.G)
+
+===  n ======================================
+ -- Join(0)
+SELECT _xmt_sort_node_26.G AS n,
+       _xmt_sort_node_26.G AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_26
+===  (reached n) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node_26.G AS n,
+       apply("reached", _xmt_sort_node_26.G) AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_26
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node_26.G AS n,
+       apply("reached", _xmt_sort_node_26.G) AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_26
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_node_26.G AS n,
+       apply("reached", _xmt_sort_node_26.G) AS G
+  FROM _xmt_sort_node AS _xmt_sort_node_26
+
+=== (top) (forall ((n Node)) (reached n)) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS n, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_sort_node_26.G AS n,
+              apply("reached", _xmt_sort_node_26.G) AS G
+         FROM _xmt_sort_node AS _xmt_sort_node_26)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_sort_node_26.G AS n,
+              apply("reached", _xmt_sort_node_26.G) AS G
+         FROM _xmt_sort_node AS _xmt_sort_node_26)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS n, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_sort_node_26.G AS n,
+              apply("reached", _xmt_sort_node_26.G) AS G
+         FROM _xmt_sort_node AS _xmt_sort_node_26)
+
+===========================================

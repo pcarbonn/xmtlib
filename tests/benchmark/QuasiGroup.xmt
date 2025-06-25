@@ -1,0 +1,1435 @@
+(set-option :backend none)
+
+(declare-fun Domain (Int) Bool)
+(x-interpret-pred Domain (x-set (1) (2)))
+
+(declare-fun v (Int Int) Bool)
+(declare-fun state (Int Int Int) Bool)
+(declare-fun assign (Int Int Int) Bool)
+(declare-fun assigned (Int) Bool)
+
+(assert (forall ((V Int))
+            (=> (Domain V)
+                (= (assigned V)
+                   (exists ((x Int) (y Int))
+                      (and (Domain x) (Domain y)
+                           (assign V x y)))))))
+
+(assert (forall ((V Int) (x1 Int) (x2 Int) (y Int))
+            (=> (and (Domain V) (Domain x1) (Domain x2) (Domain y))
+                (not (and (assign V x1 y) (assign V x2 y) (< x1 x2))))))
+
+(assert (forall ((V Int) (x Int) (y1 Int) (y2 Int))
+            (=> (and (Domain V) (Domain x) (Domain y1) (Domain y2))
+                (not (and (assign V x y1) (assign V x y2) (< y1 y2))))))
+
+(assert (forall ((s Int) (x Int) (y Int))
+            (=> (and (Domain s) (Domain x) (Domain y))
+                (not (and (state x y s) (not (assign s x y)))))))
+
+(assert (forall ((V Int))
+            (=> (Domain V)
+                (not (not (assigned V))))))
+
+(x-interpret-pred v (x-set (1 10) (2 20) ))
+(x-interpret-pred state (x-set (1 1 1)))
+
+(x-ground debug:)
+(x-debug solver groundings)
+------- RESULTS ------------------
+(declare-fun Domain (Int) Bool)
+(declare-fun v (Int Int) Bool)
+(declare-fun state (Int Int Int) Bool)
+(declare-fun assign (Int Int Int) Bool)
+(declare-fun assigned (Int) Bool)
+(assert (= (assigned 1) (or (assign 1 1 1) (assign 1 1 2) (assign 1 2 1) (assign 1 2 2))))
+(assert (= (assigned 2) (or (assign 2 1 1) (assign 2 1 2) (assign 2 2 1) (assign 2 2 2))))
+(assert (or (not (assign 1 1 1)) (not (assign 1 1 1)) true))
+(assert (or (not (assign 1 1 2)) (not (assign 1 1 2)) true))
+(assert (or (not (assign 1 1 1)) (not (assign 1 2 1)) false))
+(assert (or (not (assign 1 1 2)) (not (assign 1 2 2)) false))
+(assert (or (not (assign 1 2 1)) (not (assign 1 1 1)) true))
+(assert (or (not (assign 1 2 2)) (not (assign 1 1 2)) true))
+(assert (or (not (assign 1 2 1)) (not (assign 1 2 1)) true))
+(assert (or (not (assign 1 2 2)) (not (assign 1 2 2)) true))
+(assert (or (not (assign 2 1 1)) (not (assign 2 1 1)) true))
+(assert (or (not (assign 2 1 2)) (not (assign 2 1 2)) true))
+(assert (or (not (assign 2 1 1)) (not (assign 2 2 1)) false))
+(assert (or (not (assign 2 1 2)) (not (assign 2 2 2)) false))
+(assert (or (not (assign 2 2 1)) (not (assign 2 1 1)) true))
+(assert (or (not (assign 2 2 2)) (not (assign 2 1 2)) true))
+(assert (or (not (assign 2 2 1)) (not (assign 2 2 1)) true))
+(assert (or (not (assign 2 2 2)) (not (assign 2 2 2)) true))
+(assert (or (not (assign 1 1 1)) (not (assign 1 1 1)) true))
+(assert (or (not (assign 1 1 1)) (not (assign 1 1 2)) false))
+(assert (or (not (assign 1 1 2)) (not (assign 1 1 1)) true))
+(assert (or (not (assign 1 1 2)) (not (assign 1 1 2)) true))
+(assert (or (not (assign 1 2 1)) (not (assign 1 2 1)) true))
+(assert (or (not (assign 1 2 1)) (not (assign 1 2 2)) false))
+(assert (or (not (assign 1 2 2)) (not (assign 1 2 1)) true))
+(assert (or (not (assign 1 2 2)) (not (assign 1 2 2)) true))
+(assert (or (not (assign 2 1 1)) (not (assign 2 1 1)) true))
+(assert (or (not (assign 2 1 1)) (not (assign 2 1 2)) false))
+(assert (or (not (assign 2 1 2)) (not (assign 2 1 1)) true))
+(assert (or (not (assign 2 1 2)) (not (assign 2 1 2)) true))
+(assert (or (not (assign 2 2 1)) (not (assign 2 2 1)) true))
+(assert (or (not (assign 2 2 1)) (not (assign 2 2 2)) false))
+(assert (or (not (assign 2 2 2)) (not (assign 2 2 1)) true))
+(assert (or (not (assign 2 2 2)) (not (assign 2 2 2)) true))
+(assert (not (not (assign 1 1 1))))
+(assert (not (not (assigned 1))))
+(assert (not (not (assigned 2))))
+Groundings:
+===  V ======================================
+ -- Join(0)
+SELECT "V" AS V,
+       "V" AS G
+===  (Domain V) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+       "true" AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       apply("Domain", "V") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       apply("Domain", "V") AS G
+
+===  (not (Domain V)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       apply("not", apply("Domain", "V")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+       "false" AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       apply("not", apply("Domain", "V")) AS G
+
+===  (assigned V) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       apply("assigned", "V") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       apply("assigned", "V") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       apply("assigned", "V") AS G
+
+===  x ======================================
+ -- Join(0)
+SELECT "x" AS x,
+       "x" AS G
+===  (Domain x) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_5.a_1 AS x,
+       "true" AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("Domain", "x") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("Domain", "x") AS G
+
+===  y ======================================
+ -- Join(0)
+SELECT "y" AS y,
+       "y" AS G
+===  (Domain y) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_7.a_1 AS y,
+       "true" AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "y" AS y,
+       apply("Domain", "y") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "y" AS y,
+       apply("Domain", "y") AS G
+
+===  (assign V x y) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x" AS x,
+       "y" AS y,
+       apply("assign", "V", "x", "y") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x" AS x,
+       "y" AS y,
+       apply("assign", "V", "x", "y") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x" AS x,
+       "y" AS y,
+       apply("assign", "V", "x", "y") AS G
+
+===  (and (Domain x) (Domain y) (assign V x y)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_5.a_1 AS x,
+       _xmt_interp_domain_TU_7.a_1 AS y,
+       "V" AS V,
+       apply("assign", "V", _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1) AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+  JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT x, y, V,
+       and_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              "V" AS V,
+              apply("Domain", "x") AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              "V" AS V,
+              apply("Domain", "y") AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              "V" AS V,
+              apply("assign", "V", "x", "y") AS G)
+ GROUP BY x, y, V
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       "V" AS V,
+       apply("and", apply("Domain", "x"), apply("Domain", "y"), apply("assign", "V", "x", "y")) AS G
+
+===  (exists ((x Int) (y Int)) (and (Domain x) (Domain y) (assign V x y))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT V,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT _xmt_interp_domain_TU_5.a_1 AS x,
+              _xmt_interp_domain_TU_7.a_1 AS y,
+              "V" AS V,
+              apply("assign", "V", _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1) AS G
+         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7)
+ GROUP BY V
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT V,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT _xmt_interp_domain_TU_5.a_1 AS x,
+              _xmt_interp_domain_TU_7.a_1 AS y,
+              "V" AS V,
+              apply("assign", "V", _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1) AS G
+         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7)
+ GROUP BY V
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT V,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT _xmt_interp_domain_TU_5.a_1 AS x,
+              _xmt_interp_domain_TU_7.a_1 AS y,
+              "V" AS V,
+              apply("assign", "V", _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1) AS G
+         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7)
+ GROUP BY V
+
+===  (= (assigned V) (exists ((x Int) (y Int)) (and (Domain x) (Domain y) (assign V x y)))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT Agg_10_G.V AS V,
+       apply("=", apply("assigned", Agg_10_G.V), Agg_10_G.G) AS G
+  FROM (-- Agg (8)
+        SELECT V,
+               or_aggregate(G) as G
+         FROM (-- Join(15)
+               SELECT _xmt_interp_domain_TU_5.a_1 AS x,
+                      _xmt_interp_domain_TU_7.a_1 AS y,
+                      "V" AS V,
+                      apply("assign", "V", _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1) AS G
+                 FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+                 JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7)
+         GROUP BY V
+        ) AS Agg_10_G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT Outer_0.V AS V,
+       bool_eq_("true", Outer_0.G, Agg_10_UF.G) AS G
+  FROM (-- Join(8)
+        SELECT "V" AS V,
+               apply("assigned", "V") AS G
+        ) AS Outer_0
+  FULL JOIN (-- Agg (8)
+        SELECT V,
+               or_aggregate(G) as G
+         FROM (-- Join(15)
+               SELECT _xmt_interp_domain_TU_5.a_1 AS x,
+                      _xmt_interp_domain_TU_7.a_1 AS y,
+                      "V" AS V,
+                      apply("assign", "V", _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1) AS G
+                 FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+                 JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7)
+         GROUP BY V
+        ) AS Agg_10_UF ON  Agg_10_UF.V = Outer_0.V
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT Agg_10_G.V AS V,
+       apply("=", apply("assigned", Agg_10_G.V), Agg_10_G.G) AS G
+  FROM (-- Agg (8)
+        SELECT V,
+               or_aggregate(G) as G
+         FROM (-- Join(15)
+               SELECT _xmt_interp_domain_TU_5.a_1 AS x,
+                      _xmt_interp_domain_TU_7.a_1 AS y,
+                      "V" AS V,
+                      apply("assign", "V", _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1) AS G
+                 FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+                 JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7)
+         GROUP BY V
+        ) AS Agg_10_G
+
+===  (or (not (Domain V)) (= (assigned V) (exists ((x Int) (y Int)) (and (Domain x) (Domain y) (assign V x y))))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT V,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT "V" AS V,
+              apply("not", apply("Domain", "V")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT Agg_10_G.V AS V,
+              apply("=", apply("assigned", Agg_10_G.V), Agg_10_G.G) AS G
+         FROM (-- Agg (15)
+               SELECT V,
+                      or_aggregate(G) as G
+                FROM (-- Join(22)
+                      SELECT _xmt_interp_domain_TU_5.a_1 AS x,
+                             _xmt_interp_domain_TU_7.a_1 AS y,
+                             "V" AS V,
+                             apply("assign", "V", _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1) AS G
+                        FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+                        JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7)
+                GROUP BY V
+               ) AS Agg_10_G)
+ GROUP BY V
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+       _xmt_view__11_21.G AS G
+  FROM (-- Join(8)
+        SELECT Outer_0.V AS V,
+               bool_eq_("true", Outer_0.G, Agg_10_UF.G) AS G
+          FROM (-- Join(16)
+                SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+                       apply("assigned", _xmt_interp_domain_TU_1.a_1) AS G
+                  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+                ) AS Outer_0
+          FULL JOIN (-- Agg (16)
+                SELECT V,
+                       or_aggregate(G) as G
+                 FROM (-- Join(23)
+                       SELECT _xmt_interp_domain_TU_5.a_1 AS x,
+                              _xmt_interp_domain_TU_7.a_1 AS y,
+                              _xmt_interp_domain_TU_1.a_1 AS V,
+                              apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1) AS G
+                         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+                         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7
+                         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)
+                 GROUP BY V
+                ) AS Agg_10_UF ON  Agg_10_UF.V = Outer_0.V
+        ) AS _xmt_view__11_21
+  JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+ WHERE  _xmt_view__11_21.V = _xmt_interp_domain_TU_1.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT Agg_10_G.V AS V,
+       apply("or", apply("not", apply("Domain", Agg_10_G.V)), apply("=", apply("assigned", Agg_10_G.V), Agg_10_G.G)) AS G
+  FROM (-- Agg (8)
+        SELECT V,
+               or_aggregate(G) as G
+         FROM (-- Join(15)
+               SELECT _xmt_interp_domain_TU_5.a_1 AS x,
+                      _xmt_interp_domain_TU_7.a_1 AS y,
+                      "V" AS V,
+                      apply("assign", "V", _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1) AS G
+                 FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+                 JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7)
+         GROUP BY V
+        ) AS Agg_10_G
+
+=== (top) (forall ((V Int)) (or (not (Domain V)) (= (assigned V) (exists ((x Int) (y Int)) (and (Domain x) (Domain y) (assign V x y)))))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS V, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+              _xmt_view__11_21.G AS G
+         FROM (-- Join(15)
+               SELECT Outer_0.V AS V,
+                      bool_eq_("true", Outer_0.G, Agg_10_UF.G) AS G
+                 FROM (-- Join(23)
+                       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+                              apply("assigned", _xmt_interp_domain_TU_1.a_1) AS G
+                         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+                       ) AS Outer_0
+                 FULL JOIN (-- Agg (23)
+                       SELECT V,
+                              or_aggregate(G) as G
+                        FROM (-- Join(30)
+                              SELECT _xmt_interp_domain_TU_5.a_1 AS x,
+                                     _xmt_interp_domain_TU_7.a_1 AS y,
+                                     _xmt_interp_domain_TU_1.a_1 AS V,
+                                     apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1) AS G
+                                FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+                                JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7
+                                JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)
+                        GROUP BY V
+                       ) AS Agg_10_UF ON  Agg_10_UF.V = Outer_0.V
+               ) AS _xmt_view__11_21
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+        WHERE  _xmt_view__11_21.V = _xmt_interp_domain_TU_1.a_1)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+              _xmt_view__11_21.G AS G
+         FROM (-- Join(15)
+               SELECT Outer_0.V AS V,
+                      bool_eq_("true", Outer_0.G, Agg_10_UF.G) AS G
+                 FROM (-- Join(23)
+                       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+                              apply("assigned", _xmt_interp_domain_TU_1.a_1) AS G
+                         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+                       ) AS Outer_0
+                 FULL JOIN (-- Agg (23)
+                       SELECT V,
+                              or_aggregate(G) as G
+                        FROM (-- Join(30)
+                              SELECT _xmt_interp_domain_TU_5.a_1 AS x,
+                                     _xmt_interp_domain_TU_7.a_1 AS y,
+                                     _xmt_interp_domain_TU_1.a_1 AS V,
+                                     apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1) AS G
+                                FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+                                JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7
+                                JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)
+                        GROUP BY V
+                       ) AS Agg_10_UF ON  Agg_10_UF.V = Outer_0.V
+               ) AS _xmt_view__11_21
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+        WHERE  _xmt_view__11_21.V = _xmt_interp_domain_TU_1.a_1)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS V, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+              _xmt_view__11_21.G AS G
+         FROM (-- Join(15)
+               SELECT Outer_0.V AS V,
+                      bool_eq_("true", Outer_0.G, Agg_10_UF.G) AS G
+                 FROM (-- Join(23)
+                       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+                              apply("assigned", _xmt_interp_domain_TU_1.a_1) AS G
+                         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+                       ) AS Outer_0
+                 FULL JOIN (-- Agg (23)
+                       SELECT V,
+                              or_aggregate(G) as G
+                        FROM (-- Join(30)
+                              SELECT _xmt_interp_domain_TU_5.a_1 AS x,
+                                     _xmt_interp_domain_TU_7.a_1 AS y,
+                                     _xmt_interp_domain_TU_1.a_1 AS V,
+                                     apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1) AS G
+                                FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+                                JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7
+                                JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)
+                        GROUP BY V
+                       ) AS Agg_10_UF ON  Agg_10_UF.V = Outer_0.V
+               ) AS _xmt_view__11_21
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+        WHERE  _xmt_view__11_21.V = _xmt_interp_domain_TU_1.a_1)
+
+===  x1 ======================================
+ -- Join(0)
+SELECT "x1" AS x1,
+       "x1" AS G
+===  (Domain x1) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_15.a_1 AS x1,
+       "true" AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_15
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x1" AS x1,
+       apply("Domain", "x1") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x1" AS x1,
+       apply("Domain", "x1") AS G
+
+===  (not (Domain x1)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x1" AS x1,
+       apply("not", apply("Domain", "x1")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_15.a_1 AS x1,
+       "false" AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_15
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x1" AS x1,
+       apply("not", apply("Domain", "x1")) AS G
+
+===  x2 ======================================
+ -- Join(0)
+SELECT "x2" AS x2,
+       "x2" AS G
+===  (Domain x2) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_18.a_1 AS x2,
+       "true" AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_18
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x2" AS x2,
+       apply("Domain", "x2") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x2" AS x2,
+       apply("Domain", "x2") AS G
+
+===  (not (Domain x2)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x2" AS x2,
+       apply("not", apply("Domain", "x2")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_18.a_1 AS x2,
+       "false" AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_18
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x2" AS x2,
+       apply("not", apply("Domain", "x2")) AS G
+
+===  (not (Domain y)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "y" AS y,
+       apply("not", apply("Domain", "y")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_7.a_1 AS y,
+       "false" AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "y" AS y,
+       apply("not", apply("Domain", "y")) AS G
+
+===  (assign V x1 y) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x1" AS x1,
+       "y" AS y,
+       apply("assign", "V", "x1", "y") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x1" AS x1,
+       "y" AS y,
+       apply("assign", "V", "x1", "y") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x1" AS x1,
+       "y" AS y,
+       apply("assign", "V", "x1", "y") AS G
+
+===  (not (assign V x1 y)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x1" AS x1,
+       "y" AS y,
+       apply("not", apply("assign", "V", "x1", "y")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x1" AS x1,
+       "y" AS y,
+       apply("not", apply("assign", "V", "x1", "y")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x1" AS x1,
+       "y" AS y,
+       apply("not", apply("assign", "V", "x1", "y")) AS G
+
+===  (assign V x2 y) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x2" AS x2,
+       "y" AS y,
+       apply("assign", "V", "x2", "y") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x2" AS x2,
+       "y" AS y,
+       apply("assign", "V", "x2", "y") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x2" AS x2,
+       "y" AS y,
+       apply("assign", "V", "x2", "y") AS G
+
+===  (not (assign V x2 y)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x2" AS x2,
+       "y" AS y,
+       apply("not", apply("assign", "V", "x2", "y")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x2" AS x2,
+       "y" AS y,
+       apply("not", apply("assign", "V", "x2", "y")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x2" AS x2,
+       "y" AS y,
+       apply("not", apply("assign", "V", "x2", "y")) AS G
+
+===  (< x1 x2) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x1" AS x1,
+       "x2" AS x2,
+       apply("<", "x1", "x2") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x1" AS x1,
+       "x2" AS x2,
+       apply("<", "x1", "x2") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x1" AS x1,
+       "x2" AS x2,
+       apply("<", "x1", "x2") AS G
+
+===  (not (< x1 x2)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x1" AS x1,
+       "x2" AS x2,
+       apply("not", apply("<", "x1", "x2")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x1" AS x1,
+       "x2" AS x2,
+       apply("not", apply("<", "x1", "x2")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x1" AS x1,
+       "x2" AS x2,
+       apply("not", apply("<", "x1", "x2")) AS G
+
+===  (or (not (Domain V)) (not (Domain x1)) (not (Domain x2)) (not (Domain y)) (not (assign V x1 y)) (not (assign V x2 y)) (not (< x1 x2))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT V, x1, x2, y,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT "V" AS V,
+              "x1" AS x1,
+              "x2" AS x2,
+              "y" AS y,
+              apply("not", apply("Domain", "V")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "V" AS V,
+              "x1" AS x1,
+              "x2" AS x2,
+              "y" AS y,
+              apply("not", apply("Domain", "x1")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "V" AS V,
+              "x1" AS x1,
+              "x2" AS x2,
+              "y" AS y,
+              apply("not", apply("Domain", "x2")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "V" AS V,
+              "x1" AS x1,
+              "x2" AS x2,
+              "y" AS y,
+              apply("not", apply("Domain", "y")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "V" AS V,
+              "x1" AS x1,
+              "x2" AS x2,
+              "y" AS y,
+              apply("not", apply("assign", "V", "x1", "y")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "V" AS V,
+              "x1" AS x1,
+              "x2" AS x2,
+              "y" AS y,
+              apply("not", apply("assign", "V", "x2", "y")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "V" AS V,
+              "x1" AS x1,
+              "x2" AS x2,
+              "y" AS y,
+              apply("not", apply("<", "x1", "x2")) AS G)
+ GROUP BY V, x1, x2, y
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+       _xmt_interp_domain_TU_15.a_1 AS x1,
+       _xmt_interp_domain_TU_18.a_1 AS x2,
+       _xmt_interp_domain_TU_7.a_1 AS y,
+       apply("or", apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_7.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_18.a_1, _xmt_interp_domain_TU_7.a_1)), not_(compare_("<", _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_18.a_1))) AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+  JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_15
+  JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_18
+  JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x1" AS x1,
+       "x2" AS x2,
+       "y" AS y,
+       apply("or", apply("not", apply("Domain", "V")), apply("not", apply("Domain", "x1")), apply("not", apply("Domain", "x2")), apply("not", apply("Domain", "y")), apply("not", apply("assign", "V", "x1", "y")), apply("not", apply("assign", "V", "x2", "y")), apply("not", apply("<", "x1", "x2"))) AS G
+
+=== (top) (forall ((V Int) (x1 Int) (x2 Int) (y Int)) (or (not (Domain V)) (not (Domain x1)) (not (Domain x2)) (not (Domain y)) (not (assign V x1 y)) (not (assign V x2 y)) (not (< x1 x2)))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS V, NULL AS x1, NULL AS x2, NULL AS y, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+              _xmt_interp_domain_TU_15.a_1 AS x1,
+              _xmt_interp_domain_TU_18.a_1 AS x2,
+              _xmt_interp_domain_TU_7.a_1 AS y,
+              apply("or", apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_7.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_18.a_1, _xmt_interp_domain_TU_7.a_1)), not_(compare_("<", _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_18.a_1))) AS G
+         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_15
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_18
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+              _xmt_interp_domain_TU_15.a_1 AS x1,
+              _xmt_interp_domain_TU_18.a_1 AS x2,
+              _xmt_interp_domain_TU_7.a_1 AS y,
+              apply("or", apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_7.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_18.a_1, _xmt_interp_domain_TU_7.a_1)), not_(compare_("<", _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_18.a_1))) AS G
+         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_15
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_18
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS V, NULL AS x1, NULL AS x2, NULL AS y, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+              _xmt_interp_domain_TU_15.a_1 AS x1,
+              _xmt_interp_domain_TU_18.a_1 AS x2,
+              _xmt_interp_domain_TU_7.a_1 AS y,
+              apply("or", apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_7.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_18.a_1, _xmt_interp_domain_TU_7.a_1)), not_(compare_("<", _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_18.a_1))) AS G
+         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_15
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_18
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7)
+
+===  (not (Domain x)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("not", apply("Domain", "x")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_5.a_1 AS x,
+       "false" AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("not", apply("Domain", "x")) AS G
+
+===  y1 ======================================
+ -- Join(0)
+SELECT "y1" AS y1,
+       "y1" AS G
+===  (Domain y1) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_31.a_1 AS y1,
+       "true" AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_31
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "y1" AS y1,
+       apply("Domain", "y1") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "y1" AS y1,
+       apply("Domain", "y1") AS G
+
+===  (not (Domain y1)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "y1" AS y1,
+       apply("not", apply("Domain", "y1")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_31.a_1 AS y1,
+       "false" AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_31
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "y1" AS y1,
+       apply("not", apply("Domain", "y1")) AS G
+
+===  y2 ======================================
+ -- Join(0)
+SELECT "y2" AS y2,
+       "y2" AS G
+===  (Domain y2) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_34.a_1 AS y2,
+       "true" AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_34
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "y2" AS y2,
+       apply("Domain", "y2") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "y2" AS y2,
+       apply("Domain", "y2") AS G
+
+===  (not (Domain y2)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "y2" AS y2,
+       apply("not", apply("Domain", "y2")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_34.a_1 AS y2,
+       "false" AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_34
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "y2" AS y2,
+       apply("not", apply("Domain", "y2")) AS G
+
+===  (assign V x y1) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x" AS x,
+       "y1" AS y1,
+       apply("assign", "V", "x", "y1") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x" AS x,
+       "y1" AS y1,
+       apply("assign", "V", "x", "y1") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x" AS x,
+       "y1" AS y1,
+       apply("assign", "V", "x", "y1") AS G
+
+===  (not (assign V x y1)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x" AS x,
+       "y1" AS y1,
+       apply("not", apply("assign", "V", "x", "y1")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x" AS x,
+       "y1" AS y1,
+       apply("not", apply("assign", "V", "x", "y1")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x" AS x,
+       "y1" AS y1,
+       apply("not", apply("assign", "V", "x", "y1")) AS G
+
+===  (assign V x y2) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x" AS x,
+       "y2" AS y2,
+       apply("assign", "V", "x", "y2") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x" AS x,
+       "y2" AS y2,
+       apply("assign", "V", "x", "y2") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x" AS x,
+       "y2" AS y2,
+       apply("assign", "V", "x", "y2") AS G
+
+===  (not (assign V x y2)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x" AS x,
+       "y2" AS y2,
+       apply("not", apply("assign", "V", "x", "y2")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x" AS x,
+       "y2" AS y2,
+       apply("not", apply("assign", "V", "x", "y2")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x" AS x,
+       "y2" AS y2,
+       apply("not", apply("assign", "V", "x", "y2")) AS G
+
+===  (< y1 y2) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "y1" AS y1,
+       "y2" AS y2,
+       apply("<", "y1", "y2") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "y1" AS y1,
+       "y2" AS y2,
+       apply("<", "y1", "y2") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "y1" AS y1,
+       "y2" AS y2,
+       apply("<", "y1", "y2") AS G
+
+===  (not (< y1 y2)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "y1" AS y1,
+       "y2" AS y2,
+       apply("not", apply("<", "y1", "y2")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "y1" AS y1,
+       "y2" AS y2,
+       apply("not", apply("<", "y1", "y2")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "y1" AS y1,
+       "y2" AS y2,
+       apply("not", apply("<", "y1", "y2")) AS G
+
+===  (or (not (Domain V)) (not (Domain x)) (not (Domain y1)) (not (Domain y2)) (not (assign V x y1)) (not (assign V x y2)) (not (< y1 y2))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT V, x, y1, y2,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT "V" AS V,
+              "x" AS x,
+              "y1" AS y1,
+              "y2" AS y2,
+              apply("not", apply("Domain", "V")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "V" AS V,
+              "x" AS x,
+              "y1" AS y1,
+              "y2" AS y2,
+              apply("not", apply("Domain", "x")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "V" AS V,
+              "x" AS x,
+              "y1" AS y1,
+              "y2" AS y2,
+              apply("not", apply("Domain", "y1")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "V" AS V,
+              "x" AS x,
+              "y1" AS y1,
+              "y2" AS y2,
+              apply("not", apply("Domain", "y2")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "V" AS V,
+              "x" AS x,
+              "y1" AS y1,
+              "y2" AS y2,
+              apply("not", apply("assign", "V", "x", "y1")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "V" AS V,
+              "x" AS x,
+              "y1" AS y1,
+              "y2" AS y2,
+              apply("not", apply("assign", "V", "x", "y2")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "V" AS V,
+              "x" AS x,
+              "y1" AS y1,
+              "y2" AS y2,
+              apply("not", apply("<", "y1", "y2")) AS G)
+ GROUP BY V, x, y1, y2
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+       _xmt_interp_domain_TU_5.a_1 AS x,
+       _xmt_interp_domain_TU_31.a_1 AS y1,
+       _xmt_interp_domain_TU_34.a_1 AS y2,
+       apply("or", apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_31.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_34.a_1)), not_(compare_("<", _xmt_interp_domain_TU_31.a_1, _xmt_interp_domain_TU_34.a_1))) AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+  JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+  JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_31
+  JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_34
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       "x" AS x,
+       "y1" AS y1,
+       "y2" AS y2,
+       apply("or", apply("not", apply("Domain", "V")), apply("not", apply("Domain", "x")), apply("not", apply("Domain", "y1")), apply("not", apply("Domain", "y2")), apply("not", apply("assign", "V", "x", "y1")), apply("not", apply("assign", "V", "x", "y2")), apply("not", apply("<", "y1", "y2"))) AS G
+
+=== (top) (forall ((V Int) (x Int) (y1 Int) (y2 Int)) (or (not (Domain V)) (not (Domain x)) (not (Domain y1)) (not (Domain y2)) (not (assign V x y1)) (not (assign V x y2)) (not (< y1 y2)))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS V, NULL AS x, NULL AS y1, NULL AS y2, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+              _xmt_interp_domain_TU_5.a_1 AS x,
+              _xmt_interp_domain_TU_31.a_1 AS y1,
+              _xmt_interp_domain_TU_34.a_1 AS y2,
+              apply("or", apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_31.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_34.a_1)), not_(compare_("<", _xmt_interp_domain_TU_31.a_1, _xmt_interp_domain_TU_34.a_1))) AS G
+         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_31
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_34)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+              _xmt_interp_domain_TU_5.a_1 AS x,
+              _xmt_interp_domain_TU_31.a_1 AS y1,
+              _xmt_interp_domain_TU_34.a_1 AS y2,
+              apply("or", apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_31.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_34.a_1)), not_(compare_("<", _xmt_interp_domain_TU_31.a_1, _xmt_interp_domain_TU_34.a_1))) AS G
+         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_31
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_34)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS V, NULL AS x, NULL AS y1, NULL AS y2, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+              _xmt_interp_domain_TU_5.a_1 AS x,
+              _xmt_interp_domain_TU_31.a_1 AS y1,
+              _xmt_interp_domain_TU_34.a_1 AS y2,
+              apply("or", apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_31.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_34.a_1)), not_(compare_("<", _xmt_interp_domain_TU_31.a_1, _xmt_interp_domain_TU_34.a_1))) AS G
+         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_31
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_34)
+
+===  s ======================================
+ -- Join(0)
+SELECT "s" AS s,
+       "s" AS G
+===  (Domain s) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_45.a_1 AS s,
+       "true" AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_45
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "s" AS s,
+       apply("Domain", "s") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "s" AS s,
+       apply("Domain", "s") AS G
+
+===  (not (Domain s)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "s" AS s,
+       apply("not", apply("Domain", "s")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_45.a_1 AS s,
+       "false" AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_45
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "s" AS s,
+       apply("not", apply("Domain", "s")) AS G
+
+===  (state x y s) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_state_TU_47.a_1 AS x,
+       _xmt_interp_state_TU_47.a_2 AS y,
+       _xmt_interp_state_TU_47.a_3 AS s,
+       "true" AS G
+  FROM _xmt_interp_state_TU AS _xmt_interp_state_TU_47
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       "s" AS s,
+       apply("state", "x", "y", "s") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       "s" AS s,
+       apply("state", "x", "y", "s") AS G
+
+===  (not (state x y s)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       "s" AS s,
+       apply("not", apply("state", "x", "y", "s")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_state_TU_47.a_1 AS x,
+       _xmt_interp_state_TU_47.a_2 AS y,
+       _xmt_interp_state_TU_47.a_3 AS s,
+       "false" AS G
+  FROM _xmt_interp_state_TU AS _xmt_interp_state_TU_47
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       "s" AS s,
+       apply("not", apply("state", "x", "y", "s")) AS G
+
+===  (assign s x y) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "s" AS s,
+       "x" AS x,
+       "y" AS y,
+       apply("assign", "s", "x", "y") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "s" AS s,
+       "x" AS x,
+       "y" AS y,
+       apply("assign", "s", "x", "y") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "s" AS s,
+       "x" AS x,
+       "y" AS y,
+       apply("assign", "s", "x", "y") AS G
+
+===  (not (assign s x y)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "s" AS s,
+       "x" AS x,
+       "y" AS y,
+       apply("not", apply("assign", "s", "x", "y")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "s" AS s,
+       "x" AS x,
+       "y" AS y,
+       apply("not", apply("assign", "s", "x", "y")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "s" AS s,
+       "x" AS x,
+       "y" AS y,
+       apply("not", apply("assign", "s", "x", "y")) AS G
+
+===  (not (not (assign s x y))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "s" AS s,
+       "x" AS x,
+       "y" AS y,
+       apply("not", apply("not", apply("assign", "s", "x", "y"))) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "s" AS s,
+       "x" AS x,
+       "y" AS y,
+       apply("not", apply("not", apply("assign", "s", "x", "y"))) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "s" AS s,
+       "x" AS x,
+       "y" AS y,
+       apply("not", apply("not", apply("assign", "s", "x", "y"))) AS G
+
+===  (or (not (Domain s)) (not (Domain x)) (not (Domain y)) (not (state x y s)) (not (not (assign s x y)))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT s, x, y,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT "s" AS s,
+              "x" AS x,
+              "y" AS y,
+              apply("not", apply("Domain", "s")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "s" AS s,
+              "x" AS x,
+              "y" AS y,
+              apply("not", apply("Domain", "x")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "s" AS s,
+              "x" AS x,
+              "y" AS y,
+              apply("not", apply("Domain", "y")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "s" AS s,
+              "x" AS x,
+              "y" AS y,
+              apply("not", apply("state", "x", "y", "s")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "s" AS s,
+              "x" AS x,
+              "y" AS y,
+              apply("not", apply("not", apply("assign", "s", "x", "y"))) AS G)
+ GROUP BY s, x, y
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_45.a_1 AS s,
+       _xmt_interp_domain_TU_5.a_1 AS x,
+       _xmt_interp_domain_TU_7.a_1 AS y,
+       apply("not", apply("not", apply("assign", _xmt_interp_domain_TU_45.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1))) AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_45
+  JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+  JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7
+  JOIN _xmt_interp_state_TU AS _xmt_interp_state_TU_47
+        ON _xmt_interp_domain_TU_5.a_1 = _xmt_interp_state_TU_47.a_1 
+       AND _xmt_interp_domain_TU_7.a_1 = _xmt_interp_state_TU_47.a_2 
+       AND _xmt_interp_domain_TU_45.a_1 = _xmt_interp_state_TU_47.a_3
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "s" AS s,
+       "x" AS x,
+       "y" AS y,
+       apply("or", apply("not", apply("Domain", "s")), apply("not", apply("Domain", "x")), apply("not", apply("Domain", "y")), apply("not", apply("state", "x", "y", "s")), apply("not", apply("not", apply("assign", "s", "x", "y")))) AS G
+
+=== (top) (forall ((s Int) (x Int) (y Int)) (or (not (Domain s)) (not (Domain x)) (not (Domain y)) (not (state x y s)) (not (not (assign s x y))))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS s, NULL AS x, NULL AS y, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_domain_TU_45.a_1 AS s,
+              _xmt_interp_domain_TU_5.a_1 AS x,
+              _xmt_interp_domain_TU_7.a_1 AS y,
+              apply("not", apply("not", apply("assign", _xmt_interp_domain_TU_45.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1))) AS G
+         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_45
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7
+         JOIN _xmt_interp_state_TU AS _xmt_interp_state_TU_47
+               ON _xmt_interp_domain_TU_5.a_1 = _xmt_interp_state_TU_47.a_1 
+              AND _xmt_interp_domain_TU_7.a_1 = _xmt_interp_state_TU_47.a_2 
+              AND _xmt_interp_domain_TU_45.a_1 = _xmt_interp_state_TU_47.a_3)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_interp_domain_TU_45.a_1 AS s,
+              _xmt_interp_domain_TU_5.a_1 AS x,
+              _xmt_interp_domain_TU_7.a_1 AS y,
+              apply("not", apply("not", apply("assign", _xmt_interp_domain_TU_45.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1))) AS G
+         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_45
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7
+         JOIN _xmt_interp_state_TU AS _xmt_interp_state_TU_47
+               ON _xmt_interp_domain_TU_5.a_1 = _xmt_interp_state_TU_47.a_1 
+              AND _xmt_interp_domain_TU_7.a_1 = _xmt_interp_state_TU_47.a_2 
+              AND _xmt_interp_domain_TU_45.a_1 = _xmt_interp_state_TU_47.a_3)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS s, NULL AS x, NULL AS y, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_domain_TU_45.a_1 AS s,
+              _xmt_interp_domain_TU_5.a_1 AS x,
+              _xmt_interp_domain_TU_7.a_1 AS y,
+              apply("not", apply("not", apply("assign", _xmt_interp_domain_TU_45.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1))) AS G
+         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_45
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7
+         JOIN _xmt_interp_state_TU AS _xmt_interp_state_TU_47
+               ON _xmt_interp_domain_TU_5.a_1 = _xmt_interp_state_TU_47.a_1 
+              AND _xmt_interp_domain_TU_7.a_1 = _xmt_interp_state_TU_47.a_2 
+              AND _xmt_interp_domain_TU_45.a_1 = _xmt_interp_state_TU_47.a_3)
+
+===  (not (assigned V)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       apply("not", apply("assigned", "V")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       apply("not", apply("assigned", "V")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       apply("not", apply("assigned", "V")) AS G
+
+===  (not (not (assigned V))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       apply("not", apply("not", apply("assigned", "V"))) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       apply("not", apply("not", apply("assigned", "V"))) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       apply("not", apply("not", apply("assigned", "V"))) AS G
+
+===  (or (not (Domain V)) (not (not (assigned V)))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT V,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT "V" AS V,
+              apply("not", apply("Domain", "V")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "V" AS V,
+              apply("not", apply("not", apply("assigned", "V"))) AS G)
+ GROUP BY V
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+       apply("not", apply("not", apply("assigned", _xmt_interp_domain_TU_1.a_1))) AS G
+  FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "V" AS V,
+       apply("or", apply("not", apply("Domain", "V")), apply("not", apply("not", apply("assigned", "V")))) AS G
+
+=== (top) (forall ((V Int)) (or (not (Domain V)) (not (not (assigned V))))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS V, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+              apply("not", apply("not", apply("assigned", _xmt_interp_domain_TU_1.a_1))) AS G
+         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+              apply("not", apply("not", apply("assigned", _xmt_interp_domain_TU_1.a_1))) AS G
+         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS V, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+              apply("not", apply("not", apply("assigned", _xmt_interp_domain_TU_1.a_1))) AS G
+         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)
+
+===========================================
