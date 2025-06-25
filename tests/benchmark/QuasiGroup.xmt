@@ -1,7 +1,7 @@
 (set-option :backend none)
 
 (declare-fun Domain (Int) Bool)
-(x-interpret-pred Domain (x-set (1) (2)))
+(x-interpret-pred Domain (x-range 1 2))
 
 (declare-fun v (Int Int) Bool)
 (declare-fun state (Int Int Int) Bool)

@@ -1,10 +1,10 @@
 (set-option :backend none)
 
 (declare-fun number (Int) Bool)
-(x-interpret-pred number (x-set (1) (2) (3) ))
+(x-interpret-pred number (x-range 1 3) )
 
 (declare-fun smallnumber (Int) Bool)
-(x-interpret-pred smallnumber (x-set (1) (2) (3) ))
+(x-interpret-pred smallnumber (x-range 1 3) )
 
 (declare-fun patternlengthf () Int)
 (declare-fun pf (Int) Int)

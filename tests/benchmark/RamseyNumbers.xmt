@@ -1,7 +1,7 @@
 (set-option :backend none)
 
 (declare-fun Node (Int) Bool)
-(x-interpret-pred Node (x-set (1) (2) ))
+(x-interpret-pred Node (x-range 1 2))
 
 (declare-fun blue (Int Int) Bool)
 (declare-fun red (Int Int) Bool)
