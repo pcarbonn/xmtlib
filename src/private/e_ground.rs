@@ -702,18 +702,11 @@ fn ground_compound(
         FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g } => {
             let (tus, ufs) = collect_tu_uf(&groundings);
 
-            let mut new_queries = vec![];
+            let table_tu = table_tu.clone();
+            let table_uf = table_uf.clone();
+            let table_g  = table_g .clone();
 
-            for ((table, groundings), view_type)
-            in [table_tu.clone(), table_uf.clone(), table_g.clone()].iter()
-                .zip([tus, ufs, gqs.to_vec()])
-                .zip([ViewType::TU, ViewType::UF, ViewType::G]) {
-
-                let exclude = match view_type {
-                    ViewType::TU => Some(false),
-                    ViewType::UF => Some(true),
-                    ViewType::G  => None
-                };
+            let mut view = |table, groundings, exclude | {
                 let variant = match table {
                     Interpretation::Table{name, ids} => {
                         let table_name = TableAlias::new(name.clone(), index);
@@ -721,11 +714,13 @@ fn ground_compound(
                     },
                     Interpretation::Infinite => QueryVariant::Apply
                 };
-                let new_view = view_for_join(qual_identifier, index, &groundings, &variant, exclude, solver)?;
-                new_queries.push(new_view);
+                view_for_join(qual_identifier, index, &groundings, &variant, exclude, solver)
             };
+            let tu = view(table_tu, tus, Some(false))?;
+            let uf = view(table_uf, ufs, Some(true))?;
+            let g  = view (table_g, gqs, None)?;
 
-            Ok((Grounding::Boolean{tu: new_queries[0].clone(), uf: new_queries[1].clone(), g: new_queries[2].clone()},
+            Ok((Grounding::Boolean{tu, uf, g},
                 out_sort))
         },
         FunctionObject::Interpreted(table_g) => {

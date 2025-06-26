@@ -22,6 +22,11 @@
 (declare-datatype Node ((|1|) (|2|) (|3|)))
 (declare-fun Edge (Node Node) Bool)
 (declare-fun phi (Node Node Node) Bool)
+(assert (forall ((x0 Node) (x1 Node)) (= (Edge x0 x1) (or 
+  (and (= x0 |1|) (= x1 |2|))
+  (and (= x0 |2|) (= x1 |3|))
+  (and (= x0 |1|) (= x1 |3|))
+))))
 (assert (phi |1| |2| |3|))
 (assert false)
 Groundings:

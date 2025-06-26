@@ -54,7 +54,17 @@
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-fun number (Int) Bool)
+(assert (forall ((x0 Int)) (= (number x0) (or 
+   (= x0 1)
+   (= x0 2)
+   (= x0 3)
+))))
 (declare-fun smallnumber (Int) Bool)
+(assert (forall ((x0 Int)) (= (smallnumber x0) (or 
+   (= x0 1)
+   (= x0 2)
+   (= x0 3)
+))))
 (declare-fun patternlengthf () Int)
 (declare-fun pf (Int) Int)
 (declare-fun solution (Int) Int)

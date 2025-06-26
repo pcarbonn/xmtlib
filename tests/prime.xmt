@@ -18,7 +18,15 @@ sat
   (define-fun prime ((x!0 Int)) Bool
     (or (= x!0 2) (= x!0 3) (= x!0 5) (= x!0 7)))
   (define-fun domain ((x!0 Int)) Bool
-    false)
+    (or (= x!0 2)
+        (= x!0 3)
+        (= x!0 4)
+        (= x!0 5)
+        (= x!0 6)
+        (= x!0 7)
+        (= x!0 10)
+        (= x!0 9)
+        (= x!0 8)))
 )
 Groundings:
 ===  x ======================================

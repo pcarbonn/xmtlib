@@ -38,10 +38,21 @@
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-fun Domain (Int) Bool)
+(assert (forall ((x0 Int)) (= (Domain x0) (or 
+   (= x0 1)
+   (= x0 2)
+))))
 (declare-fun v (Int Int) Bool)
 (declare-fun state (Int Int Int) Bool)
 (declare-fun assign (Int Int Int) Bool)
 (declare-fun assigned (Int) Bool)
+(assert (forall ((x0 Int) (x1 Int)) (= (v x0 x1) (or 
+  (and (= x0 1) (= x1 10))
+  (and (= x0 2) (= x1 20))
+))))
+(assert (forall ((x0 Int) (x1 Int) (x2 Int)) (= (state x0 x1 x2) (or 
+  (and (= x0 1) (= x1 1) (= x2 1))
+))))
 (assert (= (assigned 1) (or (assign 1 1 1) (assign 1 1 2) (assign 1 2 1) (assign 1 2 2))))
 (assert (= (assigned 2) (or (assign 2 1 1) (assign 2 1 2) (assign 2 2 1) (assign 2 2 2))))
 (assert (or (not (assign 1 1 1)) (not (assign 1 2 1))))

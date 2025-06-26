@@ -22,6 +22,11 @@
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-fun Val (Int) Bool)
+(assert (forall ((x0 Int)) (= (Val x0) (or 
+   (= x0 1)
+   (= x0 2)
+   (= x0 3)
+))))
 (declare-fun queen (Int) Int)
 (assert (Val (queen 1)))
 (assert (Val (queen 2)))

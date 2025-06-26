@@ -48,10 +48,22 @@
 (declare-const P Bool)
 (declare-datatype Color ((red) (green)))
 (declare-fun bright (Color) Bool)
+(assert (forall ((x0 Color)) (= (bright x0) (or 
+   (= x0 red)
+))))
 (declare-fun empty (Color) Bool)
+(assert (forall ((x0 Color)) (= (empty x0) (or 
+))))
 (declare-fun same (Color Color) Bool)
+(assert (forall ((x0 Color) (x1 Color)) (= (same x0 x1) (or 
+  (and (= x0 red) (= x1 red))
+  (and (= x0 green) (= x1 green))
+))))
 (declare-datatype Hue ((hue (first Color) (second Color))))
 (declare-fun dim (Hue) Bool)
+(assert (forall ((x0 Hue)) (= (dim x0) (or 
+   (= x0  (hue red red))
+))))
 (declare-fun dark (Color) Bool)
 (assert false)
 (assert (dark red))

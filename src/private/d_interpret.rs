@@ -1,10 +1,12 @@
 // Copyright Pierre Carbonnelle, 2025.
 
 use itertools::Either::{self, Left, Right};
+use rusqlite::types::ValueRef;
 use rusqlite::{Error, params_from_iter};
+use std::fmt::Write;
 use unzip_n::unzip_n;
 
-unzip_n!(pub 4);
+unzip_n!(pub 4);  // creates unzip_n_vec
 
 use crate::ast::{Identifier, Sort, XTuple, XSet, Term, SpecConstant, String_};
 use crate::error::SolverError::{self, InternalError};
@@ -25,6 +27,7 @@ pub(crate) fn interpret_pred(
 
     // get the symbol declaration
     let table_name = solver.create_table_name(identifier.to_string(), TableType::Interpretation);
+    let table_t = TableName(format!("{table_name}_T"));
 
     let (domain, co_domain) = get_signature(&identifier, solver)?;
 
@@ -37,7 +40,6 @@ pub(crate) fn interpret_pred(
         }
 
         let domain = domain.clone();
-        let table_t = TableName(format!("{table_name}_T"));
 
         // populate the T table
         match tuples {
@@ -108,13 +110,13 @@ pub(crate) fn interpret_pred(
                 )?;
 
                 // create FunctionObject with boolean interpretations.
-                let table_tu = Interpretation::Table{name: table_tu, ids: Ids::All};
+                let table_tu = Interpretation::Table{name: table_tu.clone(), ids: Ids::All};
                 let table_uf = Interpretation::Table{name: missing,  ids: Ids::All};
                 let  table_g = Interpretation::Table{name: name_g,   ids: Ids::All};
                 FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g }
             };
-        update_function_objects(identifier, domain, co_domain, function_object, solver);
-        Ok("".to_string())
+        update_function_objects(&identifier, domain, co_domain, function_object, solver);
+        define_pred(&identifier, solver)
     }
 }
 
@@ -162,7 +164,7 @@ fn interpret_pred_0(
 
     // create FunctionObject with boolean interpretations.
     let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-    update_function_objects(identifier, vec!(), co_domain, function_object, solver);
+    update_function_objects(&identifier, vec!(), co_domain, function_object, solver);
     Ok("".to_string())
 }
 
@@ -206,7 +208,7 @@ pub(crate) fn interpret_fun(
             // create FunctionObject.
             let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
             let function_object = FunctionObject::Interpreted(table_g);
-            update_function_objects(identifier, domain, co_domain, function_object, solver);
+            update_function_objects(&identifier, domain, co_domain, function_object, solver);
         } else {  // non-boolean constant
             let (tu, uf, g) =
                 match value.to_string().as_str() {
@@ -233,7 +235,7 @@ pub(crate) fn interpret_fun(
             let table_uf  = Interpretation::Table{name: TableName(format!("{table_name}_UF")), ids: Ids::All};
             let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
             let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-            update_function_objects(identifier, domain, co_domain, function_object, solver);
+            update_function_objects(&identifier, domain, co_domain, function_object, solver);
         }
 
     } else {  // not a constant
@@ -313,7 +315,7 @@ pub(crate) fn interpret_fun(
 
             let table_g = Interpretation::Table{name: table_g, ids};
             let function_object = FunctionObject::Interpreted(table_g);
-            update_function_objects(identifier, domain, co_domain, function_object, solver);
+            update_function_objects(&identifier, domain, co_domain, function_object, solver);
 
         } else {  // partial interpretation of predicate
 
@@ -426,7 +428,7 @@ pub(crate) fn interpret_fun(
             let table_uf = Interpretation::Table{name: table_uf, ids: ids.clone()};
             let table_g  = Interpretation::Table{name: table_g , ids: ids};
             let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-            update_function_objects(identifier, domain, co_domain, function_object, solver);
+            update_function_objects(&identifier, domain, co_domain, function_object, solver);
         }
     };
     Ok("".to_string())
@@ -766,7 +768,7 @@ fn check_tuple(
 
 
 fn update_function_objects(
-    identifier: L<Identifier>,
+    identifier: &L<Identifier>,
     domain: Vec<CanonicalSort>,
     co_domain: CanonicalSort,
     function_object: FunctionObject,
@@ -779,4 +781,97 @@ fn update_function_objects(
         },
         None => unreachable!()  // because it's always after get_signature
     }
+}
+
+
+////////////////////// Convert interpretation to assertion ///////////////////////////////////
+
+/// Convert the interpretation of a predicate to an equivalent assertion.
+fn define_pred(
+    identifier: &L<Identifier>,
+    solver: &mut Solver
+) -> Result<String, SolverError> {
+    // identifier cannot be a constant
+
+    // (assert (forall (domain) (= (identifier vars) (or
+    //   (and (= a1 1) (= a2 2))
+    // ))
+
+    let mut command = String::new();
+
+    let (domain, _) = solver.interpretable_functions.get(identifier)
+        .ok_or(SolverError::IdentifierError("Symbol cannot be interpreted", identifier.clone()))?;
+
+    // compute useful strings from the domain
+    let domain_ = domain.iter().enumerate()
+        .map( |(i, typ)|
+            format!("(x{i} {typ})"))
+        .collect::<Vec<_>>()
+        .join(" ");
+    let vars = domain.iter().enumerate()
+        .map( |(i, _)|
+            format!("x{i}"))
+        .collect::<Vec<_>>()
+        .join(" ");
+
+    // find the function object
+    let map = solver.function_objects.get(&(identifier.clone(), domain.clone()))
+        .ok_or(SolverError::IdentifierError("Symbol interpretation not found", identifier.clone()))?;
+    let (_, function_object) = if map.len() == 1 {
+        Ok(map.first().unwrap())
+    } else {
+        Err(SolverError::InternalError(8429696526))  // ambiguous identifier
+    }?;
+
+    match function_object {
+        FunctionObject::BooleanInterpreted { table_tu, .. } => {
+
+            if let Interpretation::Table{name, ids} = table_tu {
+                if *ids == Ids::All {
+                    write!(&mut command, "(assert (forall (").unwrap();
+                    writeln!(&mut command, "{domain_}) (= ({identifier} {vars}) (or ").unwrap();
+
+                    let name = name.0.replace("_TU", "_T");
+                    let query = format!("SELECT * FROM {name}");
+                    let mut stmt = solver.conn.prepare(&query)?;
+                    let column_count = stmt.column_count();
+                    let mut rows = stmt.query([])?;
+
+                    while let Some(row) = rows.next()? {
+                        if column_count == 1 {
+                            write!(&mut command, "  ").unwrap();
+                        } else {
+                            write!(&mut command, "  (and").unwrap();
+                        };
+                        for i in 0..column_count {
+                            let value = row.get_ref(i)?;
+                            let value = match value {
+                                ValueRef::Null => "NULL".to_string(),
+                                ValueRef::Integer(i) => i.to_string(),
+                                ValueRef::Real(f) => f.to_string(),
+                                ValueRef::Text(t) => String::from_utf8_lossy(t).into(),
+                                ValueRef::Blob(_) => "<BLOB>".to_string(),
+                            };
+                            write!(&mut command, " (= x{i} {value})").unwrap();
+                        }
+                        if column_count ==1 {
+                            writeln!(&mut command, "").unwrap();
+                        } else {
+                            writeln!(&mut command, ")").unwrap();
+                        }
+                    }
+                    writeln!(&mut command, "))))").unwrap();
+
+                } else {
+                    todo!("partial interpretation of predicate")
+                }
+            } else {
+                return Err(SolverError::InternalError(1288596))  // cannot convert an infinite interpretation
+            }
+        },
+        FunctionObject::Interpreted(_interpretation) => todo!(),
+        _ => todo!("can't convert function interpretation to definition yet")
+    }
+
+    solver.exec(&command)
 }

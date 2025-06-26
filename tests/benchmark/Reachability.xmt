@@ -23,6 +23,9 @@
 (declare-fun edge (node node) Bool)
 (declare-fun reaches (node node) Bool)
 (declare-fun level (node node) Real)
+(assert (forall ((x0 node) (x1 node)) (= (edge x0 x1) (or 
+  (and (= x0 n1) (= x1 n2))
+))))
 (assert (= (reaches n1 n1) (and (reaches n2 n1) (< (level n2 n1) (level n1 n1)))))
 (assert (= (reaches n1 n2) true))
 (assert (= (reaches n2 n1) false))

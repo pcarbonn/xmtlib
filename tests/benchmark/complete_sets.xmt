@@ -13,6 +13,18 @@
 (declare-datatype element ((e1) (e2) (e3) (e4) (e5) (e6) (e7) (e8)))
 (declare-fun p (element) Bool)
 (declare-fun q (element) Bool)
+(assert (forall ((x0 element)) (= (p x0) (or 
+   (= x0 e1)
+   (= x0 e2)
+   (= x0 e3)
+   (= x0 e4)
+))))
+(assert (forall ((x0 element)) (= (q x0) (or 
+   (= x0 e5)
+   (= x0 e6)
+   (= x0 e7)
+   (= x0 e8)
+))))
  TABLE: _xmt_interp_p_uf
 ┌──────┬─────────┐
 │ a_1  │ G       │

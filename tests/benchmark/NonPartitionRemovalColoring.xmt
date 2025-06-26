@@ -31,6 +31,9 @@
 (declare-fun keep (Node) Bool)
 (declare-fun kept_edge (Node Node) Bool)
 (declare-fun color (Node) Color)
+(assert (forall ((x0 Node) (x1 Node)) (= (edge x0 x1) (or 
+  (and (= x0 a) (= x1 b))
+))))
 (assert (or (keep a) (keep b)))
 (assert (or (keep b) (keep a)))
 (assert (= (kept_edge a a) false))

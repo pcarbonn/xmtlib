@@ -18,8 +18,21 @@
 (declare-fun p (element) Bool)
 (declare-fun q (element) Bool)
 (declare-fun r (element) Bool)
+(assert (forall ((x0 element)) (= (p x0) (or 
+   (= x0 e1)
+   (= x0 e5)
+   (= x0 e7)
+))))
+(assert (forall ((x0 element)) (= (q x0) (or 
+   (= x0 e1)
+   (= x0 e3)
+   (= x0 e8)
+))))
 (echo "for p+q:")
 (echo "for p+r:")
+(assert (forall ((x0 element)) (= (r x0) (or 
+   (= x0 e3)
+))))
 (assert false)
 Groundings:
 ===  x ======================================
