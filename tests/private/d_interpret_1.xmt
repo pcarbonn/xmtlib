@@ -41,29 +41,17 @@
 (x-debug solver groundings)
 (x-debug db tables)
 
-;todo convert to definition
+; convert to definition
 (x-interpret-pred dark (x-set (red)))
 ------- RESULTS ------------------
 (declare-fun p () Bool)
 (declare-const P Bool)
 (declare-datatype Color ((red) (green)))
 (declare-fun bright (Color) Bool)
-(assert (forall ((x0 Color)) (= (bright x0) (or 
-   (= x0 red)
-))))
 (declare-fun empty (Color) Bool)
-(assert (forall ((x0 Color)) (= (empty x0) (or 
-))))
 (declare-fun same (Color Color) Bool)
-(assert (forall ((x0 Color) (x1 Color)) (= (same x0 x1) (or 
-  (and (= x0 red) (= x1 red))
-  (and (= x0 green) (= x1 green))
-))))
 (declare-datatype Hue ((hue (first Color) (second Color))))
 (declare-fun dim (Hue) Bool)
-(assert (forall ((x0 Hue)) (= (dim x0) (or 
-   (= x0  (hue red red))
-))))
 (declare-fun dark (Color) Bool)
 (assert false)
 (assert (dark red))
@@ -539,8 +527,6 @@ Tables and Views:
  - _xmt_interp_dim_G (view)
  - sqlite_stat1 (table)
  - sqlite_stat4 (table)
-error: at position (45, 19): Can't interpret a symbol after grounding its use
-   |
-45 | (x-interpret-pred dark (x-set (red)))
-   |                   ^ Can't interpret a symbol after grounding its use
-   |
+(assert (forall ((x0 Color)) (= (dark x0) (or 
+   (= x0 red)
+))))

@@ -16,6 +16,7 @@ pub struct Solver {
     pub(crate) assertions_to_ground: Vec<L<Term>>,
     pub(crate) groundings: IndexMap<(L<Term>, bool), (Grounding, CanonicalSort)>,
     pub(crate) grounded: IndexSet<Identifier>,
+    pub(crate) converted: IndexSet<L<Identifier>>,
     pub(crate) db_names: IndexSet<String>,
 }
 pub(crate) enum PolymorphicObject {
@@ -54,6 +55,7 @@ pub(crate) enum GroundingView {
         exclude: Option<bool>,
         query: GroundingQuery,
         ids: Ids,
+        to_be_defined: IndexSet<L<Identifier>>
     },
 }
 pub(crate) enum GroundingQuery {

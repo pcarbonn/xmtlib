@@ -16,9 +16,6 @@
 (x-debug db _xmt_interp_is_true_UF)
 ------- RESULTS ------------------
 (declare-fun is_true (Bool) Bool)
-(assert (forall ((x0 Bool)) (= (is_true x0) (or 
-   (= x0 true)
-))))
 (assert false)
 (assert false)
 (assert false)

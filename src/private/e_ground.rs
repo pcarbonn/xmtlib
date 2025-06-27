@@ -11,6 +11,7 @@ use crate::solver::{Backend, CanonicalSort, Solver};
 
 use crate::private::a_sort::SortObject;
 use crate::private::b_fun::{FunctionObject, get_function_object, Interpretation};
+use crate::private::d_interpret::convert_to_definition;
 use crate::private::e1_ground_view::{view_for_aggregate, view_for_join, view_for_constant, view_for_union, view_for_variable, GroundingView, Ids, QueryVariant, ViewType};
 use crate::private::e2_ground_query::{TableName, TableAlias};
 use crate::private::e3_ground_sql::Predefined;
@@ -191,10 +192,18 @@ fn execute_term(
                     Grounding::NonBoolean(_) => yield_!(Err(SolverError::TermError("Expecting a boolean", term.clone()))),
                     Grounding::Boolean{uf, ..} => {
                         // execute the UF query
-                        let query = uf.to_string();
-                        for res in execute_query(query, &mut solver.conn, &mut solver.backend) {
-                            solver.started = true;
-                            yield_!(res)
+                        match uf {
+                            GroundingView::Empty => {}
+                            GroundingView::View { ref to_be_defined, .. } => {
+                                let query = uf.to_string();
+                                for res in execute_query(query, &mut solver.conn, &mut solver.backend) {
+                                    solver.started = true;
+                                    yield_!(res)
+                                }
+                                for identifier in to_be_defined.iter() {
+                                    yield_!(convert_to_definition(identifier, solver))
+                                }
+                            }
                         }
                     }
                 }
@@ -682,7 +691,7 @@ fn ground_compound(
             }
         },
         FunctionObject::NotInterpreted => { // custom function
-            let variant = QueryVariant::Apply;
+            let variant = QueryVariant::Apply(false);
             if out_sort.to_string() == "Bool" {
 
                 // custom boolean function
@@ -712,7 +721,7 @@ fn ground_compound(
                         let table_name = TableAlias::new(name.clone(), index);
                         QueryVariant::Interpretation(table_name, ids.clone())
                     },
-                    Interpretation::Infinite => QueryVariant::Apply
+                    Interpretation::Infinite => QueryVariant::Apply(true)
                 };
                 view_for_join(qual_identifier, index, &groundings, &variant, exclude, solver)
             };
@@ -729,7 +738,7 @@ fn ground_compound(
                     let table_name = TableAlias::new(name.clone(), index);
                     QueryVariant::Interpretation(table_name, ids.clone())
                 },
-                Interpretation::Infinite => QueryVariant::Apply
+                Interpretation::Infinite => QueryVariant::Apply(true)
             };
             let new_view = view_for_join(qual_identifier, index, &gqs, &variant, None, solver)?;
             Ok((Grounding::NonBoolean(new_view), out_sort))

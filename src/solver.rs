@@ -91,6 +91,10 @@ pub struct Solver {
     /// --> need to add a definition of p to avoid losing information about p)
     pub(crate) grounded: IndexSet<Identifier>,
 
+    /// keep track of interpretations already converted to definitions,
+    /// to avoid duplicate definitions
+    pub(crate) converted: IndexSet<L<Identifier>>,
+
     /// to handle the fact that db names are case insensitive in sqlite
     pub(crate) db_names: IndexSet<String>,
 }
@@ -247,6 +251,7 @@ impl Solver {
                 groundings: IndexMap::new(),
                 grounded: IndexSet::new(),
                 db_names: IndexSet::new(),
+                converted: IndexSet::new()
             }
         }
 

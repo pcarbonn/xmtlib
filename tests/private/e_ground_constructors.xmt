@@ -23,11 +23,6 @@
 (declare-datatype Color ((red) (blue) (green)))
 (declare-datatype Either ((nil) (Left (b Color)) (Right (right Color))))
 (declare-fun p (Either) Bool)
-(assert (forall ((x0 Either)) (= (p x0) (or 
-   (= x0 nil)
-   (= x0  (Left blue))
-   (= x0  (Right red))
-))))
 (assert ((_ is nil) nil))
 Polymorphic datatypes:
  - (unknown): Array

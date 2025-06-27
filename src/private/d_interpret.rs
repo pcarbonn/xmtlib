@@ -29,65 +29,98 @@ pub(crate) fn interpret_pred(
     let table_name = solver.create_table_name(identifier.to_string(), TableType::Interpretation);
     let table_t = TableName(format!("{table_name}_T"));
 
-    let (domain, co_domain) = get_signature(&identifier, solver)?;
-
+    let (domain, co_domain, to_convert) = get_signature(&identifier, solver)?;
     if co_domain.to_string() != "Bool" {
-        Err(SolverError::IdentifierError("Can't use `x-interpret-pred` for non-boolean symbol", identifier))
-    } else {
-        if domain.len() == 0 {
-            // special case: arity 0
-            return interpret_pred_0(identifier, tuples, co_domain, solver);
-        }
+        return Err(SolverError::IdentifierError("Can't use `x-interpret-pred` for non-boolean symbol", identifier))
+    }
 
-        let domain = domain.clone();
+    let function_object =
+        if domain.len() == 0 {// special case: arity 0
 
-        // populate the T table
-        match tuples {
-            XSet::XSet(tuples) => {
-                create_interpretation_table(table_t.clone(), &domain, &None, solver)?;
-                let mut tuples_strings = vec![];
-                for XTuple(tuple) in &tuples {
-                    let (sorts, new_terms) = construct_tuple(tuple, solver)?;
-                    check_tuple(identifier.clone(), tuple, &sorts, &domain)?;
-                    tuples_strings.push(new_terms);
-                }
-                populate_table(&table_t, tuples_strings, solver)?;
-            }
-            XSet::XRange(ranges) => {
-                if ranges.len() % 2 == 1 {
-                    return Err(SolverError::IdentifierError("Odd number of boundaries in range", identifier))
-                };
-                create_interpretation_table(table_t.clone(), &domain, &None, solver)?;
-                let mut tuples_strings = vec![];
-                for pairs in ranges.chunks(2) {
-                    if let L(Term::SpecConstant(SpecConstant::Numeral(a)), _) = &pairs[0] {
-                        if let L(Term::SpecConstant(SpecConstant::Numeral(b)), _) = &pairs[1] {
-                            for i in a.0..(b.0+1) {
-                                tuples_strings.push(vec![i.to_string()]);
-                            }
-                        } else {
-                            return Err(SolverError::TermError("Expecting an integer", pairs[1].clone()))
-                        }
-                    } else {
-                        return Err(SolverError::TermError("Expecting an integer", pairs[0].clone()))
+            let table_name = solver.create_table_name(identifier.to_string(), TableType::Interpretation);
+
+            let table_tu = Interpretation::Table{name: TableName(format!("{table_name}_TU")), ids: Ids::All};
+            let table_uf = Interpretation::Table{name: TableName(format!("{table_name}_UF")), ids: Ids::All};
+            let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
+
+            match tuples {
+                XSet::XSet(tuples) => {
+                    if tuples.len() == 0 {  // false
+                        let sql = format!("CREATE VIEW {table_name}_TU AS SELECT 'false' as G WHERE false");  // empty table
+                        solver.conn.execute(&sql, ())?;
+
+                        let sql = format!("CREATE VIEW {table_name}_UF AS SELECT 'false' as G");
+                        solver.conn.execute(&sql, ())?;
+
+                        let sql = format!("CREATE VIEW {table_name}_G AS SELECT 'false' as G");
+                        solver.conn.execute(&sql, ())?;
+
+                    } else {  // true
+                        let sql = format!("CREATE VIEW {table_name}_TU AS SELECT 'true' as G");
+                        solver.conn.execute(&sql, ())?;
+
+                        let sql = format!("CREATE VIEW {table_name}_UF AS SELECT 'true' as G WHERE false");  // empty table
+                        solver.conn.execute(&sql, ())?;
+
+                        let sql = format!("CREATE VIEW {table_name}_G AS SELECT 'true' as G");
+                        solver.conn.execute(&sql, ())?;
+
                     }
                 }
-                populate_table(&table_t, tuples_strings, solver)?;
-            }
-            XSet::XSql(sql) => {
-                let sql = format!("CREATE VIEW {table_t} AS {}", sql.0);
-                solver.conn.execute(&sql, ())?;
-            }
-        };
+                XSet::XRange(_) => unreachable!(),
+                XSet::XSql(_)   => todo!()
+            };
+            FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g }
+        } else {
+            let domain = domain.clone();
 
-        // create TU view
-        let table_tu = TableName(format!("{table_name}_TU"));
+            // populate the T table
+            match tuples {
+                XSet::XSet(tuples) => {
+                    create_interpretation_table(table_t.clone(), &domain, &None, solver)?;
+                    let mut tuples_strings = vec![];
+                    for XTuple(tuple) in &tuples {
+                        let (sorts, new_terms) = construct_tuple(tuple, solver)?;
+                        check_tuple(identifier.clone(), tuple, &sorts, &domain)?;
+                        tuples_strings.push(new_terms);
+                    }
+                    populate_table(&table_t, tuples_strings, solver)?;
+                }
+                XSet::XRange(ranges) => {
+                    if ranges.len() % 2 == 1 {
+                        return Err(SolverError::IdentifierError("Odd number of boundaries in range", identifier))
+                    };
+                    create_interpretation_table(table_t.clone(), &domain, &None, solver)?;
+                    let mut tuples_strings = vec![];
+                    for pairs in ranges.chunks(2) {
+                        if let L(Term::SpecConstant(SpecConstant::Numeral(a)), _) = &pairs[0] {
+                            if let L(Term::SpecConstant(SpecConstant::Numeral(b)), _) = &pairs[1] {
+                                for i in a.0..(b.0+1) {
+                                    tuples_strings.push(vec![i.to_string()]);
+                                }
+                            } else {
+                                return Err(SolverError::TermError("Expecting an integer", pairs[1].clone()))
+                            }
+                        } else {
+                            return Err(SolverError::TermError("Expecting an integer", pairs[0].clone()))
+                        }
+                    }
+                    populate_table(&table_t, tuples_strings, solver)?;
+                }
+                XSet::XSql(sql) => {
+                    let sql = format!("CREATE VIEW {table_t} AS {}", sql.0);
+                    solver.conn.execute(&sql, ())?;
+                }
+            };
 
-        let sql = format!("CREATE VIEW {table_tu} AS SELECT *, \"true\" as G from {table_t}");
-        solver.conn.execute(&sql, ())?;
+            // create TU view
+            let table_tu = TableName(format!("{table_name}_TU"));
 
-        let size = size(&domain, &solver)?;
-        let function_object = if size == 0 {  // infinite
+            let sql = format!("CREATE VIEW {table_tu} AS SELECT *, \"true\" as G from {table_t}");
+            solver.conn.execute(&sql, ())?;
+
+            let size = size(&domain, &solver)?;
+            if size == 0 {  // infinite
                 // create FunctionObject with boolean interpretations.
                 let table_tu = Interpretation::Table{name: table_tu.clone(), ids: Ids::All};
                 let table_uf = Interpretation::Infinite;
@@ -114,58 +147,15 @@ pub(crate) fn interpret_pred(
                 let table_uf = Interpretation::Table{name: missing,  ids: Ids::All};
                 let  table_g = Interpretation::Table{name: name_g,   ids: Ids::All};
                 FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g }
-            };
-        update_function_objects(&identifier, domain, co_domain, function_object, solver);
-        define_pred(&identifier, solver)
-    }
-}
-
-/// Interpret a predicate of arity 0
-fn interpret_pred_0(
-    identifier: L<Identifier>,
-    tuples: XSet,
-    co_domain: CanonicalSort,
-    solver: &mut Solver,
-) -> Result<String, SolverError> {
-
-    let table_name = solver.create_table_name(identifier.to_string(), TableType::Interpretation);
-
-    let table_tu = Interpretation::Table{name: TableName(format!("{table_name}_TU")), ids: Ids::All};
-    let table_uf = Interpretation::Table{name: TableName(format!("{table_name}_UF")), ids: Ids::All};
-    let table_g  = Interpretation::Table{name: TableName(format!("{table_name}_G")), ids: Ids::All};
-
-    match tuples {
-        XSet::XSet(tuples) => {
-            if tuples.len() == 0 {  // false
-                let sql = format!("CREATE VIEW {table_name}_TU AS SELECT 'false' as G WHERE false");  // empty table
-                solver.conn.execute(&sql, ())?;
-
-                let sql = format!("CREATE VIEW {table_name}_UF AS SELECT 'false' as G");
-                solver.conn.execute(&sql, ())?;
-
-                let sql = format!("CREATE VIEW {table_name}_G AS SELECT 'false' as G");
-                solver.conn.execute(&sql, ())?;
-
-            } else {  // true
-                let sql = format!("CREATE VIEW {table_name}_TU AS SELECT 'true' as G");
-                solver.conn.execute(&sql, ())?;
-
-                let sql = format!("CREATE VIEW {table_name}_UF AS SELECT 'true' as G WHERE false");  // empty table
-                solver.conn.execute(&sql, ())?;
-
-                let sql = format!("CREATE VIEW {table_name}_G AS SELECT 'true' as G");
-                solver.conn.execute(&sql, ())?;
-
             }
-        }
-        XSet::XRange(_) => unreachable!(),
-        XSet::XSql(_)   => todo!()
-    };
+        };
 
-    // create FunctionObject with boolean interpretations.
-    let function_object = FunctionObject::BooleanInterpreted { table_tu, table_uf, table_g };
-    update_function_objects(&identifier, vec!(), co_domain, function_object, solver);
-    Ok("".to_string())
+    update_function_objects(&identifier, domain, co_domain, function_object, solver);
+    if to_convert {
+        convert_to_definition(&identifier, solver)
+    } else {
+        Ok("".to_string())
+    }
 }
 
 
@@ -179,7 +169,7 @@ pub(crate) fn interpret_fun(
 
     let table_name = solver.create_table_name(identifier.to_string(), TableType::Interpretation);
 
-    let (domain, co_domain) = get_signature(&identifier, solver)?;
+    let (domain, co_domain, to_convert) = get_signature(&identifier, solver)?;
 
     if domain.len() == 0 {  // constant
 
@@ -387,6 +377,9 @@ pub(crate) fn interpret_fun(
                     return Err(SolverError::TermError("Unnecessary `else` value", else_.clone()))
                 }
             } else if let Some(else_) = else_ {  // incomplete interpretation
+                if size == 0 {
+                    return Err(SolverError::IdentifierError("Cannot have `else` value for function with infinite domain", identifier))
+                }
 
                 let value = if else_.to_string() == "?" {
                     ids = Ids::Some;
@@ -420,7 +413,7 @@ pub(crate) fn interpret_fun(
                     },
                     _ => return Err(SolverError::TermError("Unexpected value", else_))
                     }
-            } else {
+            } else  if size != 0 {
                 return Err(SolverError::IdentifierError("Missing `else` value", identifier))
             };
 
@@ -431,7 +424,11 @@ pub(crate) fn interpret_fun(
             update_function_objects(&identifier, domain, co_domain, function_object, solver);
         }
     };
-    Ok("".to_string())
+    if to_convert {
+        convert_to_definition(&identifier, solver)
+    } else {
+        Ok("".to_string())
+    }
 }
 
 
@@ -709,15 +706,15 @@ fn add_missing_rows(
 fn get_signature(
     identifier: &L<Identifier>,
     solver: &mut Solver
-) -> Result<(Vec<CanonicalSort>, CanonicalSort), SolverError> {
+) -> Result<(Vec<CanonicalSort>, CanonicalSort, bool), SolverError> {
 
     let (domain, co_domain) = solver.interpretable_functions.get(identifier)
         .ok_or(SolverError::IdentifierError("Symbol cannot be interpreted", identifier.clone()))?;
 
+    let mut to_convert = false;
     {  // verify that it can be interpreted
         if solver.grounded.contains(&identifier.0) {
-            // todo: convert interpretation to definition
-            return Err(SolverError::IdentifierError("Can't interpret a symbol after grounding its use", identifier.clone()))
+            to_convert = true;
         };
         let not_interpreted =
             if let Some(map) = solver.function_objects.get(&(identifier.clone(), domain.clone())) {
@@ -730,7 +727,7 @@ fn get_signature(
             return Err(SolverError::IdentifierError("Can't re-interpret a", identifier.clone()))
         }
     }
-    Ok((domain.clone(), co_domain.clone()))
+    Ok((domain.clone(), co_domain.clone(), to_convert))
 }
 
 
@@ -786,16 +783,16 @@ fn update_function_objects(
 
 ////////////////////// Convert interpretation to assertion ///////////////////////////////////
 
-/// Convert the interpretation of a predicate to an equivalent assertion.
-fn define_pred(
+/// Convert the interpretation of a symbol to an equivalent assertion.
+pub(crate) fn convert_to_definition(
     identifier: &L<Identifier>,
     solver: &mut Solver
 ) -> Result<String, SolverError> {
-    // identifier cannot be a constant
 
-    // (assert (forall (domain) (= (identifier vars) (or
-    //   (and (= a1 1) (= a2 2))
-    // ))
+    if solver.converted.contains(identifier) {
+        return Ok("".to_string())
+    }
+    solver.converted.insert(identifier.clone());
 
     let mut command = String::new();
 
@@ -825,25 +822,42 @@ fn define_pred(
 
     match function_object {
         FunctionObject::BooleanInterpreted { table_tu, .. } => {
-
-            if let Interpretation::Table{name, ids} = table_tu {
-                if *ids == Ids::All {
+            if let Interpretation::Table{name: name_tu, ids} = table_tu {
+                if domain.len() == 0 {  // a constant
+                    // (assert (= identifier value))
+                    let name_t = name_tu.0.replace("_TU", "_G");
+                    let query = format!("SELECT * FROM {name_t}");
+                    let mut stmt = solver.conn.prepare(&query)?;
+                    let mut rows = stmt.query([])?;
+                    let row = rows.next()?.ok_or(InternalError(48529623))?;
+                    let value = row.get_ref(0)?;
+                    let value = match value {
+                        ValueRef::Null => "NULL".to_string(),
+                        ValueRef::Integer(i) => i.to_string(),
+                        ValueRef::Real(f) => f.to_string(),
+                        ValueRef::Text(t) => String::from_utf8_lossy(t).into(),
+                        ValueRef::Blob(_) => "<BLOB>".to_string(),
+                    };
+                    writeln!(&mut command, "(assert (= {identifier} {value}))").unwrap();
+                } else {
+                    // (assert (forall (domain) (= (identifier vars) (or
+                    //   (and (= a1 1) (= a2 2))
+                    // ))
                     write!(&mut command, "(assert (forall (").unwrap();
                     writeln!(&mut command, "{domain_}) (= ({identifier} {vars}) (or ").unwrap();
 
-                    let name = name.0.replace("_TU", "_T");
-                    let query = format!("SELECT * FROM {name}");
+                    let query = format!("SELECT * FROM {name_tu}");
                     let mut stmt = solver.conn.prepare(&query)?;
                     let column_count = stmt.column_count();
                     let mut rows = stmt.query([])?;
 
                     while let Some(row) = rows.next()? {
-                        if column_count == 1 {
+                        if column_count == 2 {
                             write!(&mut command, "  ").unwrap();
                         } else {
                             write!(&mut command, "  (and").unwrap();
                         };
-                        for i in 0..column_count {
+                        for i in 0..column_count-1 {
                             let value = row.get_ref(i)?;
                             let value = match value {
                                 ValueRef::Null => "NULL".to_string(),
@@ -854,16 +868,19 @@ fn define_pred(
                             };
                             write!(&mut command, " (= x{i} {value})").unwrap();
                         }
-                        if column_count ==1 {
+                        if *ids != Ids::All {
+                            let truth = row.get::<usize,String>(column_count-1)?;
+                            if truth != "true" {  // unknown value in TU table
+                                write!(&mut command, " {truth}").unwrap();
+                            }
+                        }
+                        if column_count == 2 {
                             writeln!(&mut command, "").unwrap();
                         } else {
                             writeln!(&mut command, ")").unwrap();
                         }
                     }
                     writeln!(&mut command, "))))").unwrap();
-
-                } else {
-                    todo!("partial interpretation of predicate")
                 }
             } else {
                 return Err(SolverError::InternalError(1288596))  // cannot convert an infinite interpretation

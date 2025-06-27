@@ -18,14 +18,14 @@
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-fun Edge (Int Int) Bool)
+(assert (Edge 1 1))
+(assert (Edge 2 2))
+(assert (Edge 2 3))
 (assert (forall ((x0 Int) (x1 Int)) (= (Edge x0 x1) (or 
   (and (= x0 1) (= x1 2))
   (and (= x0 2) (= x1 1))
   (and (= x0 1) (= x1 3))
 ))))
-(assert (Edge 1 1))
-(assert (Edge 2 2))
-(assert (Edge 2 3))
 Functions2:
  - true ()->Bool : Constructor
  - false ()->Bool : Constructor

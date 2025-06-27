@@ -25,10 +25,6 @@
 (declare-datatype Colour ((yellow) (cyan) (blue) (green) (red)))
 (declare-fun link (Node Node) Bool)
 (declare-fun colourOf (Node) Colour)
-(assert (forall ((x0 Node) (x1 Node)) (= (link x0 x1) (or 
-  (and (= x0 n1) (= x1 n2))
-  (and (= x0 n2) (= x1 n3))
-))))
 (assert (not (= (colourOf n1) (colourOf n2))))
 (assert (not (= (colourOf n2) (colourOf n3))))
 Groundings:

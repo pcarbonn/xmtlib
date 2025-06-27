@@ -34,10 +34,6 @@
 (declare-fun end () Node)
 (declare-fun reached (Node) Bool)
 (declare-fun level (Node) Real)
-(assert (forall ((x0 Node) (x1 Node)) (= (edge x0 x1) (or 
-  (and (= x0 a) (= x1 b))
-  (and (= x0 b) (= x1 c))
-))))
 (assert (or (not (= (path a) a)) (= a end)))
 (assert (or (not (= (path a) c)) (= a end)))
 (assert (or (not (= (path b) a)) (= b end)))

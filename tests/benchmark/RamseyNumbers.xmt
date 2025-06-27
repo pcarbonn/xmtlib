@@ -33,10 +33,6 @@
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-fun Node (Int) Bool)
-(assert (forall ((x0 Int)) (= (Node x0) (or 
-   (= x0 1)
-   (= x0 2)
-))))
 (declare-fun blue (Int Int) Bool)
 (declare-fun red (Int Int) Bool)
 (assert (= false (or (red 1 1) (blue 1 1))))

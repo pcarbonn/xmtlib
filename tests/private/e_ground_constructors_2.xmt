@@ -28,11 +28,6 @@
 (declare-datatype Material ((soft) (hard)))
 (declare-datatype Either (par (T) ((nil) (Left (b T)) (Right (right T)))))
 (declare-fun p ((Either Color)) Bool)
-(assert (forall ((x0 (Either Color))) (= (p x0) (or 
-   (= x0  (as nil (Either Color)))
-   (= x0  (Left blue))
-   (= x0  (Right red))
-))))
 (declare-fun q ((Either Material)) Color)
 (assert ((_ is nil)  (as nil (Either Material))))
 Tables and Views:

@@ -6,7 +6,7 @@ use std::cmp::max;
 use std::fmt::Display;
 use std::hash::{Hash, Hasher};
 
-use crate::ast::{SortedVar, Symbol};
+use crate::ast::{L, Identifier, SortedVar, Symbol};
 use crate::error::SolverError;
 use crate::solver::{Solver, TermId};
 
@@ -495,7 +495,7 @@ impl GroundingQuery {
     }
 
 
-    /// Finalize the negation of a auery.
+    /// Finalize the negation of a query.
     /// Assumes that the the change from TU to UF (or vice-versa) has been done
     /// but massage it to remain correct.
     pub(crate) fn negate(
@@ -505,6 +505,7 @@ impl GroundingQuery {
         view_type: ViewType,
         exclude: Option<bool>,
         ids: Ids,
+        to_be_defined: IndexSet<L<Identifier>>,
         solver: &mut Solver
     ) -> Result<GroundingView, SolverError> {
 
@@ -545,7 +546,7 @@ impl GroundingQuery {
                     has_g_complexity: *has_g_complexity
                 };
                 let table_alias = TableAlias{base_table, index: 0};
-                GroundingView::new(table_alias, free_variables, query, exclude, ids)
+                GroundingView::new(table_alias, free_variables, query, exclude, ids, to_be_defined)
             }
             GroundingQuery::Aggregate { agg, infinite_variables, sub_view, default, has_g_complexity, .. } => {
                 let default = match default {
@@ -561,7 +562,7 @@ impl GroundingQuery {
                     has_g_complexity: *has_g_complexity
                 };
                 let table_alias = TableAlias{base_table, index: 1};
-                GroundingView::new(table_alias, free_variables, query, exclude, ids)
+                GroundingView::new(table_alias, free_variables, query, exclude, ids, to_be_defined)
             },
             GroundingQuery::Union {..} => unreachable!()  // because negation is pushed down conjunctions and disjunctions
         }

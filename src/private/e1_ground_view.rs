@@ -30,6 +30,7 @@ pub(crate) enum GroundingView {
 
         query: GroundingQuery,  // the underlying query
         ids: Ids,  // describe the groundings at the time of query creation.
+        to_be_defined: IndexSet<L<Identifier>>
     },
 }
 
@@ -132,7 +133,12 @@ pub(crate) fn view_for_constant(
     };
     let base_table = TableName("ignore".to_string());
     let table_alias = TableAlias::new(base_table, 0);
-    GroundingView::new(table_alias, OptionMap::new(), query, None, Ids::All)
+    GroundingView::new(table_alias,
+        OptionMap::new(),
+        query,
+        None,
+        Ids::All,
+        IndexSet::new())
 }
 
 
@@ -162,7 +168,12 @@ pub(crate) fn view_for_variable(
             has_g_complexity: true
         };
         let free_variables = OptionMap::from([(symbol.clone(), Some(table_alias))]);
-        GroundingView::new(new_alias, free_variables, query, None, Ids::All) // TODO perf: exclude for boolean
+        GroundingView::new(new_alias,
+            free_variables,
+            query,
+            None,
+            Ids::All,
+            IndexSet::new()) // TODO perf: exclude for boolean
     } else {  // infinite variable ==> just "x"
         let variables = OptionMap::from([(symbol.clone(), None)]);
         let query = GroundingQuery::Join{
@@ -176,7 +187,12 @@ pub(crate) fn view_for_variable(
             has_g_complexity: false  // LINK src/doc.md#_has_g_complexity
         };
         let free_variables = OptionMap::from([(symbol.clone(), None)]);
-        GroundingView::new(new_alias, free_variables, query, None, Ids::None)
+        GroundingView::new(new_alias,
+            free_variables,
+            query,
+            None,
+            Ids::None,
+            IndexSet::new())
     }
 }
 
@@ -194,7 +210,7 @@ pub(crate) enum QueryVariant {
     Equivalence(bool),
     Predefined(Predefined),
     Construct,
-    Apply,
+    Apply(bool),  // true if the function has an interpretation
     Interpretation(TableAlias, Ids),  // not TableName !
 }
 
@@ -218,6 +234,7 @@ pub(crate) fn view_for_join(
     let mut wheres = vec![];
     let mut exclude = exclude.clone();
     let mut reference = None;  // for equality.  Ideally, an expression with all ids.
+    let mut to_be_defined = IndexSet::new();
 
         // helper function to update the reference expression in an equality
         let mut update_reference = |grounding: &SQLExpr, ids: &Ids| {
@@ -248,12 +265,14 @@ pub(crate) fn view_for_join(
                     condition: sub_condition,
                     grounding,
                     query,
-                    ids: sub_ids,..} => {
+                    ids: sub_ids,
+                    to_be_defined: sub_to_be_defined, ..} => {
 
                 let to_add = sub_free_variables.iter()
                     .map(|(k, v)| (k.clone(), v.clone()));
                 free_variables.extend(to_add);
                 ids = max(ids, sub_ids.clone());
+                to_be_defined.append(&mut sub_to_be_defined.clone());
 
                 // if the sub-query is an Inner Join
                 let done = if let GroundingQuery::Join {
@@ -341,7 +360,7 @@ pub(crate) fn view_for_join(
                                 // adds nothing if sub_ids == None
                                 thetas.push(Some(if_));
                             },
-                            QueryVariant::Apply
+                            QueryVariant::Apply(_)
                             | QueryVariant::Construct
                             | QueryVariant::Predefined(_)
                             | QueryVariant::Equivalence(..) => {}
@@ -403,7 +422,7 @@ pub(crate) fn view_for_join(
                                     // adds nothing if sub_ids == None
                                     thetas.push(Some(if_));
                                 },
-                                QueryVariant::Apply
+                                QueryVariant::Apply(_)
                                 | QueryVariant::Construct
                                 | QueryVariant::Predefined(_)
                                 | QueryVariant::Equivalence(..) => {}
@@ -487,8 +506,13 @@ pub(crate) fn view_for_join(
                     _ => SQLExpr::Value(Column::new(table_name, "G"), ids_.clone())
                 }
             },
-            QueryVariant::Apply => {
+            QueryVariant::Apply(interpreted) => {
                 ids = Ids::None;
+                if *interpreted {
+                    if let QualIdentifier::Identifier(identifier) = qual_identifier {
+                        to_be_defined.insert(identifier.clone());
+                    }
+                }
                 if let QualIdentifier::Identifier(L(identifier, _)) = qual_identifier {
                     solver.grounded.insert(identifier.clone());
                 };  // qualified identifier cannot be interpreted: they are either pre-defined or accessors
@@ -551,7 +575,7 @@ pub(crate) fn view_for_join(
         wheres,
         has_g_complexity
     };
-    GroundingView::new(table_alias, free_variables, query, exclude, ids)
+    GroundingView::new(table_alias, free_variables, query, exclude, ids, to_be_defined)
 }
 
 
@@ -577,7 +601,7 @@ pub(crate) fn view_for_aggregate(
         GroundingView::Empty => {
             Ok(GroundingView::Empty)
         },
-        GroundingView::View{query, ids, ..} => {
+        GroundingView::View{query, ids, to_be_defined, ..} => {
             // LINK src/doc.md#_Infinite
             // if the query is an aggregate, try to have only one aggregate
             if let GroundingQuery::Aggregate {
@@ -598,7 +622,12 @@ pub(crate) fn view_for_aggregate(
                         sub_view: Box::new(*sub_sub_view.clone()),
                         has_g_complexity
                     };
-                    return GroundingView::new(table_alias, free_variables.clone(), query, exclude, ids.clone())
+                    return GroundingView::new(table_alias,
+                        free_variables.clone(),
+                        query,
+                        exclude,
+                        ids.clone(),
+                        to_be_defined.clone())
                 }
             }
 
@@ -611,7 +640,12 @@ pub(crate) fn view_for_aggregate(
                 has_g_complexity
             };
 
-            GroundingView::new(table_alias, free_variables.clone(), query, exclude, ids.clone())
+            GroundingView::new(table_alias,
+                free_variables.clone(),
+                query,
+                exclude,
+                ids.clone(),
+                to_be_defined.clone())
         }
     }
 }
@@ -630,18 +664,22 @@ pub(crate) fn view_for_union(
     let mut condition = false;
     let mut ids = Ids::None;
     let mut has_g_complexity = false;
+    let mut to_be_defined = IndexSet::new();
+
     for sub_view in sub_views.clone() {
         if let GroundingView::View {
                     free_variables: sub_free_variables,
                     condition: sub_condition,
                     ids: sub_ids,
-                    query, .. }
+                    query,
+                    to_be_defined: sub_to_be_defined,.. }
                 = sub_view {
 
             free_variables.append(&mut sub_free_variables.clone());
             condition |= sub_condition;
             ids = min(ids, sub_ids);
             has_g_complexity |= query.has_g_complexity();  // LINK src/doc.md#_has_g_complexity
+            to_be_defined.append(&mut sub_to_be_defined.clone());
         }
     }
     let exclude = if ! has_g_complexity { None } else { exclude };
@@ -736,7 +774,12 @@ pub(crate) fn view_for_union(
 
     let table_alias = TableAlias{base_table: TableName(format!("union_{index}")), index: 0};
     if sub_queries.len() == 1 {
-        return GroundingView::new(table_alias, free_variables, sub_queries.first().unwrap().clone(), exclude, ids)
+        return GroundingView::new(table_alias,
+            free_variables,
+            sub_queries.first().unwrap().clone(),
+            exclude,
+            ids,
+            to_be_defined)
     };
 
     // create the union
@@ -749,7 +792,8 @@ pub(crate) fn view_for_union(
         grounding: Either::Right(table_alias),
         query,
         exclude,
-        ids: ids.clone()
+        ids: ids.clone(),
+        to_be_defined: to_be_defined.clone()
     };
 
     // create the aggregate
@@ -763,7 +807,7 @@ pub(crate) fn view_for_union(
         has_g_complexity
     };
 
-    GroundingView::new(table_alias, free_variables, query, exclude, ids)
+    GroundingView::new(table_alias, free_variables, query, exclude, ids, to_be_defined)
 }
 
 
@@ -777,7 +821,8 @@ impl GroundingView {
         free_variables: OptionMap<Symbol, TableAlias>,
         query: GroundingQuery,
         exclude: Option<bool>,
-        ids: Ids
+        ids: Ids,
+        to_be_defined: IndexSet<L<Identifier>>
     ) -> Result<GroundingView, SolverError> {
 
         match query {
@@ -792,7 +837,8 @@ impl GroundingView {
                         grounding: Either::Left(grounding.clone()),
                         query,
                         exclude,
-                        ids
+                        ids,
+                        to_be_defined
                     })
                 } else {
                     let condition = conditions.len() > 0;
@@ -803,7 +849,8 @@ impl GroundingView {
                         grounding: Either::Right(table_alias),
                         query,
                         exclude,
-                        ids})
+                        ids,
+                        to_be_defined})
                 }
             },
             GroundingQuery::Aggregate { .. } => {
@@ -814,7 +861,8 @@ impl GroundingView {
                         grounding: Either::Right(table_alias),
                         query,
                         exclude,
-                        ids})
+                        ids,
+                        to_be_defined})
             },
             GroundingQuery::Union { ref sub_queries, .. } => {
 
@@ -830,7 +878,8 @@ impl GroundingView {
                     grounding: Either::Right(table_alias),
                     query,
                     exclude,
-                    ids
+                    ids,
+                    to_be_defined
                 })
 
             }
@@ -888,8 +937,8 @@ impl GroundingView {
 
         match self {
             GroundingView::Empty => Ok(self.clone()),
-            GroundingView::View{free_variables, query, exclude, ids, ..} =>
-                query.negate(free_variables.clone(), index, view_type, *exclude, ids.clone(), solver)
+            GroundingView::View{free_variables, query, exclude, ids, to_be_defined, ..} =>
+                query.negate(free_variables.clone(), index, view_type, *exclude, ids.clone(), to_be_defined.clone(), solver)
         }
     }
 }
