@@ -789,7 +789,7 @@ pub(crate) fn convert_to_definition(
     solver: &mut Solver
 ) -> Result<String, SolverError> {
 
-    if solver.converted.contains(identifier) {
+    if solver.converted.contains(identifier) {  // already done
         return Ok("".to_string())
     }
     solver.converted.insert(identifier.clone());
@@ -886,8 +886,12 @@ pub(crate) fn convert_to_definition(
                 return Err(SolverError::InternalError(1288596))  // cannot convert an infinite interpretation
             }
         },
-        FunctionObject::Interpreted(_interpretation) => todo!(),
-        _ => todo!("can't convert function interpretation to definition yet")
+        FunctionObject::Interpreted(_interpretation) => {
+            todo!("can't convert function interpretation to definition yet")
+        },
+        FunctionObject::Predefined { .. }
+        | FunctionObject::Constructor
+        | FunctionObject::NotInterpreted => return Err(SolverError::InternalError(47895565))  // cannot convert to a definition
     }
 
     solver.exec(&command)

@@ -1,0 +1,361 @@
+(set-option :backend none)
+
+(declare-fun p (Int) Bool)
+(declare-fun q (Int Int) Bool)
+(assert (forall ((x Int))
+            (=> (p x)
+                (exists ((y Int)) (q x y)))))
+
+(declare-datatype Color ((red) (blue)))
+(declare-fun color (Int Color) Bool)
+(assert (exists ((x Int))
+                (forall ((y Color)) (color x y))))
+(x-interpret-pred p (x-set (1)))
+(x-interpret-pred q (x-set (2 2)))
+(x-interpret-pred color (x-set (2 red) (2 blue)))
+
+(x-ground debug:)
+(x-debug solver groundings)
+(x-debug db tables)
+(x-debug db _xmt_interp_row_T)
+------- RESULTS ------------------
+(declare-fun p (Int) Bool)
+(declare-fun q (Int Int) Bool)
+(declare-datatype Color ((red) (blue)))
+(declare-fun color (Int Color) Bool)
+(assert (exists ((x Int)) (and (color x blue) (color x red))))
+(assert (forall ((x0 Int) (x1 Color)) (= (color x0 x1) (or 
+  (and (= x0 2) (= x1 red))
+  (and (= x0 2) (= x1 blue))
+))))
+Groundings:
+===  x ======================================
+ -- Join(0)
+SELECT "x" AS x,
+       "x" AS G
+===  (p x) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_p_TU_1.a_1 AS x,
+       "true" AS G
+  FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("p", "x") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("p", "x") AS G
+
+===  (not (p x)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("not", apply("p", "x")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_p_TU_1.a_1 AS x,
+       "false" AS G
+  FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("not", apply("p", "x")) AS G
+
+===  y ======================================
+ -- Join(0)
+SELECT "y" AS y,
+       "y" AS G
+===  (q x y) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_q_TU_4.a_1 AS x,
+       _xmt_interp_q_TU_4.a_2 AS y,
+       "true" AS G
+  FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("q", "x", "y") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("q", "x", "y") AS G
+
+===  (exists ((y Int)) (q x y)) ======================================
+----- T ------------------------------------------------------------
+-- Agg (0)
+SELECT x,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT _xmt_interp_q_TU_4.a_1 AS x,
+              _xmt_interp_q_TU_4.a_2 AS y,
+              "true" AS G
+         FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4)
+ GROUP BY x
+----- F ------------------------------------------------------------
+-- Agg (0)
+SELECT x,
+       or_aggregate(G) as G
+ FROM (SELECT _xmt_interp_q_TU_4.G AS x, NULL AS y, "false" AS G FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_q_TU_4.a_1 AS x,
+              _xmt_interp_q_TU_4.a_2 AS y,
+              "true" AS G
+         FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4)
+ GROUP BY x
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT x,
+       or_aggregate(G) as G
+ FROM (SELECT _xmt_interp_q_TU_4.G AS x, NULL AS y, "false" AS G FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_q_TU_4.a_1 AS x,
+              _xmt_interp_q_TU_4.a_2 AS y,
+              "true" AS G
+         FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4)
+ GROUP BY x
+
+===  (or (not (p x)) (exists ((y Int)) (q x y))) ======================================
+----- T ------------------------------------------------------------
+-- Agg (0)
+SELECT x,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              apply("not", apply("p", "x")) AS G
+       UNION ALL
+       -- Agg (7)
+       SELECT x,
+              or_aggregate(G) as G
+        FROM (-- Join(14)
+              SELECT _xmt_interp_q_TU_4.a_1 AS x,
+                     _xmt_interp_q_TU_4.a_2 AS y,
+                     "true" AS G
+                FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4)
+        GROUP BY x)
+ GROUP BY x
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_p_TU_1.a_1 AS x,
+       Agg_5_UF.G AS G
+  FROM (-- Agg (8)
+        SELECT x,
+               or_aggregate(G) as G
+         FROM (SELECT _xmt_interp_q_TU_4.G AS x, NULL AS y, "false" AS G FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4 
+               UNION ALL
+               -- Join(15)
+               SELECT _xmt_interp_q_TU_4.a_1 AS x,
+                      _xmt_interp_q_TU_4.a_2 AS y,
+                      "true" AS G
+                 FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4)
+         GROUP BY x
+        ) AS Agg_5_UF
+  JOIN _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+ WHERE  Agg_5_UF.x = _xmt_interp_p_TU_1.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT Agg_5_G.x AS x,
+       or_(apply("not", apply("p", Agg_5_G.x)), Agg_5_G.G) AS G
+  FROM (-- Agg (8)
+        SELECT x,
+               or_aggregate(G) as G
+         FROM (SELECT _xmt_interp_q_TU_4.G AS x, NULL AS y, "false" AS G FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4 
+               UNION ALL
+               -- Join(15)
+               SELECT _xmt_interp_q_TU_4.a_1 AS x,
+                      _xmt_interp_q_TU_4.a_2 AS y,
+                      "true" AS G
+                 FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4)
+         GROUP BY x
+        ) AS Agg_5_G
+
+=== (top) (forall ((x Int)) (or (not (p x)) (exists ((y Int)) (q x y)))) ======================================
+----- T ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_p_TU_1.a_1 AS x,
+              Agg_5_UF.G AS G
+         FROM (-- Agg (15)
+               SELECT x,
+                      or_aggregate(G) as G
+                FROM (SELECT _xmt_interp_q_TU_4.G AS x, NULL AS y, "false" AS G FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4 
+                      UNION ALL
+                      -- Join(22)
+                      SELECT _xmt_interp_q_TU_4.a_1 AS x,
+                             _xmt_interp_q_TU_4.a_2 AS y,
+                             "true" AS G
+                        FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4)
+                GROUP BY x
+               ) AS Agg_5_UF
+         JOIN _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+        WHERE  Agg_5_UF.x = _xmt_interp_p_TU_1.a_1)
+----- F ------------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_interp_p_TU_1.a_1 AS x,
+              Agg_5_UF.G AS G
+         FROM (-- Agg (15)
+               SELECT x,
+                      or_aggregate(G) as G
+                FROM (SELECT _xmt_interp_q_TU_4.G AS x, NULL AS y, "false" AS G FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4 
+                      UNION ALL
+                      -- Join(22)
+                      SELECT _xmt_interp_q_TU_4.a_1 AS x,
+                             _xmt_interp_q_TU_4.a_2 AS y,
+                             "true" AS G
+                        FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4)
+                GROUP BY x
+               ) AS Agg_5_UF
+         JOIN _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+        WHERE  Agg_5_UF.x = _xmt_interp_p_TU_1.a_1)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_p_TU_1.a_1 AS x,
+              Agg_5_UF.G AS G
+         FROM (-- Agg (15)
+               SELECT x,
+                      or_aggregate(G) as G
+                FROM (SELECT _xmt_interp_q_TU_4.G AS x, NULL AS y, "false" AS G FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4 
+                      UNION ALL
+                      -- Join(22)
+                      SELECT _xmt_interp_q_TU_4.a_1 AS x,
+                             _xmt_interp_q_TU_4.a_2 AS y,
+                             "true" AS G
+                        FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4)
+                GROUP BY x
+               ) AS Agg_5_UF
+         JOIN _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+        WHERE  Agg_5_UF.x = _xmt_interp_p_TU_1.a_1)
+
+===  y ======================================
+ -- Join(0)
+SELECT _xmt_sort_color_8.G AS y,
+       _xmt_sort_color_8.G AS G
+  FROM _xmt_sort_color AS _xmt_sort_color_8
+===  (color x y) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_color_TU_9.a_1 AS x,
+       _xmt_interp_color_TU_9.a_2 AS y,
+       "true" AS G
+  FROM _xmt_interp_color_TU AS _xmt_interp_color_TU_9
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       _xmt_sort_color_8.G AS y,
+       apply("color", "x", _xmt_sort_color_8.G) AS G
+  FROM _xmt_sort_color AS _xmt_sort_color_8
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       _xmt_sort_color_8.G AS y,
+       apply("color", "x", _xmt_sort_color_8.G) AS G
+  FROM _xmt_sort_color AS _xmt_sort_color_8
+
+===  (forall ((y Color)) (color x y)) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT x,
+       and_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              _xmt_sort_color_8.G AS y,
+              apply("color", "x", _xmt_sort_color_8.G) AS G
+         FROM _xmt_sort_color AS _xmt_sort_color_8)
+ GROUP BY x
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT x,
+       and_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              _xmt_sort_color_8.G AS y,
+              apply("color", "x", _xmt_sort_color_8.G) AS G
+         FROM _xmt_sort_color AS _xmt_sort_color_8)
+ GROUP BY x
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT x,
+       and_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              _xmt_sort_color_8.G AS y,
+              apply("color", "x", _xmt_sort_color_8.G) AS G
+         FROM _xmt_sort_color AS _xmt_sort_color_8)
+ GROUP BY x
+
+=== (top) (exists ((x Int)) (forall ((y Color)) (color x y))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT "(exists ((x Int)) " || or_aggregate(G) || ")" as G
+ FROM (-- Agg (7)
+       SELECT x,
+              and_aggregate(G) as G
+        FROM (-- Join(14)
+              SELECT "x" AS x,
+                     _xmt_sort_color_8.G AS y,
+                     apply("color", "x", _xmt_sort_color_8.G) AS G
+                FROM _xmt_sort_color AS _xmt_sort_color_8)
+        GROUP BY x)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT "(exists ((x Int)) " || or_aggregate(G) || ")" as G
+ FROM (SELECT NULL AS x, "false" AS G 
+       UNION ALL
+       -- Agg (7)
+       SELECT x,
+              and_aggregate(G) as G
+        FROM (-- Join(14)
+              SELECT "x" AS x,
+                     _xmt_sort_color_8.G AS y,
+                     apply("color", "x", _xmt_sort_color_8.G) AS G
+                FROM _xmt_sort_color AS _xmt_sort_color_8)
+        GROUP BY x)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT "(exists ((x Int)) " || or_aggregate(G) || ")" as G
+ FROM (SELECT NULL AS x, "false" AS G 
+       UNION ALL
+       -- Agg (7)
+       SELECT x,
+              and_aggregate(G) as G
+        FROM (-- Join(14)
+              SELECT "x" AS x,
+                     _xmt_sort_color_8.G AS y,
+                     apply("color", "x", _xmt_sort_color_8.G) AS G
+                FROM _xmt_sort_color AS _xmt_sort_color_8)
+        GROUP BY x)
+
+===========================================
+Tables and Views:
+ - Bool (table)
+ - _xmt_sort_color (table)
+ - _xmt_interp_p_T (table)
+ - _xmt_interp_p_TU (view)
+ - _xmt_interp_q_T (table)
+ - _xmt_interp_q_TU (view)
+ - _xmt_interp_color_T (table)
+ - _xmt_interp_color_TU (view)
+ - sqlite_stat1 (table)
+ - sqlite_stat4 (table)
+error: at position (20, 10): Unknown table
+
+   |
+20 | (x-debug db _xmt_interp_row_T)
+   |          ^ Unknown table
+
+   |
