@@ -8,6 +8,8 @@ mod private;
 
 use std::fs;
 use std::path::PathBuf;
+use std::ffi::CStr;
+use z3_sys::{Z3_get_full_version};
 
 use clap::Parser;
 
@@ -22,6 +24,10 @@ struct Cli {
 }
 
 fn main() {
+    unsafe {
+        let version_cstr = CStr::from_ptr(Z3_get_full_version());
+        println!("Z3 version: {}", version_cstr.to_string_lossy());
+    }
     let args = Cli::parse();
 
     if args.file_path.exists() {
