@@ -128,24 +128,24 @@ impl SpecConstant {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum SExpr {
-    // /// `<spec_constant>`
-    // SpecConstant(SpecConstant),
+    /// `<spec_constant>`
+    SpecConstant(SpecConstant),
     /// `<symbol>`
     Symbol(Symbol),
     // /// `<reserved>`
     // Reserved(Reserved),
-    // /// `<keyword>`
-    // Keyword(Keyword),
+    /// `<keyword>`
+    Keyword(Keyword),
     /// `(<s_expr>*)`
     Paren(Vec<SExpr>),
 }
 impl Display for SExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            // Self::SpecConstant(m0) => write!(f, "{}", m0),
+            Self::SpecConstant(m0) => write!(f, "{}", m0),
             Self::Symbol(m0) => write!(f, "{}", m0),
             // Self::Reserved(m0) => write!(f, "{}", m0),
-            // Self::Keyword(m0) => write!(f, "{}", m0),
+            Self::Keyword(m0) => write!(f, "{}", m0),
             Self::Paren(m0) => write!(f, "({})", m0.iter().format(" ")),
         }
     }
@@ -520,6 +520,7 @@ pub enum Command {
     DefineFunsRec(Vec<FunctionDec>, Vec<L<Term>>),
     DefineSort(Symbol, Vec<Symbol>, Sort),
     Echo(String_),
+    GetInfo(Keyword),
     SetOption(Option_),
     XDebug(L<Identifier>, L<Identifier>),
     XDuration(String_),
@@ -571,7 +572,7 @@ impl Display for Command {
             // Self::Exit => write!(f, "(exit)\n"),
             // Self::GetAssertions => write!(f, "(get-assertions)\n"),
             // Self::GetAssignment => write!(f, "(get-assignment)\n"),
-            // Self::GetInfo(m0) => write!(f, "(get-info {})\n", m0),
+            Self::GetInfo(m0) => write!(f, "(get-info {})\n", m0),
             // Self::GetModel => write!(f, "(get-model)\n"),
             // Self::GetOption(m0) => write!(f, "(get-option {})\n", m0),
             // Self::GetProof => write!(f, "(get-proof)\n"),

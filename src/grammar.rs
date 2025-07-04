@@ -100,8 +100,16 @@ peg::parser!{
             { SpecConstant::String(string) }
 
         rule s_expr() -> SExpr
-            = s: symbol()
+            = s: spec_constant()
+            { SExpr::SpecConstant(s) }
+
+            / s: symbol()
             { SExpr::Symbol(s) }
+
+            // reserved
+
+            / s: keyword()
+            { SExpr::Keyword(s) }
 
             / "(" _
               s:( s_expr() ** _ ) _
@@ -388,6 +396,7 @@ peg::parser!{
                       / define_funs_rec()
                       / define_sort()
                       / echo()
+                      / get_info()
                       / set_option()
                       / xinterpret_const()
                       / xinterpret_pred()
@@ -479,6 +488,11 @@ peg::parser!{
               string: string()
             { Echo(string) }
 
+        rule get_info() -> Command
+            = "get-info" _
+              keyword: keyword()
+            { GetInfo(keyword) }
+
         // //////////////////////////// X-Commands     ////////////////////////////
 
         rule xdebug() -> Command
@@ -545,7 +559,6 @@ peg::parser!{
             = command: $( "check-sat-assuming"
                          / "get-assertions"
                          / "get-assignment"
-                         / "get-info"
                          / "get-model"
                          / "get-option"
                          / "get-proof"

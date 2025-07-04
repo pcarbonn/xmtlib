@@ -366,6 +366,7 @@ impl Solver {
                     yield_!(define_sort(symb, variables, sort, command, self)),
 
                 Command::Echo(string) => yield_!(self.exec(&command)),
+                Command::GetInfo(keyword) => yield_!(self.exec(&command)),
                 Command::XInterpretPred(identifier, tuples) =>
                     yield_!(interpret_pred(identifier, tuples, self)),
 

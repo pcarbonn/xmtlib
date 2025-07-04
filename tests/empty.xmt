@@ -1,6 +1,8 @@
 (set-option :backend none)
+(get-info :version)
 (assert false)
 (check-sat)
 ------- RESULTS ------------------
+(get-info :version)
 (assert false)
 (check-sat)
