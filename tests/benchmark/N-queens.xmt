@@ -18,12 +18,18 @@
             (=> (and (Val v1) (Val v2) (< v1 v2))
                 (not (= (- (queen v1) v1) (- (queen v2) v2))))))
 
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-fun Val (Int) Bool)
 (declare-fun queen (Int) Int)
-(assert (Val (queen 1)))
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_val_TU_1.a_1 AS v,
+;              apply("Val", apply("queen", _xmt_interp_val_TU_1.a_1)) AS G
+;         FROM _xmt_interp_val_TU AS _xmt_interp_val_TU_1)(assert (Val (queen 1)))
 (assert (Val (queen 2)))
 (assert (Val (queen 3)))
 (assert (forall ((x0 Int)) (= (Val x0) (or 
@@ -31,15 +37,43 @@
    (= x0 2)
    (= x0 3)
 ))))
-(assert (not (= (queen 1) (queen 2))))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_val_TU_8.a_1 AS v1,
+;              _xmt_interp_val_TU_11.a_1 AS v2,
+;              or_(not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("queen", _xmt_interp_val_TU_8.a_1), apply("queen", _xmt_interp_val_TU_11.a_1)))) AS G
+;         FROM _xmt_interp_val_TU AS _xmt_interp_val_TU_8
+;         JOIN _xmt_interp_val_TU AS _xmt_interp_val_TU_11)(assert (not (= (queen 1) (queen 2))))
 (assert (not (= (queen 1) (queen 3))))
 (assert (not (= (queen 2) (queen 3))))
-(assert (not (= (+ (queen 1) 1) (+ (queen 2) 2))))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_val_TU_8.a_1 AS v1,
+;              _xmt_interp_val_TU_11.a_1 AS v2,
+;              or_(not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("+", apply("queen", _xmt_interp_val_TU_8.a_1), _xmt_interp_val_TU_8.a_1), apply("+", apply("queen", _xmt_interp_val_TU_11.a_1), _xmt_interp_val_TU_11.a_1)))) AS G
+;         FROM _xmt_interp_val_TU AS _xmt_interp_val_TU_8
+;         JOIN _xmt_interp_val_TU AS _xmt_interp_val_TU_11)(assert (not (= (+ (queen 1) 1) (+ (queen 2) 2))))
 (assert (not (= (+ (queen 1) 1) (+ (queen 3) 3))))
 (assert (not (= (+ (queen 2) 2) (+ (queen 3) 3))))
-(assert (not (= (- (queen 1) 1) (- (queen 2) 2))))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_val_TU_8.a_1 AS v1,
+;              _xmt_interp_val_TU_11.a_1 AS v2,
+;              or_(not_(compare_("<", _xmt_interp_val_TU_8.a_1, _xmt_interp_val_TU_11.a_1)), apply("not", apply("=", apply("-", apply("queen", _xmt_interp_val_TU_8.a_1), _xmt_interp_val_TU_8.a_1), apply("-", apply("queen", _xmt_interp_val_TU_11.a_1), _xmt_interp_val_TU_11.a_1)))) AS G
+;         FROM _xmt_interp_val_TU AS _xmt_interp_val_TU_8
+;         JOIN _xmt_interp_val_TU AS _xmt_interp_val_TU_11)(assert (not (= (- (queen 1) 1) (- (queen 2) 2))))
 (assert (not (= (- (queen 1) 1) (- (queen 3) 3))))
 (assert (not (= (- (queen 2) 2) (- (queen 3) 3))))
+
 Groundings:
 ===  v ======================================
  -- Join(0)

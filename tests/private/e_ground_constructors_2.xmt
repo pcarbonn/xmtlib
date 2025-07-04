@@ -13,7 +13,7 @@
 (assert ((_ is nil) (as nil (Either Material)))) ; TODO simplify using equality. Beware of ambiguous identifier.
 (assert ((_ is Left) (Left blue)))
 (assert (= red (b (Left red))))
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug db tables)
 (x-debug db Sort_8)
 (x-debug solver polymorphic_sorts)
@@ -29,7 +29,42 @@
 (declare-datatype Either (par (T) ((nil) (Left (b T)) (Right (right T)))))
 (declare-fun p ((Either Color)) Bool)
 (declare-fun q ((Either Material)) Color)
-(assert ((_ is nil)  (as nil (Either Material))))
+; ==== Query =============================
+;-- Join(0)
+;SELECT "false" AS G
+;  FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_2
+; WHERE construct2("Right", "red") = _xmt_interp_p_UF_2.a_1
+; ==== Query =============================
+;-- Join(0)
+;SELECT "false" AS G
+;  FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_4
+; WHERE " (as nil (Either Color))" = _xmt_interp_p_UF_4.a_1
+; ==== Query =============================
+;-- Join(0)
+;SELECT "false" AS G
+;  FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_6
+; WHERE construct2("Left", "red") = _xmt_interp_p_TU_6.a_1
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT apply("(_ is nil)", " (as nil (Either Material))") AS G)
+; WHERE G <> "true"(assert ((_ is nil)  (as nil (Either Material))))
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT "false" AS G
+;  FROM _xmt_tester_sort_8_left_f AS _xmt_tester_sort_8_left_f_12
+; WHERE construct2("Left", "blue") = _xmt_tester_sort_8_left_f_12.a_1
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT eq_("red", _xmt_selector_sort_8_b_g_13.G) AS G
+;         FROM _xmt_selector_sort_8_b_g AS _xmt_selector_sort_8_b_g_13
+;        WHERE "red" != _xmt_selector_sort_8_b_g_13.G 
+;              AND construct2("Left", "red") = _xmt_selector_sort_8_b_g_13.a_1)
+; WHERE G <> "true"
 Tables and Views:
  - Bool (table)
  - _xmt_sort_color (table)

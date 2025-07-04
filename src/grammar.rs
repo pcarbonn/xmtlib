@@ -509,8 +509,9 @@ peg::parser!{
         rule xground() -> Command
             = "x-ground" _  // do not force a space here
               no: ":no"? _
-              debug: ":debug"?
-            { XGround{no: no.is_some(), debug: debug.is_some()} }
+              debug: ":debug"? _
+              sql: ":sql"?
+            { XGround{no: no.is_some(), debug: debug.is_some(), sql: sql.is_some()} }
 
         rule xinterpret_const() -> Command
             = "x-interpret-const" __

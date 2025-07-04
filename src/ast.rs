@@ -524,7 +524,7 @@ pub enum Command {
     SetOption(Option_),
     XDebug(L<Identifier>, L<Identifier>),
     XDuration(String_),
-    XGround{no: bool, debug: bool},
+    XGround{no: bool, debug: bool, sql: bool},
     XInterpretPred(L<Identifier>, XSet),
     XInterpretFun(L<Identifier>, Either<Vec<(XTuple, L<Term>)>, String_>, Option<L<Term>>),
     Verbatim(String),
@@ -590,10 +590,11 @@ impl Display for Command {
 
             Self::XDebug(s1, s2) => write!(f, "(x-debug {s1} {s2})\n"),
             Self::XDuration(m0) => write!(f, "(x-duration {m0})\n"),
-            Self::XGround{no, debug}=>
-                write!(f, "(x-ground{}{})\n",
+            Self::XGround{no, debug, sql}=>
+                write!(f, "(x-ground{}{}{})\n",
                             if *no {" :no"} else {""},
-                            if *debug {" :debug"} else {""}
+                            if *debug {" :debug"} else {""},
+                            if *sql {" :sql"} else {""}
                         ),
             Self::XInterpretPred(s1, s2 ) => write!(f, "(x-interpret-pred {s1} {s2})\n"),
             Self::XInterpretFun(s1, s2, s3 ) => {

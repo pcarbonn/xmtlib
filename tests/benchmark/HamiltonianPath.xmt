@@ -24,7 +24,7 @@
 
 (x-interpret-pred edge (x-set (a b) (b c)))
 
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-datatype Node ((a) (b) (c)))
@@ -34,20 +34,58 @@
 (declare-fun end () Node)
 (declare-fun reached (Node) Bool)
 (declare-fun level (Node) Real)
-(assert (or (not (= (path a) a)) (= a end)))
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_edge_UF_5.a_1 AS n1,
+;              _xmt_interp_edge_UF_5.a_2 AS n2,
+;              or_(apply("not", apply("=", apply("path", _xmt_interp_edge_UF_5.a_1), _xmt_interp_edge_UF_5.a_2)), apply("=", _xmt_interp_edge_UF_5.a_1, "end")) AS G
+;         FROM _xmt_interp_edge_UF AS _xmt_interp_edge_UF_5)(assert (or (not (= (path a) a)) (= a end)))
 (assert (or (not (= (path a) c)) (= a end)))
 (assert (or (not (= (path b) a)) (= b end)))
 (assert (or (not (= (path b) b)) (= b end)))
 (assert (or (not (= (path c) a)) (= c end)))
 (assert (or (not (= (path c) b)) (= c end)))
 (assert (or (not (= (path c) c)) (= c end)))
-(assert (= (path end) start))
-(assert (= (reached a) (or (= a start) (or (and (= (path a) a) (reached a) (< (level a) (level a))) (and (= (path b) a) (reached b) (< (level b) (level a))) (and (= (path c) a) (reached c) (< (level c) (level a)))))))
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT apply("=", apply("path", "end"), "start") AS G(assert (= (path end) start))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_sort_node.G AS n1,
+;              apply("=", apply("reached", _xmt_sort_node.G), or_(apply("=", _xmt_sort_node.G, "start"), Agg_22_G.G)) AS G
+;         FROM _xmt_sort_node
+;         JOIN (-- Agg (15)
+;               SELECT n1,
+;                      or_aggregate(G) as G
+;                FROM (SELECT NULL AS n2, _xmt_sort_node.G AS n1, "false" AS G FROM _xmt_sort_node AS _xmt_sort_node 
+;                      UNION ALL
+;                      -- Join(22)
+;                      SELECT _xmt_sort_node_2.G AS n2,
+;                             _xmt_sort_node.G AS n1,
+;                             and_(apply("=", apply("path", _xmt_sort_node_2.G), _xmt_sort_node.G), apply("reached", _xmt_sort_node_2.G), apply("<", apply("level", _xmt_sort_node_2.G), apply("level", _xmt_sort_node.G))) AS G
+;                        FROM _xmt_sort_node AS _xmt_sort_node_2
+;                        JOIN _xmt_sort_node)
+;                GROUP BY n1
+;               ) AS Agg_22_G ON  Agg_22_G.n1 = _xmt_sort_node.G)(assert (= (reached a) (or (= a start) (or (and (= (path a) a) (reached a) (< (level a) (level a))) (and (= (path b) a) (reached b) (< (level b) (level a))) (and (= (path c) a) (reached c) (< (level c) (level a)))))))
 (assert (= (reached b) (or (= b start) (or (and (= (path a) b) (reached a) (< (level a) (level b))) (and (= (path b) b) (reached b) (< (level b) (level b))) (and (= (path c) b) (reached c) (< (level c) (level b)))))))
 (assert (= (reached c) (or (= c start) (or (and (= (path a) c) (reached a) (< (level a) (level c))) (and (= (path b) c) (reached b) (< (level b) (level c))) (and (= (path c) c) (reached c) (< (level c) (level c)))))))
-(assert (reached a))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_sort_node_26.G AS n,
+;              apply("reached", _xmt_sort_node_26.G) AS G
+;         FROM _xmt_sort_node AS _xmt_sort_node_26)(assert (reached a))
 (assert (reached b))
 (assert (reached c))
+
 Groundings:
 ===  n1 ======================================
  -- Join(0)

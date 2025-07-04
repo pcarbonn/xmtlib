@@ -13,7 +13,7 @@
    ? )
 (assert (= green (mix red green)))
 (assert (exists ((x Color)) (= (mix x x) x)))
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver functions)
 (x-debug solver groundings)
 (x-debug db tables)
@@ -21,7 +21,34 @@
 ------- RESULTS ------------------
 (declare-datatype Color ((red) (green)))
 (declare-fun mix (Color Color) Color)
-(assert (= (mix red red) red))
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT eq_("green", _xmt_interp_mix_G_2.G) AS G
+;         FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_2
+;        WHERE (NOT is_id(_xmt_interp_mix_G_2.G) OR _xmt_interp_mix_G_2.G != "green") 
+;              AND "red" = _xmt_interp_mix_G_2.a_1 
+;              AND "green" = _xmt_interp_mix_G_2.a_2)
+; WHERE G <> "true"
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Agg (7)
+;       SELECT or_aggregate(G) as G
+;        FROM (SELECT NULL AS x, "false" AS G 
+;              UNION ALL
+;              -- exclude(14)
+;              SELECT *
+;               FROM (-- Join(21)
+;                     SELECT _xmt_interp_mix_G_5.a_1 AS x,
+;                            eq_(_xmt_interp_mix_G_5.G, _xmt_interp_mix_G_5.a_1) AS G
+;                       FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_5
+;                      WHERE (NOT is_id(_xmt_interp_mix_G_5.G) OR _xmt_interp_mix_G_5.G = _xmt_interp_mix_G_5.a_1) 
+;                            AND _xmt_interp_mix_G_5.a_1 = _xmt_interp_mix_G_5.a_2)
+;               WHERE G <> "false"))
+; WHERE G <> "true"(assert (= (mix red red) red))
+
 Functions2:
  - true ()->Bool : Constructor
  - false ()->Bool : Constructor

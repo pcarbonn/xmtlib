@@ -36,7 +36,7 @@
 )
 (assert (= green (RGB 0)))
 
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver functions)
 (x-debug solver groundings)
 (x-debug db tables)
@@ -50,10 +50,62 @@
 (declare-fun Mix (Color Color) Color)
 (declare-fun mix (Color Color) Color)
 (declare-fun RGB (Int) Color)
-(assert false)
-(assert (= (mix green green) green))
-(assert (= (mix green green) green green))
-(assert false)
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT eq_(_xmt_interp_c_2_G.G, "green") AS G
+;         FROM _xmt_interp_c_2_G AS _xmt_interp_c_2_G
+;        WHERE _xmt_interp_c_2_G.G != "green")
+; WHERE G <> "true"(assert false)
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Agg (7)
+;       SELECT or_aggregate(G) as G
+;        FROM (SELECT NULL AS x, "false" AS G 
+;              UNION ALL
+;              -- exclude(14)
+;              SELECT *
+;               FROM (-- Join(21)
+;                     SELECT _xmt_interp_mix_G_4.a_1 AS x,
+;                            eq_(_xmt_interp_mix_G_4.G, _xmt_interp_mix_G_4.a_1) AS G
+;                       FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_4
+;                      WHERE (NOT is_id(_xmt_interp_mix_G_4.G) OR _xmt_interp_mix_G_4.G = _xmt_interp_mix_G_4.a_1) 
+;                            AND _xmt_interp_mix_G_4.a_1 = _xmt_interp_mix_G_4.a_2)
+;               WHERE G <> "false"))
+; WHERE G <> "true"(assert (= (mix green green) green))
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Agg (7)
+;       SELECT or_aggregate(G) as G
+;        FROM (SELECT NULL AS x, "false" AS G 
+;              UNION ALL
+;              -- exclude(14)
+;              SELECT *
+;               FROM (-- Join(21)
+;                     SELECT _xmt_interp_mix_G_4.a_1 AS x,
+;                            eq_(_xmt_interp_mix_G_4.G, _xmt_interp_mix_G_4.a_1, "green") AS G
+;                       FROM _xmt_interp_mix_G AS _xmt_interp_mix_G_4
+;                      WHERE (NOT is_id(_xmt_interp_mix_G_4.G) OR _xmt_interp_mix_G_4.G = "green") 
+;                            AND _xmt_interp_mix_G_4.a_1 = "green" 
+;                            AND _xmt_interp_mix_G_4.a_1 = _xmt_interp_mix_G_4.a_2)
+;               WHERE G <> "false"))
+; WHERE G <> "true"(assert (= (mix green green) green green))
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT eq_("green", _xmt_interp_rgb_G_10.G) AS G
+;         FROM _xmt_interp_rgb_G AS _xmt_interp_rgb_G_10
+;        WHERE "green" != _xmt_interp_rgb_G_10.G 
+;              AND 0 = _xmt_interp_rgb_G_10.a_1)
+; WHERE G <> "true"(assert false)
+
 Functions2:
  - true ()->Bool : Constructor
  - false ()->Bool : Constructor

@@ -4,6 +4,7 @@ use std::future::Future;
 
 use genawaiter::{sync::Gen, sync::gen, yield_};
 use rusqlite::Connection;
+use indexmap::IndexMap;
 
 use crate::ast::{Identifier, QualIdentifier, Sort, Symbol, Term, L};
 use crate::error::{Offset, SolverError::{self, *}};
@@ -129,6 +130,7 @@ fn has_interpreted_function(
 pub(crate) fn ground(
     no: bool,
     debug: bool,
+    sql: bool,
     solver: &mut Solver
 ) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {
 
@@ -149,9 +151,10 @@ pub(crate) fn ground(
                             let assert = format!("(assert {})\n", &term);
                             yield_!(solver.exec(&assert));
                         } else if debug {  // execute immediately
-                            for result in execute_term(term, solver) {
+                            for result in execute_term(term, sql, solver) {
                                 yield_!(result)
                             }
+                            yield_!(Ok("\n".to_string()))
                         } else {  // conjoin with other terms
                             terms.push(term.clone())
                         }
@@ -169,7 +172,7 @@ pub(crate) fn ground(
             let and_ = QualIdentifier::new(&Symbol("and".to_string()), None);
             let term = L(Term::Application(and_, terms), Offset(0));
 
-            for result in execute_term(term, solver) {
+            for result in execute_term(term, sql, solver) {
                 yield_!(result)
             }
         }
@@ -182,6 +185,7 @@ pub(crate) fn ground(
 
 fn execute_term(
     term: L<Term>,
+    sql: bool,
     solver: &mut Solver
 ) -> Gen<Result<String, SolverError>, (), impl Future<Output = ()> + '_> {
 
@@ -196,6 +200,11 @@ fn execute_term(
                             GroundingView::Empty => {}
                             GroundingView::View { ref to_be_defined, .. } => {
                                 let query = uf.to_string();
+                                if sql {
+                                    yield_!(Ok("; ==== Query =============================\n;".to_string()));
+                                    let (temp, _) = uf.to_sql(&IndexMap::new(), "");
+                                    yield_!(Ok(temp.replace("\n", "\n;")))
+                                }
                                 for res in execute_query(query, &mut solver.conn, &mut solver.backend) {
                                     solver.started = true;
                                     yield_!(res)

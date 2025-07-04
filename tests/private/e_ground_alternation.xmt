@@ -14,7 +14,7 @@
 (x-interpret-pred q (x-set (2 2)))
 (x-interpret-pred color (x-set (2 red) (2 blue)))
 
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver groundings)
 (x-debug db tables)
 (x-debug db _xmt_interp_row_T)
@@ -23,11 +23,45 @@
 (declare-fun q (Int Int) Bool)
 (declare-datatype Color ((red) (blue)))
 (declare-fun color (Int Color) Bool)
-(assert (exists ((x Int)) (and (color x blue) (color x red))))
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_p_TU_1.a_1 AS x,
+;              Agg_5_UF.G AS G
+;         FROM (-- Agg (15)
+;               SELECT x,
+;                      or_aggregate(G) as G
+;                FROM (SELECT _xmt_interp_q_TU_4.G AS x, NULL AS y, "false" AS G FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4 
+;                      UNION ALL
+;                      -- Join(22)
+;                      SELECT _xmt_interp_q_TU_4.a_1 AS x,
+;                             _xmt_interp_q_TU_4.a_2 AS y,
+;                             "true" AS G
+;                        FROM _xmt_interp_q_TU AS _xmt_interp_q_TU_4)
+;                GROUP BY x
+;               ) AS Agg_5_UF
+;         JOIN _xmt_interp_p_TU AS _xmt_interp_p_TU_1
+;        WHERE  Agg_5_UF.x = _xmt_interp_p_TU_1.a_1)
+; ==== Query =============================
+;-- Agg (0)
+;SELECT "(exists ((x Int)) " || or_aggregate(G) || ")" as G
+; FROM (SELECT NULL AS x, "false" AS G 
+;       UNION ALL
+;       -- Agg (7)
+;       SELECT x,
+;              and_aggregate(G) as G
+;        FROM (-- Join(14)
+;              SELECT "x" AS x,
+;                     _xmt_sort_color_8.G AS y,
+;                     apply("color", "x", _xmt_sort_color_8.G) AS G
+;                FROM _xmt_sort_color AS _xmt_sort_color_8)
+;        GROUP BY x)(assert (exists ((x Int)) (and (color x blue) (color x red))))
 (assert (forall ((x0 Int) (x1 Color)) (= (color x0 x1) (or 
   (and (= x0 2) (= x1 red))
   (and (= x0 2) (= x1 blue))
 ))))
+
 Groundings:
 ===  x ======================================
  -- Join(0)

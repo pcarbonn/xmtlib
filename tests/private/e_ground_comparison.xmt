@@ -9,16 +9,80 @@
 (assert (and (<= 2.0 2.0) (not (<= 3.0 3.0))))
 (assert (distinct 1.0 2.0 3.0))
 
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver groundings)
 (x-debug db tables)
 ------- RESULTS ------------------
-(assert false)
-(assert false)
-(assert false)
-(assert (distinct 1 2 3))
-(assert false)
-(assert (distinct 1 2 3))
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT compare_("<=", 2, 2, 2) AS G)
+; WHERE G <> "true"
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT compare_("<", 1, 2, 3) AS G)
+; WHERE G <> "true"
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT not_("true") AS G)
+; WHERE G <> "true"(assert false)
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT eq_(compare_("<=", 2, 2), not_(compare_("<=", 3, 3))) AS G)
+; WHERE G <> "true"(assert false)
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Agg (7)
+;       SELECT G as G
+;        FROM (-- exclude(14)
+;              SELECT *
+;               FROM (-- Join(21)
+;                     SELECT compare_("<=", 2, 2) AS G
+;                     UNION ALL
+;                     -- Join(21)
+;                     SELECT not_(compare_("<=", 3, 3)) AS G)
+;               WHERE G <> "true"))
+; WHERE G <> "true"(assert false)
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT apply("distinct", 1, 2, 3) AS G)
+; WHERE G <> "true"(assert (distinct 1 2 3))
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Agg (7)
+;       SELECT G as G
+;        FROM (-- exclude(14)
+;              SELECT *
+;               FROM (-- Join(21)
+;                     SELECT compare_("<=", 2.0, 2.0) AS G
+;                     UNION ALL
+;                     -- Join(21)
+;                     SELECT not_(compare_("<=", 3.0, 3.0)) AS G)
+;               WHERE G <> "true"))
+; WHERE G <> "true"(assert false)
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT apply("distinct", 1.0, 2.0, 3.0) AS G)
+; WHERE G <> "true"(assert (distinct 1 2 3))
+
 Groundings:
 ===  2 ======================================
  -- Join(0)

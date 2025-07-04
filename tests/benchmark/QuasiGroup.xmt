@@ -34,7 +34,7 @@
 (x-interpret-pred v (x-set (1 10) (2 20) ))
 (x-interpret-pred state (x-set (1 1 1)))
 
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-fun Domain (Int) Bool)
@@ -42,19 +42,97 @@
 (declare-fun state (Int Int Int) Bool)
 (declare-fun assign (Int Int Int) Bool)
 (declare-fun assigned (Int) Bool)
-(assert (= (assigned 1) (or (assign 1 1 1) (assign 1 1 2) (assign 1 2 1) (assign 1 2 2))))
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+;              _xmt_view__11_21.G AS G
+;         FROM (-- Join(15)
+;               SELECT Outer_0.V AS V,
+;                      bool_eq_("true", Outer_0.G, Agg_10_UF.G) AS G
+;                 FROM (-- Join(23)
+;                       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+;                              apply("assigned", _xmt_interp_domain_TU_1.a_1) AS G
+;                         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+;                       ) AS Outer_0
+;                 FULL JOIN (-- Agg (23)
+;                       SELECT V,
+;                              or_aggregate(G) as G
+;                        FROM (-- Join(30)
+;                              SELECT _xmt_interp_domain_TU_5.a_1 AS x,
+;                                     _xmt_interp_domain_TU_7.a_1 AS y,
+;                                     _xmt_interp_domain_TU_1.a_1 AS V,
+;                                     apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1) AS G
+;                                FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+;                                JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7
+;                                JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)
+;                        GROUP BY V
+;                       ) AS Agg_10_UF ON  Agg_10_UF.V = Outer_0.V
+;               ) AS _xmt_view__11_21
+;         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+;        WHERE  _xmt_view__11_21.V = _xmt_interp_domain_TU_1.a_1)(assert (= (assigned 1) (or (assign 1 1 1) (assign 1 1 2) (assign 1 2 1) (assign 1 2 2))))
 (assert (= (assigned 2) (or (assign 2 1 1) (assign 2 1 2) (assign 2 2 1) (assign 2 2 2))))
-(assert (or (not (assign 1 1 1)) (not (assign 1 2 1))))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+;              _xmt_interp_domain_TU_15.a_1 AS x1,
+;              _xmt_interp_domain_TU_18.a_1 AS x2,
+;              _xmt_interp_domain_TU_7.a_1 AS y,
+;              or_(apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_7.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_18.a_1, _xmt_interp_domain_TU_7.a_1)), not_(compare_("<", _xmt_interp_domain_TU_15.a_1, _xmt_interp_domain_TU_18.a_1))) AS G
+;         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+;         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_15
+;         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_18
+;         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7)(assert (or (not (assign 1 1 1)) (not (assign 1 2 1))))
 (assert (or (not (assign 1 1 2)) (not (assign 1 2 2))))
 (assert (or (not (assign 2 1 1)) (not (assign 2 2 1))))
 (assert (or (not (assign 2 1 2)) (not (assign 2 2 2))))
-(assert (or (not (assign 1 1 1)) (not (assign 1 1 2))))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+;              _xmt_interp_domain_TU_5.a_1 AS x,
+;              _xmt_interp_domain_TU_31.a_1 AS y1,
+;              _xmt_interp_domain_TU_34.a_1 AS y2,
+;              or_(apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_31.a_1)), apply("not", apply("assign", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_34.a_1)), not_(compare_("<", _xmt_interp_domain_TU_31.a_1, _xmt_interp_domain_TU_34.a_1))) AS G
+;         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+;         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+;         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_31
+;         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_34)(assert (or (not (assign 1 1 1)) (not (assign 1 1 2))))
 (assert (or (not (assign 1 2 1)) (not (assign 1 2 2))))
 (assert (or (not (assign 2 1 1)) (not (assign 2 1 2))))
 (assert (or (not (assign 2 2 1)) (not (assign 2 2 2))))
-(assert (not (not (assign 1 1 1))))
-(assert (not (not (assigned 1))))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_domain_TU_45.a_1 AS s,
+;              _xmt_interp_domain_TU_5.a_1 AS x,
+;              _xmt_interp_domain_TU_7.a_1 AS y,
+;              apply("not", apply("not", apply("assign", _xmt_interp_domain_TU_45.a_1, _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_7.a_1))) AS G
+;         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_45
+;         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+;         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_7
+;         JOIN _xmt_interp_state_TU AS _xmt_interp_state_TU_47
+;               ON _xmt_interp_domain_TU_5.a_1 = _xmt_interp_state_TU_47.a_1 
+;              AND _xmt_interp_domain_TU_7.a_1 = _xmt_interp_state_TU_47.a_2 
+;              AND _xmt_interp_domain_TU_45.a_1 = _xmt_interp_state_TU_47.a_3)(assert (not (not (assign 1 1 1))))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_domain_TU_1.a_1 AS V,
+;              apply("not", apply("not", apply("assigned", _xmt_interp_domain_TU_1.a_1))) AS G
+;         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)(assert (not (not (assigned 1))))
 (assert (not (not (assigned 2))))
+
 Groundings:
 ===  V ======================================
  -- Join(0)

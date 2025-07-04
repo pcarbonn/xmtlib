@@ -15,15 +15,15 @@
 
 (assert (p b B))
 (assert (and (p b (f b)) (p a (f b))))
-(x-ground :debug)
+(x-ground :debug :sql)
 
 (echo "or")
 (assert (or (p b (f b)) (p a (f b))))
-(x-ground :debug)
+(x-ground :debug :sql)
 
 (echo "forall")
 (assert (forall ((x T)) (p x (f x)) ))
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug db _xmt_interp_p_g)
 (x-debug solver groundings)
 (x-debug db tables)
@@ -32,17 +32,94 @@
 (declare-datatype Tf ((A) (B)))
 (declare-fun p (T Tf) Bool)
 (declare-fun f (T) Tf)
-(assert (p b B))
-(assert (not (= (f b) A)))
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_p_UF_2.G AS G
+;         FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_2
+;        WHERE "b" = _xmt_interp_p_UF_2.a_1 
+;              AND "B" = _xmt_interp_p_UF_2.a_2)
+; WHERE G <> "true"(assert (p b B))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT implies_(if_, G) as G
+; FROM (-- Join(7)
+;       SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_UF_4.a_2) AS if_, 
+;              _xmt_interp_p_UF_4.G AS G
+;         FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
+;         JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_4
+;               ON "b" = _xmt_interp_p_UF_4.a_1 
+;              AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_UF_4.a_2)
+;        WHERE "b" = _xmt_interp_f_G_3.a_1
+;       UNION ALL
+;       -- Join(7)
+;       SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_UF_6.a_2) AS if_, 
+;              _xmt_interp_p_UF_6.G AS G
+;         FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
+;         JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_6
+;               ON "a" = _xmt_interp_p_UF_6.a_1 
+;              AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_UF_6.a_2)
+;        WHERE "b" = _xmt_interp_f_G_3.a_1)(assert (not (= (f b) A)))
 (assert (=> (= (f b) B) (p b B)))
 (assert (not (= (f b) B)))
+
 (echo "or")
-(assert (or (and (not (= (f b) A)) (=> (= (f b) B) (p b B))) (not (= (f b) B))))
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT or_(Agg_0.G, Agg_1.G) AS G
+;         FROM (-- Agg (15)
+;               SELECT and_aggregate(implies_(if_, G)) as G
+;                FROM (-- exclude(22)
+;                      SELECT *
+;                       FROM (-- Join(29)
+;                             SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_UF_8.a_2) AS if_, 
+;                                    _xmt_interp_p_UF_8.G AS G
+;                               FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
+;                               JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_8
+;                                     ON "b" = _xmt_interp_p_UF_8.a_1 
+;                                    AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_UF_8.a_2)
+;                              WHERE "b" = _xmt_interp_f_G_3.a_1)
+;                       WHERE G <> "true")
+;               ) AS Agg_0
+;         JOIN (-- Agg (15)
+;               SELECT and_aggregate(implies_(if_, G)) as G
+;                FROM (-- exclude(22)
+;                      SELECT *
+;                       FROM (-- Join(29)
+;                             SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_UF_9.a_2) AS if_, 
+;                                    _xmt_interp_p_UF_9.G AS G
+;                               FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
+;                               JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_9
+;                                     ON "a" = _xmt_interp_p_UF_9.a_1 
+;                                    AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_UF_9.a_2)
+;                              WHERE "b" = _xmt_interp_f_G_3.a_1)
+;                       WHERE G <> "true")
+;               ) AS Agg_1)
+; WHERE G <> "true"(assert (or (and (not (= (f b) A)) (=> (= (f b) B) (p b B))) (not (= (f b) B))))
+
 (echo "forall")
-(assert (not (= (f b) A)))
+; ==== Query =============================
+;-- Agg (0)
+;SELECT implies_(if_, G) as G
+; FROM (-- exclude(7)
+;       SELECT *
+;        FROM (-- Join(14)
+;              SELECT _xmt_interp_p_UF_13.a_1 AS x,
+;                     if_(_xmt_interp_f_G_12.G, _xmt_interp_p_UF_13.a_2) AS if_, 
+;                     _xmt_interp_p_UF_13.G AS G
+;                FROM _xmt_interp_f_G AS _xmt_interp_f_G_12
+;                JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_13
+;                      ON (NOT is_id(_xmt_interp_f_G_12.G) OR _xmt_interp_f_G_12.G = _xmt_interp_p_UF_13.a_2)
+;               WHERE _xmt_interp_p_UF_13.a_1 = _xmt_interp_f_G_12.a_1)
+;        WHERE G <> "true")(assert (not (= (f b) A)))
 (assert (=> (= (f b) B) (p b B)))
 (assert (=> (= (f c) A) (p c A)))
 (assert (=> (= (f c) B) (p c B)))
+
  TABLE: _xmt_interp_p_g
 ┌─────┬─────┬───────────┐
 │ a_1 │ a_2 │ G         │

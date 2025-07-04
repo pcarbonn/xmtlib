@@ -5,16 +5,31 @@
 (declare-fun q (Int) Bool)
 (assert (= 2 (ite (q 1) 1 2)))
 (assert (ite true (q 2) (q 3)))
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver groundings)
 (x-debug db tables)
 ------- RESULTS ------------------
 (declare-const p Bool)
 (declare-fun q (Int) Bool)
-(assert false)
-(assert (= 2 (ite p 1 2)))
-(assert (= 2 (ite (q 1) 1 2)))
-(assert (q 2))
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT eq_(2, 1) AS G)
+; WHERE G <> "true"(assert false)
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT apply("=", 2, apply("ite", "p", 1, 2)) AS G(assert (= 2 (ite p 1 2)))
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT apply("=", 2, apply("ite", apply("q", 1), 1, 2)) AS G(assert (= 2 (ite (q 1) 1 2)))
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT apply("q", 2) AS G(assert (q 2))
+
 Groundings:
 ===  2 ======================================
  -- Join(0)

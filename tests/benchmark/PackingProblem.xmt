@@ -35,7 +35,7 @@
 (x-interpret-fun square_size (x-mapping ((q1) 1) ((q2) 2)))
 
 
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-datatype Square ((q1) (q2)))
@@ -44,16 +44,56 @@
 (declare-fun square_size (Square) Int)
 (declare-fun area_width () Int)
 (declare-fun area_height () Int)
-(assert (<= 0 (pos_x q1)))
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_sort_square_1.G AS s,
+;              apply("<=", 0, apply("pos_x", _xmt_sort_square_1.G)) AS G
+;         FROM _xmt_sort_square AS _xmt_sort_square_1)(assert (<= 0 (pos_x q1)))
 (assert (<= 0 (pos_x q2)))
-(assert (<= 0 (pos_y q1)))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_sort_square_1.G AS s,
+;              apply("<=", 0, apply("pos_y", _xmt_sort_square_1.G)) AS G
+;         FROM _xmt_sort_square AS _xmt_sort_square_1)(assert (<= 0 (pos_y q1)))
 (assert (<= 0 (pos_y q2)))
-(assert (<= (+ (pos_x q1) 1) 5))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_square_size_G_8.a_1 AS s,
+;              apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_8.a_1), _xmt_interp_square_size_G_8.G), _xmt_interp_area_width_G_10.G) AS G
+;         FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_8
+;         JOIN _xmt_interp_area_width_G AS _xmt_interp_area_width_G_10)(assert (<= (+ (pos_x q1) 1) 5))
 (assert (<= (+ (pos_x q2) 2) 5))
-(assert (<= (+ (pos_y q1) 1) 5))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_square_size_G_8.a_1 AS s,
+;              apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_8.a_1), _xmt_interp_square_size_G_8.G), _xmt_interp_area_height_G_14.G) AS G
+;         FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_8
+;         JOIN _xmt_interp_area_height_G AS _xmt_interp_area_height_G_14)(assert (<= (+ (pos_y q1) 1) 5))
 (assert (<= (+ (pos_y q2) 2) 5))
-(assert (or (not (<= (pos_x q1) (pos_x q2))) (not (<= (pos_y q1) (pos_y q2))) (not (< (pos_x q2) (+ (pos_x q1) 1))) (not (< (pos_x q1) (+ (pos_x q2) 2))) (not (< (pos_y q2) (+ (pos_y q1) 1))) (not (< (pos_y q1) (+ (pos_y q2) 2))) (not (<= (+ (pos_x q2) 2) (+ (pos_x q1) 1))) (not (<= (+ (pos_y q2) 2) (+ (pos_y q1) 1)))))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_square_size_G_30.a_1 AS s1,
+;              _xmt_interp_square_size_G_34.a_1 AS s2,
+;              or_(not_(not_(eq_(_xmt_interp_square_size_G_30.a_1, _xmt_interp_square_size_G_34.a_1))), apply("not", apply("<=", apply("pos_x", _xmt_interp_square_size_G_30.a_1), apply("pos_x", _xmt_interp_square_size_G_34.a_1))), apply("not", apply("<=", apply("pos_y", _xmt_interp_square_size_G_30.a_1), apply("pos_y", _xmt_interp_square_size_G_34.a_1))), apply("not", apply("<", apply("pos_x", _xmt_interp_square_size_G_34.a_1), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))), apply("not", apply("<", apply("pos_x", _xmt_interp_square_size_G_30.a_1), apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))), apply("not", apply("<", apply("pos_y", _xmt_interp_square_size_G_34.a_1), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))), apply("not", apply("<", apply("pos_y", _xmt_interp_square_size_G_30.a_1), apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))), apply("not", apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))), apply("not", apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G)))) AS G
+;         FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+;         JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+;        WHERE _xmt_interp_square_size_G_30.a_1 != _xmt_interp_square_size_G_34.a_1)(assert (or (not (<= (pos_x q1) (pos_x q2))) (not (<= (pos_y q1) (pos_y q2))) (not (< (pos_x q2) (+ (pos_x q1) 1))) (not (< (pos_x q1) (+ (pos_x q2) 2))) (not (< (pos_y q2) (+ (pos_y q1) 1))) (not (< (pos_y q1) (+ (pos_y q2) 2))) (not (<= (+ (pos_x q2) 2) (+ (pos_x q1) 1))) (not (<= (+ (pos_y q2) 2) (+ (pos_y q1) 1)))))
 (assert (or (not (<= (pos_x q2) (pos_x q1))) (not (<= (pos_y q2) (pos_y q1))) (not (< (pos_x q1) (+ (pos_x q2) 2))) (not (< (pos_x q2) (+ (pos_x q1) 1))) (not (< (pos_y q1) (+ (pos_y q2) 2))) (not (< (pos_y q2) (+ (pos_y q1) 1))) (not (<= (+ (pos_x q1) 1) (+ (pos_x q2) 2))) (not (<= (+ (pos_y q1) 1) (+ (pos_y q2) 2)))))
+
 Groundings:
 ===  0 ======================================
  -- Join(0)

@@ -12,7 +12,7 @@
    ((a) a)
 ) ? )
 (assert (forall ((x T)) (ku (kuf x) (kuf x)) ))
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug db _xmt_interp_ku_G)
 (x-debug solver groundings)
 (x-debug db tables)
@@ -20,9 +20,23 @@
 (declare-datatype T ((a) (b)))
 (declare-fun ku (T T) Bool)
 (declare-fun kuf (T) T)
-(assert (not (and (= (kuf b) a) (= (kuf b) b))))
+; ==== Query =============================
+;-- Agg (0)
+;SELECT implies_(if_, G) as G
+; FROM (-- exclude(7)
+;       SELECT *
+;        FROM (-- Join(14)
+;              SELECT _xmt_interp_kuf_G_1.a_1 AS x,
+;                     and_(if_(_xmt_interp_kuf_G_1.G, _xmt_interp_ku_UF_2.a_1), if_(_xmt_interp_kuf_G_1.G, _xmt_interp_ku_UF_2.a_2)) AS if_,
+;                     _xmt_interp_ku_UF_2.G AS G
+;                FROM _xmt_interp_kuf_G AS _xmt_interp_kuf_G_1
+;                JOIN _xmt_interp_ku_UF AS _xmt_interp_ku_UF_2
+;                      ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_1) 
+;                     AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_2))
+;        WHERE G <> "true")(assert (not (and (= (kuf b) a) (= (kuf b) b))))
 (assert (not (and (= (kuf b) b) (= (kuf b) a))))
 (assert (=> (and (= (kuf b) b) (= (kuf b) b)) (ku b b)))
+
  TABLE: _xmt_interp_ku_g
 ┌─────┬─────┬────────────┐
 │ a_1 │ a_2 │ G          │

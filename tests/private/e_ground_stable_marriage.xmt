@@ -49,7 +49,7 @@
   ((w3 m1) 17) ((w3 m2) 11) ((w3 m3) 1)
 ))
 
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver functions)
 (x-debug solver groundings)
 ------- RESULTS ------------------
@@ -61,7 +61,15 @@
 (declare-fun womanPrefers (woman man man) Bool)
 (declare-fun manAssignsScore (man woman) Int)
 (declare-fun womanAssignsScore (woman man) Int)
-(assert (= (= (womanOf m1) w1) (= (manOf w1) m1)))
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_sort_man.G AS M,
+;              _xmt_sort_woman_2.G AS W,
+;              apply("=", apply("=", apply("womanOf", _xmt_sort_man.G), _xmt_sort_woman_2.G), apply("=", apply("manOf", _xmt_sort_woman_2.G), _xmt_sort_man.G)) AS G
+;         FROM _xmt_sort_man
+;         JOIN _xmt_sort_woman AS _xmt_sort_woman_2)(assert (= (= (womanOf m1) w1) (= (manOf w1) m1)))
 (assert (= (= (womanOf m1) w2) (= (manOf w2) m1)))
 (assert (= (= (womanOf m1) w3) (= (manOf w3) m1)))
 (assert (= (= (womanOf m2) w1) (= (manOf w1) m2)))
@@ -70,7 +78,16 @@
 (assert (= (= (womanOf m3) w1) (= (manOf w1) m3)))
 (assert (= (= (womanOf m3) w2) (= (manOf w2) m3)))
 (assert (= (= (womanOf m3) w3) (= (manOf w3) m3)))
-(assert (or (not (manPrefers m1 w1 (womanOf m1))) (not (womanPrefers w1 m1 (manOf w1)))))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_sort_man.G AS M,
+;              _xmt_sort_woman_2.G AS W,
+;              or_(apply("not", apply("manPrefers", _xmt_sort_man.G, _xmt_sort_woman_2.G, apply("womanOf", _xmt_sort_man.G))), apply("not", apply("womanPrefers", _xmt_sort_woman_2.G, _xmt_sort_man.G, apply("manOf", _xmt_sort_woman_2.G)))) AS G
+;         FROM _xmt_sort_man
+;         JOIN _xmt_sort_woman AS _xmt_sort_woman_2)(assert (or (not (manPrefers m1 w1 (womanOf m1))) (not (womanPrefers w1 m1 (manOf w1)))))
 (assert (or (not (manPrefers m1 w2 (womanOf m1))) (not (womanPrefers w2 m1 (manOf w2)))))
 (assert (or (not (manPrefers m1 w3 (womanOf m1))) (not (womanPrefers w3 m1 (manOf w3)))))
 (assert (or (not (manPrefers m2 w1 (womanOf m2))) (not (womanPrefers w1 m2 (manOf w1)))))
@@ -79,7 +96,18 @@
 (assert (or (not (manPrefers m3 w1 (womanOf m3))) (not (womanPrefers w1 m3 (manOf w1)))))
 (assert (or (not (manPrefers m3 w2 (womanOf m3))) (not (womanPrefers w2 m3 (manOf w2)))))
 (assert (or (not (manPrefers m3 w3 (womanOf m3))) (not (womanPrefers w3 m3 (manOf w3)))))
-(assert (= (manPrefers m1 w1 w1) false))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_manassignsscore_G_16.a_1 AS M,
+;              _xmt_interp_manassignsscore_G_16.a_2 AS W,
+;              _xmt_interp_manassignsscore_G_17.a_2 AS W1,
+;              apply("=", apply("manPrefers", _xmt_interp_manassignsscore_G_16.a_1, _xmt_interp_manassignsscore_G_16.a_2, _xmt_interp_manassignsscore_G_17.a_2), compare_(">", _xmt_interp_manassignsscore_G_16.G, _xmt_interp_manassignsscore_G_17.G)) AS G
+;         FROM _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_16
+;         JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_17
+;               ON _xmt_interp_manassignsscore_G_16.a_1 = _xmt_interp_manassignsscore_G_17.a_1)(assert (= (manPrefers m1 w1 w1) false))
 (assert (= (manPrefers m1 w1 w2) true))
 (assert (= (manPrefers m1 w1 w3) true))
 (assert (= (manPrefers m1 w2 w1) false))
@@ -106,7 +134,18 @@
 (assert (= (manPrefers m3 w3 w1) false))
 (assert (= (manPrefers m3 w3 w2) false))
 (assert (= (manPrefers m3 w3 w3) false))
-(assert (= (womanPrefers w1 m1 m1) false))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_womanassignsscore_G_23.a_1 AS W,
+;              _xmt_interp_womanassignsscore_G_23.a_2 AS M,
+;              _xmt_interp_womanassignsscore_G_24.a_2 AS M1,
+;              apply("=", apply("womanPrefers", _xmt_interp_womanassignsscore_G_23.a_1, _xmt_interp_womanassignsscore_G_23.a_2, _xmt_interp_womanassignsscore_G_24.a_2), compare_(">", _xmt_interp_womanassignsscore_G_23.G, _xmt_interp_womanassignsscore_G_24.G)) AS G
+;         FROM _xmt_interp_womanassignsscore_G AS _xmt_interp_womanassignsscore_G_23
+;         JOIN _xmt_interp_womanassignsscore_G AS _xmt_interp_womanassignsscore_G_24
+;               ON _xmt_interp_womanassignsscore_G_23.a_1 = _xmt_interp_womanassignsscore_G_24.a_1)(assert (= (womanPrefers w1 m1 m1) false))
 (assert (= (womanPrefers w1 m1 m2) true))
 (assert (= (womanPrefers w1 m1 m3) true))
 (assert (= (womanPrefers w1 m2 m1) false))
@@ -133,6 +172,7 @@
 (assert (= (womanPrefers w3 m3 m1) false))
 (assert (= (womanPrefers w3 m3 m2) false))
 (assert (= (womanPrefers w3 m3 m3) false))
+
 Functions2:
  - true ()->Bool : Constructor
  - false ()->Bool : Constructor

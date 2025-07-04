@@ -23,18 +23,18 @@
 (assert (forall ((x Color)) (= (p x)
                                (q x)
                             )))
-(x-ground :debug)
+(x-ground :debug :sql)
 (echo "negated")
 (assert (forall ((x Color)) (not (= (p x)
                                (q x)
                             ))))
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver groundings)
 (assert (forall ((x Color)) (= (p x)
                                (q x)
                                (r x)
                             )))
-(x-ground :debug)
+(x-ground :debug :sql)
 ------- RESULTS ------------------
 (declare-fun domain (Int) Bool)
 (declare-fun P (Int) Bool)
@@ -43,7 +43,28 @@
 (declare-fun p (Color) Bool)
 (declare-fun q (Color) Bool)
 (declare-fun r (Color) Bool)
-(assert (= (P 1) (Q 1)))
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_domain_TU_1.a_1 AS x,
+;              _xmt_view__5_14.G AS G
+;         FROM (-- Join(15)
+;               SELECT Outer_0.x AS x,
+;                      bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+;                 FROM (-- Join(23)
+;                       SELECT _xmt_interp_domain_TU_1.a_1 AS x,
+;                              apply("P", _xmt_interp_domain_TU_1.a_1) AS G
+;                         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+;                       ) AS Outer_0
+;                 FULL JOIN (-- Join(23)
+;                       SELECT _xmt_interp_domain_TU_1.a_1 AS x,
+;                              apply("Q", _xmt_interp_domain_TU_1.a_1) AS G
+;                         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+;                       ) AS Outer_1 ON  Outer_1.x = Outer_0.x
+;               ) AS _xmt_view__5_14
+;         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+;        WHERE  _xmt_view__5_14.x = _xmt_interp_domain_TU_1.a_1)(assert (= (P 1) (Q 1)))
 (assert (= (P 2) (Q 2)))
 (assert (= (P 3) (Q 3)))
 (assert (= (P 4) (Q 4)))
@@ -53,13 +74,43 @@
 (assert (= (P 8) (Q 8)))
 (assert (= (P 9) (Q 9)))
 (assert (= (P 10) (Q 10)))
-(assert (= (p blue) true))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_view_p_9_19.x AS x,
+;              bool_eq_("true", _xmt_view_p_9_19.G, _xmt_view_q_10_22.G) AS G
+;         FROM (-- Join(15)
+;               SELECT _xmt_interp_p_UF_9.a_1 AS x,
+;                      _xmt_interp_p_UF_9.G AS G
+;                 FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_9
+;               ) AS _xmt_view_p_9_19
+;         FULL JOIN (-- Join(15)
+;               SELECT _xmt_interp_q_UF_10.a_1 AS x,
+;                      _xmt_interp_q_UF_10.G AS G
+;                 FROM _xmt_interp_q_UF AS _xmt_interp_q_UF_10
+;               ) AS _xmt_view_q_10_22 ON  _xmt_view_q_10_22.x = _xmt_view_p_9_19.x)(assert (= (p blue) true))
 (assert (= (p green) (q green)))
 (assert (= true (q red)))
+
 (echo "negated")
-(assert (not (= (p blue) true)))
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- exclude(7)
+;       SELECT *
+;        FROM (-- Join(14)
+;              SELECT _xmt_interp_p_G_9.a_1 AS x,
+;                     not_(eq_(_xmt_interp_p_G_9.G, _xmt_interp_q_G_10.G)) AS G
+;                FROM _xmt_interp_p_G AS _xmt_interp_p_G_9
+;                JOIN _xmt_interp_q_G AS _xmt_interp_q_G_10
+;                      ON _xmt_interp_p_G_9.a_1 = _xmt_interp_q_G_10.a_1
+;               WHERE (NOT is_id(_xmt_interp_q_G_10.G) OR NOT is_id(_xmt_interp_p_G_9.G) OR _xmt_interp_q_G_10.G != _xmt_interp_p_G_9.G))
+;        WHERE G <> "true")(assert (not (= (p blue) true)))
 (assert (not (= (p green) (q green))))
 (assert (not (= true (q red))))
+
 Groundings:
 ===  x ======================================
  -- Join(0)

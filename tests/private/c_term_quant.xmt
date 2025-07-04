@@ -13,7 +13,7 @@
 (assert (not (exists ((x Bool)) (r x))))
 (assert (forall ((x Bool)) (=> (and (r x) (r x)) false)))
 
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver groundings)
 (x-debug db tables)
 ------- RESULTS ------------------
@@ -21,13 +21,71 @@
 (declare-fun p (Color) Bool)
 (declare-fun q (Int) Bool)
 (declare-fun r (Bool) Bool)
-(assert (p green))
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Agg (7)
+;       SELECT or_aggregate(G) as G
+;        FROM (SELECT "false" AS G 
+;              UNION ALL
+;              -- Join(14)
+;              SELECT "true" AS G))
+; WHERE G <> "true"
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Agg (7)
+;       SELECT or_aggregate(G) as G
+;        FROM (SELECT "false" AS G 
+;              UNION ALL
+;              -- Join(14)
+;              SELECT "true" AS G))
+; WHERE G <> "true"
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_sort_color_5.G AS x,
+;              apply("p", _xmt_sort_color_5.G) AS G
+;         FROM _xmt_sort_color AS _xmt_sort_color_5)(assert (p green))
 (assert (p red))
-(assert (or (p green) (p red)))
-(assert (forall ((x Int)) (q x)))
-(assert (and (not (r true)) (not (r false))))
-(assert (not (r true)))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT or_aggregate(G) as G
+; FROM (SELECT NULL AS x, "false" AS G 
+;       UNION ALL
+;       -- Join(7)
+;       SELECT _xmt_sort_color_5.G AS x,
+;              apply("p", _xmt_sort_color_5.G) AS G
+;         FROM _xmt_sort_color AS _xmt_sort_color_5)(assert (or (p green) (p red)))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT "(forall ((x Int)) " || G || ")" as G
+; FROM (-- Join(7)
+;       SELECT "x" AS x,
+;              apply("q", "x") AS G)(assert (forall ((x Int)) (q x)))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT and_aggregate(G) as G
+; FROM (-- Join(7)
+;       SELECT Bool_12.G AS x,
+;              apply("not", apply("r", Bool_12.G)) AS G
+;         FROM Bool AS Bool_12)(assert (and (not (r true)) (not (r false))))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT Bool_12.G AS x,
+;              apply("not", apply("r", Bool_12.G)) AS G
+;         FROM Bool AS Bool_12)(assert (not (r true)))
 (assert (not (r false)))
+
 Groundings:
 ===  true ======================================
 ----- T ------------------------------------------------------------

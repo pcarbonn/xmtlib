@@ -31,7 +31,7 @@
 ; convert to definition
 (declare-fun dark (Color) Bool)
 (assert (dark red))
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug db _xmt_interp_bright_TU)
 (x-debug db _xmt_interp_bright_G)
 (x-debug db _xmt_sort_Color)
@@ -53,8 +53,83 @@
 (declare-datatype Hue ((hue (first Color) (second Color))))
 (declare-fun dim (Hue) Bool)
 (declare-fun dark (Color) Bool)
-(assert false)
-(assert (dark red))
+; ==== Query =============================
+;-- Join(0)
+;SELECT "false" AS G
+;  FROM _xmt_interp_p_1_UF AS _xmt_interp_p_1_UF(assert false)
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Agg (7)
+;       SELECT or_aggregate(G) as G
+;        FROM (SELECT NULL AS x, "false" AS G 
+;              UNION ALL
+;              -- Join(14)
+;              SELECT _xmt_interp_bright_TU_2.a_1 AS x,
+;                     "true" AS G
+;                FROM _xmt_interp_bright_TU AS _xmt_interp_bright_TU_2))
+; WHERE G <> "true"
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Agg (7)
+;       SELECT or_aggregate(G) as G
+;        FROM (SELECT NULL AS x, "false" AS G 
+;              UNION ALL
+;              -- exclude(14)
+;              SELECT *
+;               FROM (-- Join(21)
+;                     SELECT _xmt_interp_empty_G_4.a_1 AS x,
+;                            eq_(_xmt_interp_empty_G_4.G, _xmt_interp_bright_G_2.G) AS G
+;                       FROM _xmt_interp_empty_G AS _xmt_interp_empty_G_4
+;                       JOIN _xmt_interp_bright_G AS _xmt_interp_bright_G_2
+;                             ON _xmt_interp_empty_G_4.a_1 = _xmt_interp_bright_G_2.a_1
+;                      WHERE _xmt_interp_empty_G_4.G = _xmt_interp_bright_G_2.G)
+;               WHERE G <> "false"))
+; WHERE G <> "true"
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Agg (7)
+;       SELECT or_aggregate(G) as G
+;        FROM (SELECT NULL AS x, "false" AS G 
+;              UNION ALL
+;              -- Join(14)
+;              SELECT _xmt_interp_same_TU_7.a_1 AS x,
+;                     "true" AS G
+;                FROM _xmt_interp_same_TU AS _xmt_interp_same_TU_7
+;               WHERE _xmt_interp_same_TU_7.a_1 = _xmt_interp_same_TU_7.a_2))
+; WHERE G <> "true"
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Agg (7)
+;       SELECT or_aggregate(G) as G
+;        FROM (SELECT NULL AS x, NULL AS y, "false" AS G 
+;              UNION ALL
+;              -- Join(14)
+;              SELECT _xmt_interp_same_TU_10.a_1 AS x,
+;                     _xmt_interp_same_TU_10.a_2 AS y,
+;                     "true" AS G
+;                FROM _xmt_interp_same_TU AS _xmt_interp_same_TU_10))
+; WHERE G <> "true"
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Agg (7)
+;       SELECT or_aggregate(G) as G
+;        FROM (SELECT NULL AS x, "false" AS G 
+;              UNION ALL
+;              -- Join(14)
+;              SELECT _xmt_interp_dim_TU_14.a_1 AS x,
+;                     "true" AS G
+;                FROM _xmt_interp_dim_TU AS _xmt_interp_dim_TU_14))
+; WHERE G <> "true"
+; ==== Query =============================
+;-- Join(0)
+;SELECT apply("dark", "red") AS G(assert (dark red))
+
  TABLE: _xmt_interp_bright_tu
 ┌───────┬────────┐
 │ a_1   │ G      │

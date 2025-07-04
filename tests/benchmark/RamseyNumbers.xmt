@@ -29,20 +29,90 @@
                           (blue X Z) (blue X T) (blue Y T)
                           )))))
 
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-fun Node (Int) Bool)
 (declare-fun blue (Int Int) Bool)
 (declare-fun red (Int Int) Bool)
-(assert (= false (or (red 1 1) (blue 1 1))))
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_node_TU_1.a_1 AS x,
+;              _xmt_interp_node_TU_4.a_1 AS y,
+;              _xmt_view__10_19.G AS G
+;         FROM (-- Join(15)
+;               SELECT Outer_0.x AS x,
+;                      Outer_0.y AS y,
+;                      bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+;                 FROM (-- Join(23)
+;                       SELECT _xmt_interp_node_TU_1.a_1 AS x,
+;                              _xmt_interp_node_TU_4.a_1 AS y,
+;                              compare_("<", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1) AS G
+;                         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+;                         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
+;                       ) AS Outer_0
+;                 FULL JOIN (-- Join(23)
+;                       SELECT _xmt_interp_node_TU_1.a_1 AS x,
+;                              _xmt_interp_node_TU_4.a_1 AS y,
+;                              or_(apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1), apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)) AS G
+;                         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+;                         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
+;                       ) AS Outer_1 ON  Outer_1.x = Outer_0.x 
+;                       AND  Outer_1.y = Outer_0.y
+;               ) AS _xmt_view__10_19
+;         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+;         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
+;        WHERE  _xmt_view__10_19.x = _xmt_interp_node_TU_1.a_1 
+;               AND  _xmt_view__10_19.y = _xmt_interp_node_TU_4.a_1)(assert (= false (or (red 1 1) (blue 1 1))))
 (assert (= true (or (red 1 2) (blue 1 2))))
 (assert (= false (or (red 2 1) (blue 2 1))))
 (assert (= false (or (red 2 2) (blue 2 2))))
-(assert (or (not (red 1 1)) (not (blue 1 1))))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_node_TU_1.a_1 AS x,
+;              _xmt_interp_node_TU_4.a_1 AS y,
+;              or_(apply("not", apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1))) AS G
+;         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+;         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4)(assert (or (not (red 1 1)) (not (blue 1 1))))
 (assert (or (not (red 1 2)) (not (blue 1 2))))
 (assert (or (not (red 2 1)) (not (blue 2 1))))
 (assert (or (not (red 2 2)) (not (blue 2 2))))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_node_TU_18.a_1 AS X,
+;              _xmt_interp_node_TU_21.a_1 AS W,
+;              _xmt_interp_node_TU_24.a_1 AS Y,
+;              _xmt_interp_node_TU_27.a_1 AS Z,
+;              _xmt_interp_node_TU_30.a_1 AS T,
+;              or_(not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
+;         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
+;         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_21
+;         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24
+;         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_27
+;         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_30)
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_node_TU_18.a_1 AS X,
+;              _xmt_interp_node_TU_21.a_1 AS W,
+;              _xmt_interp_node_TU_24.a_1 AS Y,
+;              _xmt_interp_node_TU_27.a_1 AS Z,
+;              _xmt_interp_node_TU_30.a_1 AS T,
+;              or_(not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
+;         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
+;         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_21
+;         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24
+;         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_27
+;         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_30)
 Groundings:
 ===  x ======================================
  -- Join(0)

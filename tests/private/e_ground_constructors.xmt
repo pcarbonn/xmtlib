@@ -11,7 +11,7 @@
 (assert ((_ is nil) nil))
 (assert ((_ is Left) (Left blue)))
 (assert (= red (b (Left red))))
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver polymorphic_sorts)
 (x-debug solver sorts)
 (x-debug solver functions)
@@ -23,7 +23,42 @@
 (declare-datatype Color ((red) (blue) (green)))
 (declare-datatype Either ((nil) (Left (b Color)) (Right (right Color))))
 (declare-fun p (Either) Bool)
-(assert ((_ is nil) nil))
+; ==== Query =============================
+;-- Join(0)
+;SELECT "false" AS G
+;  FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_2
+; WHERE construct2("Right", "red") = _xmt_interp_p_UF_2.a_1
+; ==== Query =============================
+;-- Join(0)
+;SELECT "false" AS G
+;  FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_4
+; WHERE "nil" = _xmt_interp_p_UF_4.a_1
+; ==== Query =============================
+;-- Join(0)
+;SELECT "false" AS G
+;  FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_6
+; WHERE construct2("Left", "red") = _xmt_interp_p_TU_6.a_1
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT apply("(_ is nil)", "nil") AS G)
+; WHERE G <> "true"(assert ((_ is nil) nil))
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT "false" AS G
+;  FROM _xmt_tester_either_left_f AS _xmt_tester_either_left_f_11
+; WHERE construct2("Left", "blue") = _xmt_tester_either_left_f_11.a_1
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT eq_("red", _xmt_selector_either_b_g_12.G) AS G
+;         FROM _xmt_selector_either_b_g AS _xmt_selector_either_b_g_12
+;        WHERE "red" != _xmt_selector_either_b_g_12.G 
+;              AND construct2("Left", "red") = _xmt_selector_either_b_g_12.a_1)
+; WHERE G <> "true"
 Polymorphic datatypes:
  - (unknown): Array
 Sorts:

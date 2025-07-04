@@ -9,7 +9,7 @@
 (assert (or (q red) (q green)))
 (assert (or (q red) (q red)))
 ;(assert (or p p))
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver groundings)
 (x-debug db tables)
 ------- RESULTS ------------------
@@ -17,10 +17,23 @@
 (declare-const c Int)
 (declare-datatype Color ((red) (green)))
 (declare-fun q (Color) Bool)
-(assert p)
-(assert (q red))
-(assert (or (q red) (q green)))
-(assert (or (q red) (q red)))
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT "p" AS G(assert p)
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT apply("q", "red") AS G(assert (q red))
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT or_(apply("q", "red"), apply("q", "green")) AS G(assert (or (q red) (q green)))
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT or_(apply("q", "red"), apply("q", "red")) AS G(assert (or (q red) (q red)))
+
 Groundings:
 === (top) true ======================================
 ----- T ------------------------------------------------------------

@@ -19,7 +19,7 @@
 
 (declare-fun Row (Int) Bool)
 (x-interpret-pred Row (x-range 1 8 10 10))
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver groundings)
 (x-debug db tables)
 (x-debug db _xmt_interp_row_T)
@@ -27,14 +27,86 @@
 (declare-const c Int)
 (declare-const d Real)
 (declare-fun Row (Int) Bool)
-(assert (= 2 (+ 1 1)))
-(assert (= 2 (+ c 1)))
-(assert (= 0 (- c 1 2)))
-(assert false)
-(assert (= 2.1 (+ 1 1)))
-(assert (= 2.1 (+ d 1)))
-(assert (= 0 (- d 1 2)))
-(assert false)
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT eq_(2, left_("+", 1, abs_(1))) AS G)
+; WHERE G <> "true"(assert (= 2 (+ 1 1)))
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT eq_(0, left_("-", 3, 1, 2)) AS G)
+; WHERE G <> "true"
+; ==== Query =============================
+;-- Join(0)
+;SELECT apply("=", 2, apply("+", "c", abs_(1))) AS G(assert (= 2 (+ c 1)))
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT apply("=", 0, apply("-", "c", 1, 2)) AS G(assert (= 0 (- c 1 2)))
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT eq_(4, left_("*", 2, 2, -1)) AS G)
+; WHERE G <> "true"(assert false)
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT eq_(2, left_("div", 4, 2)) AS G)
+; WHERE G <> "true"
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT eq_(1, left_("mod", 3, 2)) AS G)
+; WHERE G <> "true"
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT eq_(2.1, left_("+", 1.0, abs_(1.0))) AS G)
+; WHERE G <> "true"(assert (= 2.1 (+ 1 1)))
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT eq_(0.0, left_("-", 3.0, 1.0, 2.0)) AS G)
+; WHERE G <> "true"
+; ==== Query =============================
+;-- Join(0)
+;SELECT apply("=", 2.1, apply("+", "d", abs_(1.0))) AS G(assert (= 2.1 (+ d 1)))
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT apply("=", 0.0, apply("-", "d", 1.0, 2.0)) AS G(assert (= 0 (- d 1 2)))
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT eq_(4.0, left_("*", 2.0, 2.0, -1.0)) AS G)
+; WHERE G <> "true"(assert false)
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT eq_(2.0, left_("div", 4.0, 2.0)) AS G)
+; WHERE G <> "true"
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT eq_(1.0, left_("mod", 3, 2)) AS G)
+; WHERE G <> "true"
 Groundings:
 ===  2 ======================================
  -- Join(0)

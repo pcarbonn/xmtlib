@@ -49,7 +49,7 @@
   ((w3 m1) 17) ((w3 m2) 11) ((w3 m3) 1)
 ))
 
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver functions)
 (x-debug solver groundings)
 ------- RESULTS ------------------
@@ -61,7 +61,17 @@
 (declare-fun womanPrefers (woman man man) Bool)
 (declare-fun manAssignsScore (man woman) Int)
 (declare-fun womanAssignsScore (woman man) Int)
-(assert (= (manPrefers m1 w1 w1) false))
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_manassignsscore_G_4.a_1 AS M,
+;              _xmt_interp_manassignsscore_G_4.a_2 AS W,
+;              _xmt_interp_manassignsscore_G_5.a_2 AS W1,
+;              apply("=", apply("manPrefers", _xmt_interp_manassignsscore_G_4.a_1, _xmt_interp_manassignsscore_G_4.a_2, _xmt_interp_manassignsscore_G_5.a_2), compare_(">", _xmt_interp_manassignsscore_G_4.G, _xmt_interp_manassignsscore_G_5.G)) AS G
+;         FROM _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_4
+;         JOIN _xmt_interp_manassignsscore_G AS _xmt_interp_manassignsscore_G_5
+;               ON _xmt_interp_manassignsscore_G_4.a_1 = _xmt_interp_manassignsscore_G_5.a_1)(assert (= (manPrefers m1 w1 w1) false))
 (assert (= (manPrefers m1 w1 w2) true))
 (assert (= (manPrefers m1 w1 w3) true))
 (assert (= (manPrefers m1 w2 w1) false))
@@ -88,6 +98,7 @@
 (assert (= (manPrefers m3 w3 w1) false))
 (assert (= (manPrefers m3 w3 w2) false))
 (assert (= (manPrefers m3 w3 w3) false))
+
 Functions2:
  - true ()->Bool : Constructor
  - false ()->Bool : Constructor

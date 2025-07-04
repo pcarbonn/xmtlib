@@ -10,19 +10,56 @@
 (x-interpret-pred domain2 (x-set (10 20)))
 (assert (forall ((x Int) (y Int)) (=> (domain2 x y)
                               (exists ((y Int)) (Q x y)))))
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-fun domain (Int) Bool)
 (declare-fun domain2 (Int Int) Bool)
 (declare-fun P (Int) Bool)
 (declare-fun Q (Int Int) Bool)
-(assert (exists ((y Int)) (Q 1 y)))
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_domain_TU_1.a_1 AS x,
+;              Agg_5_UF.G AS G
+;         FROM (-- Agg (15)
+;               SELECT x,
+;                      "(exists ((y Int)) " || or_aggregate(G) || ")" as G
+;                FROM (-- Join(22)
+;                      SELECT _xmt_interp_domain_TU_1.a_1 AS x,
+;                             "y" AS y,
+;                             apply("Q", _xmt_interp_domain_TU_1.a_1, "y") AS G
+;                        FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)
+;                GROUP BY x
+;               ) AS Agg_5_UF
+;         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+;        WHERE  Agg_5_UF.x = _xmt_interp_domain_TU_1.a_1)(assert (exists ((y Int)) (Q 1 y)))
 (assert (exists ((y Int)) (Q 2 y)))
 (assert (exists ((y Int)) (Q 3 y)))
 (assert (exists ((y Int)) (Q 4 y)))
 (assert (exists ((y Int)) (Q 5 y)))
-(assert (exists ((y Int)) (Q 10 y)))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_domain2_TU_8.a_1 AS x,
+;              _xmt_interp_domain2_TU_8.a_2 AS y,
+;              Agg_5_UF.G AS G
+;         FROM (-- Agg (15)
+;               SELECT x,
+;                      "(exists ((y Int)) " || or_aggregate(G) || ")" as G
+;                FROM (-- Join(22)
+;                      SELECT  DISTINCT _xmt_interp_domain2_TU_8.a_1 AS x,
+;                             "y" AS y,
+;                             apply("Q", _xmt_interp_domain2_TU_8.a_1, "y") AS G
+;                        FROM _xmt_interp_domain2_TU AS _xmt_interp_domain2_TU_8)
+;                GROUP BY x
+;               ) AS Agg_5_UF
+;         JOIN _xmt_interp_domain2_TU AS _xmt_interp_domain2_TU_8
+;        WHERE  Agg_5_UF.x = _xmt_interp_domain2_TU_8.a_1)(assert (exists ((y Int)) (Q 10 y)))
+
 Groundings:
 ===  x ======================================
  -- Join(0)

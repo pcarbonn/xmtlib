@@ -22,7 +22,7 @@
 
 (x-interpret-pred edge (x-set (a b)))
 
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-datatype Node ((a) (b)))
@@ -31,18 +31,52 @@
 (declare-fun keep (Node) Bool)
 (declare-fun kept_edge (Node Node) Bool)
 (declare-fun color (Node) Color)
-(assert (or (keep a) (keep b)))
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_sort_node.G AS x,
+;              _xmt_sort_node_2.G AS y,
+;              or_(apply("keep", _xmt_sort_node.G), apply("keep", _xmt_sort_node_2.G), eq_(_xmt_sort_node.G, _xmt_sort_node_2.G)) AS G
+;         FROM _xmt_sort_node
+;         JOIN _xmt_sort_node AS _xmt_sort_node_2
+;        WHERE _xmt_sort_node.G != _xmt_sort_node_2.G)(assert (or (keep a) (keep b)))
 (assert (or (keep b) (keep a)))
-(assert (= (kept_edge a a) false))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_edge_G_8.a_1 AS x,
+;              _xmt_interp_edge_G_8.a_2 AS y,
+;              apply("=", apply("kept_edge", _xmt_interp_edge_G_8.a_1, _xmt_interp_edge_G_8.a_2), and_(apply("keep", _xmt_interp_edge_G_8.a_1), apply("keep", _xmt_interp_edge_G_8.a_2), _xmt_interp_edge_G_8.G)) AS G
+;         FROM _xmt_interp_edge_G AS _xmt_interp_edge_G_8)(assert (= (kept_edge a a) false))
 (assert (= (kept_edge a b) (and (keep a) (keep b))))
 (assert (= (kept_edge b a) false))
 (assert (= (kept_edge b b) false))
-(assert (or (not (kept_edge a a)) (not (= (color a) (color a)))))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_sort_node.G AS x,
+;              _xmt_sort_node_2.G AS y,
+;              or_(apply("not", apply("kept_edge", _xmt_sort_node.G, _xmt_sort_node_2.G)), apply("not", apply("=", apply("color", _xmt_sort_node.G), apply("color", _xmt_sort_node_2.G)))) AS G
+;         FROM _xmt_sort_node
+;         JOIN _xmt_sort_node AS _xmt_sort_node_2)(assert (or (not (kept_edge a a)) (not (= (color a) (color a)))))
 (assert (or (not (kept_edge a b)) (not (= (color a) (color b)))))
 (assert (or (not (kept_edge b a)) (not (= (color b) (color a)))))
 (assert (or (not (kept_edge b b)) (not (= (color b) (color b)))))
-(assert (or (not (not (keep a))) (= (color a) red)))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_sort_node.G AS x,
+;              or_(apply("not", apply("not", apply("keep", _xmt_sort_node.G))), apply("=", apply("color", _xmt_sort_node.G), "red")) AS G
+;         FROM _xmt_sort_node)(assert (or (not (not (keep a))) (= (color a) red)))
 (assert (or (not (not (keep b))) (= (color b) red)))
+
 Groundings:
 ===  x ======================================
  -- Join(0)

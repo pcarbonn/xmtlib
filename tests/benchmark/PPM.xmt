@@ -50,7 +50,7 @@
 
 
 
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-fun number (Int) Bool)
@@ -60,7 +60,15 @@
 (declare-fun solution (Int) Int)
 (declare-fun solutionindex (Int) Int)
 (declare-fun tf (Int) Int)
-(assert (number 2))
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_smallnumber_TU_1.a_1 AS x,
+;              apply("number", _xmt_interp_pf_G_3.G) AS G
+;         FROM _xmt_interp_smallnumber_TU AS _xmt_interp_smallnumber_TU_1
+;         JOIN _xmt_interp_pf_G AS _xmt_interp_pf_G_3
+;               ON _xmt_interp_smallnumber_TU_1.a_1 = _xmt_interp_pf_G_3.a_1)(assert (number 2))
 (assert (number 1))
 (assert (number 3))
 (assert (forall ((x0 Int)) (= (number x0) (or 
@@ -68,22 +76,78 @@
    (= x0 2)
    (= x0 3)
 ))))
-(assert (number (solution 1)))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_smallnumber_TU_1.a_1 AS x,
+;              apply("number", apply("solution", _xmt_interp_smallnumber_TU_1.a_1)) AS G
+;         FROM _xmt_interp_smallnumber_TU AS _xmt_interp_smallnumber_TU_1)(assert (number (solution 1)))
 (assert (number (solution 2)))
 (assert (number (solution 3)))
-(assert (number (solutionindex 1)))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_smallnumber_TU_1.a_1 AS x,
+;              apply("number", apply("solutionindex", _xmt_interp_smallnumber_TU_1.a_1)) AS G
+;         FROM _xmt_interp_smallnumber_TU AS _xmt_interp_smallnumber_TU_1)(assert (number (solutionindex 1)))
 (assert (number (solutionindex 2)))
 (assert (number (solutionindex 3)))
-(assert (number 1))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_number_TU_15.a_1 AS x,
+;              apply("number", _xmt_interp_tf_G_17.G) AS G
+;         FROM _xmt_interp_number_TU AS _xmt_interp_number_TU_15
+;         JOIN _xmt_interp_tf_G AS _xmt_interp_tf_G_17
+;               ON _xmt_interp_number_TU_15.a_1 = _xmt_interp_tf_G_17.a_1)(assert (number 1))
 (assert (number 3))
 (assert (number 2))
-(assert (< (solutionindex 1) (solutionindex 2)))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_smallnumber_TU_22.a_1 AS SN1,
+;              _xmt_interp_smallnumber_TU_25.a_1 AS SN2,
+;              or_(not_(compare_("<", _xmt_interp_smallnumber_TU_22.a_1, _xmt_interp_smallnumber_TU_25.a_1)), apply("<", apply("solutionindex", _xmt_interp_smallnumber_TU_22.a_1), apply("solutionindex", _xmt_interp_smallnumber_TU_25.a_1))) AS G
+;         FROM _xmt_interp_smallnumber_TU AS _xmt_interp_smallnumber_TU_22
+;         JOIN _xmt_interp_smallnumber_TU AS _xmt_interp_smallnumber_TU_25)(assert (< (solutionindex 1) (solutionindex 2)))
 (assert (< (solutionindex 1) (solutionindex 3)))
 (assert (< (solutionindex 2) (solutionindex 3)))
-(assert (< (solution 1) (solution 3)))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_smallnumber_TU_22.a_1 AS SN1,
+;              _xmt_interp_smallnumber_TU_25.a_1 AS SN2,
+;              or_(not_(compare_("<", _xmt_interp_pf_G_34.G, _xmt_interp_pf_G_35.G)), apply("<", apply("solution", _xmt_interp_smallnumber_TU_22.a_1), apply("solution", _xmt_interp_smallnumber_TU_25.a_1))) AS G
+;         FROM _xmt_interp_smallnumber_TU AS _xmt_interp_smallnumber_TU_22
+;         JOIN _xmt_interp_smallnumber_TU AS _xmt_interp_smallnumber_TU_25
+;         JOIN _xmt_interp_pf_G AS _xmt_interp_pf_G_34
+;               ON _xmt_interp_smallnumber_TU_22.a_1 = _xmt_interp_pf_G_34.a_1
+;         JOIN _xmt_interp_pf_G AS _xmt_interp_pf_G_35
+;               ON _xmt_interp_smallnumber_TU_25.a_1 = _xmt_interp_pf_G_35.a_1)(assert (< (solution 1) (solution 3)))
 (assert (< (solution 2) (solution 1)))
 (assert (< (solution 2) (solution 3)))
-(assert (or (not (= 1 (solutionindex 1))) (= 1 (solution 1))))
+
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_smallnumber_TU_44.a_1 AS X,
+;              _xmt_interp_smallnumber_TU_47.a_1 AS y,
+;              or_(apply("not", apply("=", _xmt_interp_smallnumber_TU_47.a_1, apply("solutionindex", _xmt_interp_smallnumber_TU_44.a_1))), apply("=", _xmt_interp_tf_G_52.G, apply("solution", _xmt_interp_smallnumber_TU_44.a_1))) AS G
+;         FROM _xmt_interp_smallnumber_TU AS _xmt_interp_smallnumber_TU_44
+;         JOIN _xmt_interp_smallnumber_TU AS _xmt_interp_smallnumber_TU_47
+;         JOIN _xmt_interp_tf_G AS _xmt_interp_tf_G_52
+;               ON _xmt_interp_smallnumber_TU_47.a_1 = _xmt_interp_tf_G_52.a_1)(assert (or (not (= 1 (solutionindex 1))) (= 1 (solution 1))))
 (assert (or (not (= 1 (solutionindex 2))) (= 1 (solution 2))))
 (assert (or (not (= 1 (solutionindex 3))) (= 1 (solution 3))))
 (assert (or (not (= 2 (solutionindex 1))) (= 3 (solution 1))))
@@ -92,6 +156,7 @@
 (assert (or (not (= 3 (solutionindex 1))) (= 2 (solution 1))))
 (assert (or (not (= 3 (solutionindex 2))) (= 2 (solution 2))))
 (assert (or (not (= 3 (solutionindex 3))) (= 2 (solution 3))))
+
 Groundings:
 ===  x ======================================
  -- Join(0)

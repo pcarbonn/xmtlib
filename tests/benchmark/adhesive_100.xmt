@@ -53,7 +53,7 @@
 (assert (>= max_elon (elongation chosen_glue)))
 (assert (possible_bonding (adhesion chosen_glue substrateA)))
 (assert (possible_bonding (adhesion chosen_glue substrateB)))
-(x-ground :debug)
+(x-ground :debug :sql)
 ------- RESULTS ------------------
 (declare-datatype substrate ((a) (b)))
 (declare-datatype glue ((A) (B)))
@@ -71,19 +71,49 @@
 (declare-fun possible_bonding (quality) Bool)
 (declare-fun substrateA () substrate)
 (declare-fun substrateB () substrate)
-(assert (=> (= chosen_glue A) (= chosen_fam pue)))
+; ==== Query =============================
+;-- Join(0)
+;SELECT apply("=","chosen_glue", _xmt_interp_family_G_2.a_1) AS if_, 
+;       apply("=", "chosen_fam", _xmt_interp_family_G_2.G) AS G
+;  FROM _xmt_interp_family_G AS _xmt_interp_family_G_2(assert (=> (= chosen_glue A) (= chosen_fam pue)))
 (assert (=> (= chosen_glue B) (= chosen_fam mma)))
-(assert (=> (= chosen_glue A) (<= min_strength 40)))
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT apply("=","chosen_glue", _xmt_interp_strength_G_5.a_1) AS if_, 
+;       apply("<=", "min_strength", _xmt_interp_strength_G_5.G) AS G
+;  FROM _xmt_interp_strength_G AS _xmt_interp_strength_G_5(assert (=> (= chosen_glue A) (<= min_strength 40)))
 (assert (=> (= chosen_glue B) (<= min_strength 42)))
-(assert (=> (= chosen_glue A) (<= min_elon 0)))
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT apply("=","chosen_glue", _xmt_interp_elongation_G_8.a_1) AS if_, 
+;       apply("<=", "min_elon", _xmt_interp_elongation_G_8.G) AS G
+;  FROM _xmt_interp_elongation_G AS _xmt_interp_elongation_G_8(assert (=> (= chosen_glue A) (<= min_elon 0)))
 (assert (=> (= chosen_glue B) (<= min_elon 8)))
-(assert (=> (= chosen_glue A) (>= max_elon 0)))
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT apply("=","chosen_glue", _xmt_interp_elongation_G_8.a_1) AS if_, 
+;       apply(">=", "max_elon", _xmt_interp_elongation_G_8.G) AS G
+;  FROM _xmt_interp_elongation_G AS _xmt_interp_elongation_G_8(assert (=> (= chosen_glue A) (>= max_elon 0)))
 (assert (=> (= chosen_glue B) (>= max_elon 8)))
-(assert (=> (and (= chosen_glue A) (= substrateA a)) (possible_bonding bad)))
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT and_(apply("=","chosen_glue", _xmt_interp_adhesion_G_13.a_1), apply("=","substrateA", _xmt_interp_adhesion_G_13.a_2)) AS if_,
+;       apply("possible_bonding", _xmt_interp_adhesion_G_13.G) AS G
+;  FROM _xmt_interp_adhesion_G AS _xmt_interp_adhesion_G_13(assert (=> (and (= chosen_glue A) (= substrateA a)) (possible_bonding bad)))
 (assert (=> (and (= chosen_glue A) (= substrateA b)) (possible_bonding bad)))
 (assert (=> (and (= chosen_glue B) (= substrateA a)) (possible_bonding good)))
 (assert (=> (and (= chosen_glue B) (= substrateA b)) (possible_bonding great)))
-(assert (=> (and (= chosen_glue A) (= substrateB a)) (possible_bonding bad)))
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT and_(apply("=","chosen_glue", _xmt_interp_adhesion_G_16.a_1), apply("=","substrateB", _xmt_interp_adhesion_G_16.a_2)) AS if_,
+;       apply("possible_bonding", _xmt_interp_adhesion_G_16.G) AS G
+;  FROM _xmt_interp_adhesion_G AS _xmt_interp_adhesion_G_16(assert (=> (and (= chosen_glue A) (= substrateB a)) (possible_bonding bad)))
 (assert (=> (and (= chosen_glue A) (= substrateB b)) (possible_bonding bad)))
 (assert (=> (and (= chosen_glue B) (= substrateB a)) (possible_bonding good)))
 (assert (=> (and (= chosen_glue B) (= substrateB b)) (possible_bonding great)))
+

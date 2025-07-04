@@ -331,7 +331,7 @@ impl Solver {
                     yield_!(assert_(&term, self))
                 }
                 Command::CheckSat => {
-                    for res in ground(false, false, self) {
+                    for res in ground(false, false, false, self) {
                         yield_!(res)
                     }
                     match self.exec(&command) {
@@ -472,8 +472,8 @@ impl Solver {
                     yield_!(Ok(format!("{}{:.3} sec\n", string.0, duration)))
                 },
 
-                Command::XGround{no, debug} => {
-                    for res in ground(no, debug, self) {
+                Command::XGround{no, debug, sql} => {
+                    for res in ground(no, debug, sql, self) {
                         yield_!(res)
                     }
                 }

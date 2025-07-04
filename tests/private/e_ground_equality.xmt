@@ -7,15 +7,79 @@
 (declare-datatype Color ( ( red ) ( blue ) ( green ) ))
 (assert (exists ((x Color)) (= x red)))
 (assert (exists ((x Color)) (not (= x red))))
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver groundings)
 (x-debug db tables)
 ------- RESULTS ------------------
 (declare-datatype Color ((red) (blue) (green)))
-(assert false)
-(assert false)
-(assert false)
-(assert false)
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT "true" AS G)
+; WHERE G <> "true"
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT not_("true") AS G)
+; WHERE G <> "true"(assert false)
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Join(7)
+;       SELECT eq_("true", not_("true")) AS G)
+; WHERE G <> "true"(assert false)
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Agg (7)
+;       SELECT G as G
+;        FROM (-- exclude(14)
+;              SELECT *
+;               FROM (-- Join(21)
+;                     SELECT "true" AS G
+;                     UNION ALL
+;                     -- Join(21)
+;                     SELECT not_("true") AS G)
+;               WHERE G <> "true"))
+; WHERE G <> "true"(assert false)
+
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Agg (7)
+;       SELECT or_aggregate(G) as G
+;        FROM (SELECT NULL AS x, "false" AS G 
+;              UNION ALL
+;              -- exclude(14)
+;              SELECT *
+;               FROM (-- Join(21)
+;                     SELECT _xmt_sort_color_11.G AS x,
+;                            eq_(_xmt_sort_color_11.G, "red") AS G
+;                       FROM _xmt_sort_color AS _xmt_sort_color_11
+;                      WHERE _xmt_sort_color_11.G = "red")
+;               WHERE G <> "false"))
+; WHERE G <> "true"
+; ==== Query =============================
+;-- exclude(0)
+;SELECT *
+; FROM (-- Agg (7)
+;       SELECT or_aggregate(G) as G
+;        FROM (SELECT NULL AS x, "false" AS G 
+;              UNION ALL
+;              -- exclude(14)
+;              SELECT *
+;               FROM (-- Join(21)
+;                     SELECT _xmt_sort_color_11.G AS x,
+;                            not_(eq_(_xmt_sort_color_11.G, "red")) AS G
+;                       FROM _xmt_sort_color AS _xmt_sort_color_11
+;                      WHERE _xmt_sort_color_11.G = "red")
+;               WHERE G <> "false"))
+; WHERE G <> "true"(assert false)
+
 Groundings:
 ===  2 ======================================
  -- Join(0)

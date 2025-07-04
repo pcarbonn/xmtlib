@@ -10,15 +10,36 @@
 (assert (not (and (is_true true) (is_true false))))
 (assert (not (is_true (exists ((x Bool)) (is_true x)))))
 
-(x-ground :debug)
+(x-ground :debug :sql)
 (x-debug solver groundings)
 (x-debug db tables)
 (x-debug db _xmt_interp_is_true_UF)
 ------- RESULTS ------------------
 (declare-fun is_true (Bool) Bool)
-(assert false)
-(assert false)
-(assert false)
+; ==== Query =============================
+;-- Join(0)
+;SELECT "false" AS G(assert false)
+
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT "false" AS G(assert false)
+
+
+
+; ==== Query =============================
+;-- Join(0)
+;SELECT "false" AS G
+;  FROM (-- Agg (8)
+;        SELECT or_aggregate(G) as G
+;         FROM (-- Join(15)
+;               SELECT _xmt_interp_is_true_TU_13.a_1 AS x,
+;                      "true" AS G
+;                 FROM _xmt_interp_is_true_TU AS _xmt_interp_is_true_TU_13)
+;        ) AS Agg_14_TU
+;  JOIN _xmt_interp_is_true_TU AS _xmt_interp_is_true_TU_15
+;        ON Agg_14_TU.G = _xmt_interp_is_true_TU_15.a_1(assert false)
+
 Groundings:
 === (top) false ======================================
 ----- T ------------------------------------------------------------

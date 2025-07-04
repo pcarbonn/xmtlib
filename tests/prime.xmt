@@ -9,11 +9,39 @@
                                                 (> (mod x y) 0)))))))
 
 (x-interpret-pred domain (x-range 2 10))
-(x-ground :debug)
+(x-ground :debug :sql)
 (check-sat)
 (get-model)
 (x-debug solver groundings)
 ------- RESULTS ------------------
+; ==== Query =============================
+;-- Agg (0)
+;SELECT G as G
+; FROM (-- Join(7)
+;       SELECT _xmt_interp_domain_TU_1.a_1 AS x,
+;              _xmt_view__14_20.G AS G
+;         FROM (-- Join(15)
+;               SELECT Outer_0.x AS x,
+;                      bool_eq_("true", Outer_0.G, Agg_13_UF.G) AS G
+;                 FROM (-- Join(23)
+;                       SELECT _xmt_interp_domain_TU_1.a_1 AS x,
+;                              apply("prime", _xmt_interp_domain_TU_1.a_1) AS G
+;                         FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+;                       ) AS Outer_0
+;                 FULL JOIN (-- Agg (23)
+;                       SELECT x,
+;                              and_aggregate(G) as G
+;                        FROM (-- Join(30)
+;                              SELECT _xmt_interp_domain_TU_5.a_1 AS y,
+;                                     _xmt_interp_domain_TU_1.a_1 AS x,
+;                                     or_(not_(compare_("<", _xmt_interp_domain_TU_5.a_1, _xmt_interp_domain_TU_1.a_1)), compare_(">", left_("mod", _xmt_interp_domain_TU_1.a_1, _xmt_interp_domain_TU_5.a_1), 0)) AS G
+;                                FROM _xmt_interp_domain_TU AS _xmt_interp_domain_TU_5
+;                                JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1)
+;                        GROUP BY x
+;                       ) AS Agg_13_UF ON  Agg_13_UF.x = Outer_0.x
+;               ) AS _xmt_view__14_20
+;         JOIN _xmt_interp_domain_TU AS _xmt_interp_domain_TU_1
+;        WHERE  _xmt_view__14_20.x = _xmt_interp_domain_TU_1.a_1)
 sat
 (
   (define-fun prime ((x!0 Int)) Bool
