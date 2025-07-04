@@ -19,7 +19,7 @@
 
 (declare-fun Row (Int) Bool)
 (x-interpret-pred Row (x-range 1 8 10 10))
-(x-ground debug:)
+(x-ground :debug)
 (x-debug solver groundings)
 (x-debug db tables)
 (x-debug db _xmt_interp_row_T)

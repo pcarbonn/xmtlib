@@ -50,7 +50,7 @@
 
 
 
-(x-ground debug:)
+(x-ground :debug)
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-fun number (Int) Bool)

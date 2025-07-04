@@ -29,7 +29,7 @@
                           (blue X Z) (blue X T) (blue Y T)
                           )))))
 
-(x-ground debug:)
+(x-ground :debug)
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-fun Node (Int) Bool)

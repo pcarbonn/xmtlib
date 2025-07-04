@@ -34,7 +34,7 @@
 (x-interpret-pred v (x-set (1 10) (2 20) ))
 (x-interpret-pred state (x-set (1 1 1)))
 
-(x-ground debug:)
+(x-ground :debug)
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-fun Domain (Int) Bool)

@@ -31,7 +31,7 @@
 ; convert to definition
 (declare-fun dark (Color) Bool)
 (assert (dark red))
-(x-ground debug:)
+(x-ground :debug)
 (x-debug db _xmt_interp_bright_TU)
 (x-debug db _xmt_interp_bright_G)
 (x-debug db _xmt_sort_Color)

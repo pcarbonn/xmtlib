@@ -36,7 +36,7 @@
 )
 (assert (= green (RGB 0)))
 
-(x-ground debug:)
+(x-ground :debug)
 (x-debug solver functions)
 (x-debug solver groundings)
 (x-debug db tables)

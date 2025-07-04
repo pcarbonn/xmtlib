@@ -15,15 +15,15 @@
 
 (assert (p b B))
 (assert (and (p b (f b)) (p a (f b))))
-(x-ground debug:)
+(x-ground :debug)
 
 (echo "or")
 (assert (or (p b (f b)) (p a (f b))))
-(x-ground debug:)
+(x-ground :debug)
 
 (echo "forall")
 (assert (forall ((x T)) (p x (f x)) ))
-(x-ground debug:)
+(x-ground :debug)
 (x-debug db _xmt_interp_p_g)
 (x-debug solver groundings)
 (x-debug db tables)

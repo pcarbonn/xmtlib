@@ -18,7 +18,7 @@
             (=> (and (Val v1) (Val v2) (< v1 v2))
                 (not (= (- (queen v1) v1) (- (queen v2) v2))))))
 
-(x-ground debug:)
+(x-ground :debug)
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-fun Val (Int) Bool)

@@ -13,7 +13,7 @@
                 (Edge x z)
             )))
 
-(x-ground debug:)
+(x-ground :debug)
 (x-debug solver functions)
 (x-debug solver groundings)
 ------- RESULTS ------------------

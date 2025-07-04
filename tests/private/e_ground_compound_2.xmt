@@ -10,7 +10,7 @@
 (declare-fun f (T) Tf)
 (assert (forall ((x T)) (and (p x (f a)) (p x (f b)) ) ))
 (assert (forall ((x T)) (p x (f x)) ))
-(x-ground debug:)
+(x-ground :debug)
 (x-debug solver groundings)
 (x-debug db tables)
 ------- RESULTS ------------------

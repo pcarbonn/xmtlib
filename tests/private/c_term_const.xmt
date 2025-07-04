@@ -9,7 +9,7 @@
 (assert (or (q red) (q green)))
 (assert (or (q red) (q red)))
 ;(assert (or p p))
-(x-ground debug:)
+(x-ground :debug)
 (x-debug solver groundings)
 (x-debug db tables)
 ------- RESULTS ------------------

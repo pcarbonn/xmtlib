@@ -14,7 +14,7 @@
 (x-interpret-pred q (x-set (2 2)))
 (x-interpret-pred color (x-set (2 red) (2 blue)))
 
-(x-ground debug:)
+(x-ground :debug)
 (x-debug solver groundings)
 (x-debug db tables)
 (x-debug db _xmt_interp_row_T)

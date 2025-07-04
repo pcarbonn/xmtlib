@@ -16,7 +16,7 @@
                        )))))
 
 (x-interpret-pred edge (x-set (n1 n2) ))
-(x-ground debug:)
+(x-ground :debug)
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-datatype node ((n1) (n2)))

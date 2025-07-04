@@ -47,7 +47,7 @@
   ((w2 m1) 2)  ((w2 m2) 12)
 ))
 
-(x-ground debug:)
+(x-ground :debug)
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-datatype man ((m1) (m2)))

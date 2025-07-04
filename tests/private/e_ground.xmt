@@ -10,7 +10,7 @@
 (assert (not (and (is_true true) (is_true false))))
 (assert (not (is_true (exists ((x Bool)) (is_true x)))))
 
-(x-ground debug:)
+(x-ground :debug)
 (x-debug solver groundings)
 (x-debug db tables)
 (x-debug db _xmt_interp_is_true_UF)

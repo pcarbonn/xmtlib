@@ -9,7 +9,7 @@
 (assert (and (<= 2.0 2.0) (not (<= 3.0 3.0))))
 (assert (distinct 1.0 2.0 3.0))
 
-(x-ground debug:)
+(x-ground :debug)
 (x-debug solver groundings)
 (x-debug db tables)
 ------- RESULTS ------------------

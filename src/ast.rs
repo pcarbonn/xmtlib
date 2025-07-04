@@ -592,8 +592,8 @@ impl Display for Command {
             Self::XDuration(m0) => write!(f, "(x-duration {m0})\n"),
             Self::XGround{no, debug}=>
                 write!(f, "(x-ground{}{})\n",
-                            if *no {" no:"} else {""},
-                            if *debug {" debug:"} else {""}
+                            if *no {" :no"} else {""},
+                            if *debug {" :debug"} else {""}
                         ),
             Self::XInterpretPred(s1, s2 ) => write!(f, "(x-interpret-pred {s1} {s2})\n"),
             Self::XInterpretFun(s1, s2, s3 ) => {

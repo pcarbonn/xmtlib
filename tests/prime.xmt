@@ -9,7 +9,7 @@
                                                 (> (mod x y) 0)))))))
 
 (x-interpret-pred domain (x-range 2 10))
-(x-ground debug:)
+(x-ground :debug)
 (check-sat)
 (get-model)
 (x-debug solver groundings)

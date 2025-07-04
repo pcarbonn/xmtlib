@@ -7,7 +7,7 @@
 (declare-datatype Color ( ( red ) ( blue ) ( green ) ))
 (assert (exists ((x Color)) (= x red)))
 (assert (exists ((x Color)) (not (= x red))))
-(x-ground debug:)
+(x-ground :debug)
 (x-debug solver groundings)
 (x-debug db tables)
 ------- RESULTS ------------------

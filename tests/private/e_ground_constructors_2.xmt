@@ -13,7 +13,7 @@
 (assert ((_ is nil) (as nil (Either Material)))) ; TODO simplify using equality. Beware of ambiguous identifier.
 (assert ((_ is Left) (Left blue)))
 (assert (= red (b (Left red))))
-(x-ground debug:)
+(x-ground :debug)
 (x-debug db tables)
 (x-debug db Sort_8)
 (x-debug solver polymorphic_sorts)

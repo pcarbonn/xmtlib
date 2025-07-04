@@ -12,7 +12,7 @@
    ((a) a)
 ) ? )
 (assert (forall ((x T)) (ku (kuf x) (kuf x)) ))
-(x-ground debug:)
+(x-ground :debug)
 (x-debug db _xmt_interp_ku_G)
 (x-debug solver groundings)
 (x-debug db tables)

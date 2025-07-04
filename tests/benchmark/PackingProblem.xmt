@@ -35,7 +35,7 @@
 (x-interpret-fun square_size (x-mapping ((q1) 1) ((q2) 2)))
 
 
-(x-ground debug:)
+(x-ground :debug)
 (x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-datatype Square ((q1) (q2)))

@@ -49,7 +49,7 @@
   ((w3 m1) 17) ((w3 m2) 11) ((w3 m3) 1)
 ))
 
-(x-ground debug:)
+(x-ground :debug)
 (x-debug solver functions)
 (x-debug solver groundings)
 ------- RESULTS ------------------
