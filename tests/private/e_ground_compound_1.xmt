@@ -25,7 +25,7 @@
 (assert (forall ((x T)) (p x (f x)) ))
 (x-ground :debug :sql)
 (x-debug db _xmt_interp_p_g)
-(x-debug solver groundings)
+(x-debug solver generators)
 (x-debug db tables)
 ------- RESULTS ------------------
 (declare-datatype T ((a) (b) (c)))
@@ -65,6 +65,10 @@
 (assert (=> (= (f b) B) (p b B)))
 (assert (not (= (f b) B)))
 
+; ==== Query =============================
+;SELECT "true"
+; ==== Query =============================
+;SELECT "true"
 (echo "or")
 ; ==== Query =============================
 ;-- exclude(0)
@@ -101,6 +105,8 @@
 ;               ) AS Agg_1)
 ; WHERE G <> "true"(assert (or (and (not (= (f b) A)) (=> (= (f b) B) (p b B))) (not (= (f b) B))))
 
+; ==== Query =============================
+;SELECT "true"
 (echo "forall")
 ; ==== Query =============================
 ;-- Agg (0)
@@ -120,6 +126,8 @@
 (assert (=> (= (f c) A) (p c A)))
 (assert (=> (= (f c) B) (p c B)))
 
+; ==== Query =============================
+;SELECT "true"
  TABLE: _xmt_interp_p_g
 ┌─────┬─────┬───────────┐
 │ a_1 │ a_2 │ G         │
@@ -136,374 +144,15 @@
 ├─────┼─────┼───────────┤
 │ "c" │ "B" │ "(p c B)" │
 └─────┴─────┴───────────┘
-Groundings:
-===  b ======================================
- -- Join(0)
-SELECT "b" AS G
-===  B ======================================
- -- Join(0)
-SELECT "B" AS G
-=== (top) (p b B) ======================================
------ TU -----------------------------------------------------------
--- Join(0)
-SELECT _xmt_interp_p_TU_2.G AS G
-  FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_2
- WHERE "b" = _xmt_interp_p_TU_2.a_1 
-       AND "B" = _xmt_interp_p_TU_2.a_2
------ UF -----------------------------------------------------------
--- Join(0)
-SELECT _xmt_interp_p_UF_2.G AS G
-  FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_2
- WHERE "b" = _xmt_interp_p_UF_2.a_1 
-       AND "B" = _xmt_interp_p_UF_2.a_2
------ G ------------------------------------------------------------
--- Join(0)
-SELECT _xmt_interp_p_G_2.G AS G
-  FROM _xmt_interp_p_G AS _xmt_interp_p_G_2
- WHERE "b" = _xmt_interp_p_G_2.a_1 
-       AND "B" = _xmt_interp_p_G_2.a_2
-
-===  (f b) ======================================
- -- Join(0)
-SELECT _xmt_interp_f_G_3.G AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
- WHERE "b" = _xmt_interp_f_G_3.a_1
-=== (top) (p b (f b)) ======================================
------ TU -----------------------------------------------------------
--- Join(0)
-SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_TU_4.a_2) AS if_, 
-       _xmt_interp_p_TU_4.G AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-  JOIN _xmt_interp_p_TU AS _xmt_interp_p_TU_4
-        ON "b" = _xmt_interp_p_TU_4.a_1 
-       AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_TU_4.a_2)
- WHERE "b" = _xmt_interp_f_G_3.a_1
------ UF -----------------------------------------------------------
--- Join(0)
-SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_UF_4.a_2) AS if_, 
-       _xmt_interp_p_UF_4.G AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-  JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_4
-        ON "b" = _xmt_interp_p_UF_4.a_1 
-       AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_UF_4.a_2)
- WHERE "b" = _xmt_interp_f_G_3.a_1
------ G ------------------------------------------------------------
--- Join(0)
-SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_G_4.a_2) AS if_, 
-       _xmt_interp_p_G_4.G AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-  JOIN _xmt_interp_p_G AS _xmt_interp_p_G_4
-        ON "b" = _xmt_interp_p_G_4.a_1 
-       AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_G_4.a_2)
- WHERE "b" = _xmt_interp_f_G_3.a_1
-
-===  a ======================================
- -- Join(0)
-SELECT "a" AS G
-=== (top) (p a (f b)) ======================================
------ TU -----------------------------------------------------------
--- Join(0)
-SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_TU_6.a_2) AS if_, 
-       _xmt_interp_p_TU_6.G AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-  JOIN _xmt_interp_p_TU AS _xmt_interp_p_TU_6
-        ON "a" = _xmt_interp_p_TU_6.a_1 
-       AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_TU_6.a_2)
- WHERE "b" = _xmt_interp_f_G_3.a_1
------ UF -----------------------------------------------------------
--- Join(0)
-SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_UF_6.a_2) AS if_, 
-       _xmt_interp_p_UF_6.G AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-  JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_6
-        ON "a" = _xmt_interp_p_UF_6.a_1 
-       AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_UF_6.a_2)
- WHERE "b" = _xmt_interp_f_G_3.a_1
------ G ------------------------------------------------------------
--- Join(0)
-SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_G_6.a_2) AS if_, 
-       _xmt_interp_p_G_6.G AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-  JOIN _xmt_interp_p_G AS _xmt_interp_p_G_6
-        ON "a" = _xmt_interp_p_G_6.a_1 
-       AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_G_6.a_2)
- WHERE "b" = _xmt_interp_f_G_3.a_1
-
-=== (top) (and (p b (f b)) (p a (f b))) ======================================
------ TU -----------------------------------------------------------
--- Join(0)
-SELECT and_(Agg_0.G, Agg_1.G) AS G
-  FROM (-- Agg (8)
-        SELECT or_aggregate(and_(if_, G)) as G
-         FROM (-- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_TU_4.a_2) AS if_, 
-                             _xmt_interp_p_TU_4.G AS G
-                        FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-                        JOIN _xmt_interp_p_TU AS _xmt_interp_p_TU_4
-                              ON "b" = _xmt_interp_p_TU_4.a_1 
-                             AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_TU_4.a_2)
-                       WHERE "b" = _xmt_interp_f_G_3.a_1)
-                WHERE G <> "false")
-        ) AS Agg_0
-  JOIN (-- Agg (8)
-        SELECT or_aggregate(and_(if_, G)) as G
-         FROM (-- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_TU_6.a_2) AS if_, 
-                             _xmt_interp_p_TU_6.G AS G
-                        FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-                        JOIN _xmt_interp_p_TU AS _xmt_interp_p_TU_6
-                              ON "a" = _xmt_interp_p_TU_6.a_1 
-                             AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_TU_6.a_2)
-                       WHERE "b" = _xmt_interp_f_G_3.a_1)
-                WHERE G <> "false")
-        ) AS Agg_1
------ UF -----------------------------------------------------------
--- Agg (0)
-SELECT implies_(if_, G) as G
- FROM (-- Join(7)
-       SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_UF_4.a_2) AS if_, 
-              _xmt_interp_p_UF_4.G AS G
-         FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-         JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_4
-               ON "b" = _xmt_interp_p_UF_4.a_1 
-              AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_UF_4.a_2)
-        WHERE "b" = _xmt_interp_f_G_3.a_1
-       UNION ALL
-       -- Join(7)
-       SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_UF_6.a_2) AS if_, 
-              _xmt_interp_p_UF_6.G AS G
-         FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-         JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_6
-               ON "a" = _xmt_interp_p_UF_6.a_1 
-              AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_UF_6.a_2)
-        WHERE "b" = _xmt_interp_f_G_3.a_1)
------ G ------------------------------------------------------------
--- Join(0)
-SELECT and_(if_(_xmt_interp_f_G_3.G, _xmt_interp_p_G_4.a_2), if_(_xmt_interp_f_G_3.G, _xmt_interp_p_G_6.a_2)) AS if_,
-       and_(_xmt_interp_p_G_4.G, _xmt_interp_p_G_6.G) AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-  JOIN _xmt_interp_p_G AS _xmt_interp_p_G_4
-        ON "b" = _xmt_interp_p_G_4.a_1 
-       AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_G_4.a_2)
-  JOIN _xmt_interp_p_G AS _xmt_interp_p_G_6
-        ON "a" = _xmt_interp_p_G_6.a_1 
-       AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_G_6.a_2)
- WHERE "b" = _xmt_interp_f_G_3.a_1
-
-===  (p b (f b)) ======================================
------ TU -----------------------------------------------------------
--- Join(0)
-SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_TU_8.a_2) AS if_, 
-       _xmt_interp_p_TU_8.G AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-  JOIN _xmt_interp_p_TU AS _xmt_interp_p_TU_8
-        ON "b" = _xmt_interp_p_TU_8.a_1 
-       AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_TU_8.a_2)
- WHERE "b" = _xmt_interp_f_G_3.a_1
------ UF -----------------------------------------------------------
--- Join(0)
-SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_UF_8.a_2) AS if_, 
-       _xmt_interp_p_UF_8.G AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-  JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_8
-        ON "b" = _xmt_interp_p_UF_8.a_1 
-       AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_UF_8.a_2)
- WHERE "b" = _xmt_interp_f_G_3.a_1
------ G ------------------------------------------------------------
--- Join(0)
-SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_G_8.a_2) AS if_, 
-       _xmt_interp_p_G_8.G AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-  JOIN _xmt_interp_p_G AS _xmt_interp_p_G_8
-        ON "b" = _xmt_interp_p_G_8.a_1 
-       AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_G_8.a_2)
- WHERE "b" = _xmt_interp_f_G_3.a_1
-
-===  (p a (f b)) ======================================
------ TU -----------------------------------------------------------
--- Join(0)
-SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_TU_9.a_2) AS if_, 
-       _xmt_interp_p_TU_9.G AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-  JOIN _xmt_interp_p_TU AS _xmt_interp_p_TU_9
-        ON "a" = _xmt_interp_p_TU_9.a_1 
-       AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_TU_9.a_2)
- WHERE "b" = _xmt_interp_f_G_3.a_1
------ UF -----------------------------------------------------------
--- Join(0)
-SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_UF_9.a_2) AS if_, 
-       _xmt_interp_p_UF_9.G AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-  JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_9
-        ON "a" = _xmt_interp_p_UF_9.a_1 
-       AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_UF_9.a_2)
- WHERE "b" = _xmt_interp_f_G_3.a_1
------ G ------------------------------------------------------------
--- Join(0)
-SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_G_9.a_2) AS if_, 
-       _xmt_interp_p_G_9.G AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-  JOIN _xmt_interp_p_G AS _xmt_interp_p_G_9
-        ON "a" = _xmt_interp_p_G_9.a_1 
-       AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_G_9.a_2)
- WHERE "b" = _xmt_interp_f_G_3.a_1
-
-=== (top) (or (p b (f b)) (p a (f b))) ======================================
------ TU -----------------------------------------------------------
--- Agg (0)
-SELECT or_aggregate(and_(if_, G)) as G
- FROM (-- Join(7)
-       SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_TU_8.a_2) AS if_, 
-              _xmt_interp_p_TU_8.G AS G
-         FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-         JOIN _xmt_interp_p_TU AS _xmt_interp_p_TU_8
-               ON "b" = _xmt_interp_p_TU_8.a_1 
-              AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_TU_8.a_2)
-        WHERE "b" = _xmt_interp_f_G_3.a_1
-       UNION ALL
-       -- Join(7)
-       SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_TU_9.a_2) AS if_, 
-              _xmt_interp_p_TU_9.G AS G
-         FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-         JOIN _xmt_interp_p_TU AS _xmt_interp_p_TU_9
-               ON "a" = _xmt_interp_p_TU_9.a_1 
-              AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_TU_9.a_2)
-        WHERE "b" = _xmt_interp_f_G_3.a_1)
------ UF -----------------------------------------------------------
--- Join(0)
-SELECT or_(Agg_0.G, Agg_1.G) AS G
-  FROM (-- Agg (8)
-        SELECT and_aggregate(implies_(if_, G)) as G
-         FROM (-- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_UF_8.a_2) AS if_, 
-                             _xmt_interp_p_UF_8.G AS G
-                        FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-                        JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_8
-                              ON "b" = _xmt_interp_p_UF_8.a_1 
-                             AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_UF_8.a_2)
-                       WHERE "b" = _xmt_interp_f_G_3.a_1)
-                WHERE G <> "true")
-        ) AS Agg_0
-  JOIN (-- Agg (8)
-        SELECT and_aggregate(implies_(if_, G)) as G
-         FROM (-- exclude(15)
-               SELECT *
-                FROM (-- Join(22)
-                      SELECT if_(_xmt_interp_f_G_3.G, _xmt_interp_p_UF_9.a_2) AS if_, 
-                             _xmt_interp_p_UF_9.G AS G
-                        FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-                        JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_9
-                              ON "a" = _xmt_interp_p_UF_9.a_1 
-                             AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_UF_9.a_2)
-                       WHERE "b" = _xmt_interp_f_G_3.a_1)
-                WHERE G <> "true")
-        ) AS Agg_1
------ G ------------------------------------------------------------
--- Join(0)
-SELECT and_(if_(_xmt_interp_f_G_3.G, _xmt_interp_p_G_8.a_2), if_(_xmt_interp_f_G_3.G, _xmt_interp_p_G_9.a_2)) AS if_,
-       or_(_xmt_interp_p_G_8.G, _xmt_interp_p_G_9.G) AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_3
-  JOIN _xmt_interp_p_G AS _xmt_interp_p_G_8
-        ON "b" = _xmt_interp_p_G_8.a_1 
-       AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_G_8.a_2)
-  JOIN _xmt_interp_p_G AS _xmt_interp_p_G_9
-        ON "a" = _xmt_interp_p_G_9.a_1 
-       AND (NOT is_id(_xmt_interp_f_G_3.G) OR _xmt_interp_f_G_3.G = _xmt_interp_p_G_9.a_2)
- WHERE "b" = _xmt_interp_f_G_3.a_1
-
-===  x ======================================
- -- Join(0)
-SELECT _xmt_sort_t_11.G AS x,
-       _xmt_sort_t_11.G AS G
-  FROM _xmt_sort_t AS _xmt_sort_t_11
-===  (f x) ======================================
- -- Join(0)
-SELECT _xmt_interp_f_G_12.a_1 AS x,
-       _xmt_interp_f_G_12.G AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_12
-===  (p x (f x)) ======================================
------ TU -----------------------------------------------------------
--- Join(0)
-SELECT _xmt_interp_p_TU_13.a_1 AS x,
-       if_(_xmt_interp_f_G_12.G, _xmt_interp_p_TU_13.a_2) AS if_, 
-       _xmt_interp_p_TU_13.G AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_12
-  JOIN _xmt_interp_p_TU AS _xmt_interp_p_TU_13
-        ON (NOT is_id(_xmt_interp_f_G_12.G) OR _xmt_interp_f_G_12.G = _xmt_interp_p_TU_13.a_2)
- WHERE _xmt_interp_p_TU_13.a_1 = _xmt_interp_f_G_12.a_1
------ UF -----------------------------------------------------------
--- Join(0)
-SELECT _xmt_interp_p_UF_13.a_1 AS x,
-       if_(_xmt_interp_f_G_12.G, _xmt_interp_p_UF_13.a_2) AS if_, 
-       _xmt_interp_p_UF_13.G AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_12
-  JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_13
-        ON (NOT is_id(_xmt_interp_f_G_12.G) OR _xmt_interp_f_G_12.G = _xmt_interp_p_UF_13.a_2)
- WHERE _xmt_interp_p_UF_13.a_1 = _xmt_interp_f_G_12.a_1
------ G ------------------------------------------------------------
--- Join(0)
-SELECT _xmt_interp_p_G_13.a_1 AS x,
-       if_(_xmt_interp_f_G_12.G, _xmt_interp_p_G_13.a_2) AS if_, 
-       _xmt_interp_p_G_13.G AS G
-  FROM _xmt_interp_f_G AS _xmt_interp_f_G_12
-  JOIN _xmt_interp_p_G AS _xmt_interp_p_G_13
-        ON (NOT is_id(_xmt_interp_f_G_12.G) OR _xmt_interp_f_G_12.G = _xmt_interp_p_G_13.a_2)
- WHERE _xmt_interp_p_G_13.a_1 = _xmt_interp_f_G_12.a_1
-
-=== (top) (forall ((x T)) (p x (f x))) ======================================
------ TU -----------------------------------------------------------
--- Agg (0)
-SELECT and_aggregate(implies_(if_, G)) as G
- FROM (SELECT NULL AS x, "true" AS if_, "true" AS G 
-       UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_p_UF_13.a_1 AS x,
-                     if_(_xmt_interp_f_G_12.G, _xmt_interp_p_UF_13.a_2) AS if_, 
-                     _xmt_interp_p_UF_13.G AS G
-                FROM _xmt_interp_f_G AS _xmt_interp_f_G_12
-                JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_13
-                      ON (NOT is_id(_xmt_interp_f_G_12.G) OR _xmt_interp_f_G_12.G = _xmt_interp_p_UF_13.a_2)
-               WHERE _xmt_interp_p_UF_13.a_1 = _xmt_interp_f_G_12.a_1)
-        WHERE G <> "true")
------ UF -----------------------------------------------------------
--- Agg (0)
-SELECT implies_(if_, G) as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_p_UF_13.a_1 AS x,
-                     if_(_xmt_interp_f_G_12.G, _xmt_interp_p_UF_13.a_2) AS if_, 
-                     _xmt_interp_p_UF_13.G AS G
-                FROM _xmt_interp_f_G AS _xmt_interp_f_G_12
-                JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_13
-                      ON (NOT is_id(_xmt_interp_f_G_12.G) OR _xmt_interp_f_G_12.G = _xmt_interp_p_UF_13.a_2)
-               WHERE _xmt_interp_p_UF_13.a_1 = _xmt_interp_f_G_12.a_1)
-        WHERE G <> "true")
------ G ------------------------------------------------------------
--- Agg (0)
-SELECT and_aggregate(implies_(if_, G)) as G
- FROM (SELECT NULL AS x, "true" AS if_, "true" AS G 
-       UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_p_UF_13.a_1 AS x,
-                     if_(_xmt_interp_f_G_12.G, _xmt_interp_p_UF_13.a_2) AS if_, 
-                     _xmt_interp_p_UF_13.G AS G
-                FROM _xmt_interp_f_G AS _xmt_interp_f_G_12
-                JOIN _xmt_interp_p_UF AS _xmt_interp_p_UF_13
-                      ON (NOT is_id(_xmt_interp_f_G_12.G) OR _xmt_interp_f_G_12.G = _xmt_interp_p_UF_13.a_2)
-               WHERE _xmt_interp_p_UF_13.a_1 = _xmt_interp_f_G_12.a_1)
-        WHERE G <> "true")
-
+Generators:
+=== (p b B) ======================================
+TODO: generator
+=== (and (p b (f b)) (p a (f b))) ======================================
+TODO: generator
+=== (or (p b (f b)) (p a (f b))) ======================================
+TODO: generator
+=== (forall ((x T)) (p x (f x))) ======================================
+TODO: generator
 ===========================================
 Tables and Views:
  - Bool (table)

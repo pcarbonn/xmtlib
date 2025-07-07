@@ -14,7 +14,7 @@
 (assert (forall ((x T)) (ku (kuf x) (kuf x)) ))
 (x-ground :debug :sql)
 (x-debug db _xmt_interp_ku_G)
-(x-debug solver groundings)
+(x-debug solver generators)
 (x-debug db tables)
 ------- RESULTS ------------------
 (declare-datatype T ((a) (b)))
@@ -37,6 +37,8 @@
 (assert (not (and (= (kuf b) b) (= (kuf b) a))))
 (assert (=> (and (= (kuf b) b) (= (kuf b) b)) (ku b b)))
 
+; ==== Query =============================
+;SELECT "true"
  TABLE: _xmt_interp_ku_g
 ┌─────┬─────┬────────────┐
 │ a_1 │ a_2 │ G          │
@@ -49,94 +51,9 @@
 ├─────┼─────┼────────────┤
 │ "b" │ "b" │ "(ku b b)" │
 └─────┴─────┴────────────┘
-Groundings:
-===  x ======================================
- -- Join(0)
-SELECT _xmt_sort_t.G AS x,
-       _xmt_sort_t.G AS G
-  FROM _xmt_sort_t
-===  (kuf x) ======================================
- -- Join(0)
-SELECT _xmt_interp_kuf_G_1.a_1 AS x,
-       _xmt_interp_kuf_G_1.G AS G
-  FROM _xmt_interp_kuf_G AS _xmt_interp_kuf_G_1
-===  (ku (kuf x) (kuf x)) ======================================
------ TU -----------------------------------------------------------
--- Join(0)
-SELECT _xmt_interp_kuf_G_1.a_1 AS x,
-       and_(if_(_xmt_interp_kuf_G_1.G, _xmt_interp_ku_TU_2.a_1), if_(_xmt_interp_kuf_G_1.G, _xmt_interp_ku_TU_2.a_2)) AS if_,
-       _xmt_interp_ku_TU_2.G AS G
-  FROM _xmt_interp_kuf_G AS _xmt_interp_kuf_G_1
-  JOIN _xmt_interp_ku_TU AS _xmt_interp_ku_TU_2
-        ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_TU_2.a_1) 
-       AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_TU_2.a_2)
------ UF -----------------------------------------------------------
--- Join(0)
-SELECT _xmt_interp_kuf_G_1.a_1 AS x,
-       and_(if_(_xmt_interp_kuf_G_1.G, _xmt_interp_ku_UF_2.a_1), if_(_xmt_interp_kuf_G_1.G, _xmt_interp_ku_UF_2.a_2)) AS if_,
-       _xmt_interp_ku_UF_2.G AS G
-  FROM _xmt_interp_kuf_G AS _xmt_interp_kuf_G_1
-  JOIN _xmt_interp_ku_UF AS _xmt_interp_ku_UF_2
-        ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_1) 
-       AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_2)
------ G ------------------------------------------------------------
--- Join(0)
-SELECT _xmt_interp_kuf_G_1.a_1 AS x,
-       and_(if_(_xmt_interp_kuf_G_1.G, _xmt_interp_ku_G_2.a_1), if_(_xmt_interp_kuf_G_1.G, _xmt_interp_ku_G_2.a_2)) AS if_,
-       _xmt_interp_ku_G_2.G AS G
-  FROM _xmt_interp_kuf_G AS _xmt_interp_kuf_G_1
-  JOIN _xmt_interp_ku_G AS _xmt_interp_ku_G_2
-        ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_G_2.a_1) 
-       AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_G_2.a_2)
-
-=== (top) (forall ((x T)) (ku (kuf x) (kuf x))) ======================================
------ TU -----------------------------------------------------------
--- Agg (0)
-SELECT and_aggregate(implies_(if_, G)) as G
- FROM (SELECT NULL AS x, "true" AS if_, "true" AS G 
-       UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_kuf_G_1.a_1 AS x,
-                     and_(if_(_xmt_interp_kuf_G_1.G, _xmt_interp_ku_UF_2.a_1), if_(_xmt_interp_kuf_G_1.G, _xmt_interp_ku_UF_2.a_2)) AS if_,
-                     _xmt_interp_ku_UF_2.G AS G
-                FROM _xmt_interp_kuf_G AS _xmt_interp_kuf_G_1
-                JOIN _xmt_interp_ku_UF AS _xmt_interp_ku_UF_2
-                      ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_1) 
-                     AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_2))
-        WHERE G <> "true")
------ UF -----------------------------------------------------------
--- Agg (0)
-SELECT implies_(if_, G) as G
- FROM (-- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_kuf_G_1.a_1 AS x,
-                     and_(if_(_xmt_interp_kuf_G_1.G, _xmt_interp_ku_UF_2.a_1), if_(_xmt_interp_kuf_G_1.G, _xmt_interp_ku_UF_2.a_2)) AS if_,
-                     _xmt_interp_ku_UF_2.G AS G
-                FROM _xmt_interp_kuf_G AS _xmt_interp_kuf_G_1
-                JOIN _xmt_interp_ku_UF AS _xmt_interp_ku_UF_2
-                      ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_1) 
-                     AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_2))
-        WHERE G <> "true")
------ G ------------------------------------------------------------
--- Agg (0)
-SELECT and_aggregate(implies_(if_, G)) as G
- FROM (SELECT NULL AS x, "true" AS if_, "true" AS G 
-       UNION ALL
-       -- exclude(7)
-       SELECT *
-        FROM (-- Join(14)
-              SELECT _xmt_interp_kuf_G_1.a_1 AS x,
-                     and_(if_(_xmt_interp_kuf_G_1.G, _xmt_interp_ku_UF_2.a_1), if_(_xmt_interp_kuf_G_1.G, _xmt_interp_ku_UF_2.a_2)) AS if_,
-                     _xmt_interp_ku_UF_2.G AS G
-                FROM _xmt_interp_kuf_G AS _xmt_interp_kuf_G_1
-                JOIN _xmt_interp_ku_UF AS _xmt_interp_ku_UF_2
-                      ON (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_1) 
-                     AND (NOT is_id(_xmt_interp_kuf_G_1.G) OR _xmt_interp_kuf_G_1.G = _xmt_interp_ku_UF_2.a_2))
-        WHERE G <> "true")
-
+Generators:
+=== (forall ((x T)) (ku (kuf x) (kuf x))) ======================================
+TODO: generator
 ===========================================
 Tables and Views:
  - Bool (table)

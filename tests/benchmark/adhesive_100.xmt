@@ -117,3 +117,15 @@
 (assert (=> (and (= chosen_glue B) (= substrateB a)) (possible_bonding good)))
 (assert (=> (and (= chosen_glue B) (= substrateB b)) (possible_bonding great)))
 
+; ==== Query =============================
+;SELECT "true"
+; ==== Query =============================
+;SELECT "true"
+; ==== Query =============================
+;SELECT "true"
+; ==== Query =============================
+;SELECT "true"
+; ==== Query =============================
+;SELECT "true"
+; ==== Query =============================
+;SELECT "true"
