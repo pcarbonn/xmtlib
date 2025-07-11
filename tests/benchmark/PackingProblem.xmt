@@ -36,7 +36,7 @@
 
 
 (x-ground :debug :sql)
-(x-debug solver generators)
+(x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-datatype Square ((q1) (q2)))
 (declare-fun pos_x (Square) Int)
@@ -94,25 +94,861 @@
 ;        WHERE _xmt_interp_square_size_G_30.a_1 != _xmt_interp_square_size_G_34.a_1)(assert (or (not (<= (pos_x q1) (pos_x q2))) (not (<= (pos_y q1) (pos_y q2))) (not (< (pos_x q2) (+ (pos_x q1) 1))) (not (< (pos_x q1) (+ (pos_x q2) 2))) (not (< (pos_y q2) (+ (pos_y q1) 1))) (not (< (pos_y q1) (+ (pos_y q2) 2))) (not (<= (+ (pos_x q2) 2) (+ (pos_x q1) 1))) (not (<= (+ (pos_y q2) 2) (+ (pos_y q1) 1)))))
 (assert (or (not (<= (pos_x q2) (pos_x q1))) (not (<= (pos_y q2) (pos_y q1))) (not (< (pos_x q1) (+ (pos_x q2) 2))) (not (< (pos_x q2) (+ (pos_x q1) 1))) (not (< (pos_y q1) (+ (pos_y q2) 2))) (not (< (pos_y q2) (+ (pos_y q1) 1))) (not (<= (+ (pos_x q1) 1) (+ (pos_x q2) 2))) (not (<= (+ (pos_y q1) 1) (+ (pos_y q2) 2)))))
 
-; ==== Query =============================
-;SELECT "true"
-; ==== Query =============================
-;SELECT "true"
-; ==== Query =============================
-;SELECT "true"
-; ==== Query =============================
-;SELECT "true"
-; ==== Query =============================
-;SELECT "true"
-Generators:
-=== (forall ((s Square)) (<= 0 (pos_x s))) ======================================
-TODO: generator
-=== (forall ((s Square)) (<= 0 (pos_y s))) ======================================
-TODO: generator
-=== (forall ((s Square)) (<= (+ (pos_x s) (square_size s)) area_width)) ======================================
-TODO: generator
-=== (forall ((s Square)) (<= (+ (pos_y s) (square_size s)) area_height)) ======================================
-TODO: generator
-=== (forall ((s1 Square) (s2 Square)) (or (not (not (= s1 s2))) (not (<= (pos_x s1) (pos_x s2))) (not (<= (pos_y s1) (pos_y s2))) (not (< (pos_x s2) (+ (pos_x s1) (square_size s1)))) (not (< (pos_x s1) (+ (pos_x s2) (square_size s2)))) (not (< (pos_y s2) (+ (pos_y s1) (square_size s1)))) (not (< (pos_y s1) (+ (pos_y s2) (square_size s2)))) (not (<= (+ (pos_x s2) (square_size s2)) (+ (pos_x s1) (square_size s1)))) (not (<= (+ (pos_y s2) (square_size s2)) (+ (pos_y s1) (square_size s1)))))) ======================================
-TODO: generator
+Groundings:
+===  0 ======================================
+ -- Join(0)
+SELECT 0 AS G
+===  s ======================================
+ -- Join(0)
+SELECT _xmt_sort_square_1.G AS s,
+       _xmt_sort_square_1.G AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_1
+===  (pos_x s) ======================================
+ -- Join(0)
+SELECT _xmt_sort_square_1.G AS s,
+       apply("pos_x", _xmt_sort_square_1.G) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_1
+===  (<= 0 (pos_x s)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_1.G AS s,
+       apply("<=", 0, apply("pos_x", _xmt_sort_square_1.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_1
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_1.G AS s,
+       apply("<=", 0, apply("pos_x", _xmt_sort_square_1.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_1.G AS s,
+       apply("<=", 0, apply("pos_x", _xmt_sort_square_1.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_1
+
+=== (top) (forall ((s Square)) (<= 0 (pos_x s))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS s, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_sort_square_1.G AS s,
+              apply("<=", 0, apply("pos_x", _xmt_sort_square_1.G)) AS G
+         FROM _xmt_sort_square AS _xmt_sort_square_1)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_sort_square_1.G AS s,
+              apply("<=", 0, apply("pos_x", _xmt_sort_square_1.G)) AS G
+         FROM _xmt_sort_square AS _xmt_sort_square_1)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS s, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_sort_square_1.G AS s,
+              apply("<=", 0, apply("pos_x", _xmt_sort_square_1.G)) AS G
+         FROM _xmt_sort_square AS _xmt_sort_square_1)
+
+===  (pos_y s) ======================================
+ -- Join(0)
+SELECT _xmt_sort_square_1.G AS s,
+       apply("pos_y", _xmt_sort_square_1.G) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_1
+===  (<= 0 (pos_y s)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_1.G AS s,
+       apply("<=", 0, apply("pos_y", _xmt_sort_square_1.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_1
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_1.G AS s,
+       apply("<=", 0, apply("pos_y", _xmt_sort_square_1.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_1.G AS s,
+       apply("<=", 0, apply("pos_y", _xmt_sort_square_1.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_1
+
+=== (top) (forall ((s Square)) (<= 0 (pos_y s))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS s, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_sort_square_1.G AS s,
+              apply("<=", 0, apply("pos_y", _xmt_sort_square_1.G)) AS G
+         FROM _xmt_sort_square AS _xmt_sort_square_1)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_sort_square_1.G AS s,
+              apply("<=", 0, apply("pos_y", _xmt_sort_square_1.G)) AS G
+         FROM _xmt_sort_square AS _xmt_sort_square_1)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS s, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_sort_square_1.G AS s,
+              apply("<=", 0, apply("pos_y", _xmt_sort_square_1.G)) AS G
+         FROM _xmt_sort_square AS _xmt_sort_square_1)
+
+===  (square_size s) ======================================
+ -- Join(0)
+SELECT _xmt_interp_square_size_G_8.a_1 AS s,
+       _xmt_interp_square_size_G_8.G AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_8
+===  (+ (pos_x s) (square_size s)) ======================================
+ -- Join(0)
+SELECT _xmt_interp_square_size_G_8.a_1 AS s,
+       apply("+", apply("pos_x", _xmt_interp_square_size_G_8.a_1), _xmt_interp_square_size_G_8.G) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_8
+===  area_width ======================================
+ -- Join(0)
+SELECT _xmt_interp_area_width_G_10.G AS G
+  FROM _xmt_interp_area_width_G AS _xmt_interp_area_width_G_10
+===  (<= (+ (pos_x s) (square_size s)) area_width) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_8.a_1 AS s,
+       apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_8.a_1), _xmt_interp_square_size_G_8.G), _xmt_interp_area_width_G_10.G) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_8
+  JOIN _xmt_interp_area_width_G AS _xmt_interp_area_width_G_10
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_8.a_1 AS s,
+       apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_8.a_1), _xmt_interp_square_size_G_8.G), _xmt_interp_area_width_G_10.G) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_8
+  JOIN _xmt_interp_area_width_G AS _xmt_interp_area_width_G_10
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_8.a_1 AS s,
+       apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_8.a_1), _xmt_interp_square_size_G_8.G), _xmt_interp_area_width_G_10.G) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_8
+  JOIN _xmt_interp_area_width_G AS _xmt_interp_area_width_G_10
+
+=== (top) (forall ((s Square)) (<= (+ (pos_x s) (square_size s)) area_width)) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS s, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_square_size_G_8.a_1 AS s,
+              apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_8.a_1), _xmt_interp_square_size_G_8.G), _xmt_interp_area_width_G_10.G) AS G
+         FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_8
+         JOIN _xmt_interp_area_width_G AS _xmt_interp_area_width_G_10)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_interp_square_size_G_8.a_1 AS s,
+              apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_8.a_1), _xmt_interp_square_size_G_8.G), _xmt_interp_area_width_G_10.G) AS G
+         FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_8
+         JOIN _xmt_interp_area_width_G AS _xmt_interp_area_width_G_10)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS s, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_square_size_G_8.a_1 AS s,
+              apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_8.a_1), _xmt_interp_square_size_G_8.G), _xmt_interp_area_width_G_10.G) AS G
+         FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_8
+         JOIN _xmt_interp_area_width_G AS _xmt_interp_area_width_G_10)
+
+===  (+ (pos_y s) (square_size s)) ======================================
+ -- Join(0)
+SELECT _xmt_interp_square_size_G_8.a_1 AS s,
+       apply("+", apply("pos_y", _xmt_interp_square_size_G_8.a_1), _xmt_interp_square_size_G_8.G) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_8
+===  area_height ======================================
+ -- Join(0)
+SELECT _xmt_interp_area_height_G_14.G AS G
+  FROM _xmt_interp_area_height_G AS _xmt_interp_area_height_G_14
+===  (<= (+ (pos_y s) (square_size s)) area_height) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_8.a_1 AS s,
+       apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_8.a_1), _xmt_interp_square_size_G_8.G), _xmt_interp_area_height_G_14.G) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_8
+  JOIN _xmt_interp_area_height_G AS _xmt_interp_area_height_G_14
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_8.a_1 AS s,
+       apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_8.a_1), _xmt_interp_square_size_G_8.G), _xmt_interp_area_height_G_14.G) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_8
+  JOIN _xmt_interp_area_height_G AS _xmt_interp_area_height_G_14
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_8.a_1 AS s,
+       apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_8.a_1), _xmt_interp_square_size_G_8.G), _xmt_interp_area_height_G_14.G) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_8
+  JOIN _xmt_interp_area_height_G AS _xmt_interp_area_height_G_14
+
+=== (top) (forall ((s Square)) (<= (+ (pos_y s) (square_size s)) area_height)) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS s, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_square_size_G_8.a_1 AS s,
+              apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_8.a_1), _xmt_interp_square_size_G_8.G), _xmt_interp_area_height_G_14.G) AS G
+         FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_8
+         JOIN _xmt_interp_area_height_G AS _xmt_interp_area_height_G_14)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_interp_square_size_G_8.a_1 AS s,
+              apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_8.a_1), _xmt_interp_square_size_G_8.G), _xmt_interp_area_height_G_14.G) AS G
+         FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_8
+         JOIN _xmt_interp_area_height_G AS _xmt_interp_area_height_G_14)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS s, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_square_size_G_8.a_1 AS s,
+              apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_8.a_1), _xmt_interp_square_size_G_8.G), _xmt_interp_area_height_G_14.G) AS G
+         FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_8
+         JOIN _xmt_interp_area_height_G AS _xmt_interp_area_height_G_14)
+
+===  s1 ======================================
+ -- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_17.G AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+===  s2 ======================================
+ -- Join(0)
+SELECT _xmt_sort_square_18.G AS s2,
+       _xmt_sort_square_18.G AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_18
+===  (= s1 s2) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       eq_(_xmt_sort_square_17.G, _xmt_sort_square_18.G) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+ WHERE _xmt_sort_square_17.G = _xmt_sort_square_18.G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       eq_(_xmt_sort_square_17.G, _xmt_sort_square_18.G) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+ WHERE _xmt_sort_square_17.G != _xmt_sort_square_18.G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       eq_(_xmt_sort_square_17.G, _xmt_sort_square_18.G) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+
+===  (not (= s1 s2)) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       not_(eq_(_xmt_sort_square_17.G, _xmt_sort_square_18.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+ WHERE _xmt_sort_square_17.G = _xmt_sort_square_18.G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       not_(eq_(_xmt_sort_square_17.G, _xmt_sort_square_18.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+ WHERE _xmt_sort_square_17.G != _xmt_sort_square_18.G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       not_(eq_(_xmt_sort_square_17.G, _xmt_sort_square_18.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+
+===  (not (not (= s1 s2))) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       not_(not_(eq_(_xmt_sort_square_17.G, _xmt_sort_square_18.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+ WHERE _xmt_sort_square_17.G = _xmt_sort_square_18.G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       not_(not_(eq_(_xmt_sort_square_17.G, _xmt_sort_square_18.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+ WHERE _xmt_sort_square_17.G != _xmt_sort_square_18.G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       not_(not_(eq_(_xmt_sort_square_17.G, _xmt_sort_square_18.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+
+===  (pos_x s1) ======================================
+ -- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       apply("pos_x", _xmt_sort_square_17.G) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+===  (pos_x s2) ======================================
+ -- Join(0)
+SELECT _xmt_sort_square_18.G AS s2,
+       apply("pos_x", _xmt_sort_square_18.G) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_18
+===  (<= (pos_x s1) (pos_x s2)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       apply("<=", apply("pos_x", _xmt_sort_square_17.G), apply("pos_x", _xmt_sort_square_18.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       apply("<=", apply("pos_x", _xmt_sort_square_17.G), apply("pos_x", _xmt_sort_square_18.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       apply("<=", apply("pos_x", _xmt_sort_square_17.G), apply("pos_x", _xmt_sort_square_18.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+
+===  (not (<= (pos_x s1) (pos_x s2))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       apply("not", apply("<=", apply("pos_x", _xmt_sort_square_17.G), apply("pos_x", _xmt_sort_square_18.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       apply("not", apply("<=", apply("pos_x", _xmt_sort_square_17.G), apply("pos_x", _xmt_sort_square_18.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       apply("not", apply("<=", apply("pos_x", _xmt_sort_square_17.G), apply("pos_x", _xmt_sort_square_18.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+
+===  (pos_y s1) ======================================
+ -- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       apply("pos_y", _xmt_sort_square_17.G) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+===  (pos_y s2) ======================================
+ -- Join(0)
+SELECT _xmt_sort_square_18.G AS s2,
+       apply("pos_y", _xmt_sort_square_18.G) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_18
+===  (<= (pos_y s1) (pos_y s2)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       apply("<=", apply("pos_y", _xmt_sort_square_17.G), apply("pos_y", _xmt_sort_square_18.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       apply("<=", apply("pos_y", _xmt_sort_square_17.G), apply("pos_y", _xmt_sort_square_18.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       apply("<=", apply("pos_y", _xmt_sort_square_17.G), apply("pos_y", _xmt_sort_square_18.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+
+===  (not (<= (pos_y s1) (pos_y s2))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       apply("not", apply("<=", apply("pos_y", _xmt_sort_square_17.G), apply("pos_y", _xmt_sort_square_18.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       apply("not", apply("<=", apply("pos_y", _xmt_sort_square_17.G), apply("pos_y", _xmt_sort_square_18.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_sort_square_18.G AS s2,
+       apply("not", apply("<=", apply("pos_y", _xmt_sort_square_17.G), apply("pos_y", _xmt_sort_square_18.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_sort_square AS _xmt_sort_square_18
+
+===  (square_size s1) ======================================
+ -- Join(0)
+SELECT _xmt_interp_square_size_G_30.a_1 AS s1,
+       _xmt_interp_square_size_G_30.G AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+===  (+ (pos_x s1) (square_size s1)) ======================================
+ -- Join(0)
+SELECT _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+===  (< (pos_x s2) (+ (pos_x s1) (square_size s1))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_18.G AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("<", apply("pos_x", _xmt_sort_square_18.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_18
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_18.G AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("<", apply("pos_x", _xmt_sort_square_18.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_18
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_18.G AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("<", apply("pos_x", _xmt_sort_square_18.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_18
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+
+===  (not (< (pos_x s2) (+ (pos_x s1) (square_size s1)))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_18.G AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("not", apply("<", apply("pos_x", _xmt_sort_square_18.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_18
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_18.G AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("not", apply("<", apply("pos_x", _xmt_sort_square_18.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_18
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_18.G AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("not", apply("<", apply("pos_x", _xmt_sort_square_18.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_18
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+
+===  (square_size s2) ======================================
+ -- Join(0)
+SELECT _xmt_interp_square_size_G_34.a_1 AS s2,
+       _xmt_interp_square_size_G_34.G AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+===  (+ (pos_x s2) (square_size s2)) ======================================
+ -- Join(0)
+SELECT _xmt_interp_square_size_G_34.a_1 AS s2,
+       apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+===  (< (pos_x s1) (+ (pos_x s2) (square_size s2))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_interp_square_size_G_34.a_1 AS s2,
+       apply("<", apply("pos_x", _xmt_sort_square_17.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_interp_square_size_G_34.a_1 AS s2,
+       apply("<", apply("pos_x", _xmt_sort_square_17.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_interp_square_size_G_34.a_1 AS s2,
+       apply("<", apply("pos_x", _xmt_sort_square_17.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+
+===  (not (< (pos_x s1) (+ (pos_x s2) (square_size s2)))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_interp_square_size_G_34.a_1 AS s2,
+       apply("not", apply("<", apply("pos_x", _xmt_sort_square_17.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_interp_square_size_G_34.a_1 AS s2,
+       apply("not", apply("<", apply("pos_x", _xmt_sort_square_17.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_interp_square_size_G_34.a_1 AS s2,
+       apply("not", apply("<", apply("pos_x", _xmt_sort_square_17.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+
+===  (+ (pos_y s1) (square_size s1)) ======================================
+ -- Join(0)
+SELECT _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+===  (< (pos_y s2) (+ (pos_y s1) (square_size s1))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_18.G AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("<", apply("pos_y", _xmt_sort_square_18.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_18
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_18.G AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("<", apply("pos_y", _xmt_sort_square_18.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_18
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_18.G AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("<", apply("pos_y", _xmt_sort_square_18.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_18
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+
+===  (not (< (pos_y s2) (+ (pos_y s1) (square_size s1)))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_18.G AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("not", apply("<", apply("pos_y", _xmt_sort_square_18.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_18
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_18.G AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("not", apply("<", apply("pos_y", _xmt_sort_square_18.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_18
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_18.G AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("not", apply("<", apply("pos_y", _xmt_sort_square_18.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_18
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+
+===  (+ (pos_y s2) (square_size s2)) ======================================
+ -- Join(0)
+SELECT _xmt_interp_square_size_G_34.a_1 AS s2,
+       apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+===  (< (pos_y s1) (+ (pos_y s2) (square_size s2))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_interp_square_size_G_34.a_1 AS s2,
+       apply("<", apply("pos_y", _xmt_sort_square_17.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_interp_square_size_G_34.a_1 AS s2,
+       apply("<", apply("pos_y", _xmt_sort_square_17.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_interp_square_size_G_34.a_1 AS s2,
+       apply("<", apply("pos_y", _xmt_sort_square_17.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G)) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+
+===  (not (< (pos_y s1) (+ (pos_y s2) (square_size s2)))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_interp_square_size_G_34.a_1 AS s2,
+       apply("not", apply("<", apply("pos_y", _xmt_sort_square_17.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_interp_square_size_G_34.a_1 AS s2,
+       apply("not", apply("<", apply("pos_y", _xmt_sort_square_17.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_square_17.G AS s1,
+       _xmt_interp_square_size_G_34.a_1 AS s2,
+       apply("not", apply("<", apply("pos_y", _xmt_sort_square_17.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))) AS G
+  FROM _xmt_sort_square AS _xmt_sort_square_17
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+
+===  (<= (+ (pos_x s2) (square_size s2)) (+ (pos_x s1) (square_size s1))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_34.a_1 AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G)) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_34.a_1 AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G)) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_34.a_1 AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G)) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+
+===  (not (<= (+ (pos_x s2) (square_size s2)) (+ (pos_x s1) (square_size s1)))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_34.a_1 AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("not", apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_34.a_1 AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("not", apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_34.a_1 AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("not", apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+
+===  (<= (+ (pos_y s2) (square_size s2)) (+ (pos_y s1) (square_size s1))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_34.a_1 AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G)) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_34.a_1 AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G)) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_34.a_1 AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G)) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+
+===  (not (<= (+ (pos_y s2) (square_size s2)) (+ (pos_y s1) (square_size s1)))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_34.a_1 AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("not", apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_34.a_1 AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("not", apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_34.a_1 AS s2,
+       _xmt_interp_square_size_G_30.a_1 AS s1,
+       apply("not", apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+
+===  (or (not (not (= s1 s2))) (not (<= (pos_x s1) (pos_x s2))) (not (<= (pos_y s1) (pos_y s2))) (not (< (pos_x s2) (+ (pos_x s1) (square_size s1)))) (not (< (pos_x s1) (+ (pos_x s2) (square_size s2)))) (not (< (pos_y s2) (+ (pos_y s1) (square_size s1)))) (not (< (pos_y s1) (+ (pos_y s2) (square_size s2)))) (not (<= (+ (pos_x s2) (square_size s2)) (+ (pos_x s1) (square_size s1)))) (not (<= (+ (pos_y s2) (square_size s2)) (+ (pos_y s1) (square_size s1))))) ======================================
+----- T ------------------------------------------------------------
+-- Agg (0)
+SELECT s1, s2,
+       or_aggregate(G) as G
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_sort_square_17.G AS s1,
+                     _xmt_sort_square_18.G AS s2,
+                     not_(not_(eq_(_xmt_sort_square_17.G, _xmt_sort_square_18.G))) AS G
+                FROM _xmt_sort_square AS _xmt_sort_square_17
+                JOIN _xmt_sort_square AS _xmt_sort_square_18
+               WHERE _xmt_sort_square_17.G = _xmt_sort_square_18.G
+              UNION ALL
+              -- Join(14)
+              SELECT _xmt_sort_square_17.G AS s1,
+                     _xmt_sort_square_18.G AS s2,
+                     apply("not", apply("<=", apply("pos_x", _xmt_sort_square_17.G), apply("pos_x", _xmt_sort_square_18.G))) AS G
+                FROM _xmt_sort_square AS _xmt_sort_square_17
+                JOIN _xmt_sort_square AS _xmt_sort_square_18
+              UNION ALL
+              -- Join(14)
+              SELECT _xmt_sort_square_17.G AS s1,
+                     _xmt_sort_square_18.G AS s2,
+                     apply("not", apply("<=", apply("pos_y", _xmt_sort_square_17.G), apply("pos_y", _xmt_sort_square_18.G))) AS G
+                FROM _xmt_sort_square AS _xmt_sort_square_17
+                JOIN _xmt_sort_square AS _xmt_sort_square_18
+              UNION ALL
+              -- Join(14)
+              SELECT _xmt_sort_square_18.G AS s2,
+                     _xmt_interp_square_size_G_30.a_1 AS s1,
+                     apply("not", apply("<", apply("pos_x", _xmt_sort_square_18.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))) AS G
+                FROM _xmt_sort_square AS _xmt_sort_square_18
+                JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+              UNION ALL
+              -- Join(14)
+              SELECT _xmt_sort_square_17.G AS s1,
+                     _xmt_interp_square_size_G_34.a_1 AS s2,
+                     apply("not", apply("<", apply("pos_x", _xmt_sort_square_17.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))) AS G
+                FROM _xmt_sort_square AS _xmt_sort_square_17
+                JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+              UNION ALL
+              -- Join(14)
+              SELECT _xmt_sort_square_18.G AS s2,
+                     _xmt_interp_square_size_G_30.a_1 AS s1,
+                     apply("not", apply("<", apply("pos_y", _xmt_sort_square_18.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))) AS G
+                FROM _xmt_sort_square AS _xmt_sort_square_18
+                JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+              UNION ALL
+              -- Join(14)
+              SELECT _xmt_sort_square_17.G AS s1,
+                     _xmt_interp_square_size_G_34.a_1 AS s2,
+                     apply("not", apply("<", apply("pos_y", _xmt_sort_square_17.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))) AS G
+                FROM _xmt_sort_square AS _xmt_sort_square_17
+                JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+              UNION ALL
+              -- Join(14)
+              SELECT _xmt_interp_square_size_G_34.a_1 AS s2,
+                     _xmt_interp_square_size_G_30.a_1 AS s1,
+                     apply("not", apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))) AS G
+                FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+                JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+              UNION ALL
+              -- Join(14)
+              SELECT _xmt_interp_square_size_G_34.a_1 AS s2,
+                     _xmt_interp_square_size_G_30.a_1 AS s1,
+                     apply("not", apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))) AS G
+                FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+                JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30)
+        WHERE G <> "false")
+ GROUP BY s1, s2
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_30.a_1 AS s1,
+       _xmt_interp_square_size_G_34.a_1 AS s2,
+       or_(not_(not_(eq_(_xmt_interp_square_size_G_30.a_1, _xmt_interp_square_size_G_34.a_1))), apply("not", apply("<=", apply("pos_x", _xmt_interp_square_size_G_30.a_1), apply("pos_x", _xmt_interp_square_size_G_34.a_1))), apply("not", apply("<=", apply("pos_y", _xmt_interp_square_size_G_30.a_1), apply("pos_y", _xmt_interp_square_size_G_34.a_1))), apply("not", apply("<", apply("pos_x", _xmt_interp_square_size_G_34.a_1), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))), apply("not", apply("<", apply("pos_x", _xmt_interp_square_size_G_30.a_1), apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))), apply("not", apply("<", apply("pos_y", _xmt_interp_square_size_G_34.a_1), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))), apply("not", apply("<", apply("pos_y", _xmt_interp_square_size_G_30.a_1), apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))), apply("not", apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))), apply("not", apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G)))) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+ WHERE _xmt_interp_square_size_G_30.a_1 != _xmt_interp_square_size_G_34.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_square_size_G_30.a_1 AS s1,
+       _xmt_interp_square_size_G_34.a_1 AS s2,
+       or_(not_(not_(eq_(_xmt_interp_square_size_G_30.a_1, _xmt_interp_square_size_G_34.a_1))), apply("not", apply("<=", apply("pos_x", _xmt_interp_square_size_G_30.a_1), apply("pos_x", _xmt_interp_square_size_G_34.a_1))), apply("not", apply("<=", apply("pos_y", _xmt_interp_square_size_G_30.a_1), apply("pos_y", _xmt_interp_square_size_G_34.a_1))), apply("not", apply("<", apply("pos_x", _xmt_interp_square_size_G_34.a_1), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))), apply("not", apply("<", apply("pos_x", _xmt_interp_square_size_G_30.a_1), apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))), apply("not", apply("<", apply("pos_y", _xmt_interp_square_size_G_34.a_1), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))), apply("not", apply("<", apply("pos_y", _xmt_interp_square_size_G_30.a_1), apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))), apply("not", apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))), apply("not", apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G)))) AS G
+  FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+  JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+
+=== (top) (forall ((s1 Square) (s2 Square)) (or (not (not (= s1 s2))) (not (<= (pos_x s1) (pos_x s2))) (not (<= (pos_y s1) (pos_y s2))) (not (< (pos_x s2) (+ (pos_x s1) (square_size s1)))) (not (< (pos_x s1) (+ (pos_x s2) (square_size s2)))) (not (< (pos_y s2) (+ (pos_y s1) (square_size s1)))) (not (< (pos_y s1) (+ (pos_y s2) (square_size s2)))) (not (<= (+ (pos_x s2) (square_size s2)) (+ (pos_x s1) (square_size s1)))) (not (<= (+ (pos_y s2) (square_size s2)) (+ (pos_y s1) (square_size s1)))))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS s1, NULL AS s2, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_square_size_G_30.a_1 AS s1,
+              _xmt_interp_square_size_G_34.a_1 AS s2,
+              or_(not_(not_(eq_(_xmt_interp_square_size_G_30.a_1, _xmt_interp_square_size_G_34.a_1))), apply("not", apply("<=", apply("pos_x", _xmt_interp_square_size_G_30.a_1), apply("pos_x", _xmt_interp_square_size_G_34.a_1))), apply("not", apply("<=", apply("pos_y", _xmt_interp_square_size_G_30.a_1), apply("pos_y", _xmt_interp_square_size_G_34.a_1))), apply("not", apply("<", apply("pos_x", _xmt_interp_square_size_G_34.a_1), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))), apply("not", apply("<", apply("pos_x", _xmt_interp_square_size_G_30.a_1), apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))), apply("not", apply("<", apply("pos_y", _xmt_interp_square_size_G_34.a_1), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))), apply("not", apply("<", apply("pos_y", _xmt_interp_square_size_G_30.a_1), apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))), apply("not", apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))), apply("not", apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G)))) AS G
+         FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+         JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+        WHERE _xmt_interp_square_size_G_30.a_1 != _xmt_interp_square_size_G_34.a_1)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_interp_square_size_G_30.a_1 AS s1,
+              _xmt_interp_square_size_G_34.a_1 AS s2,
+              or_(not_(not_(eq_(_xmt_interp_square_size_G_30.a_1, _xmt_interp_square_size_G_34.a_1))), apply("not", apply("<=", apply("pos_x", _xmt_interp_square_size_G_30.a_1), apply("pos_x", _xmt_interp_square_size_G_34.a_1))), apply("not", apply("<=", apply("pos_y", _xmt_interp_square_size_G_30.a_1), apply("pos_y", _xmt_interp_square_size_G_34.a_1))), apply("not", apply("<", apply("pos_x", _xmt_interp_square_size_G_34.a_1), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))), apply("not", apply("<", apply("pos_x", _xmt_interp_square_size_G_30.a_1), apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))), apply("not", apply("<", apply("pos_y", _xmt_interp_square_size_G_34.a_1), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))), apply("not", apply("<", apply("pos_y", _xmt_interp_square_size_G_30.a_1), apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))), apply("not", apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))), apply("not", apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G)))) AS G
+         FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+         JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+        WHERE _xmt_interp_square_size_G_30.a_1 != _xmt_interp_square_size_G_34.a_1)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS s1, NULL AS s2, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_square_size_G_30.a_1 AS s1,
+              _xmt_interp_square_size_G_34.a_1 AS s2,
+              or_(not_(not_(eq_(_xmt_interp_square_size_G_30.a_1, _xmt_interp_square_size_G_34.a_1))), apply("not", apply("<=", apply("pos_x", _xmt_interp_square_size_G_30.a_1), apply("pos_x", _xmt_interp_square_size_G_34.a_1))), apply("not", apply("<=", apply("pos_y", _xmt_interp_square_size_G_30.a_1), apply("pos_y", _xmt_interp_square_size_G_34.a_1))), apply("not", apply("<", apply("pos_x", _xmt_interp_square_size_G_34.a_1), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))), apply("not", apply("<", apply("pos_x", _xmt_interp_square_size_G_30.a_1), apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))), apply("not", apply("<", apply("pos_y", _xmt_interp_square_size_G_34.a_1), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))), apply("not", apply("<", apply("pos_y", _xmt_interp_square_size_G_30.a_1), apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G))), apply("not", apply("<=", apply("+", apply("pos_x", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_x", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G))), apply("not", apply("<=", apply("+", apply("pos_y", _xmt_interp_square_size_G_34.a_1), _xmt_interp_square_size_G_34.G), apply("+", apply("pos_y", _xmt_interp_square_size_G_30.a_1), _xmt_interp_square_size_G_30.G)))) AS G
+         FROM _xmt_interp_square_size_G AS _xmt_interp_square_size_G_30
+         JOIN _xmt_interp_square_size_G AS _xmt_interp_square_size_G_34
+        WHERE _xmt_interp_square_size_G_30.a_1 != _xmt_interp_square_size_G_34.a_1)
+
 ===========================================

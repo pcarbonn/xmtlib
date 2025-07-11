@@ -17,11 +17,10 @@ use crate::private::a_sort::{declare_datatype, declare_datatypes, declare_sort, 
 use crate::private::b_fun::{declare_fun, define_fun, define_funs_rec, FunctionObject};
 use crate::private::c_assert::assert_;
 use crate::private::d_interpret::{interpret_pred, interpret_fun};
-use crate::private::e_ground2::e2_generator::Generator;
 use crate::private::e_ground::{ground, Grounding};
 use crate::private::e2_ground_query::TableName;
 use crate::private::e3_ground_sql::Predefined;
-use crate::private::e_ground2::y_db::init_db;
+use crate::private::y_db::init_db;
 use crate::ast::L;
 
 
@@ -86,8 +85,6 @@ pub struct Solver {
     pub(crate) assertions_to_ground: Vec<L<Term>>,
     /// a mapping from a term (top-level?) to a composable representation of its grounding
     pub(crate) groundings: IndexMap<(L<Term>, bool), (Grounding, CanonicalSort)>,
-    /// a mapping from a term to a generator
-    pub(crate) generators: IndexMap<L<Term>, Generator>,
 
     /// to convert interpretations to definitions when given late
     /// (i.e., make an assertion with p, x-ground, interpret p
@@ -252,7 +249,6 @@ impl Solver {
                 function_objects,
                 assertions_to_ground: vec![],
                 groundings: IndexMap::new(),
-                generators: IndexMap::new(),
                 grounded: IndexSet::new(),
                 db_names: IndexSet::new(),
                 converted: IndexSet::new()
@@ -440,14 +436,6 @@ impl Solver {
                                     }
                                     yield_!(Ok("===========================================\n".to_string()))
                                 },
-                                "generators" => {
-                                    yield_!(Ok("Generators:\n".to_string()));
-                                    for (term, generator) in &self.generators {
-                                        let generator = generator.to_sql("");
-                                        yield_!(Ok(format!("=== {term} ======================================\n{generator}\n")))
-                                    }
-                                    yield_!(Ok("===========================================\n".to_string()))
-                                },
                                 _ => yield_!(Err(SolverError::IdentifierError("Unknown 'x-debug solver' parameter\n", obj)))
                             }
                         },
@@ -488,11 +476,6 @@ impl Solver {
                     for res in ground(no, debug, sql, self) {
                         yield_!(res)
                     }
-                    for res in crate::private::e_ground2::e1_ground::ground(no, debug, sql, self) {
-                        yield_!(res)
-                    }
-                    // reset terms to ground
-                    self.assertions_to_ground = vec![];
                 }
 
                 Command::Verbatim(_) => yield_!(self.exec(&command)),

@@ -8,7 +8,7 @@
 (assert (exists ((x Color)) (= x red)))
 (assert (exists ((x Color)) (not (= x red))))
 (x-ground :debug :sql)
-(x-debug solver generators)
+(x-debug solver groundings)
 (x-debug db tables)
 ------- RESULTS ------------------
 (declare-datatype Color ((red) (blue) (green)))
@@ -80,31 +80,244 @@
 ;               WHERE G <> "false"))
 ; WHERE G <> "true"(assert false)
 
-; ==== Query =============================
-;SELECT "true"
-; ==== Query =============================
-;SELECT "true"
-; ==== Query =============================
-;SELECT "true"
-; ==== Query =============================
-;SELECT "true"
-; ==== Query =============================
-;SELECT "true"
-; ==== Query =============================
-;SELECT "true"
-Generators:
-=== (= 2 2 2) ======================================
-TODO: generator
-=== (not (= 2 2)) ======================================
-TODO: generator
-=== (= (= 2 2) (not (= 3 3))) ======================================
-TODO: generator
-=== (and (= 2 2) (not (= 3 3))) ======================================
-TODO: generator
-=== (exists ((x Color)) (= x red)) ======================================
-TODO: generator
-=== (exists ((x Color)) (not (= x red))) ======================================
-TODO: generator
+Groundings:
+===  2 ======================================
+ -- Join(0)
+SELECT 2 AS G
+=== (top) (= 2 2 2) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+
+===  (= 2 2) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+
+=== (top) (not (= 2 2)) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT not_("true") AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT not_("true") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT not_("true") AS G
+
+===  3 ======================================
+ -- Join(0)
+SELECT 3 AS G
+===  (= 3 3) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+
+===  (not (= 3 3)) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT not_("true") AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT not_("true") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT not_("true") AS G
+
+=== (top) (= (= 2 2) (not (= 3 3))) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT eq_("true", not_("true")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT eq_("true", not_("true")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT eq_("true", not_("true")) AS G
+
+=== (top) (= 2 2) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+
+=== (top) (not (= 3 3)) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT not_("true") AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT not_("true") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT not_("true") AS G
+
+=== (top) (and (= 2 2) (not (= 3 3))) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT and_("true", not_("true")) AS G
+----- F ------------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT "true" AS G
+              UNION ALL
+              -- Join(14)
+              SELECT not_("true") AS G)
+        WHERE G <> "true")
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT and_("true", not_("true")) AS G
+
+===  x ======================================
+ -- Join(0)
+SELECT _xmt_sort_color_11.G AS x,
+       _xmt_sort_color_11.G AS G
+  FROM _xmt_sort_color AS _xmt_sort_color_11
+===  red ======================================
+ -- Join(0)
+SELECT "red" AS G
+===  (= x red) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_color_11.G AS x,
+       eq_(_xmt_sort_color_11.G, "red") AS G
+  FROM _xmt_sort_color AS _xmt_sort_color_11
+ WHERE _xmt_sort_color_11.G = "red"
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_color_11.G AS x,
+       eq_(_xmt_sort_color_11.G, "red") AS G
+  FROM _xmt_sort_color AS _xmt_sort_color_11
+ WHERE _xmt_sort_color_11.G != "red"
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_color_11.G AS x,
+       eq_(_xmt_sort_color_11.G, "red") AS G
+  FROM _xmt_sort_color AS _xmt_sort_color_11
+
+=== (top) (exists ((x Color)) (= x red)) ======================================
+----- T ------------------------------------------------------------
+-- Agg (0)
+SELECT or_aggregate(G) as G
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_sort_color_11.G AS x,
+                     eq_(_xmt_sort_color_11.G, "red") AS G
+                FROM _xmt_sort_color AS _xmt_sort_color_11
+               WHERE _xmt_sort_color_11.G = "red")
+        WHERE G <> "false")
+----- F ------------------------------------------------------------
+-- Agg (0)
+SELECT or_aggregate(G) as G
+ FROM (SELECT NULL AS x, "false" AS G 
+       UNION ALL
+       -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_sort_color_11.G AS x,
+                     eq_(_xmt_sort_color_11.G, "red") AS G
+                FROM _xmt_sort_color AS _xmt_sort_color_11
+               WHERE _xmt_sort_color_11.G = "red")
+        WHERE G <> "false")
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT or_aggregate(G) as G
+ FROM (SELECT NULL AS x, "false" AS G 
+       UNION ALL
+       -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_sort_color_11.G AS x,
+                     eq_(_xmt_sort_color_11.G, "red") AS G
+                FROM _xmt_sort_color AS _xmt_sort_color_11
+               WHERE _xmt_sort_color_11.G = "red")
+        WHERE G <> "false")
+
+===  (not (= x red)) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_color_11.G AS x,
+       not_(eq_(_xmt_sort_color_11.G, "red")) AS G
+  FROM _xmt_sort_color AS _xmt_sort_color_11
+ WHERE _xmt_sort_color_11.G = "red"
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_color_11.G AS x,
+       not_(eq_(_xmt_sort_color_11.G, "red")) AS G
+  FROM _xmt_sort_color AS _xmt_sort_color_11
+ WHERE _xmt_sort_color_11.G != "red"
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_color_11.G AS x,
+       not_(eq_(_xmt_sort_color_11.G, "red")) AS G
+  FROM _xmt_sort_color AS _xmt_sort_color_11
+
+=== (top) (exists ((x Color)) (not (= x red))) ======================================
+----- T ------------------------------------------------------------
+-- Agg (0)
+SELECT or_aggregate(G) as G
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_sort_color_11.G AS x,
+                     not_(eq_(_xmt_sort_color_11.G, "red")) AS G
+                FROM _xmt_sort_color AS _xmt_sort_color_11
+               WHERE _xmt_sort_color_11.G = "red")
+        WHERE G <> "false")
+----- F ------------------------------------------------------------
+-- Agg (0)
+SELECT or_aggregate(G) as G
+ FROM (SELECT NULL AS x, "false" AS G 
+       UNION ALL
+       -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_sort_color_11.G AS x,
+                     not_(eq_(_xmt_sort_color_11.G, "red")) AS G
+                FROM _xmt_sort_color AS _xmt_sort_color_11
+               WHERE _xmt_sort_color_11.G = "red")
+        WHERE G <> "false")
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT or_aggregate(G) as G
+ FROM (SELECT NULL AS x, "false" AS G 
+       UNION ALL
+       -- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_sort_color_11.G AS x,
+                     not_(eq_(_xmt_sort_color_11.G, "red")) AS G
+                FROM _xmt_sort_color AS _xmt_sort_color_11
+               WHERE _xmt_sort_color_11.G = "red")
+        WHERE G <> "false")
+
 ===========================================
 Tables and Views:
  - Bool (table)

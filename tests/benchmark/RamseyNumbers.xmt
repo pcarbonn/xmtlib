@@ -30,7 +30,7 @@
                           )))))
 
 (x-ground :debug :sql)
-(x-debug solver generators)
+(x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-fun Node (Int) Bool)
 (declare-fun blue (Int Int) Bool)
@@ -113,21 +113,1751 @@
 ;         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24
 ;         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_27
 ;         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_30)
-; ==== Query =============================
-;SELECT "true"
-; ==== Query =============================
-;SELECT "true"
-; ==== Query =============================
-;SELECT "true"
-; ==== Query =============================
-;SELECT "true"
-Generators:
-=== (forall ((x Int) (y Int)) (or (not (Node x)) (not (Node y)) (= (< x y) (or (red x y) (blue x y))))) ======================================
-TODO: generator
-=== (forall ((x Int) (y Int)) (or (not (Node x)) (not (Node y)) (not (red x y)) (not (blue x y)))) ======================================
-TODO: generator
-=== (forall ((X Int) (W Int) (Y Int) (Z Int) (T Int)) (or (not (Node X)) (not (Node W)) (not (Node Y)) (not (Node Z)) (not (Node T)) (not (< W X Y Z T)) (not (red W X)) (not (red X Y)) (not (red Y Z)) (not (red Z T)) (not (red W Y)) (not (red W Z)) (not (red W T)) (not (red X Z)) (not (red X T)) (not (red Y T)))) ======================================
-TODO: generator
-=== (forall ((X Int) (W Int) (Y Int) (Z Int) (T Int)) (or (not (Node X)) (not (Node W)) (not (Node Y)) (not (Node Z)) (not (Node T)) (not (< W X Y Z T)) (not (blue W X)) (not (blue X Y)) (not (blue Y Z)) (not (blue Z T)) (not (blue W Y)) (not (blue W Z)) (not (blue W T)) (not (blue X Z)) (not (blue X T)) (not (blue Y T)))) ======================================
-TODO: generator
+Groundings:
+===  x ======================================
+ -- Join(0)
+SELECT "x" AS x,
+       "x" AS G
+===  (Node x) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_node_TU_1.a_1 AS x,
+       "true" AS G
+  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("Node", "x") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("Node", "x") AS G
+
+===  (not (Node x)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("not", apply("Node", "x")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_node_TU_1.a_1 AS x,
+       "false" AS G
+  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       apply("not", apply("Node", "x")) AS G
+
+===  y ======================================
+ -- Join(0)
+SELECT "y" AS y,
+       "y" AS G
+===  (Node y) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_node_TU_4.a_1 AS y,
+       "true" AS G
+  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_4
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "y" AS y,
+       apply("Node", "y") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "y" AS y,
+       apply("Node", "y") AS G
+
+===  (not (Node y)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "y" AS y,
+       apply("not", apply("Node", "y")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_node_TU_4.a_1 AS y,
+       "false" AS G
+  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_4
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "y" AS y,
+       apply("not", apply("Node", "y")) AS G
+
+===  (< x y) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("<", "x", "y") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("<", "x", "y") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("<", "x", "y") AS G
+
+===  (red x y) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("red", "x", "y") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("red", "x", "y") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("red", "x", "y") AS G
+
+===  (blue x y) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("blue", "x", "y") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("blue", "x", "y") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("blue", "x", "y") AS G
+
+===  (or (red x y) (blue x y)) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT x, y,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("red", "x", "y") AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("blue", "x", "y") AS G)
+ GROUP BY x, y
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       or_(apply("red", "x", "y"), apply("blue", "x", "y")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       or_(apply("red", "x", "y"), apply("blue", "x", "y")) AS G
+
+===  (= (< x y) (or (red x y) (blue x y))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("=", apply("<", "x", "y"), or_(apply("red", "x", "y"), apply("blue", "x", "y"))) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT Outer_0.x AS x,
+       Outer_0.y AS y,
+       bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+  FROM (-- Join(8)
+        SELECT "x" AS x,
+               "y" AS y,
+               apply("<", "x", "y") AS G
+        ) AS Outer_0
+  FULL JOIN (-- Join(8)
+        SELECT "x" AS x,
+               "y" AS y,
+               or_(apply("red", "x", "y"), apply("blue", "x", "y")) AS G
+        ) AS Outer_1 ON  Outer_1.x = Outer_0.x 
+        AND  Outer_1.y = Outer_0.y
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("=", apply("<", "x", "y"), or_(apply("red", "x", "y"), apply("blue", "x", "y"))) AS G
+
+===  (or (not (Node x)) (not (Node y)) (= (< x y) (or (red x y) (blue x y)))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT x, y,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("not", apply("Node", "x")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("not", apply("Node", "y")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("=", apply("<", "x", "y"), or_(apply("red", "x", "y"), apply("blue", "x", "y"))) AS G)
+ GROUP BY x, y
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_node_TU_1.a_1 AS x,
+       _xmt_interp_node_TU_4.a_1 AS y,
+       _xmt_view__10_19.G AS G
+  FROM (-- Join(8)
+        SELECT Outer_0.x AS x,
+               Outer_0.y AS y,
+               bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+          FROM (-- Join(16)
+                SELECT _xmt_interp_node_TU_1.a_1 AS x,
+                       _xmt_interp_node_TU_4.a_1 AS y,
+                       compare_("<", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1) AS G
+                  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+                  JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
+                ) AS Outer_0
+          FULL JOIN (-- Join(16)
+                SELECT _xmt_interp_node_TU_1.a_1 AS x,
+                       _xmt_interp_node_TU_4.a_1 AS y,
+                       or_(apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1), apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)) AS G
+                  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+                  JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
+                ) AS Outer_1 ON  Outer_1.x = Outer_0.x 
+                AND  Outer_1.y = Outer_0.y
+        ) AS _xmt_view__10_19
+  JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+  JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
+ WHERE  _xmt_view__10_19.x = _xmt_interp_node_TU_1.a_1 
+        AND  _xmt_view__10_19.y = _xmt_interp_node_TU_4.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       or_(apply("not", apply("Node", "x")), apply("not", apply("Node", "y")), apply("=", apply("<", "x", "y"), or_(apply("red", "x", "y"), apply("blue", "x", "y")))) AS G
+
+=== (top) (forall ((x Int) (y Int)) (or (not (Node x)) (not (Node y)) (= (< x y) (or (red x y) (blue x y))))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_node_TU_1.a_1 AS x,
+              _xmt_interp_node_TU_4.a_1 AS y,
+              _xmt_view__10_19.G AS G
+         FROM (-- Join(15)
+               SELECT Outer_0.x AS x,
+                      Outer_0.y AS y,
+                      bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+                 FROM (-- Join(23)
+                       SELECT _xmt_interp_node_TU_1.a_1 AS x,
+                              _xmt_interp_node_TU_4.a_1 AS y,
+                              compare_("<", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1) AS G
+                         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+                         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
+                       ) AS Outer_0
+                 FULL JOIN (-- Join(23)
+                       SELECT _xmt_interp_node_TU_1.a_1 AS x,
+                              _xmt_interp_node_TU_4.a_1 AS y,
+                              or_(apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1), apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)) AS G
+                         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+                         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
+                       ) AS Outer_1 ON  Outer_1.x = Outer_0.x 
+                       AND  Outer_1.y = Outer_0.y
+               ) AS _xmt_view__10_19
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
+        WHERE  _xmt_view__10_19.x = _xmt_interp_node_TU_1.a_1 
+               AND  _xmt_view__10_19.y = _xmt_interp_node_TU_4.a_1)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_interp_node_TU_1.a_1 AS x,
+              _xmt_interp_node_TU_4.a_1 AS y,
+              _xmt_view__10_19.G AS G
+         FROM (-- Join(15)
+               SELECT Outer_0.x AS x,
+                      Outer_0.y AS y,
+                      bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+                 FROM (-- Join(23)
+                       SELECT _xmt_interp_node_TU_1.a_1 AS x,
+                              _xmt_interp_node_TU_4.a_1 AS y,
+                              compare_("<", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1) AS G
+                         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+                         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
+                       ) AS Outer_0
+                 FULL JOIN (-- Join(23)
+                       SELECT _xmt_interp_node_TU_1.a_1 AS x,
+                              _xmt_interp_node_TU_4.a_1 AS y,
+                              or_(apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1), apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)) AS G
+                         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+                         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
+                       ) AS Outer_1 ON  Outer_1.x = Outer_0.x 
+                       AND  Outer_1.y = Outer_0.y
+               ) AS _xmt_view__10_19
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
+        WHERE  _xmt_view__10_19.x = _xmt_interp_node_TU_1.a_1 
+               AND  _xmt_view__10_19.y = _xmt_interp_node_TU_4.a_1)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_node_TU_1.a_1 AS x,
+              _xmt_interp_node_TU_4.a_1 AS y,
+              _xmt_view__10_19.G AS G
+         FROM (-- Join(15)
+               SELECT Outer_0.x AS x,
+                      Outer_0.y AS y,
+                      bool_eq_("true", Outer_0.G, Outer_1.G) AS G
+                 FROM (-- Join(23)
+                       SELECT _xmt_interp_node_TU_1.a_1 AS x,
+                              _xmt_interp_node_TU_4.a_1 AS y,
+                              compare_("<", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1) AS G
+                         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+                         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
+                       ) AS Outer_0
+                 FULL JOIN (-- Join(23)
+                       SELECT _xmt_interp_node_TU_1.a_1 AS x,
+                              _xmt_interp_node_TU_4.a_1 AS y,
+                              or_(apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1), apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)) AS G
+                         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+                         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
+                       ) AS Outer_1 ON  Outer_1.x = Outer_0.x 
+                       AND  Outer_1.y = Outer_0.y
+               ) AS _xmt_view__10_19
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
+        WHERE  _xmt_view__10_19.x = _xmt_interp_node_TU_1.a_1 
+               AND  _xmt_view__10_19.y = _xmt_interp_node_TU_4.a_1)
+
+===  (not (red x y)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("not", apply("red", "x", "y")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("not", apply("red", "x", "y")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("not", apply("red", "x", "y")) AS G
+
+===  (not (blue x y)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("not", apply("blue", "x", "y")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("not", apply("blue", "x", "y")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       apply("not", apply("blue", "x", "y")) AS G
+
+===  (or (not (Node x)) (not (Node y)) (not (red x y)) (not (blue x y))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT x, y,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("not", apply("Node", "x")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("not", apply("Node", "y")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("not", apply("red", "x", "y")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "x" AS x,
+              "y" AS y,
+              apply("not", apply("blue", "x", "y")) AS G)
+ GROUP BY x, y
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_node_TU_1.a_1 AS x,
+       _xmt_interp_node_TU_4.a_1 AS y,
+       or_(apply("not", apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1))) AS G
+  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+  JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "x" AS x,
+       "y" AS y,
+       or_(apply("not", apply("Node", "x")), apply("not", apply("Node", "y")), apply("not", apply("red", "x", "y")), apply("not", apply("blue", "x", "y"))) AS G
+
+=== (top) (forall ((x Int) (y Int)) (or (not (Node x)) (not (Node y)) (not (red x y)) (not (blue x y)))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_node_TU_1.a_1 AS x,
+              _xmt_interp_node_TU_4.a_1 AS y,
+              or_(apply("not", apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1))) AS G
+         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_interp_node_TU_1.a_1 AS x,
+              _xmt_interp_node_TU_4.a_1 AS y,
+              or_(apply("not", apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1))) AS G
+         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_node_TU_1.a_1 AS x,
+              _xmt_interp_node_TU_4.a_1 AS y,
+              or_(apply("not", apply("red", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_1.a_1, _xmt_interp_node_TU_4.a_1))) AS G
+         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_1
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_4)
+
+===  X ======================================
+ -- Join(0)
+SELECT "X" AS X,
+       "X" AS G
+===  (Node X) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_node_TU_18.a_1 AS X,
+       "true" AS G
+  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       apply("Node", "X") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       apply("Node", "X") AS G
+
+===  (not (Node X)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       apply("not", apply("Node", "X")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_node_TU_18.a_1 AS X,
+       "false" AS G
+  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       apply("not", apply("Node", "X")) AS G
+
+===  W ======================================
+ -- Join(0)
+SELECT "W" AS W,
+       "W" AS G
+===  (Node W) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_node_TU_21.a_1 AS W,
+       "true" AS G
+  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_21
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       apply("Node", "W") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       apply("Node", "W") AS G
+
+===  (not (Node W)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       apply("not", apply("Node", "W")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_node_TU_21.a_1 AS W,
+       "false" AS G
+  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_21
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       apply("not", apply("Node", "W")) AS G
+
+===  Y ======================================
+ -- Join(0)
+SELECT "Y" AS Y,
+       "Y" AS G
+===  (Node Y) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_node_TU_24.a_1 AS Y,
+       "true" AS G
+  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_24
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       apply("Node", "Y") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       apply("Node", "Y") AS G
+
+===  (not (Node Y)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       apply("not", apply("Node", "Y")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_node_TU_24.a_1 AS Y,
+       "false" AS G
+  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_24
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       apply("not", apply("Node", "Y")) AS G
+
+===  Z ======================================
+ -- Join(0)
+SELECT "Z" AS Z,
+       "Z" AS G
+===  (Node Z) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_node_TU_27.a_1 AS Z,
+       "true" AS G
+  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_27
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "Z" AS Z,
+       apply("Node", "Z") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "Z" AS Z,
+       apply("Node", "Z") AS G
+
+===  (not (Node Z)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "Z" AS Z,
+       apply("not", apply("Node", "Z")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_node_TU_27.a_1 AS Z,
+       "false" AS G
+  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_27
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "Z" AS Z,
+       apply("not", apply("Node", "Z")) AS G
+
+===  T ======================================
+ -- Join(0)
+SELECT "T" AS T,
+       "T" AS G
+===  (Node T) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_node_TU_30.a_1 AS T,
+       "true" AS G
+  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_30
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "T" AS T,
+       apply("Node", "T") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "T" AS T,
+       apply("Node", "T") AS G
+
+===  (not (Node T)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "T" AS T,
+       apply("not", apply("Node", "T")) AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_node_TU_30.a_1 AS T,
+       "false" AS G
+  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_30
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "T" AS T,
+       apply("not", apply("Node", "T")) AS G
+
+===  (< W X Y Z T) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "X" AS X,
+       "Y" AS Y,
+       "Z" AS Z,
+       "T" AS T,
+       apply("<", "W", "X", "Y", "Z", "T") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "X" AS X,
+       "Y" AS Y,
+       "Z" AS Z,
+       "T" AS T,
+       apply("<", "W", "X", "Y", "Z", "T") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "X" AS X,
+       "Y" AS Y,
+       "Z" AS Z,
+       "T" AS T,
+       apply("<", "W", "X", "Y", "Z", "T") AS G
+
+===  (not (< W X Y Z T)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "X" AS X,
+       "Y" AS Y,
+       "Z" AS Z,
+       "T" AS T,
+       apply("not", apply("<", "W", "X", "Y", "Z", "T")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "X" AS X,
+       "Y" AS Y,
+       "Z" AS Z,
+       "T" AS T,
+       apply("not", apply("<", "W", "X", "Y", "Z", "T")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "X" AS X,
+       "Y" AS Y,
+       "Z" AS Z,
+       "T" AS T,
+       apply("not", apply("<", "W", "X", "Y", "Z", "T")) AS G
+
+===  (red W X) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "X" AS X,
+       apply("red", "W", "X") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "X" AS X,
+       apply("red", "W", "X") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "X" AS X,
+       apply("red", "W", "X") AS G
+
+===  (not (red W X)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "X" AS X,
+       apply("not", apply("red", "W", "X")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "X" AS X,
+       apply("not", apply("red", "W", "X")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "X" AS X,
+       apply("not", apply("red", "W", "X")) AS G
+
+===  (red X Y) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Y" AS Y,
+       apply("red", "X", "Y") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Y" AS Y,
+       apply("red", "X", "Y") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Y" AS Y,
+       apply("red", "X", "Y") AS G
+
+===  (not (red X Y)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Y" AS Y,
+       apply("not", apply("red", "X", "Y")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Y" AS Y,
+       apply("not", apply("red", "X", "Y")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Y" AS Y,
+       apply("not", apply("red", "X", "Y")) AS G
+
+===  (red Y Z) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "Z" AS Z,
+       apply("red", "Y", "Z") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "Z" AS Z,
+       apply("red", "Y", "Z") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "Z" AS Z,
+       apply("red", "Y", "Z") AS G
+
+===  (not (red Y Z)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "Z" AS Z,
+       apply("not", apply("red", "Y", "Z")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "Z" AS Z,
+       apply("not", apply("red", "Y", "Z")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "Z" AS Z,
+       apply("not", apply("red", "Y", "Z")) AS G
+
+===  (red Z T) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "Z" AS Z,
+       "T" AS T,
+       apply("red", "Z", "T") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "Z" AS Z,
+       "T" AS T,
+       apply("red", "Z", "T") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "Z" AS Z,
+       "T" AS T,
+       apply("red", "Z", "T") AS G
+
+===  (not (red Z T)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "Z" AS Z,
+       "T" AS T,
+       apply("not", apply("red", "Z", "T")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "Z" AS Z,
+       "T" AS T,
+       apply("not", apply("red", "Z", "T")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "Z" AS Z,
+       "T" AS T,
+       apply("not", apply("red", "Z", "T")) AS G
+
+===  (red W Y) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Y" AS Y,
+       apply("red", "W", "Y") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Y" AS Y,
+       apply("red", "W", "Y") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Y" AS Y,
+       apply("red", "W", "Y") AS G
+
+===  (not (red W Y)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Y" AS Y,
+       apply("not", apply("red", "W", "Y")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Y" AS Y,
+       apply("not", apply("red", "W", "Y")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Y" AS Y,
+       apply("not", apply("red", "W", "Y")) AS G
+
+===  (red W Z) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Z" AS Z,
+       apply("red", "W", "Z") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Z" AS Z,
+       apply("red", "W", "Z") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Z" AS Z,
+       apply("red", "W", "Z") AS G
+
+===  (not (red W Z)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Z" AS Z,
+       apply("not", apply("red", "W", "Z")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Z" AS Z,
+       apply("not", apply("red", "W", "Z")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Z" AS Z,
+       apply("not", apply("red", "W", "Z")) AS G
+
+===  (red W T) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "T" AS T,
+       apply("red", "W", "T") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "T" AS T,
+       apply("red", "W", "T") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "T" AS T,
+       apply("red", "W", "T") AS G
+
+===  (not (red W T)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "T" AS T,
+       apply("not", apply("red", "W", "T")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "T" AS T,
+       apply("not", apply("red", "W", "T")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "T" AS T,
+       apply("not", apply("red", "W", "T")) AS G
+
+===  (red X Z) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Z" AS Z,
+       apply("red", "X", "Z") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Z" AS Z,
+       apply("red", "X", "Z") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Z" AS Z,
+       apply("red", "X", "Z") AS G
+
+===  (not (red X Z)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Z" AS Z,
+       apply("not", apply("red", "X", "Z")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Z" AS Z,
+       apply("not", apply("red", "X", "Z")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Z" AS Z,
+       apply("not", apply("red", "X", "Z")) AS G
+
+===  (red X T) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "T" AS T,
+       apply("red", "X", "T") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "T" AS T,
+       apply("red", "X", "T") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "T" AS T,
+       apply("red", "X", "T") AS G
+
+===  (not (red X T)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "T" AS T,
+       apply("not", apply("red", "X", "T")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "T" AS T,
+       apply("not", apply("red", "X", "T")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "T" AS T,
+       apply("not", apply("red", "X", "T")) AS G
+
+===  (red Y T) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "T" AS T,
+       apply("red", "Y", "T") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "T" AS T,
+       apply("red", "Y", "T") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "T" AS T,
+       apply("red", "Y", "T") AS G
+
+===  (not (red Y T)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "T" AS T,
+       apply("not", apply("red", "Y", "T")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "T" AS T,
+       apply("not", apply("red", "Y", "T")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "T" AS T,
+       apply("not", apply("red", "Y", "T")) AS G
+
+===  (or (not (Node X)) (not (Node W)) (not (Node Y)) (not (Node Z)) (not (Node T)) (not (< W X Y Z T)) (not (red W X)) (not (red X Y)) (not (red Y Z)) (not (red Z T)) (not (red W Y)) (not (red W Z)) (not (red W T)) (not (red X Z)) (not (red X T)) (not (red Y T))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT X, W, Y, Z, T,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("Node", "X")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("Node", "W")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("Node", "Y")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("Node", "Z")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("Node", "T")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("<", "W", "X", "Y", "Z", "T")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("red", "W", "X")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("red", "X", "Y")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("red", "Y", "Z")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("red", "Z", "T")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("red", "W", "Y")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("red", "W", "Z")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("red", "W", "T")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("red", "X", "Z")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("red", "X", "T")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("red", "Y", "T")) AS G)
+ GROUP BY X, W, Y, Z, T
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_node_TU_18.a_1 AS X,
+       _xmt_interp_node_TU_21.a_1 AS W,
+       _xmt_interp_node_TU_24.a_1 AS Y,
+       _xmt_interp_node_TU_27.a_1 AS Z,
+       _xmt_interp_node_TU_30.a_1 AS T,
+       or_(not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
+  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
+  JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_21
+  JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24
+  JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_27
+  JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_30
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "W" AS W,
+       "Y" AS Y,
+       "Z" AS Z,
+       "T" AS T,
+       or_(apply("not", apply("Node", "X")), apply("not", apply("Node", "W")), apply("not", apply("Node", "Y")), apply("not", apply("Node", "Z")), apply("not", apply("Node", "T")), apply("not", apply("<", "W", "X", "Y", "Z", "T")), apply("not", apply("red", "W", "X")), apply("not", apply("red", "X", "Y")), apply("not", apply("red", "Y", "Z")), apply("not", apply("red", "Z", "T")), apply("not", apply("red", "W", "Y")), apply("not", apply("red", "W", "Z")), apply("not", apply("red", "W", "T")), apply("not", apply("red", "X", "Z")), apply("not", apply("red", "X", "T")), apply("not", apply("red", "Y", "T"))) AS G
+
+=== (top) (forall ((X Int) (W Int) (Y Int) (Z Int) (T Int)) (or (not (Node X)) (not (Node W)) (not (Node Y)) (not (Node Z)) (not (Node T)) (not (< W X Y Z T)) (not (red W X)) (not (red X Y)) (not (red Y Z)) (not (red Z T)) (not (red W Y)) (not (red W Z)) (not (red W T)) (not (red X Z)) (not (red X T)) (not (red Y T)))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS X, NULL AS W, NULL AS Y, NULL AS Z, NULL AS T, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_node_TU_18.a_1 AS X,
+              _xmt_interp_node_TU_21.a_1 AS W,
+              _xmt_interp_node_TU_24.a_1 AS Y,
+              _xmt_interp_node_TU_27.a_1 AS Z,
+              _xmt_interp_node_TU_30.a_1 AS T,
+              or_(not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
+         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_21
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_27
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_30)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_interp_node_TU_18.a_1 AS X,
+              _xmt_interp_node_TU_21.a_1 AS W,
+              _xmt_interp_node_TU_24.a_1 AS Y,
+              _xmt_interp_node_TU_27.a_1 AS Z,
+              _xmt_interp_node_TU_30.a_1 AS T,
+              or_(not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
+         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_21
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_27
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_30)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS X, NULL AS W, NULL AS Y, NULL AS Z, NULL AS T, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_node_TU_18.a_1 AS X,
+              _xmt_interp_node_TU_21.a_1 AS W,
+              _xmt_interp_node_TU_24.a_1 AS Y,
+              _xmt_interp_node_TU_27.a_1 AS Z,
+              _xmt_interp_node_TU_30.a_1 AS T,
+              or_(not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("red", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("red", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
+         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_21
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_27
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_30)
+
+===  (blue W X) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "X" AS X,
+       apply("blue", "W", "X") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "X" AS X,
+       apply("blue", "W", "X") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "X" AS X,
+       apply("blue", "W", "X") AS G
+
+===  (not (blue W X)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "X" AS X,
+       apply("not", apply("blue", "W", "X")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "X" AS X,
+       apply("not", apply("blue", "W", "X")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "X" AS X,
+       apply("not", apply("blue", "W", "X")) AS G
+
+===  (blue X Y) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Y" AS Y,
+       apply("blue", "X", "Y") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Y" AS Y,
+       apply("blue", "X", "Y") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Y" AS Y,
+       apply("blue", "X", "Y") AS G
+
+===  (not (blue X Y)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Y" AS Y,
+       apply("not", apply("blue", "X", "Y")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Y" AS Y,
+       apply("not", apply("blue", "X", "Y")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Y" AS Y,
+       apply("not", apply("blue", "X", "Y")) AS G
+
+===  (blue Y Z) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "Z" AS Z,
+       apply("blue", "Y", "Z") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "Z" AS Z,
+       apply("blue", "Y", "Z") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "Z" AS Z,
+       apply("blue", "Y", "Z") AS G
+
+===  (not (blue Y Z)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "Z" AS Z,
+       apply("not", apply("blue", "Y", "Z")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "Z" AS Z,
+       apply("not", apply("blue", "Y", "Z")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "Z" AS Z,
+       apply("not", apply("blue", "Y", "Z")) AS G
+
+===  (blue Z T) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "Z" AS Z,
+       "T" AS T,
+       apply("blue", "Z", "T") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "Z" AS Z,
+       "T" AS T,
+       apply("blue", "Z", "T") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "Z" AS Z,
+       "T" AS T,
+       apply("blue", "Z", "T") AS G
+
+===  (not (blue Z T)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "Z" AS Z,
+       "T" AS T,
+       apply("not", apply("blue", "Z", "T")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "Z" AS Z,
+       "T" AS T,
+       apply("not", apply("blue", "Z", "T")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "Z" AS Z,
+       "T" AS T,
+       apply("not", apply("blue", "Z", "T")) AS G
+
+===  (blue W Y) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Y" AS Y,
+       apply("blue", "W", "Y") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Y" AS Y,
+       apply("blue", "W", "Y") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Y" AS Y,
+       apply("blue", "W", "Y") AS G
+
+===  (not (blue W Y)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Y" AS Y,
+       apply("not", apply("blue", "W", "Y")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Y" AS Y,
+       apply("not", apply("blue", "W", "Y")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Y" AS Y,
+       apply("not", apply("blue", "W", "Y")) AS G
+
+===  (blue W Z) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Z" AS Z,
+       apply("blue", "W", "Z") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Z" AS Z,
+       apply("blue", "W", "Z") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Z" AS Z,
+       apply("blue", "W", "Z") AS G
+
+===  (not (blue W Z)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Z" AS Z,
+       apply("not", apply("blue", "W", "Z")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Z" AS Z,
+       apply("not", apply("blue", "W", "Z")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "Z" AS Z,
+       apply("not", apply("blue", "W", "Z")) AS G
+
+===  (blue W T) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "T" AS T,
+       apply("blue", "W", "T") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "T" AS T,
+       apply("blue", "W", "T") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "T" AS T,
+       apply("blue", "W", "T") AS G
+
+===  (not (blue W T)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "T" AS T,
+       apply("not", apply("blue", "W", "T")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "T" AS T,
+       apply("not", apply("blue", "W", "T")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "W" AS W,
+       "T" AS T,
+       apply("not", apply("blue", "W", "T")) AS G
+
+===  (blue X Z) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Z" AS Z,
+       apply("blue", "X", "Z") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Z" AS Z,
+       apply("blue", "X", "Z") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Z" AS Z,
+       apply("blue", "X", "Z") AS G
+
+===  (not (blue X Z)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Z" AS Z,
+       apply("not", apply("blue", "X", "Z")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Z" AS Z,
+       apply("not", apply("blue", "X", "Z")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "Z" AS Z,
+       apply("not", apply("blue", "X", "Z")) AS G
+
+===  (blue X T) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "T" AS T,
+       apply("blue", "X", "T") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "T" AS T,
+       apply("blue", "X", "T") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "T" AS T,
+       apply("blue", "X", "T") AS G
+
+===  (not (blue X T)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "T" AS T,
+       apply("not", apply("blue", "X", "T")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "T" AS T,
+       apply("not", apply("blue", "X", "T")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "T" AS T,
+       apply("not", apply("blue", "X", "T")) AS G
+
+===  (blue Y T) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "T" AS T,
+       apply("blue", "Y", "T") AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "T" AS T,
+       apply("blue", "Y", "T") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "T" AS T,
+       apply("blue", "Y", "T") AS G
+
+===  (not (blue Y T)) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "T" AS T,
+       apply("not", apply("blue", "Y", "T")) AS G
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "T" AS T,
+       apply("not", apply("blue", "Y", "T")) AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "Y" AS Y,
+       "T" AS T,
+       apply("not", apply("blue", "Y", "T")) AS G
+
+===  (or (not (Node X)) (not (Node W)) (not (Node Y)) (not (Node Z)) (not (Node T)) (not (< W X Y Z T)) (not (blue W X)) (not (blue X Y)) (not (blue Y Z)) (not (blue Z T)) (not (blue W Y)) (not (blue W Z)) (not (blue W T)) (not (blue X Z)) (not (blue X T)) (not (blue Y T))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT X, W, Y, Z, T,
+       or_aggregate(G) as G
+ FROM (-- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("Node", "X")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("Node", "W")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("Node", "Y")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("Node", "Z")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("Node", "T")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("<", "W", "X", "Y", "Z", "T")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("blue", "W", "X")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("blue", "X", "Y")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("blue", "Y", "Z")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("blue", "Z", "T")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("blue", "W", "Y")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("blue", "W", "Z")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("blue", "W", "T")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("blue", "X", "Z")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("blue", "X", "T")) AS G
+       UNION ALL
+       -- Join(7)
+       SELECT "X" AS X,
+              "W" AS W,
+              "Y" AS Y,
+              "Z" AS Z,
+              "T" AS T,
+              apply("not", apply("blue", "Y", "T")) AS G)
+ GROUP BY X, W, Y, Z, T
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_node_TU_18.a_1 AS X,
+       _xmt_interp_node_TU_21.a_1 AS W,
+       _xmt_interp_node_TU_24.a_1 AS Y,
+       _xmt_interp_node_TU_27.a_1 AS Z,
+       _xmt_interp_node_TU_30.a_1 AS T,
+       or_(not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
+  FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
+  JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_21
+  JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24
+  JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_27
+  JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_30
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT "X" AS X,
+       "W" AS W,
+       "Y" AS Y,
+       "Z" AS Z,
+       "T" AS T,
+       or_(apply("not", apply("Node", "X")), apply("not", apply("Node", "W")), apply("not", apply("Node", "Y")), apply("not", apply("Node", "Z")), apply("not", apply("Node", "T")), apply("not", apply("<", "W", "X", "Y", "Z", "T")), apply("not", apply("blue", "W", "X")), apply("not", apply("blue", "X", "Y")), apply("not", apply("blue", "Y", "Z")), apply("not", apply("blue", "Z", "T")), apply("not", apply("blue", "W", "Y")), apply("not", apply("blue", "W", "Z")), apply("not", apply("blue", "W", "T")), apply("not", apply("blue", "X", "Z")), apply("not", apply("blue", "X", "T")), apply("not", apply("blue", "Y", "T"))) AS G
+
+=== (top) (forall ((X Int) (W Int) (Y Int) (Z Int) (T Int)) (or (not (Node X)) (not (Node W)) (not (Node Y)) (not (Node Z)) (not (Node T)) (not (< W X Y Z T)) (not (blue W X)) (not (blue X Y)) (not (blue Y Z)) (not (blue Z T)) (not (blue W Y)) (not (blue W Z)) (not (blue W T)) (not (blue X Z)) (not (blue X T)) (not (blue Y T)))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS X, NULL AS W, NULL AS Y, NULL AS Z, NULL AS T, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_node_TU_18.a_1 AS X,
+              _xmt_interp_node_TU_21.a_1 AS W,
+              _xmt_interp_node_TU_24.a_1 AS Y,
+              _xmt_interp_node_TU_27.a_1 AS Z,
+              _xmt_interp_node_TU_30.a_1 AS T,
+              or_(not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
+         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_21
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_27
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_30)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_interp_node_TU_18.a_1 AS X,
+              _xmt_interp_node_TU_21.a_1 AS W,
+              _xmt_interp_node_TU_24.a_1 AS Y,
+              _xmt_interp_node_TU_27.a_1 AS Z,
+              _xmt_interp_node_TU_30.a_1 AS T,
+              or_(not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
+         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_21
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_27
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_30)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS X, NULL AS W, NULL AS Y, NULL AS Z, NULL AS T, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_interp_node_TU_18.a_1 AS X,
+              _xmt_interp_node_TU_21.a_1 AS W,
+              _xmt_interp_node_TU_24.a_1 AS Y,
+              _xmt_interp_node_TU_27.a_1 AS Z,
+              _xmt_interp_node_TU_30.a_1 AS T,
+              or_(not_(compare_("<", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_18.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_27.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_24.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_21.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_27.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_18.a_1, _xmt_interp_node_TU_30.a_1)), apply("not", apply("blue", _xmt_interp_node_TU_24.a_1, _xmt_interp_node_TU_30.a_1))) AS G
+         FROM _xmt_interp_node_TU AS _xmt_interp_node_TU_18
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_21
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_24
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_27
+         JOIN _xmt_interp_node_TU AS _xmt_interp_node_TU_30)
+
 ===========================================

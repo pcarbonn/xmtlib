@@ -21,7 +21,7 @@
 (x-debug solver functions)
 (x-debug db _xmt_interp_p_G)
 (x-debug db _xmt_tester_sort_8_left_g)
-(x-debug solver generators)
+(x-debug solver groundings)
 (check-sat)
 ------- RESULTS ------------------
 (declare-datatype Color ((red) (blue) (green)))
@@ -65,18 +65,6 @@
 ;        WHERE "red" != _xmt_selector_sort_8_b_g_13.G 
 ;              AND construct2("Left", "red") = _xmt_selector_sort_8_b_g_13.a_1)
 ; WHERE G <> "true"
-; ==== Query =============================
-;SELECT "true"
-; ==== Query =============================
-;SELECT "true"
-; ==== Query =============================
-;SELECT "true"
-; ==== Query =============================
-;SELECT "true"
-; ==== Query =============================
-;SELECT "true"
-; ==== Query =============================
-;SELECT "true"
 Tables and Views:
  - Bool (table)
  - _xmt_sort_color (table)
@@ -225,18 +213,147 @@ Functions2:
 ├────────────────────────────┼─────────┤
 │ " (Right red)"             │ "false" │
 └────────────────────────────┴─────────┘
-Generators:
-=== (p (Right red)) ======================================
-TODO: generator
-=== (p  (as nil (Either Color))) ======================================
-TODO: generator
-=== (not (p (Left red))) ======================================
-TODO: generator
-=== ((_ is nil)  (as nil (Either Material))) ======================================
-TODO: generator
-=== ((_ is Left) (Left blue)) ======================================
-TODO: generator
-=== (= red (b (Left red))) ======================================
-TODO: generator
+Groundings:
+===  red ======================================
+ -- Join(0)
+SELECT "red" AS G
+===  (Right red) ======================================
+ -- Join(0)
+SELECT construct2("Right", "red") AS G
+=== (top) (p (Right red)) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+  FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_2
+ WHERE construct2("Right", "red") = _xmt_interp_p_TU_2.a_1
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT "false" AS G
+  FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_2
+ WHERE construct2("Right", "red") = _xmt_interp_p_UF_2.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_p_G_2.G AS G
+  FROM _xmt_interp_p_G AS _xmt_interp_p_G_2
+ WHERE construct2("Right", "red") = _xmt_interp_p_G_2.a_1
+
+===   (as nil (Either Color)) ======================================
+ -- Join(0)
+SELECT " (as nil (Either Color))" AS G
+=== (top) (p  (as nil (Either Color))) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+  FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_4
+ WHERE " (as nil (Either Color))" = _xmt_interp_p_TU_4.a_1
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT "false" AS G
+  FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_4
+ WHERE " (as nil (Either Color))" = _xmt_interp_p_UF_4.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_p_G_4.G AS G
+  FROM _xmt_interp_p_G AS _xmt_interp_p_G_4
+ WHERE " (as nil (Either Color))" = _xmt_interp_p_G_4.a_1
+
+===  (Left red) ======================================
+ -- Join(0)
+SELECT construct2("Left", "red") AS G
+===  (p (Left red)) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+  FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_6
+ WHERE construct2("Left", "red") = _xmt_interp_p_TU_6.a_1
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT "false" AS G
+  FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_6
+ WHERE construct2("Left", "red") = _xmt_interp_p_UF_6.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_interp_p_G_6.G AS G
+  FROM _xmt_interp_p_G AS _xmt_interp_p_G_6
+ WHERE construct2("Left", "red") = _xmt_interp_p_G_6.a_1
+
+=== (top) (not (p (Left red))) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+  FROM _xmt_interp_p_UF AS _xmt_interp_p_UF_6
+ WHERE construct2("Left", "red") = _xmt_interp_p_UF_6.a_1
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT "false" AS G
+  FROM _xmt_interp_p_TU AS _xmt_interp_p_TU_6
+ WHERE construct2("Left", "red") = _xmt_interp_p_TU_6.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT not_(_xmt_interp_p_G_6.G) AS G
+  FROM _xmt_interp_p_G AS _xmt_interp_p_G_6
+ WHERE construct2("Left", "red") = _xmt_interp_p_G_6.a_1
+
+===   (as nil (Either Material)) ======================================
+ -- Join(0)
+SELECT " (as nil (Either Material))" AS G
+=== (top) ((_ is nil)  (as nil (Either Material))) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT apply("(_ is nil)", " (as nil (Either Material))") AS G
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT apply("(_ is nil)", " (as nil (Either Material))") AS G
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT apply("(_ is nil)", " (as nil (Either Material))") AS G
+
+===  blue ======================================
+ -- Join(0)
+SELECT "blue" AS G
+===  (Left blue) ======================================
+ -- Join(0)
+SELECT construct2("Left", "blue") AS G
+=== (top) ((_ is Left) (Left blue)) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT "true" AS G
+  FROM _xmt_tester_sort_8_left_t AS _xmt_tester_sort_8_left_t_12
+ WHERE construct2("Left", "blue") = _xmt_tester_sort_8_left_t_12.a_1
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT "false" AS G
+  FROM _xmt_tester_sort_8_left_f AS _xmt_tester_sort_8_left_f_12
+ WHERE construct2("Left", "blue") = _xmt_tester_sort_8_left_f_12.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_tester_sort_8_left_g_12.G AS G
+  FROM _xmt_tester_sort_8_left_g AS _xmt_tester_sort_8_left_g_12
+ WHERE construct2("Left", "blue") = _xmt_tester_sort_8_left_g_12.a_1
+
+===  (b (Left red)) ======================================
+ -- Join(0)
+SELECT _xmt_selector_sort_8_b_g_13.G AS G
+  FROM _xmt_selector_sort_8_b_g AS _xmt_selector_sort_8_b_g_13
+ WHERE construct2("Left", "red") = _xmt_selector_sort_8_b_g_13.a_1
+=== (top) (= red (b (Left red))) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT eq_("red", _xmt_selector_sort_8_b_g_13.G) AS G
+  FROM _xmt_selector_sort_8_b_g AS _xmt_selector_sort_8_b_g_13
+ WHERE "red" = _xmt_selector_sort_8_b_g_13.G 
+       AND construct2("Left", "red") = _xmt_selector_sort_8_b_g_13.a_1
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT eq_("red", _xmt_selector_sort_8_b_g_13.G) AS G
+  FROM _xmt_selector_sort_8_b_g AS _xmt_selector_sort_8_b_g_13
+ WHERE "red" != _xmt_selector_sort_8_b_g_13.G 
+       AND construct2("Left", "red") = _xmt_selector_sort_8_b_g_13.a_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT eq_("red", _xmt_selector_sort_8_b_g_13.G) AS G
+  FROM _xmt_selector_sort_8_b_g AS _xmt_selector_sort_8_b_g_13
+ WHERE construct2("Left", "red") = _xmt_selector_sort_8_b_g_13.a_1
+
 ===========================================
 (check-sat)

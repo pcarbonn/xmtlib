@@ -9,7 +9,7 @@
         )
 )
 (x-ground :debug :sql)
-(x-debug solver generators)
+(x-debug solver groundings)
 ------- RESULTS ------------------
 (declare-datatype T ((A) (B)))
 (declare-fun p (T T) Bool)
@@ -26,9 +26,184 @@
 (assert (= (p B A) false))
 (assert (= (p B B) false))
 
-; ==== Query =============================
-;SELECT "true"
-Generators:
-=== (forall ((x T) (y T)) (= (p x y) (and (= x A) (= y A)))) ======================================
-TODO: generator
+Groundings:
+===  x ======================================
+ -- Join(0)
+SELECT _xmt_sort_t.G AS x,
+       _xmt_sort_t.G AS G
+  FROM _xmt_sort_t
+===  y ======================================
+ -- Join(0)
+SELECT _xmt_sort_t_1.G AS y,
+       _xmt_sort_t_1.G AS G
+  FROM _xmt_sort_t AS _xmt_sort_t_1
+===  (p x y) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_t.G AS x,
+       _xmt_sort_t_1.G AS y,
+       apply("p", _xmt_sort_t.G, _xmt_sort_t_1.G) AS G
+  FROM _xmt_sort_t
+  JOIN _xmt_sort_t AS _xmt_sort_t_1
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_t.G AS x,
+       _xmt_sort_t_1.G AS y,
+       apply("p", _xmt_sort_t.G, _xmt_sort_t_1.G) AS G
+  FROM _xmt_sort_t
+  JOIN _xmt_sort_t AS _xmt_sort_t_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_t.G AS x,
+       _xmt_sort_t_1.G AS y,
+       apply("p", _xmt_sort_t.G, _xmt_sort_t_1.G) AS G
+  FROM _xmt_sort_t
+  JOIN _xmt_sort_t AS _xmt_sort_t_1
+
+===  A ======================================
+ -- Join(0)
+SELECT "A" AS G
+===  (= x A) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_t.G AS x,
+       eq_(_xmt_sort_t.G, "A") AS G
+  FROM _xmt_sort_t
+ WHERE _xmt_sort_t.G = "A"
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_t.G AS x,
+       eq_(_xmt_sort_t.G, "A") AS G
+  FROM _xmt_sort_t
+ WHERE _xmt_sort_t.G != "A"
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_t.G AS x,
+       eq_(_xmt_sort_t.G, "A") AS G
+  FROM _xmt_sort_t
+
+===  (= y A) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_t_1.G AS y,
+       eq_(_xmt_sort_t_1.G, "A") AS G
+  FROM _xmt_sort_t AS _xmt_sort_t_1
+ WHERE _xmt_sort_t_1.G = "A"
+----- F ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_t_1.G AS y,
+       eq_(_xmt_sort_t_1.G, "A") AS G
+  FROM _xmt_sort_t AS _xmt_sort_t_1
+ WHERE _xmt_sort_t_1.G != "A"
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_t_1.G AS y,
+       eq_(_xmt_sort_t_1.G, "A") AS G
+  FROM _xmt_sort_t AS _xmt_sort_t_1
+
+===  (and (= x A) (= y A)) ======================================
+----- T ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_t.G AS x,
+       _xmt_sort_t_1.G AS y,
+       and_(eq_(_xmt_sort_t.G, "A"), eq_(_xmt_sort_t_1.G, "A")) AS G
+  FROM _xmt_sort_t
+  JOIN _xmt_sort_t AS _xmt_sort_t_1
+ WHERE _xmt_sort_t.G = "A" 
+       AND _xmt_sort_t_1.G = "A"
+----- F ------------------------------------------------------------
+-- Agg (0)
+SELECT x, y,
+       and_aggregate(G) as G
+ FROM (-- exclude(7)
+       SELECT *
+        FROM (-- Join(14)
+              SELECT _xmt_view__4_6.x AS x,
+                     _xmt_sort_t_1.G AS y,
+                     _xmt_view__4_6.G AS G
+                FROM (-- Join(22)
+                      SELECT _xmt_sort_t.G AS x,
+                             eq_(_xmt_sort_t.G, "A") AS G
+                        FROM _xmt_sort_t
+                       WHERE _xmt_sort_t.G != "A"
+                      ) AS _xmt_view__4_6
+                JOIN _xmt_sort_t AS _xmt_sort_t_1
+              UNION ALL
+              -- Join(14)
+              SELECT _xmt_sort_t.G AS x,
+                     _xmt_view__5_9.y AS y,
+                     _xmt_view__5_9.G AS G
+                FROM (-- Join(22)
+                      SELECT _xmt_sort_t_1.G AS y,
+                             eq_(_xmt_sort_t_1.G, "A") AS G
+                        FROM _xmt_sort_t AS _xmt_sort_t_1
+                       WHERE _xmt_sort_t_1.G != "A"
+                      ) AS _xmt_view__5_9
+                JOIN _xmt_sort_t)
+        WHERE G <> "true")
+ GROUP BY x, y
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_t.G AS x,
+       _xmt_sort_t_1.G AS y,
+       and_(eq_(_xmt_sort_t.G, "A"), eq_(_xmt_sort_t_1.G, "A")) AS G
+  FROM _xmt_sort_t
+  JOIN _xmt_sort_t AS _xmt_sort_t_1
+
+===  (= (p x y) (and (= x A) (= y A))) ======================================
+----- TU -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_t.G AS x,
+       _xmt_sort_t_1.G AS y,
+       apply("=", apply("p", _xmt_sort_t.G, _xmt_sort_t_1.G), and_(eq_(_xmt_sort_t.G, "A"), eq_(_xmt_sort_t_1.G, "A"))) AS G
+  FROM _xmt_sort_t
+  JOIN _xmt_sort_t AS _xmt_sort_t_1
+----- UF -----------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_t.G AS x,
+       _xmt_sort_t_1.G AS y,
+       apply("=", apply("p", _xmt_sort_t.G, _xmt_sort_t_1.G), and_(eq_(_xmt_sort_t.G, "A"), eq_(_xmt_sort_t_1.G, "A"))) AS G
+  FROM _xmt_sort_t
+  JOIN _xmt_sort_t AS _xmt_sort_t_1
+----- G ------------------------------------------------------------
+-- Join(0)
+SELECT _xmt_sort_t.G AS x,
+       _xmt_sort_t_1.G AS y,
+       apply("=", apply("p", _xmt_sort_t.G, _xmt_sort_t_1.G), and_(eq_(_xmt_sort_t.G, "A"), eq_(_xmt_sort_t_1.G, "A"))) AS G
+  FROM _xmt_sort_t
+  JOIN _xmt_sort_t AS _xmt_sort_t_1
+
+=== (top) (forall ((x T) (y T)) (= (p x y) (and (= x A) (= y A)))) ======================================
+----- TU -----------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_sort_t.G AS x,
+              _xmt_sort_t_1.G AS y,
+              apply("=", apply("p", _xmt_sort_t.G, _xmt_sort_t_1.G), and_(eq_(_xmt_sort_t.G, "A"), eq_(_xmt_sort_t_1.G, "A"))) AS G
+         FROM _xmt_sort_t
+         JOIN _xmt_sort_t AS _xmt_sort_t_1)
+----- UF -----------------------------------------------------------
+-- Agg (0)
+SELECT G as G
+ FROM (-- Join(7)
+       SELECT _xmt_sort_t.G AS x,
+              _xmt_sort_t_1.G AS y,
+              apply("=", apply("p", _xmt_sort_t.G, _xmt_sort_t_1.G), and_(eq_(_xmt_sort_t.G, "A"), eq_(_xmt_sort_t_1.G, "A"))) AS G
+         FROM _xmt_sort_t
+         JOIN _xmt_sort_t AS _xmt_sort_t_1)
+----- G ------------------------------------------------------------
+-- Agg (0)
+SELECT and_aggregate(G) as G
+ FROM (SELECT NULL AS x, NULL AS y, "true" AS G 
+       UNION ALL
+       -- Join(7)
+       SELECT _xmt_sort_t.G AS x,
+              _xmt_sort_t_1.G AS y,
+              apply("=", apply("p", _xmt_sort_t.G, _xmt_sort_t_1.G), and_(eq_(_xmt_sort_t.G, "A"), eq_(_xmt_sort_t_1.G, "A"))) AS G
+         FROM _xmt_sort_t
+         JOIN _xmt_sort_t AS _xmt_sort_t_1)
+
 ===========================================

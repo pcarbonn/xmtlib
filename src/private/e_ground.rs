@@ -176,6 +176,9 @@ pub(crate) fn ground(
                 yield_!(result)
             }
         }
+
+        // reset terms to ground
+        solver.assertions_to_ground = vec![];
     })
 }
 

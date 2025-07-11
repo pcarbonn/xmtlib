@@ -13,7 +13,7 @@
                 (phi x y z)
             )))
 (x-ground)
-(x-debug solver generators)
+(x-debug solver groundings)
 (check-sat)
 ------- RESULTS ---------------------------
 (declare-fun Edge (Int Int) Bool)
