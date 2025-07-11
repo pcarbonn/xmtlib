@@ -1,10 +1,7 @@
-xmt-lib denotes:
+xmt-lib is a package that executes commands in "XMT-Lib".
+XMT-Lib is an extension of the [SMT-Lib 2.6](https://smt-lib.org/language.shtml) language to communicate with [SMT](https://fr.wikipedia.org/wiki/Satisfiability_modulo_theories) solvers.
 
-* an extension of the [SMT-Lib 2.6](https://smt-lib.org/language.shtml) language
-  to communicate with [SMT](https://fr.wikipedia.org/wiki/Satisfiability_modulo_theories) solvers;
-* a program that executes commands in that language.
-
-The program can be used to find (optimal) solutions of combinatorial problems
+xmt-lib can be used to find (optimal) solutions of combinatorial problems
  (e.g., the [stable matching problem](https://en.wikipedia.org/wiki/Stable_matching_problem)) and configuration problems (e.g., for custom manufacturing).
 It is faster than standard SMT solvers for the model expansion task,
 i.e., the task of finding a model of a logic formula
@@ -13,7 +10,7 @@ This performance gain comes from using a fast "grounder"
 based on the [sqlite](https://sqlite.org) relational database engine.
 This grounder also allows xmt-lib to access data stored in a sqlite database.
 
-xmt-lib extends the [SMT-Lib 2.6](https://smt-lib.org/language.shtml) language with the following commands:
+XMT-lib extends the [SMT-Lib 2.6](https://smt-lib.org/language.shtml) language with the following commands:
 
 * `set-option :backend` to specify the SMT solver (if any) used to execute the xmt-lib commands;
 * `x-interpret-const`, to specify the interpretation of a constant;
@@ -31,7 +28,7 @@ Future extensions of the language are expected to provide more expressivity and 
 - [ ] intensional logic
 - [ ] more reasoning tasks
 
-xmt-lib is inspired by the [FO(.)](https://fo-dot.readthedocs.io/en/latest/FO-dot.html) language
+XMT-lib is inspired by the [FO(.)](https://fo-dot.readthedocs.io/en/latest/FO-dot.html) language
 and [IDP-Z3](https://www.idp-z3.be/) reasoning engine developed by KU Leuven.
 
 # Usage
