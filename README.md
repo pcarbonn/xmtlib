@@ -1,4 +1,13 @@
+
+
+```
+> [!WARNING]
+> This public repository is old and not maintained.  The program has gone closed source,
+> but the latest version can be used online at https://tinyurl.com/XMT-IDE
+```
+
 xmt-lib is a package that executes commands in "XMT-Lib".
+
 XMT-Lib is an extension of the [SMT-Lib 2.6](https://smt-lib.org/language.shtml) language to communicate with [SMT](https://fr.wikipedia.org/wiki/Satisfiability_modulo_theories) solvers.
 
 xmt-lib can be used to find (optimal) solutions of combinatorial problems
