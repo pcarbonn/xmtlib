@@ -1,10 +1,10 @@
 [package]
 name = "xmt-lib"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Pierre Carbonnelle"]
 edition = "2021"
 rust-version = "1.86.0"
-description = "A high-level language for interacting with SMT solvers"
+description = "A grounder for SMT solvers"
 documentation = "https://docs.rs/xmt-lib"
 readme = "README.md"
 repository = "https://github.com/pcarbonn/xmtlib"
