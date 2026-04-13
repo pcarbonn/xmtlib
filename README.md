@@ -1,14 +1,16 @@
 
 
-**xmt-lib** is a high-performance tool designed to solve configuration and combinatorial problems through a fast, declarative approach.
+**xmt-lib** is a grounder for [SMT solvers](https://fr.wikipedia.org/wiki/Satisfiability_modulo_theories) like [Z3](https://github.com).
+Grounding is the process of expanding quantifications into variable-free short formulas.
 
-It serves as a powerful alternative to standard [SMT solvers](https://fr.wikipedia.org/wiki/Satisfiability_modulo_theories) like [Z3](https://github.com). While the standard **SMT-LIB** language is declarative but often slow, and the **Z3 API** is fast but requires complex custom code, **xmt-lib** bridges this gap by offering both speed and ease of use.
+xmt-lib helps solve configuration and combinatorial problems in a fast, declarative way.
+While the standard **SMT-LIB** language is declarative but often slow, and the **Z3 API** is fast but requires complex custom code, **xmt-lib** bridges this gap by offering both speed and ease of use.
 
 ### Key Features
 
 *   **Universal Front-End:** xmt-lib can be used as a front-end to **any SMT-LIB compliant solver**, bringing its benefits to your preferred engine.
 *   **Superior Performance:** xmt-lib outperforms standard SMT solvers when the interpretation of specific vocabulary symbols is already defined, as in configuration problems.
-*   **SQLite-Powered Grounding:** This speed is driven by a specialized "grounder" built on the [SQLite](https://sqlite.org) relational database engine. This architecture also allows xmt-lib to directly access and process data stored in SQLite databases.
+*   **SQLite-Powered Grounding:** This speed is driven by a grounder built on the [SQLite](https://sqlite.org) relational database engine. This architecture also allows xmt-lib to directly access and process data stored in SQLite databases.
 *   **Mathematical Foundation:** The grounding mechanism is detailed in this [arXiv research paper](https://arxiv.org/pdf/2602.19102).
 *   **Extended Standard:** The program executes commands in **XMT-Lib**, an extension of the [SMT-LIB 2.6](https://smt-lib.org) standard designed for efficient communication with SMT solvers.
 
